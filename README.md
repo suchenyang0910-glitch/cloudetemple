@@ -16,6 +16,8 @@ Preview: http://127.0.0.1:8788 (ephemeral test storage). Run packaging before th
 
 ## Deployment
 
+Current VPS preview and operational evidence: [VPS deployment record](deploy/VPS部署记录.md). The initial preview is HTTP; configure a domain and HTTPS before real email collection.
+
 - Cloudflare Pages: `functions/api/waitlist.js`, WAITLIST KV binding and WAITLIST_SECRET. See [deployment guide](部署说明.md).
 - VPS: `deploy/server.mjs` uses the same handler with a separate SQLite KV adapter. It serves only packaged public files, stores consent for 90 days, and purges expired records at startup and every minute. No raw IP persistence or request logs.
 - `deploy/compose.yml` publishes only 127.0.0.1:8789. Caddy must overwrite `X-CloudTemple-Client-IP` with `{remote_host}`. Do not expose this backend port publicly or trust user-supplied forwarded IP headers.
