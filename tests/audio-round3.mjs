@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import {createTempleAudio} from '../audio.js';
+globalThis.document={hidden:false};
+const nodes=[],events=[];
+const gain=()=>({value:1,cancelScheduledValues(){},setValueAtTime(v){this.value=v;events.push(['set',v]);},linearRampToValueAtTime(v,t){events.push(['ramp',v,t]);}});
+const context={state:'running',currentTime:1,createGain(){return {gain:gain(),connect(){},disconnect(){}};},createBufferSource(){const s={playbackRate:{value:1},connect(){},disconnect(){},start(t){events.push(['start',t]);},stop(t){events.push(['stop',t]);}};nodes.push(s);return s;}};
+const a=createTempleAudio();a.context=context;a.master=context.createGain();a.enabled=true;a.buffers.set('ambient-courtyard',{duration:60});a.buffers.set('bead-v1',{duration:.15});
+await a.ambient('forest',.6,2);assert(events.some(e=>e[0]==='ramp'&&e[1]===.6&&e[2]===3));
+await a.ambient('none',1,2);assert(events.some(e=>e[0]==='ramp'&&e[1]===0&&e[2]===3));assert.equal(a.fading.size,1);
+assert(a.strike('bead-v1',1,1.02));assert.equal(nodes.at(-1).playbackRate.value,1.02);a.mute();const n=nodes.length;assert(!a.strike('bead-v1'));await a.ambient('forest');assert.equal(nodes.length,n);assert.equal(a.fading.size,0);
+const race=createTempleAudio();race.context=context;race.master=a.master;race.enabled=true;let resolve;race.load=()=>new Promise(r=>resolve=r);const pending=race.ambient('forest');await race.ambient('none');const before=nodes.length;resolve({duration:60});await pending;assert.equal(nodes.length,before,'late background load cannot start after leaving');
+console.log('Audio fade-in/out, mute stops fading sources, bead pitch, stale load cancellation passed');

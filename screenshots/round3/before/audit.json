@@ -1,0 +1,3786 @@
+[
+  {
+    "file": "393-dawn-entry.png",
+    "state": "entry",
+    "width": 393,
+    "period": "dawn",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Vào chùa"
+    ],
+    "view": "entry"
+  },
+  {
+    "file": "393-dawn-choose.png",
+    "state": "choose",
+    "width": 393,
+    "period": "dawn",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Đổi người",
+      "Bước vào"
+    ],
+    "view": "choose"
+  },
+  {
+    "file": "393-dawn-choose-changed.png",
+    "state": "choose-changed",
+    "width": 393,
+    "period": "dawn",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Đổi người",
+      "Bước vào"
+    ],
+    "view": "choose"
+  },
+  {
+    "file": "393-dawn-home.png",
+    "state": "home",
+    "width": 393,
+    "period": "dawn",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm"
+    ],
+    "view": "home"
+  },
+  {
+    "file": "393-dawn-incense-ready.png",
+    "state": "incense-ready",
+    "width": 393,
+    "period": "dawn",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Thắp ba nén hương",
+      "Về chánh điện"
+    ],
+    "view": "incense"
+  },
+  {
+    "file": "393-dawn-incense-burning.png",
+    "state": "incense-burning",
+    "width": 393,
+    "period": "dawn",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Thắp ba nén hương",
+      "Về chánh điện"
+    ],
+    "view": "incense"
+  },
+  {
+    "file": "393-dawn-incense-done.png",
+    "state": "incense-done",
+    "width": 393,
+    "period": "dawn",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Lưu khoảnh khắc",
+      "Về chánh điện"
+    ],
+    "view": "incense"
+  },
+  {
+    "file": "393-dawn-bow-ready.png",
+    "state": "bow-ready",
+    "width": 393,
+    "period": "dawn",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "3",
+      "27",
+      "54",
+      "108",
+      "Một lần lễ bái",
+      "Tự động chậm",
+      "Về chánh điện"
+    ],
+    "view": "bow"
+  },
+  {
+    "file": "393-dawn-bowing.png",
+    "state": "bowing",
+    "width": 393,
+    "period": "dawn",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "3",
+      "27",
+      "54",
+      "108",
+      "Một lần lễ bái",
+      "Tự động chậm",
+      "Về chánh điện"
+    ],
+    "view": "bow"
+  },
+  {
+    "file": "393-dawn-bow-auto.png",
+    "state": "bow-auto",
+    "width": 393,
+    "period": "dawn",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "3",
+      "27",
+      "54",
+      "108",
+      "Một lần lễ bái",
+      "Dừng tự động",
+      "Về chánh điện"
+    ],
+    "view": "bow"
+  },
+  {
+    "file": "393-dawn-bow-done.png",
+    "state": "bow-done",
+    "width": 393,
+    "period": "dawn",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Lưu khoảnh khắc",
+      "Về chánh điện"
+    ],
+    "view": "bow"
+  },
+  {
+    "file": "393-dawn-sit-choice.png",
+    "state": "sit-choice",
+    "width": 393,
+    "period": "dawn",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "1 phút",
+      "3 phút",
+      "5 phút",
+      "10 phút",
+      "Bắt đầu",
+      "Gõ mõ",
+      "Về chánh điện"
+    ],
+    "view": "sit"
+  },
+  {
+    "file": "393-dawn-sit-running.png",
+    "state": "sit-running",
+    "width": 393,
+    "period": "dawn",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Tạm dừng",
+      "Kết thúc sớm",
+      "Gõ mõ",
+      "Về chánh điện"
+    ],
+    "view": "sit"
+  },
+  {
+    "file": "393-dawn-sit-paused.png",
+    "state": "sit-paused",
+    "width": 393,
+    "period": "dawn",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Tiếp tục",
+      "Kết thúc sớm",
+      "Gõ mõ",
+      "Về chánh điện"
+    ],
+    "view": "sit"
+  },
+  {
+    "file": "393-dawn-sit-done.png",
+    "state": "sit-done",
+    "width": 393,
+    "period": "dawn",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Lưu khoảnh khắc",
+      "Về chánh điện"
+    ],
+    "view": "sit"
+  },
+  {
+    "file": "393-dawn-mo-ready.png",
+    "state": "mo-ready",
+    "width": 393,
+    "period": "dawn",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Tự động",
+      "Về chánh điện"
+    ],
+    "view": "mo"
+  },
+  {
+    "file": "393-dawn-mo-tapping.png",
+    "state": "mo-tapping",
+    "width": 393,
+    "period": "dawn",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Tự động",
+      "Về chánh điện"
+    ],
+    "view": "mo"
+  },
+  {
+    "file": "393-dawn-mo-auto.png",
+    "state": "mo-auto",
+    "width": 393,
+    "period": "dawn",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Dừng",
+      "Về chánh điện"
+    ],
+    "view": "mo"
+  },
+  {
+    "file": "393-dawn-mo-108.png",
+    "state": "mo-108",
+    "width": 393,
+    "period": "dawn",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Tự động",
+      "Về chánh điện"
+    ],
+    "view": "mo"
+  },
+  {
+    "file": "393-dawn-beads-0.png",
+    "state": "beads-0",
+    "width": 393,
+    "period": "dawn",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Về chánh điện"
+    ],
+    "view": "beads"
+  },
+  {
+    "file": "393-dawn-beads-1.png",
+    "state": "beads-1",
+    "width": 393,
+    "period": "dawn",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Về chánh điện"
+    ],
+    "view": "beads"
+  },
+  {
+    "file": "393-dawn-beads-27.png",
+    "state": "beads-27",
+    "width": 393,
+    "period": "dawn",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Về chánh điện"
+    ],
+    "view": "beads"
+  },
+  {
+    "file": "393-dawn-beads-107.png",
+    "state": "beads-107",
+    "width": 393,
+    "period": "dawn",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Về chánh điện"
+    ],
+    "view": "beads"
+  },
+  {
+    "file": "393-dawn-completed.png",
+    "state": "completed",
+    "width": 393,
+    "period": "dawn",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Lưu khoảnh khắc",
+      "Về chánh điện"
+    ],
+    "view": "beads"
+  },
+  {
+    "file": "393-dawn-share.png",
+    "state": "share",
+    "width": 393,
+    "period": "dawn",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Lưu khoảnh khắc",
+      "Về chánh điện",
+      "Đóng",
+      "Chia sẻ",
+      "Tải ảnh"
+    ],
+    "view": "beads"
+  },
+  {
+    "file": "393-dawn-more.png",
+    "state": "more",
+    "width": 393,
+    "period": "dawn",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Đóng",
+      "Lập bài vị cho gia đình · Sắp ra mắt"
+    ],
+    "view": "home"
+  },
+  {
+    "file": "393-dawn-registration.png",
+    "state": "registration",
+    "width": 393,
+    "period": "dawn",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Đóng",
+      "Nhận thông báo"
+    ],
+    "view": "home"
+  },
+  {
+    "file": "393-dawn-registration-invalid.png",
+    "state": "registration-invalid",
+    "width": 393,
+    "period": "dawn",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Đóng",
+      "Nhận thông báo"
+    ],
+    "view": "home"
+  },
+  {
+    "file": "393-dawn-leave.png",
+    "state": "leave",
+    "width": 393,
+    "period": "dawn",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Vào chùa"
+    ],
+    "view": "entry"
+  },
+  {
+    "file": "393-dawn-about.png",
+    "state": "about",
+    "width": 393,
+    "period": "dawn",
+    "scroll": true,
+    "smallButtons": [],
+    "view": null
+  },
+  {
+    "file": "393-dawn-privacy.png",
+    "state": "privacy",
+    "width": 393,
+    "period": "dawn",
+    "scroll": true,
+    "smallButtons": [],
+    "view": null
+  },
+  {
+    "file": "393-dawn-terms.png",
+    "state": "terms",
+    "width": 393,
+    "period": "dawn",
+    "scroll": true,
+    "smallButtons": [],
+    "view": null
+  },
+  {
+    "file": "393-dawn-image-failure.png",
+    "state": "image-failure",
+    "width": 393,
+    "period": "dawn",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Vào chùa"
+    ],
+    "view": "entry"
+  },
+  {
+    "file": "393-dawn-loading.png",
+    "state": "loading",
+    "width": 393,
+    "period": "dawn",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh"
+    ],
+    "view": null
+  },
+  {
+    "file": "393-day-entry.png",
+    "state": "entry",
+    "width": 393,
+    "period": "day",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Vào chùa"
+    ],
+    "view": "entry"
+  },
+  {
+    "file": "393-day-choose.png",
+    "state": "choose",
+    "width": 393,
+    "period": "day",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Đổi người",
+      "Bước vào"
+    ],
+    "view": "choose"
+  },
+  {
+    "file": "393-day-choose-changed.png",
+    "state": "choose-changed",
+    "width": 393,
+    "period": "day",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Đổi người",
+      "Bước vào"
+    ],
+    "view": "choose"
+  },
+  {
+    "file": "393-day-home.png",
+    "state": "home",
+    "width": 393,
+    "period": "day",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm"
+    ],
+    "view": "home"
+  },
+  {
+    "file": "393-day-incense-ready.png",
+    "state": "incense-ready",
+    "width": 393,
+    "period": "day",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Thắp ba nén hương",
+      "Về chánh điện"
+    ],
+    "view": "incense"
+  },
+  {
+    "file": "393-day-incense-burning.png",
+    "state": "incense-burning",
+    "width": 393,
+    "period": "day",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Thắp ba nén hương",
+      "Về chánh điện"
+    ],
+    "view": "incense"
+  },
+  {
+    "file": "393-day-incense-done.png",
+    "state": "incense-done",
+    "width": 393,
+    "period": "day",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Lưu khoảnh khắc",
+      "Về chánh điện"
+    ],
+    "view": "incense"
+  },
+  {
+    "file": "393-day-bow-ready.png",
+    "state": "bow-ready",
+    "width": 393,
+    "period": "day",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "3",
+      "27",
+      "54",
+      "108",
+      "Một lần lễ bái",
+      "Tự động chậm",
+      "Về chánh điện"
+    ],
+    "view": "bow"
+  },
+  {
+    "file": "393-day-bowing.png",
+    "state": "bowing",
+    "width": 393,
+    "period": "day",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "3",
+      "27",
+      "54",
+      "108",
+      "Một lần lễ bái",
+      "Tự động chậm",
+      "Về chánh điện"
+    ],
+    "view": "bow"
+  },
+  {
+    "file": "393-day-bow-auto.png",
+    "state": "bow-auto",
+    "width": 393,
+    "period": "day",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "3",
+      "27",
+      "54",
+      "108",
+      "Một lần lễ bái",
+      "Dừng tự động",
+      "Về chánh điện"
+    ],
+    "view": "bow"
+  },
+  {
+    "file": "393-day-bow-done.png",
+    "state": "bow-done",
+    "width": 393,
+    "period": "day",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Lưu khoảnh khắc",
+      "Về chánh điện"
+    ],
+    "view": "bow"
+  },
+  {
+    "file": "393-day-sit-choice.png",
+    "state": "sit-choice",
+    "width": 393,
+    "period": "day",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "1 phút",
+      "3 phút",
+      "5 phút",
+      "10 phút",
+      "Bắt đầu",
+      "Gõ mõ",
+      "Về chánh điện"
+    ],
+    "view": "sit"
+  },
+  {
+    "file": "393-day-sit-running.png",
+    "state": "sit-running",
+    "width": 393,
+    "period": "day",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Tạm dừng",
+      "Kết thúc sớm",
+      "Gõ mõ",
+      "Về chánh điện"
+    ],
+    "view": "sit"
+  },
+  {
+    "file": "393-day-sit-paused.png",
+    "state": "sit-paused",
+    "width": 393,
+    "period": "day",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Tiếp tục",
+      "Kết thúc sớm",
+      "Gõ mõ",
+      "Về chánh điện"
+    ],
+    "view": "sit"
+  },
+  {
+    "file": "393-day-sit-done.png",
+    "state": "sit-done",
+    "width": 393,
+    "period": "day",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Lưu khoảnh khắc",
+      "Về chánh điện"
+    ],
+    "view": "sit"
+  },
+  {
+    "file": "393-day-mo-ready.png",
+    "state": "mo-ready",
+    "width": 393,
+    "period": "day",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Tự động",
+      "Về chánh điện"
+    ],
+    "view": "mo"
+  },
+  {
+    "file": "393-day-mo-tapping.png",
+    "state": "mo-tapping",
+    "width": 393,
+    "period": "day",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Tự động",
+      "Về chánh điện"
+    ],
+    "view": "mo"
+  },
+  {
+    "file": "393-day-mo-auto.png",
+    "state": "mo-auto",
+    "width": 393,
+    "period": "day",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Dừng",
+      "Về chánh điện"
+    ],
+    "view": "mo"
+  },
+  {
+    "file": "393-day-mo-108.png",
+    "state": "mo-108",
+    "width": 393,
+    "period": "day",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Tự động",
+      "Về chánh điện"
+    ],
+    "view": "mo"
+  },
+  {
+    "file": "393-day-beads-0.png",
+    "state": "beads-0",
+    "width": 393,
+    "period": "day",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Về chánh điện"
+    ],
+    "view": "beads"
+  },
+  {
+    "file": "393-day-beads-1.png",
+    "state": "beads-1",
+    "width": 393,
+    "period": "day",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Về chánh điện"
+    ],
+    "view": "beads"
+  },
+  {
+    "file": "393-day-beads-27.png",
+    "state": "beads-27",
+    "width": 393,
+    "period": "day",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Về chánh điện"
+    ],
+    "view": "beads"
+  },
+  {
+    "file": "393-day-beads-107.png",
+    "state": "beads-107",
+    "width": 393,
+    "period": "day",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Về chánh điện"
+    ],
+    "view": "beads"
+  },
+  {
+    "file": "393-day-completed.png",
+    "state": "completed",
+    "width": 393,
+    "period": "day",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Lưu khoảnh khắc",
+      "Về chánh điện"
+    ],
+    "view": "beads"
+  },
+  {
+    "file": "393-day-share.png",
+    "state": "share",
+    "width": 393,
+    "period": "day",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Lưu khoảnh khắc",
+      "Về chánh điện",
+      "Đóng",
+      "Chia sẻ",
+      "Tải ảnh"
+    ],
+    "view": "beads"
+  },
+  {
+    "file": "393-day-more.png",
+    "state": "more",
+    "width": 393,
+    "period": "day",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Đóng",
+      "Lập bài vị cho gia đình · Sắp ra mắt"
+    ],
+    "view": "home"
+  },
+  {
+    "file": "393-day-registration.png",
+    "state": "registration",
+    "width": 393,
+    "period": "day",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Đóng",
+      "Nhận thông báo"
+    ],
+    "view": "home"
+  },
+  {
+    "file": "393-day-registration-invalid.png",
+    "state": "registration-invalid",
+    "width": 393,
+    "period": "day",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Đóng",
+      "Nhận thông báo"
+    ],
+    "view": "home"
+  },
+  {
+    "file": "393-day-leave.png",
+    "state": "leave",
+    "width": 393,
+    "period": "day",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Vào chùa"
+    ],
+    "view": "entry"
+  },
+  {
+    "file": "393-day-about.png",
+    "state": "about",
+    "width": 393,
+    "period": "day",
+    "scroll": true,
+    "smallButtons": [],
+    "view": null
+  },
+  {
+    "file": "393-day-privacy.png",
+    "state": "privacy",
+    "width": 393,
+    "period": "day",
+    "scroll": true,
+    "smallButtons": [],
+    "view": null
+  },
+  {
+    "file": "393-day-terms.png",
+    "state": "terms",
+    "width": 393,
+    "period": "day",
+    "scroll": true,
+    "smallButtons": [],
+    "view": null
+  },
+  {
+    "file": "393-day-image-failure.png",
+    "state": "image-failure",
+    "width": 393,
+    "period": "day",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Vào chùa"
+    ],
+    "view": "entry"
+  },
+  {
+    "file": "393-day-loading.png",
+    "state": "loading",
+    "width": 393,
+    "period": "day",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh"
+    ],
+    "view": null
+  },
+  {
+    "file": "393-dusk-entry.png",
+    "state": "entry",
+    "width": 393,
+    "period": "dusk",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Vào chùa"
+    ],
+    "view": "entry"
+  },
+  {
+    "file": "393-dusk-choose.png",
+    "state": "choose",
+    "width": 393,
+    "period": "dusk",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Đổi người",
+      "Bước vào"
+    ],
+    "view": "choose"
+  },
+  {
+    "file": "393-dusk-choose-changed.png",
+    "state": "choose-changed",
+    "width": 393,
+    "period": "dusk",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Đổi người",
+      "Bước vào"
+    ],
+    "view": "choose"
+  },
+  {
+    "file": "393-dusk-home.png",
+    "state": "home",
+    "width": 393,
+    "period": "dusk",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm"
+    ],
+    "view": "home"
+  },
+  {
+    "file": "393-dusk-incense-ready.png",
+    "state": "incense-ready",
+    "width": 393,
+    "period": "dusk",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Thắp ba nén hương",
+      "Về chánh điện"
+    ],
+    "view": "incense"
+  },
+  {
+    "file": "393-dusk-incense-burning.png",
+    "state": "incense-burning",
+    "width": 393,
+    "period": "dusk",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Thắp ba nén hương",
+      "Về chánh điện"
+    ],
+    "view": "incense"
+  },
+  {
+    "file": "393-dusk-incense-done.png",
+    "state": "incense-done",
+    "width": 393,
+    "period": "dusk",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Lưu khoảnh khắc",
+      "Về chánh điện"
+    ],
+    "view": "incense"
+  },
+  {
+    "file": "393-dusk-bow-ready.png",
+    "state": "bow-ready",
+    "width": 393,
+    "period": "dusk",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "3",
+      "27",
+      "54",
+      "108",
+      "Một lần lễ bái",
+      "Tự động chậm",
+      "Về chánh điện"
+    ],
+    "view": "bow"
+  },
+  {
+    "file": "393-dusk-bowing.png",
+    "state": "bowing",
+    "width": 393,
+    "period": "dusk",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "3",
+      "27",
+      "54",
+      "108",
+      "Một lần lễ bái",
+      "Tự động chậm",
+      "Về chánh điện"
+    ],
+    "view": "bow"
+  },
+  {
+    "file": "393-dusk-bow-auto.png",
+    "state": "bow-auto",
+    "width": 393,
+    "period": "dusk",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "3",
+      "27",
+      "54",
+      "108",
+      "Một lần lễ bái",
+      "Dừng tự động",
+      "Về chánh điện"
+    ],
+    "view": "bow"
+  },
+  {
+    "file": "393-dusk-bow-done.png",
+    "state": "bow-done",
+    "width": 393,
+    "period": "dusk",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Lưu khoảnh khắc",
+      "Về chánh điện"
+    ],
+    "view": "bow"
+  },
+  {
+    "file": "393-dusk-sit-choice.png",
+    "state": "sit-choice",
+    "width": 393,
+    "period": "dusk",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "1 phút",
+      "3 phút",
+      "5 phút",
+      "10 phút",
+      "Bắt đầu",
+      "Gõ mõ",
+      "Về chánh điện"
+    ],
+    "view": "sit"
+  },
+  {
+    "file": "393-dusk-sit-running.png",
+    "state": "sit-running",
+    "width": 393,
+    "period": "dusk",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Tạm dừng",
+      "Kết thúc sớm",
+      "Gõ mõ",
+      "Về chánh điện"
+    ],
+    "view": "sit"
+  },
+  {
+    "file": "393-dusk-sit-paused.png",
+    "state": "sit-paused",
+    "width": 393,
+    "period": "dusk",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Tiếp tục",
+      "Kết thúc sớm",
+      "Gõ mõ",
+      "Về chánh điện"
+    ],
+    "view": "sit"
+  },
+  {
+    "file": "393-dusk-sit-done.png",
+    "state": "sit-done",
+    "width": 393,
+    "period": "dusk",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Lưu khoảnh khắc",
+      "Về chánh điện"
+    ],
+    "view": "sit"
+  },
+  {
+    "file": "393-dusk-mo-ready.png",
+    "state": "mo-ready",
+    "width": 393,
+    "period": "dusk",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Tự động",
+      "Về chánh điện"
+    ],
+    "view": "mo"
+  },
+  {
+    "file": "393-dusk-mo-tapping.png",
+    "state": "mo-tapping",
+    "width": 393,
+    "period": "dusk",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Tự động",
+      "Về chánh điện"
+    ],
+    "view": "mo"
+  },
+  {
+    "file": "393-dusk-mo-auto.png",
+    "state": "mo-auto",
+    "width": 393,
+    "period": "dusk",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Dừng",
+      "Về chánh điện"
+    ],
+    "view": "mo"
+  },
+  {
+    "file": "393-dusk-mo-108.png",
+    "state": "mo-108",
+    "width": 393,
+    "period": "dusk",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Tự động",
+      "Về chánh điện"
+    ],
+    "view": "mo"
+  },
+  {
+    "file": "393-dusk-beads-0.png",
+    "state": "beads-0",
+    "width": 393,
+    "period": "dusk",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Về chánh điện"
+    ],
+    "view": "beads"
+  },
+  {
+    "file": "393-dusk-beads-1.png",
+    "state": "beads-1",
+    "width": 393,
+    "period": "dusk",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Về chánh điện"
+    ],
+    "view": "beads"
+  },
+  {
+    "file": "393-dusk-beads-27.png",
+    "state": "beads-27",
+    "width": 393,
+    "period": "dusk",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Về chánh điện"
+    ],
+    "view": "beads"
+  },
+  {
+    "file": "393-dusk-beads-107.png",
+    "state": "beads-107",
+    "width": 393,
+    "period": "dusk",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Về chánh điện"
+    ],
+    "view": "beads"
+  },
+  {
+    "file": "393-dusk-completed.png",
+    "state": "completed",
+    "width": 393,
+    "period": "dusk",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Lưu khoảnh khắc",
+      "Về chánh điện"
+    ],
+    "view": "beads"
+  },
+  {
+    "file": "393-dusk-share.png",
+    "state": "share",
+    "width": 393,
+    "period": "dusk",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Lưu khoảnh khắc",
+      "Về chánh điện",
+      "Đóng",
+      "Chia sẻ",
+      "Tải ảnh"
+    ],
+    "view": "beads"
+  },
+  {
+    "file": "393-dusk-more.png",
+    "state": "more",
+    "width": 393,
+    "period": "dusk",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Đóng",
+      "Lập bài vị cho gia đình · Sắp ra mắt"
+    ],
+    "view": "home"
+  },
+  {
+    "file": "393-dusk-registration.png",
+    "state": "registration",
+    "width": 393,
+    "period": "dusk",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Đóng",
+      "Nhận thông báo"
+    ],
+    "view": "home"
+  },
+  {
+    "file": "393-dusk-registration-invalid.png",
+    "state": "registration-invalid",
+    "width": 393,
+    "period": "dusk",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Đóng",
+      "Nhận thông báo"
+    ],
+    "view": "home"
+  },
+  {
+    "file": "393-dusk-leave.png",
+    "state": "leave",
+    "width": 393,
+    "period": "dusk",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Vào chùa"
+    ],
+    "view": "entry"
+  },
+  {
+    "file": "393-dusk-about.png",
+    "state": "about",
+    "width": 393,
+    "period": "dusk",
+    "scroll": true,
+    "smallButtons": [],
+    "view": null
+  },
+  {
+    "file": "393-dusk-privacy.png",
+    "state": "privacy",
+    "width": 393,
+    "period": "dusk",
+    "scroll": true,
+    "smallButtons": [],
+    "view": null
+  },
+  {
+    "file": "393-dusk-terms.png",
+    "state": "terms",
+    "width": 393,
+    "period": "dusk",
+    "scroll": true,
+    "smallButtons": [],
+    "view": null
+  },
+  {
+    "file": "393-dusk-image-failure.png",
+    "state": "image-failure",
+    "width": 393,
+    "period": "dusk",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Vào chùa"
+    ],
+    "view": "entry"
+  },
+  {
+    "file": "393-dusk-loading.png",
+    "state": "loading",
+    "width": 393,
+    "period": "dusk",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh"
+    ],
+    "view": null
+  },
+  {
+    "file": "393-night-entry.png",
+    "state": "entry",
+    "width": 393,
+    "period": "night",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Vào chùa"
+    ],
+    "view": "entry"
+  },
+  {
+    "file": "393-night-choose.png",
+    "state": "choose",
+    "width": 393,
+    "period": "night",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Đổi người",
+      "Bước vào"
+    ],
+    "view": "choose"
+  },
+  {
+    "file": "393-night-choose-changed.png",
+    "state": "choose-changed",
+    "width": 393,
+    "period": "night",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Đổi người",
+      "Bước vào"
+    ],
+    "view": "choose"
+  },
+  {
+    "file": "393-night-home.png",
+    "state": "home",
+    "width": 393,
+    "period": "night",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm"
+    ],
+    "view": "home"
+  },
+  {
+    "file": "393-night-incense-ready.png",
+    "state": "incense-ready",
+    "width": 393,
+    "period": "night",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Thắp ba nén hương",
+      "Về chánh điện"
+    ],
+    "view": "incense"
+  },
+  {
+    "file": "393-night-incense-burning.png",
+    "state": "incense-burning",
+    "width": 393,
+    "period": "night",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Thắp ba nén hương",
+      "Về chánh điện"
+    ],
+    "view": "incense"
+  },
+  {
+    "file": "393-night-incense-done.png",
+    "state": "incense-done",
+    "width": 393,
+    "period": "night",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Lưu khoảnh khắc",
+      "Về chánh điện"
+    ],
+    "view": "incense"
+  },
+  {
+    "file": "393-night-bow-ready.png",
+    "state": "bow-ready",
+    "width": 393,
+    "period": "night",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "3",
+      "27",
+      "54",
+      "108",
+      "Một lần lễ bái",
+      "Tự động chậm",
+      "Về chánh điện"
+    ],
+    "view": "bow"
+  },
+  {
+    "file": "393-night-bowing.png",
+    "state": "bowing",
+    "width": 393,
+    "period": "night",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "3",
+      "27",
+      "54",
+      "108",
+      "Một lần lễ bái",
+      "Tự động chậm",
+      "Về chánh điện"
+    ],
+    "view": "bow"
+  },
+  {
+    "file": "393-night-bow-auto.png",
+    "state": "bow-auto",
+    "width": 393,
+    "period": "night",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "3",
+      "27",
+      "54",
+      "108",
+      "Một lần lễ bái",
+      "Dừng tự động",
+      "Về chánh điện"
+    ],
+    "view": "bow"
+  },
+  {
+    "file": "393-night-bow-done.png",
+    "state": "bow-done",
+    "width": 393,
+    "period": "night",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Lưu khoảnh khắc",
+      "Về chánh điện"
+    ],
+    "view": "bow"
+  },
+  {
+    "file": "393-night-sit-choice.png",
+    "state": "sit-choice",
+    "width": 393,
+    "period": "night",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "1 phút",
+      "3 phút",
+      "5 phút",
+      "10 phút",
+      "Bắt đầu",
+      "Gõ mõ",
+      "Về chánh điện"
+    ],
+    "view": "sit"
+  },
+  {
+    "file": "393-night-sit-running.png",
+    "state": "sit-running",
+    "width": 393,
+    "period": "night",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Tạm dừng",
+      "Kết thúc sớm",
+      "Gõ mõ",
+      "Về chánh điện"
+    ],
+    "view": "sit"
+  },
+  {
+    "file": "393-night-sit-paused.png",
+    "state": "sit-paused",
+    "width": 393,
+    "period": "night",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Tiếp tục",
+      "Kết thúc sớm",
+      "Gõ mõ",
+      "Về chánh điện"
+    ],
+    "view": "sit"
+  },
+  {
+    "file": "393-night-sit-done.png",
+    "state": "sit-done",
+    "width": 393,
+    "period": "night",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Lưu khoảnh khắc",
+      "Về chánh điện"
+    ],
+    "view": "sit"
+  },
+  {
+    "file": "393-night-mo-ready.png",
+    "state": "mo-ready",
+    "width": 393,
+    "period": "night",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Tự động",
+      "Về chánh điện"
+    ],
+    "view": "mo"
+  },
+  {
+    "file": "393-night-mo-tapping.png",
+    "state": "mo-tapping",
+    "width": 393,
+    "period": "night",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Tự động",
+      "Về chánh điện"
+    ],
+    "view": "mo"
+  },
+  {
+    "file": "393-night-mo-auto.png",
+    "state": "mo-auto",
+    "width": 393,
+    "period": "night",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Dừng",
+      "Về chánh điện"
+    ],
+    "view": "mo"
+  },
+  {
+    "file": "393-night-mo-108.png",
+    "state": "mo-108",
+    "width": 393,
+    "period": "night",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Tự động",
+      "Về chánh điện"
+    ],
+    "view": "mo"
+  },
+  {
+    "file": "393-night-beads-0.png",
+    "state": "beads-0",
+    "width": 393,
+    "period": "night",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Về chánh điện"
+    ],
+    "view": "beads"
+  },
+  {
+    "file": "393-night-beads-1.png",
+    "state": "beads-1",
+    "width": 393,
+    "period": "night",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Về chánh điện"
+    ],
+    "view": "beads"
+  },
+  {
+    "file": "393-night-beads-27.png",
+    "state": "beads-27",
+    "width": 393,
+    "period": "night",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Về chánh điện"
+    ],
+    "view": "beads"
+  },
+  {
+    "file": "393-night-beads-107.png",
+    "state": "beads-107",
+    "width": 393,
+    "period": "night",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Về chánh điện"
+    ],
+    "view": "beads"
+  },
+  {
+    "file": "393-night-completed.png",
+    "state": "completed",
+    "width": 393,
+    "period": "night",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Lưu khoảnh khắc",
+      "Về chánh điện"
+    ],
+    "view": "beads"
+  },
+  {
+    "file": "393-night-share.png",
+    "state": "share",
+    "width": 393,
+    "period": "night",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Lưu khoảnh khắc",
+      "Về chánh điện",
+      "Đóng",
+      "Chia sẻ",
+      "Tải ảnh"
+    ],
+    "view": "beads"
+  },
+  {
+    "file": "393-night-more.png",
+    "state": "more",
+    "width": 393,
+    "period": "night",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Đóng",
+      "Lập bài vị cho gia đình · Sắp ra mắt"
+    ],
+    "view": "home"
+  },
+  {
+    "file": "393-night-registration.png",
+    "state": "registration",
+    "width": 393,
+    "period": "night",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Đóng",
+      "Nhận thông báo"
+    ],
+    "view": "home"
+  },
+  {
+    "file": "393-night-registration-invalid.png",
+    "state": "registration-invalid",
+    "width": 393,
+    "period": "night",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Đóng",
+      "Nhận thông báo"
+    ],
+    "view": "home"
+  },
+  {
+    "file": "393-night-leave.png",
+    "state": "leave",
+    "width": 393,
+    "period": "night",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Vào chùa"
+    ],
+    "view": "entry"
+  },
+  {
+    "file": "393-night-about.png",
+    "state": "about",
+    "width": 393,
+    "period": "night",
+    "scroll": true,
+    "smallButtons": [],
+    "view": null
+  },
+  {
+    "file": "393-night-privacy.png",
+    "state": "privacy",
+    "width": 393,
+    "period": "night",
+    "scroll": true,
+    "smallButtons": [],
+    "view": null
+  },
+  {
+    "file": "393-night-terms.png",
+    "state": "terms",
+    "width": 393,
+    "period": "night",
+    "scroll": true,
+    "smallButtons": [],
+    "view": null
+  },
+  {
+    "file": "393-night-image-failure.png",
+    "state": "image-failure",
+    "width": 393,
+    "period": "night",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Vào chùa"
+    ],
+    "view": "entry"
+  },
+  {
+    "file": "393-night-loading.png",
+    "state": "loading",
+    "width": 393,
+    "period": "night",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh"
+    ],
+    "view": null
+  },
+  {
+    "file": "375-dawn-entry.png",
+    "state": "entry",
+    "width": 375,
+    "period": "dawn",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Vào chùa"
+    ],
+    "view": "entry"
+  },
+  {
+    "file": "375-dawn-choose.png",
+    "state": "choose",
+    "width": 375,
+    "period": "dawn",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Đổi người",
+      "Bước vào"
+    ],
+    "view": "choose"
+  },
+  {
+    "file": "375-dawn-choose-changed.png",
+    "state": "choose-changed",
+    "width": 375,
+    "period": "dawn",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Đổi người",
+      "Bước vào"
+    ],
+    "view": "choose"
+  },
+  {
+    "file": "375-dawn-home.png",
+    "state": "home",
+    "width": 375,
+    "period": "dawn",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm"
+    ],
+    "view": "home"
+  },
+  {
+    "file": "375-dawn-incense-ready.png",
+    "state": "incense-ready",
+    "width": 375,
+    "period": "dawn",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Thắp ba nén hương",
+      "Về chánh điện"
+    ],
+    "view": "incense"
+  },
+  {
+    "file": "375-dawn-incense-burning.png",
+    "state": "incense-burning",
+    "width": 375,
+    "period": "dawn",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Thắp ba nén hương",
+      "Về chánh điện"
+    ],
+    "view": "incense"
+  },
+  {
+    "file": "375-dawn-incense-done.png",
+    "state": "incense-done",
+    "width": 375,
+    "period": "dawn",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Lưu khoảnh khắc",
+      "Về chánh điện"
+    ],
+    "view": "incense"
+  },
+  {
+    "file": "375-dawn-bow-ready.png",
+    "state": "bow-ready",
+    "width": 375,
+    "period": "dawn",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "3",
+      "27",
+      "54",
+      "108",
+      "Một lần lễ bái",
+      "Tự động chậm",
+      "Về chánh điện"
+    ],
+    "view": "bow"
+  },
+  {
+    "file": "375-dawn-bowing.png",
+    "state": "bowing",
+    "width": 375,
+    "period": "dawn",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "3",
+      "27",
+      "54",
+      "108",
+      "Một lần lễ bái",
+      "Tự động chậm",
+      "Về chánh điện"
+    ],
+    "view": "bow"
+  },
+  {
+    "file": "375-dawn-bow-auto.png",
+    "state": "bow-auto",
+    "width": 375,
+    "period": "dawn",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "3",
+      "27",
+      "54",
+      "108",
+      "Một lần lễ bái",
+      "Dừng tự động",
+      "Về chánh điện"
+    ],
+    "view": "bow"
+  },
+  {
+    "file": "375-dawn-bow-done.png",
+    "state": "bow-done",
+    "width": 375,
+    "period": "dawn",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Lưu khoảnh khắc",
+      "Về chánh điện"
+    ],
+    "view": "bow"
+  },
+  {
+    "file": "375-dawn-sit-choice.png",
+    "state": "sit-choice",
+    "width": 375,
+    "period": "dawn",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "1 phút",
+      "3 phút",
+      "5 phút",
+      "10 phút",
+      "Bắt đầu",
+      "Gõ mõ",
+      "Về chánh điện"
+    ],
+    "view": "sit"
+  },
+  {
+    "file": "375-dawn-sit-running.png",
+    "state": "sit-running",
+    "width": 375,
+    "period": "dawn",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Tạm dừng",
+      "Kết thúc sớm",
+      "Gõ mõ",
+      "Về chánh điện"
+    ],
+    "view": "sit"
+  },
+  {
+    "file": "375-dawn-sit-paused.png",
+    "state": "sit-paused",
+    "width": 375,
+    "period": "dawn",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Tiếp tục",
+      "Kết thúc sớm",
+      "Gõ mõ",
+      "Về chánh điện"
+    ],
+    "view": "sit"
+  },
+  {
+    "file": "375-dawn-sit-done.png",
+    "state": "sit-done",
+    "width": 375,
+    "period": "dawn",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Lưu khoảnh khắc",
+      "Về chánh điện"
+    ],
+    "view": "sit"
+  },
+  {
+    "file": "375-dawn-mo-ready.png",
+    "state": "mo-ready",
+    "width": 375,
+    "period": "dawn",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Tự động",
+      "Về chánh điện"
+    ],
+    "view": "mo"
+  },
+  {
+    "file": "375-dawn-mo-tapping.png",
+    "state": "mo-tapping",
+    "width": 375,
+    "period": "dawn",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Tự động",
+      "Về chánh điện"
+    ],
+    "view": "mo"
+  },
+  {
+    "file": "375-dawn-mo-auto.png",
+    "state": "mo-auto",
+    "width": 375,
+    "period": "dawn",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Dừng",
+      "Về chánh điện"
+    ],
+    "view": "mo"
+  },
+  {
+    "file": "375-dawn-mo-108.png",
+    "state": "mo-108",
+    "width": 375,
+    "period": "dawn",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Tự động",
+      "Về chánh điện"
+    ],
+    "view": "mo"
+  },
+  {
+    "file": "375-dawn-beads-0.png",
+    "state": "beads-0",
+    "width": 375,
+    "period": "dawn",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Về chánh điện"
+    ],
+    "view": "beads"
+  },
+  {
+    "file": "375-dawn-beads-1.png",
+    "state": "beads-1",
+    "width": 375,
+    "period": "dawn",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Về chánh điện"
+    ],
+    "view": "beads"
+  },
+  {
+    "file": "375-dawn-beads-27.png",
+    "state": "beads-27",
+    "width": 375,
+    "period": "dawn",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Về chánh điện"
+    ],
+    "view": "beads"
+  },
+  {
+    "file": "375-dawn-beads-107.png",
+    "state": "beads-107",
+    "width": 375,
+    "period": "dawn",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Về chánh điện"
+    ],
+    "view": "beads"
+  },
+  {
+    "file": "375-dawn-completed.png",
+    "state": "completed",
+    "width": 375,
+    "period": "dawn",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Lưu khoảnh khắc",
+      "Về chánh điện"
+    ],
+    "view": "beads"
+  },
+  {
+    "file": "375-dawn-share.png",
+    "state": "share",
+    "width": 375,
+    "period": "dawn",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Lưu khoảnh khắc",
+      "Về chánh điện",
+      "Đóng",
+      "Chia sẻ",
+      "Tải ảnh"
+    ],
+    "view": "beads"
+  },
+  {
+    "file": "375-dawn-more.png",
+    "state": "more",
+    "width": 375,
+    "period": "dawn",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Đóng",
+      "Lập bài vị cho gia đình · Sắp ra mắt"
+    ],
+    "view": "home"
+  },
+  {
+    "file": "375-dawn-registration.png",
+    "state": "registration",
+    "width": 375,
+    "period": "dawn",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Đóng",
+      "Nhận thông báo"
+    ],
+    "view": "home"
+  },
+  {
+    "file": "375-dawn-registration-invalid.png",
+    "state": "registration-invalid",
+    "width": 375,
+    "period": "dawn",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Đóng",
+      "Nhận thông báo"
+    ],
+    "view": "home"
+  },
+  {
+    "file": "375-dawn-leave.png",
+    "state": "leave",
+    "width": 375,
+    "period": "dawn",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Vào chùa"
+    ],
+    "view": "entry"
+  },
+  {
+    "file": "375-dawn-about.png",
+    "state": "about",
+    "width": 375,
+    "period": "dawn",
+    "scroll": true,
+    "smallButtons": [],
+    "view": null
+  },
+  {
+    "file": "375-dawn-privacy.png",
+    "state": "privacy",
+    "width": 375,
+    "period": "dawn",
+    "scroll": true,
+    "smallButtons": [],
+    "view": null
+  },
+  {
+    "file": "375-dawn-terms.png",
+    "state": "terms",
+    "width": 375,
+    "period": "dawn",
+    "scroll": true,
+    "smallButtons": [],
+    "view": null
+  },
+  {
+    "file": "375-dawn-image-failure.png",
+    "state": "image-failure",
+    "width": 375,
+    "period": "dawn",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Vào chùa"
+    ],
+    "view": "entry"
+  },
+  {
+    "file": "375-dawn-loading.png",
+    "state": "loading",
+    "width": 375,
+    "period": "dawn",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh"
+    ],
+    "view": null
+  },
+  {
+    "file": "375-day-entry.png",
+    "state": "entry",
+    "width": 375,
+    "period": "day",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Vào chùa"
+    ],
+    "view": "entry"
+  },
+  {
+    "file": "375-day-choose.png",
+    "state": "choose",
+    "width": 375,
+    "period": "day",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Đổi người",
+      "Bước vào"
+    ],
+    "view": "choose"
+  },
+  {
+    "file": "375-day-choose-changed.png",
+    "state": "choose-changed",
+    "width": 375,
+    "period": "day",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Đổi người",
+      "Bước vào"
+    ],
+    "view": "choose"
+  },
+  {
+    "file": "375-day-home.png",
+    "state": "home",
+    "width": 375,
+    "period": "day",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm"
+    ],
+    "view": "home"
+  },
+  {
+    "file": "375-day-incense-ready.png",
+    "state": "incense-ready",
+    "width": 375,
+    "period": "day",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Thắp ba nén hương",
+      "Về chánh điện"
+    ],
+    "view": "incense"
+  },
+  {
+    "file": "375-day-incense-burning.png",
+    "state": "incense-burning",
+    "width": 375,
+    "period": "day",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Thắp ba nén hương",
+      "Về chánh điện"
+    ],
+    "view": "incense"
+  },
+  {
+    "file": "375-day-incense-done.png",
+    "state": "incense-done",
+    "width": 375,
+    "period": "day",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Lưu khoảnh khắc",
+      "Về chánh điện"
+    ],
+    "view": "incense"
+  },
+  {
+    "file": "375-day-bow-ready.png",
+    "state": "bow-ready",
+    "width": 375,
+    "period": "day",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "3",
+      "27",
+      "54",
+      "108",
+      "Một lần lễ bái",
+      "Tự động chậm",
+      "Về chánh điện"
+    ],
+    "view": "bow"
+  },
+  {
+    "file": "375-day-bowing.png",
+    "state": "bowing",
+    "width": 375,
+    "period": "day",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "3",
+      "27",
+      "54",
+      "108",
+      "Một lần lễ bái",
+      "Tự động chậm",
+      "Về chánh điện"
+    ],
+    "view": "bow"
+  },
+  {
+    "file": "375-day-bow-auto.png",
+    "state": "bow-auto",
+    "width": 375,
+    "period": "day",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "3",
+      "27",
+      "54",
+      "108",
+      "Một lần lễ bái",
+      "Dừng tự động",
+      "Về chánh điện"
+    ],
+    "view": "bow"
+  },
+  {
+    "file": "375-day-bow-done.png",
+    "state": "bow-done",
+    "width": 375,
+    "period": "day",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Lưu khoảnh khắc",
+      "Về chánh điện"
+    ],
+    "view": "bow"
+  },
+  {
+    "file": "375-day-sit-choice.png",
+    "state": "sit-choice",
+    "width": 375,
+    "period": "day",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "1 phút",
+      "3 phút",
+      "5 phút",
+      "10 phút",
+      "Bắt đầu",
+      "Gõ mõ",
+      "Về chánh điện"
+    ],
+    "view": "sit"
+  },
+  {
+    "file": "375-day-sit-running.png",
+    "state": "sit-running",
+    "width": 375,
+    "period": "day",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Tạm dừng",
+      "Kết thúc sớm",
+      "Gõ mõ",
+      "Về chánh điện"
+    ],
+    "view": "sit"
+  },
+  {
+    "file": "375-day-sit-paused.png",
+    "state": "sit-paused",
+    "width": 375,
+    "period": "day",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Tiếp tục",
+      "Kết thúc sớm",
+      "Gõ mõ",
+      "Về chánh điện"
+    ],
+    "view": "sit"
+  },
+  {
+    "file": "375-day-sit-done.png",
+    "state": "sit-done",
+    "width": 375,
+    "period": "day",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Lưu khoảnh khắc",
+      "Về chánh điện"
+    ],
+    "view": "sit"
+  },
+  {
+    "file": "375-day-mo-ready.png",
+    "state": "mo-ready",
+    "width": 375,
+    "period": "day",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Tự động",
+      "Về chánh điện"
+    ],
+    "view": "mo"
+  },
+  {
+    "file": "375-day-mo-tapping.png",
+    "state": "mo-tapping",
+    "width": 375,
+    "period": "day",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Tự động",
+      "Về chánh điện"
+    ],
+    "view": "mo"
+  },
+  {
+    "file": "375-day-mo-auto.png",
+    "state": "mo-auto",
+    "width": 375,
+    "period": "day",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Dừng",
+      "Về chánh điện"
+    ],
+    "view": "mo"
+  },
+  {
+    "file": "375-day-mo-108.png",
+    "state": "mo-108",
+    "width": 375,
+    "period": "day",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Tự động",
+      "Về chánh điện"
+    ],
+    "view": "mo"
+  },
+  {
+    "file": "375-day-beads-0.png",
+    "state": "beads-0",
+    "width": 375,
+    "period": "day",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Về chánh điện"
+    ],
+    "view": "beads"
+  },
+  {
+    "file": "375-day-beads-1.png",
+    "state": "beads-1",
+    "width": 375,
+    "period": "day",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Về chánh điện"
+    ],
+    "view": "beads"
+  },
+  {
+    "file": "375-day-beads-27.png",
+    "state": "beads-27",
+    "width": 375,
+    "period": "day",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Về chánh điện"
+    ],
+    "view": "beads"
+  },
+  {
+    "file": "375-day-beads-107.png",
+    "state": "beads-107",
+    "width": 375,
+    "period": "day",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Về chánh điện"
+    ],
+    "view": "beads"
+  },
+  {
+    "file": "375-day-completed.png",
+    "state": "completed",
+    "width": 375,
+    "period": "day",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Lưu khoảnh khắc",
+      "Về chánh điện"
+    ],
+    "view": "beads"
+  },
+  {
+    "file": "375-day-share.png",
+    "state": "share",
+    "width": 375,
+    "period": "day",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Lưu khoảnh khắc",
+      "Về chánh điện",
+      "Đóng",
+      "Chia sẻ",
+      "Tải ảnh"
+    ],
+    "view": "beads"
+  },
+  {
+    "file": "375-day-more.png",
+    "state": "more",
+    "width": 375,
+    "period": "day",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Đóng",
+      "Lập bài vị cho gia đình · Sắp ra mắt"
+    ],
+    "view": "home"
+  },
+  {
+    "file": "375-day-registration.png",
+    "state": "registration",
+    "width": 375,
+    "period": "day",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Đóng",
+      "Nhận thông báo"
+    ],
+    "view": "home"
+  },
+  {
+    "file": "375-day-registration-invalid.png",
+    "state": "registration-invalid",
+    "width": 375,
+    "period": "day",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Đóng",
+      "Nhận thông báo"
+    ],
+    "view": "home"
+  },
+  {
+    "file": "375-day-leave.png",
+    "state": "leave",
+    "width": 375,
+    "period": "day",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Vào chùa"
+    ],
+    "view": "entry"
+  },
+  {
+    "file": "375-day-about.png",
+    "state": "about",
+    "width": 375,
+    "period": "day",
+    "scroll": true,
+    "smallButtons": [],
+    "view": null
+  },
+  {
+    "file": "375-day-privacy.png",
+    "state": "privacy",
+    "width": 375,
+    "period": "day",
+    "scroll": true,
+    "smallButtons": [],
+    "view": null
+  },
+  {
+    "file": "375-day-terms.png",
+    "state": "terms",
+    "width": 375,
+    "period": "day",
+    "scroll": true,
+    "smallButtons": [],
+    "view": null
+  },
+  {
+    "file": "375-day-image-failure.png",
+    "state": "image-failure",
+    "width": 375,
+    "period": "day",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Vào chùa"
+    ],
+    "view": "entry"
+  },
+  {
+    "file": "375-day-loading.png",
+    "state": "loading",
+    "width": 375,
+    "period": "day",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh"
+    ],
+    "view": null
+  },
+  {
+    "file": "375-dusk-entry.png",
+    "state": "entry",
+    "width": 375,
+    "period": "dusk",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Vào chùa"
+    ],
+    "view": "entry"
+  },
+  {
+    "file": "375-dusk-choose.png",
+    "state": "choose",
+    "width": 375,
+    "period": "dusk",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Đổi người",
+      "Bước vào"
+    ],
+    "view": "choose"
+  },
+  {
+    "file": "375-dusk-choose-changed.png",
+    "state": "choose-changed",
+    "width": 375,
+    "period": "dusk",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Đổi người",
+      "Bước vào"
+    ],
+    "view": "choose"
+  },
+  {
+    "file": "375-dusk-home.png",
+    "state": "home",
+    "width": 375,
+    "period": "dusk",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm"
+    ],
+    "view": "home"
+  },
+  {
+    "file": "375-dusk-incense-ready.png",
+    "state": "incense-ready",
+    "width": 375,
+    "period": "dusk",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Thắp ba nén hương",
+      "Về chánh điện"
+    ],
+    "view": "incense"
+  },
+  {
+    "file": "375-dusk-incense-burning.png",
+    "state": "incense-burning",
+    "width": 375,
+    "period": "dusk",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Thắp ba nén hương",
+      "Về chánh điện"
+    ],
+    "view": "incense"
+  },
+  {
+    "file": "375-dusk-incense-done.png",
+    "state": "incense-done",
+    "width": 375,
+    "period": "dusk",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Lưu khoảnh khắc",
+      "Về chánh điện"
+    ],
+    "view": "incense"
+  },
+  {
+    "file": "375-dusk-bow-ready.png",
+    "state": "bow-ready",
+    "width": 375,
+    "period": "dusk",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "3",
+      "27",
+      "54",
+      "108",
+      "Một lần lễ bái",
+      "Tự động chậm",
+      "Về chánh điện"
+    ],
+    "view": "bow"
+  },
+  {
+    "file": "375-dusk-bowing.png",
+    "state": "bowing",
+    "width": 375,
+    "period": "dusk",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "3",
+      "27",
+      "54",
+      "108",
+      "Một lần lễ bái",
+      "Tự động chậm",
+      "Về chánh điện"
+    ],
+    "view": "bow"
+  },
+  {
+    "file": "375-dusk-bow-auto.png",
+    "state": "bow-auto",
+    "width": 375,
+    "period": "dusk",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "3",
+      "27",
+      "54",
+      "108",
+      "Một lần lễ bái",
+      "Dừng tự động",
+      "Về chánh điện"
+    ],
+    "view": "bow"
+  },
+  {
+    "file": "375-dusk-bow-done.png",
+    "state": "bow-done",
+    "width": 375,
+    "period": "dusk",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Lưu khoảnh khắc",
+      "Về chánh điện"
+    ],
+    "view": "bow"
+  },
+  {
+    "file": "375-dusk-sit-choice.png",
+    "state": "sit-choice",
+    "width": 375,
+    "period": "dusk",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "1 phút",
+      "3 phút",
+      "5 phút",
+      "10 phút",
+      "Bắt đầu",
+      "Gõ mõ",
+      "Về chánh điện"
+    ],
+    "view": "sit"
+  },
+  {
+    "file": "375-dusk-sit-running.png",
+    "state": "sit-running",
+    "width": 375,
+    "period": "dusk",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Tạm dừng",
+      "Kết thúc sớm",
+      "Gõ mõ",
+      "Về chánh điện"
+    ],
+    "view": "sit"
+  },
+  {
+    "file": "375-dusk-sit-paused.png",
+    "state": "sit-paused",
+    "width": 375,
+    "period": "dusk",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Tiếp tục",
+      "Kết thúc sớm",
+      "Gõ mõ",
+      "Về chánh điện"
+    ],
+    "view": "sit"
+  },
+  {
+    "file": "375-dusk-sit-done.png",
+    "state": "sit-done",
+    "width": 375,
+    "period": "dusk",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Lưu khoảnh khắc",
+      "Về chánh điện"
+    ],
+    "view": "sit"
+  },
+  {
+    "file": "375-dusk-mo-ready.png",
+    "state": "mo-ready",
+    "width": 375,
+    "period": "dusk",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Tự động",
+      "Về chánh điện"
+    ],
+    "view": "mo"
+  },
+  {
+    "file": "375-dusk-mo-tapping.png",
+    "state": "mo-tapping",
+    "width": 375,
+    "period": "dusk",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Tự động",
+      "Về chánh điện"
+    ],
+    "view": "mo"
+  },
+  {
+    "file": "375-dusk-mo-auto.png",
+    "state": "mo-auto",
+    "width": 375,
+    "period": "dusk",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Dừng",
+      "Về chánh điện"
+    ],
+    "view": "mo"
+  },
+  {
+    "file": "375-dusk-mo-108.png",
+    "state": "mo-108",
+    "width": 375,
+    "period": "dusk",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Tự động",
+      "Về chánh điện"
+    ],
+    "view": "mo"
+  },
+  {
+    "file": "375-dusk-beads-0.png",
+    "state": "beads-0",
+    "width": 375,
+    "period": "dusk",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Về chánh điện"
+    ],
+    "view": "beads"
+  },
+  {
+    "file": "375-dusk-beads-1.png",
+    "state": "beads-1",
+    "width": 375,
+    "period": "dusk",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Về chánh điện"
+    ],
+    "view": "beads"
+  },
+  {
+    "file": "375-dusk-beads-27.png",
+    "state": "beads-27",
+    "width": 375,
+    "period": "dusk",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Về chánh điện"
+    ],
+    "view": "beads"
+  },
+  {
+    "file": "375-dusk-beads-107.png",
+    "state": "beads-107",
+    "width": 375,
+    "period": "dusk",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Về chánh điện"
+    ],
+    "view": "beads"
+  },
+  {
+    "file": "375-dusk-completed.png",
+    "state": "completed",
+    "width": 375,
+    "period": "dusk",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Lưu khoảnh khắc",
+      "Về chánh điện"
+    ],
+    "view": "beads"
+  },
+  {
+    "file": "375-dusk-share.png",
+    "state": "share",
+    "width": 375,
+    "period": "dusk",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Lưu khoảnh khắc",
+      "Về chánh điện",
+      "Đóng",
+      "Chia sẻ",
+      "Tải ảnh"
+    ],
+    "view": "beads"
+  },
+  {
+    "file": "375-dusk-more.png",
+    "state": "more",
+    "width": 375,
+    "period": "dusk",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Đóng",
+      "Lập bài vị cho gia đình · Sắp ra mắt"
+    ],
+    "view": "home"
+  },
+  {
+    "file": "375-dusk-registration.png",
+    "state": "registration",
+    "width": 375,
+    "period": "dusk",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Đóng",
+      "Nhận thông báo"
+    ],
+    "view": "home"
+  },
+  {
+    "file": "375-dusk-registration-invalid.png",
+    "state": "registration-invalid",
+    "width": 375,
+    "period": "dusk",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Đóng",
+      "Nhận thông báo"
+    ],
+    "view": "home"
+  },
+  {
+    "file": "375-dusk-leave.png",
+    "state": "leave",
+    "width": 375,
+    "period": "dusk",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Vào chùa"
+    ],
+    "view": "entry"
+  },
+  {
+    "file": "375-dusk-about.png",
+    "state": "about",
+    "width": 375,
+    "period": "dusk",
+    "scroll": true,
+    "smallButtons": [],
+    "view": null
+  },
+  {
+    "file": "375-dusk-privacy.png",
+    "state": "privacy",
+    "width": 375,
+    "period": "dusk",
+    "scroll": true,
+    "smallButtons": [],
+    "view": null
+  },
+  {
+    "file": "375-dusk-terms.png",
+    "state": "terms",
+    "width": 375,
+    "period": "dusk",
+    "scroll": true,
+    "smallButtons": [],
+    "view": null
+  },
+  {
+    "file": "375-dusk-image-failure.png",
+    "state": "image-failure",
+    "width": 375,
+    "period": "dusk",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Vào chùa"
+    ],
+    "view": "entry"
+  },
+  {
+    "file": "375-dusk-loading.png",
+    "state": "loading",
+    "width": 375,
+    "period": "dusk",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh"
+    ],
+    "view": null
+  },
+  {
+    "file": "375-night-entry.png",
+    "state": "entry",
+    "width": 375,
+    "period": "night",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Vào chùa"
+    ],
+    "view": "entry"
+  },
+  {
+    "file": "375-night-choose.png",
+    "state": "choose",
+    "width": 375,
+    "period": "night",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Đổi người",
+      "Bước vào"
+    ],
+    "view": "choose"
+  },
+  {
+    "file": "375-night-choose-changed.png",
+    "state": "choose-changed",
+    "width": 375,
+    "period": "night",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Đổi người",
+      "Bước vào"
+    ],
+    "view": "choose"
+  },
+  {
+    "file": "375-night-home.png",
+    "state": "home",
+    "width": 375,
+    "period": "night",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm"
+    ],
+    "view": "home"
+  },
+  {
+    "file": "375-night-incense-ready.png",
+    "state": "incense-ready",
+    "width": 375,
+    "period": "night",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Thắp ba nén hương",
+      "Về chánh điện"
+    ],
+    "view": "incense"
+  },
+  {
+    "file": "375-night-incense-burning.png",
+    "state": "incense-burning",
+    "width": 375,
+    "period": "night",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Thắp ba nén hương",
+      "Về chánh điện"
+    ],
+    "view": "incense"
+  },
+  {
+    "file": "375-night-incense-done.png",
+    "state": "incense-done",
+    "width": 375,
+    "period": "night",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Lưu khoảnh khắc",
+      "Về chánh điện"
+    ],
+    "view": "incense"
+  },
+  {
+    "file": "375-night-bow-ready.png",
+    "state": "bow-ready",
+    "width": 375,
+    "period": "night",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "3",
+      "27",
+      "54",
+      "108",
+      "Một lần lễ bái",
+      "Tự động chậm",
+      "Về chánh điện"
+    ],
+    "view": "bow"
+  },
+  {
+    "file": "375-night-bowing.png",
+    "state": "bowing",
+    "width": 375,
+    "period": "night",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "3",
+      "27",
+      "54",
+      "108",
+      "Một lần lễ bái",
+      "Tự động chậm",
+      "Về chánh điện"
+    ],
+    "view": "bow"
+  },
+  {
+    "file": "375-night-bow-auto.png",
+    "state": "bow-auto",
+    "width": 375,
+    "period": "night",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "3",
+      "27",
+      "54",
+      "108",
+      "Một lần lễ bái",
+      "Dừng tự động",
+      "Về chánh điện"
+    ],
+    "view": "bow"
+  },
+  {
+    "file": "375-night-bow-done.png",
+    "state": "bow-done",
+    "width": 375,
+    "period": "night",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Lưu khoảnh khắc",
+      "Về chánh điện"
+    ],
+    "view": "bow"
+  },
+  {
+    "file": "375-night-sit-choice.png",
+    "state": "sit-choice",
+    "width": 375,
+    "period": "night",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "1 phút",
+      "3 phút",
+      "5 phút",
+      "10 phút",
+      "Bắt đầu",
+      "Gõ mõ",
+      "Về chánh điện"
+    ],
+    "view": "sit"
+  },
+  {
+    "file": "375-night-sit-running.png",
+    "state": "sit-running",
+    "width": 375,
+    "period": "night",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Tạm dừng",
+      "Kết thúc sớm",
+      "Gõ mõ",
+      "Về chánh điện"
+    ],
+    "view": "sit"
+  },
+  {
+    "file": "375-night-sit-paused.png",
+    "state": "sit-paused",
+    "width": 375,
+    "period": "night",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Tiếp tục",
+      "Kết thúc sớm",
+      "Gõ mõ",
+      "Về chánh điện"
+    ],
+    "view": "sit"
+  },
+  {
+    "file": "375-night-sit-done.png",
+    "state": "sit-done",
+    "width": 375,
+    "period": "night",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Lưu khoảnh khắc",
+      "Về chánh điện"
+    ],
+    "view": "sit"
+  },
+  {
+    "file": "375-night-mo-ready.png",
+    "state": "mo-ready",
+    "width": 375,
+    "period": "night",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Tự động",
+      "Về chánh điện"
+    ],
+    "view": "mo"
+  },
+  {
+    "file": "375-night-mo-tapping.png",
+    "state": "mo-tapping",
+    "width": 375,
+    "period": "night",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Tự động",
+      "Về chánh điện"
+    ],
+    "view": "mo"
+  },
+  {
+    "file": "375-night-mo-auto.png",
+    "state": "mo-auto",
+    "width": 375,
+    "period": "night",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Dừng",
+      "Về chánh điện"
+    ],
+    "view": "mo"
+  },
+  {
+    "file": "375-night-mo-108.png",
+    "state": "mo-108",
+    "width": 375,
+    "period": "night",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Tự động",
+      "Về chánh điện"
+    ],
+    "view": "mo"
+  },
+  {
+    "file": "375-night-beads-0.png",
+    "state": "beads-0",
+    "width": 375,
+    "period": "night",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Về chánh điện"
+    ],
+    "view": "beads"
+  },
+  {
+    "file": "375-night-beads-1.png",
+    "state": "beads-1",
+    "width": 375,
+    "period": "night",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Về chánh điện"
+    ],
+    "view": "beads"
+  },
+  {
+    "file": "375-night-beads-27.png",
+    "state": "beads-27",
+    "width": 375,
+    "period": "night",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Về chánh điện"
+    ],
+    "view": "beads"
+  },
+  {
+    "file": "375-night-beads-107.png",
+    "state": "beads-107",
+    "width": 375,
+    "period": "night",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Về chánh điện"
+    ],
+    "view": "beads"
+  },
+  {
+    "file": "375-night-completed.png",
+    "state": "completed",
+    "width": 375,
+    "period": "night",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Lưu khoảnh khắc",
+      "Về chánh điện"
+    ],
+    "view": "beads"
+  },
+  {
+    "file": "375-night-share.png",
+    "state": "share",
+    "width": 375,
+    "period": "night",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Lưu khoảnh khắc",
+      "Về chánh điện",
+      "Đóng",
+      "Chia sẻ",
+      "Tải ảnh"
+    ],
+    "view": "beads"
+  },
+  {
+    "file": "375-night-more.png",
+    "state": "more",
+    "width": 375,
+    "period": "night",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Đóng",
+      "Lập bài vị cho gia đình · Sắp ra mắt"
+    ],
+    "view": "home"
+  },
+  {
+    "file": "375-night-registration.png",
+    "state": "registration",
+    "width": 375,
+    "period": "night",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Đóng",
+      "Nhận thông báo"
+    ],
+    "view": "home"
+  },
+  {
+    "file": "375-night-registration-invalid.png",
+    "state": "registration-invalid",
+    "width": 375,
+    "period": "night",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Thêm",
+      "Đóng",
+      "Nhận thông báo"
+    ],
+    "view": "home"
+  },
+  {
+    "file": "375-night-leave.png",
+    "state": "leave",
+    "width": 375,
+    "period": "night",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Vào chùa"
+    ],
+    "view": "entry"
+  },
+  {
+    "file": "375-night-about.png",
+    "state": "about",
+    "width": 375,
+    "period": "night",
+    "scroll": true,
+    "smallButtons": [],
+    "view": null
+  },
+  {
+    "file": "375-night-privacy.png",
+    "state": "privacy",
+    "width": 375,
+    "period": "night",
+    "scroll": true,
+    "smallButtons": [],
+    "view": null
+  },
+  {
+    "file": "375-night-terms.png",
+    "state": "terms",
+    "width": 375,
+    "period": "night",
+    "scroll": true,
+    "smallButtons": [],
+    "view": null
+  },
+  {
+    "file": "375-night-image-failure.png",
+    "state": "image-failure",
+    "width": 375,
+    "period": "night",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh",
+      "Vào chùa"
+    ],
+    "view": "entry"
+  },
+  {
+    "file": "375-night-loading.png",
+    "state": "loading",
+    "width": 375,
+    "period": "night",
+    "scroll": false,
+    "smallButtons": [
+      "Bật âm thanh"
+    ],
+    "view": null
+  }
+]

@@ -1,3 +1,4 @@
+import {mountBeads} from './beads.js';
 import {createTempleAudio} from './audio.js';
 import {assetURL,loadImage,placeholder} from './resources.js';
 import {copy,reflections} from './i18n.js';
@@ -7,6 +8,7 @@ const $=s=>document.querySelector(s);
 const reduced=matchMedia('(prefers-reduced-motion: reduce)');
 const state={view:'entry',lang:'vi',visitor:null,period:'day',layout:null,busy:false,activity:null,result:null,bowTarget:3,sitMinutes:3,wood:0,bead:0};
 const images=new Map(),tinted=new Map();
+let beadCleanup=null,pendingView=null,choiceToken=0,choiceFront=0;
 let transitionId=0,drawFrame=0,lastFocus=null,shareBlob=null,shareURL=null;
 const canvas=$('#scene'),ctx=canvas.getContext('2d');
 const t=(key,params={})=>Object.entries(params).reduce((s,[k,v])=>s.replaceAll('{'+k+'}',String(v)),copy[key]?.[state.lang]??key);
@@ -23,7 +25,7 @@ const actionIcons={
 const read=(key,fallback)=>{try{return JSON.parse(localStorage.getItem(key))??fallback;}catch{return fallback;}};
 const write=(key,value)=>{try{localStorage.setItem(key,JSON.stringify(value));}catch{/* Private browsing still permits a complete visit. */}};
 
-export function periodNow(date=new Date(),periods=state.layout.periods){
+export function periodNow(date=new Date(),periods=state.layout?.periods??{dawn:"05:00-07:59",day:"08:00-16:59",dusk:"17:00-18:59",night:"19:00-04:59"}){
   const minute=date.getHours()*60+date.getMinutes();
   for(const [name,range] of Object.entries(periods)){
     const [start,end]=range.split('-').map(x=>{const [h,m]=x.split(':').map(Number);return h*60+m;});
@@ -43,14 +45,15 @@ function image(name){
   if(!images.has(name))images.set(name,loadImage(name,t('imageUnavailable')));
   return images.get(name);
 }
-function sceneName(view=state.view){return ['incense','bow'].includes(view)?'hall-side':['sit','beads'].includes(view)?'courtyard':'hall-front';}
+function sceneName(view=state.view){return ['incense','bow'].includes(view)?'hall-side':['sit','beads','choose'].includes(view)?'courtyard':'hall-front';}
 function sceneFile(view=state.view,period=state.period){return `scene-vn-${sceneName(view)}-${period}.webp`;}
 function poses(view){return view==='bow'?['bow-1','bow-2','bow-3']:view==='incense'?['bow-1']:view==='sit'?['sit']:view==='beads'?['beads']:[];}
 async function prepare(view,period){
+  const visitor=state.visitor;
   const scene=await image(sceneFile(view,period));
   const art={};
   for(const pose of (view==='mo'?['mo','mo-mallet']:poses(view))){
-    const name=view==='mo'?`${pose}.webp`:`visitor-${state.visitor}-${pose}.webp`,key=name+period;
+    const name=view==='mo'?`${pose}.webp`:`visitor-${visitor}-${pose}.webp`,key=name+period;
     if(!tinted.has(key)){
       const im=await image(name),c=document.createElement('canvas');c.width=im.width;c.height=im.height;
       const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(im,0,0);
@@ -60,11 +63,11 @@ async function prepare(view,period){
     }
     art[pose]=tinted.get(key);
   }
-  return {scene,art};
+  return {scene,art,view};
 }
 let renderAssets=null;
 function paint(now=Date.now()){
-  if(!renderAssets)return;
+  if(!renderAssets||renderAssets.view!==state.view)return;
   ctx.clearRect(0,0,941,1672);ctx.drawImage(renderAssets.scene,0,0,941,1672);
   const available=poses(state.view);if(!available.length)return;
   let pose=available[0],previous=null,mix=1;
@@ -74,6 +77,7 @@ function paint(now=Date.now()){
     pose=sequence[i];previous=i>0?sequence[i-1]:null;mix=reduced.matches?1:Math.min(1,(elapsed-i*800)/280);
   }
   const pos=placement(state.layout,state.visitor,pose),s=state.layout;
+  if(sceneName()==='courtyard'){const box=$('.stage').getBoundingClientRect(),space=$('#controls').getBoundingClientRect().top-$('.scene-heading').getBoundingClientRect().bottom-48;const factor=Math.max(.3,Math.min(.72,space/(pos.h*(parseFloat($('.stage').style.getPropertyValue('--scene-width'))||box.width)/941))); pos.x=s.courtyard.x+(pos.x-s.courtyard.x)*factor;pos.y=s.courtyard.bottom+(pos.y-s.courtyard.bottom)*factor;pos.w*=factor;pos.h*=factor;}
   ctx.save();ctx.fillStyle='rgba(34,27,19,.10)';ctx.filter='blur(7px)';ctx.beginPath();
   if(sceneName()==='courtyard')ctx.ellipse(s.courtyard.x,s.courtyard.bottom-3,s.courtyard.cushionWidth*.45,12,0,0,Math.PI*2);
   else ctx.ellipse(s['hall-side'].foot[0]-65,s['hall-side'].foot[1]-2,70,7,0,0,Math.PI*2);
@@ -87,19 +91,59 @@ function fx(){
   const f=state.layout.fx_hall_side,lit=state.view==='incense'&&state.activity?.running,bowing=state.view==='bow';
   $('#effects').innerHTML=`${bowing?`<ellipse class="halo-pulse" cx="${f.halo_center[0]}" cy="${f.halo_center[1]}" rx="92" ry="112" fill="#ffe2a6" opacity=".07"/>`:''}${lit?[-10,0,10].map((dx,i)=>`<circle class="fire" cx="${f.incense_tips[0]+dx}" cy="${f.incense_tips[1]}" r="4"/><path class="smoke" style="animation-delay:-${i*2}s" d="M${f.incense_tips[0]+dx} ${f.incense_tips[1]-5} c-18 -40 30 -65 3 -100 s23 -65 8 -95"/>`).join(''):''}`;
 }
-function stopActivity(){stopWoodAuto();state.activity=null;cancelAnimationFrame(drawFrame);audio.ambient('none');}
-async function navigate(view,{keepResult=false}={}){
-  const token=++transitionId;stopActivity();state.busy=true;$('#loading').hidden=false;$('#loading').textContent=t('loading');
-  const period=periodNow();let revealed=false;
-  const reveal=()=>{if(token!==transitionId)return;if(!revealed){state.view=view;state.period=period;if(!keepResult)state.result=null;if(view==='mo')woodSession=0;if(view==='beads')state.bead=0;if(view==='sit')state.wood=0;revealed=true;}state.busy=false;$('#loading').hidden=true;render();paint();$('#app').setAttribute('aria-busy','false');};
-  const timer=setTimeout(()=>{if(token!==transitionId)return;renderAssets={scene:placeholder(sceneFile(view,period),t('imageLoading')),art:Object.fromEntries((view==='mo'?['mo','mo-mallet']:poses(view)).map(p=>[p,placeholder(p,t('imageLoading'))]))};reveal();},3000);
-  try{
-    const assets=await prepare(view,period);
-    if(token!==transitionId)return;
-    renderAssets=assets;reveal();animation();if(!reduced.matches)canvas.animate([{opacity:0},{opacity:1}],{duration:200});$('#heading').focus({preventScroll:true});
-  }catch{if(token===transitionId){state.busy=false;$('#notice').textContent=t('loadError');$('#controls').insertAdjacentHTML('beforeend',button('retry','retry'));}}
-  finally{clearTimeout(timer);if(token===transitionId){$('#loading').hidden=true;$('#app').setAttribute('aria-busy','false');}}
+function stopActivity(){stopWoodAuto();beadCleanup?.();beadCleanup=null;state.activity=null;cancelAnimationFrame(drawFrame);audio.ambient('none',1,2);}
+function prefetch(view){
+ const visitor=state.visitor,period=state.period;
+ const run=()=>{if(state.visitor!==visitor||state.period!==period||state.view!==view)return;
+  const names=['bow-1','bow-2','bow-3','sit','beads'].map(p=>`visitor-${visitor}-${p}.webp`);
+  if(view==='home')names.push(...['incense','sit','mo'].map(v=>sceneFile(v,period)),'mo.webp','mo-mallet.webp');
+  if(view==='choose')names.push(...state.layout.v1_scope.visitors.map(id=>`visitor-${id}-choose-v1.webp`));
+  names.forEach(name=>void image(name));
+ };
+ if(window.requestIdleCallback)requestIdleCallback(run,{timeout:1500});else setTimeout(run,1000);
 }
+async function navigate(view,{keepResult=false}={}){
+ if(!state.layout){await layoutReady;return navigate(view,{keepResult});}
+ if(pendingView===view)return;
+ const token=++transitionId;pendingView=view;stopActivity();state.busy=true;
+ const old=renderAssets?canvas.cloneNode():null;
+ if(old){old.id='scene-old';old.className='scene-surface';old.setAttribute('aria-hidden','true');old.style.cssText=`width:${canvas.getBoundingClientRect().width}px;top:${canvas.offsetTop}px`;old.getContext('2d').drawImage(canvas,0,0);canvas.before(old);}
+ state.view=view;state.period=periodNow();if(!keepResult)state.result=null;
+ if(view==='mo')woodSession=0;if(view==='beads')state.bead=0;if(view==='sit')state.wood=0;
+ render();$('#app').setAttribute('aria-busy','true');canvas.style.opacity='0';
+ const timer=setTimeout(()=>{if(token===transitionId){$('#loading').hidden=false;$('#loading').textContent=t('loading');}},400);
+ try{
+  const assets=await prepare(view,state.period);if(token!==transitionId)return;
+  renderAssets=assets;state.busy=false;render();paint();animation();
+  canvas.style.opacity='1';const duration=reduced.matches?150:300;
+  canvas.animate([{opacity:0,filter:reduced.matches?'none':'blur(4px)'},{opacity:1,filter:'none'}],{duration});
+  for(const e of [$('.scene-heading'),$('#controls')])e.animate([{opacity:.5},{opacity:1}],{duration:reduced.matches?150:220,delay:reduced.matches?0:80});
+  if(old){const a=old.animate([{opacity:1},{opacity:0}],{duration});a.onfinish=()=>old.remove();}
+  $('.stage').classList.add('scene-ready');
+  if(assets.scene.placeholder){$('#notice').textContent=t('imageUnavailable');$('#controls').insertAdjacentHTML('beforeend',button('retry','retry'));}
+  if(['home','choose'].includes(view))prefetch(view);
+  if(view==='beads'&&audio.enabled)void audio.load('bead-v1').catch(()=>{});
+ }catch{if(token===transitionId){$('#notice').textContent=t('loadError');$('#controls').insertAdjacentHTML('beforeend',button('retry','retry'));canvas.style.opacity='1';}}
+ finally{clearTimeout(timer);if(token===transitionId){pendingView=null;state.busy=false;$('#loading').hidden=true;$('#app').setAttribute('aria-busy','false');}else old?.remove();}
+}
+async function showChoice(){
+ const token=++choiceToken,visitor=state.visitor,im=await image(`visitor-${visitor}-choose-v1.webp`);
+ if(token!==choiceToken||state.view!=='choose')return;if(im.placeholder){$('#notice').textContent=t('imageUnavailable');if(!$('[data-action=retry-choice]'))$('#controls').insertAdjacentHTML('beforeend',button('retry','retry-choice'));return;}
+ const nodes=[...document.querySelectorAll('.choice-image')],slot=nodes[1-choiceFront],old=nodes[choiceFront];if(!slot)return;
+ const next=new Image();next.className='choice-image';next.alt=t('choose');next.src=assetURL(`processed-v1/img/visitor-${visitor}-choose-v1.webp`);
+ try{await next.decode();}catch{if(token===choiceToken)$('#notice').textContent=t('imageUnavailable');return;}
+ if(token!==choiceToken||state.view!=='choose')return;
+ // Decode off-DOM; keep the last good image fully opaque underneath each transition.
+ old.style.transition='none';old.style.opacity=old.naturalWidth?'1':'0';old.style.zIndex='1';next.style.opacity='0';next.style.zIndex='2';slot.replaceWith(next);
+ next.getBoundingClientRect();next.style.opacity='1';choiceFront=1-choiceFront;
+ setTimeout(()=>{if(token===choiceToken)old.style.opacity='0';},200);
+ document.querySelectorAll('.choice-dots i').forEach((e,i)=>e.classList.toggle('selected',state.layout.v1_scope.visitors[i]===visitor));
+ prefetch('choose');fitScene();
+}
+function changeVisitor(delta=1){const ids=state.layout.v1_scope.visitors;state.visitor=ids[(ids.indexOf(state.visitor)+delta+ids.length)%ids.length];write('ct-visitor',state.visitor);void showChoice();}
+function feedback(kind){if(!haptic(kind))try{navigator.vibrate?.(kind==='heavy'?[50,35,70]:kind==='medium'?25:10);}catch{}}
+function bounce(e){if(e&&!reduced.matches)e.animate([{transform:'translateY(0)'},{transform:'translateY(-3px)',offset:.4},{transform:'translateY(0)'}],{duration:180});}
+
 function render(){
   const focused=document.activeElement,action=focused?.dataset?.action,target=focused?.dataset?.target,minutes=focused?.dataset?.minutes;
   document.documentElement.lang=state.lang;document.body.dataset.period=state.period;document.body.dataset.view=state.view;
@@ -114,36 +158,41 @@ function render(){
   const heading=state.view==='entry'?'entryTitle':state.view==='choose'?'choose':state.view==='home'?'home':state.view;
   $('#heading').textContent=t(heading);$('#subtitle').textContent=t(state.view==='home'?'homeNote':state.view==='entry'||state.view==='choose'?'tagline':`${state.view}Note`);
   canvas.setAttribute('aria-label',t(sceneName()==='hall-front'?'sceneFront':sceneName()==='hall-side'?'sceneSide':'sceneCourt'));
-  $('#notice').textContent='';$('#stage-note').textContent='';$('#entry-overlay').innerHTML='';
+  $('#notice').textContent='';$('#stage-note').textContent='';if(state.view!=='choose')$('#entry-overlay').innerHTML='';
   if(state.view==='entry'){
     $('#controls').innerHTML=button('enter','enter','primary');
   }else if(state.view==='choose'){
-    $('#controls').innerHTML=`<div class="visitor-choice"><canvas class="preview" width="600" height="900" role="img" aria-label="${escapeHTML(t('choose'))}"></canvas>${button('change','change')}${button('continue','continue','primary')}</div>`;
-    const preview=$('.preview'),name=`visitor-${state.visitor}-sit.webp`,x=preview.getContext('2d');x.drawImage(placeholder(name,t('imageLoading')),0,0,600,900);image(name).then(im=>{if(preview.isConnected){x.clearRect(0,0,600,900);x.drawImage(im,0,0,600,900);if(im.placeholder)preview.setAttribute('aria-label',t('imageUnavailable'));}});
+    $('#controls').innerHTML=`<div class="choice-dots" aria-hidden="true">${state.layout.v1_scope.visitors.map(()=>'<i></i>').join('')}</div>${button('continue','continue','primary')}`;
+    if(!$('.choice-image')){
+     $('#entry-overlay').innerHTML=`<div class="choice-person"><img class="choice-image" alt="${escapeHTML(t('choose'))}"><img class="choice-image" alt="" aria-hidden="true"></div><button class="choice-arrow previous" data-action="previous" aria-label="${escapeHTML(t('change'))}">‹</button><button class="choice-arrow next" data-action="change" aria-label="${escapeHTML(t('change'))}">›</button>`;
+     let x=null;$('#entry-overlay').onpointerdown=e=>{x=e.clientX;};$('#entry-overlay').onpointerup=e=>{if(x!==null&&Math.abs(e.clientX-x)>35)changeVisitor(e.clientX<x?1:-1);x=null;};
+    }void showChoice();
   }else if(state.view==='home'){
     $('#controls').innerHTML=`<nav class="action-nav">${['incense','bow','sit','mo','beads','leave'].map(key=>`<button data-action="${key}"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">${actionIcons[key]}</svg>${t(key)}</button>`).join('')}</nav>`;
+  }else if(state.view==='leave'){
+    $('#controls').innerHTML=`<p class="leave-message">${t('goodbye')}</p>${button('reenter','reenter','primary')}`;
   }else if(state.result){
     $('#controls').innerHTML=`<div class="completion"><p>${reflections[state.result.reflection][state.lang]}</p><div class="row">${button('share','share','primary')}${button('back','home')}</div></div>`;
-    $('#stage-note').textContent=t('completed');
+    $('#subtitle').textContent=t('completed');
   }else if(state.view==='incense'){
-    $('#controls').innerHTML=`<div class="stack"><div id="incense-status" class="section-label"></div><div class="progress"><span id="incense-progress" style="width:0%"></span></div><div class="row">${button('light','light','primary',state.activity?'disabled':'')}${button('back','home')}</div></div>`;
+    $('#controls').innerHTML=`<div class="stack"><div id="incense-status" class="section-label"></div><div class="incense-stick" aria-hidden="true"><span id="incense-progress"></span></div><div class="row">${button('light','light','primary',state.activity?'disabled':'')}${button('back','home')}</div></div>`;
   }else if(state.view==='bow'){
     const a=state.activity;
-    $('#controls').innerHTML=`<div class="stack"><p class="section-label">${t('bowTarget')}</p><div class="choice-row">${[3,27,54,108].map(n=>`<button data-target="${n}" aria-pressed="${state.bowTarget===n}" ${a?.bowStart!=null?'disabled':''}>${n}</button>`).join('')}</div><p class="count" id="bow-count">${a?.count??0} / ${state.bowTarget}</p><div class="row">${button('bowOnce','bow-once','primary',a?.bowStart!=null?'disabled':'')}${button(a?.auto?'stopAuto':'auto','auto','',`aria-pressed="${!!a?.auto}"`)}</div>${button('back','home','text-button')}</div>`;
+    $('#controls').innerHTML=`<div class="stack"><p class="section-label">${t('bowTarget')}</p><div class="choice-row">${[3,27,54,108].map(n=>`<button data-target="${n}" aria-pressed="${state.bowTarget===n}" ${a?.bowStart!=null?'disabled':''}>${n}</button>`).join('')}</div><p class="count" id="bow-count">${a?.count??0} / ${state.bowTarget}</p><div class="row">${button('bowOnce','bow-once','primary',a?.bowStart!=null?'disabled':'')}${button(a?.auto?'stopAuto':'auto','auto','',`aria-pressed="${!!a?.auto}"`)}</div>${button('back','home','back-button')}</div>`;
   }else if(state.view==='sit'){
     const a=state.activity;
-    $('#controls').innerHTML=`<div class="stack"><p class="timer" id="timer" role="timer">${formatTime(a?remaining(a):state.sitMinutes*60000)}</p>${!a?`<div class="choice-row" aria-label="${t('duration')}">${[1,3,5,10].map(n=>`<button data-minutes="${n}" aria-pressed="${state.sitMinutes===n}">${n} ${t('minutes')}</button>`).join('')}</div>`:''}<div class="row">${!a?button('start','sit-start','primary'):button(a.running?'pause':'resume','pause','primary')}${a?button('finish','finish'):''}${button('wood','wood')}</div><p class="section-label" id="wood-count">${t('woodCount')}: ${state.wood}</p><div class="row"><label class="ambient-label" for="ambient">${t('ambient')}</label><select id="ambient" class="ambient">${['none','forest','rain'].map(k=>`<option value="${k}" ${audio.ambientKind===k?'selected':''}>${t(k)}</option>`).join('')}</select></div>${button('back','home','text-button')}</div>`;
+    $('#controls').innerHTML=`<div class="stack"><p class="timer" id="timer" role="timer">${formatTime(a?remaining(a):state.sitMinutes*60000)}</p>${!a?`<div class="choice-row" aria-label="${t('duration')}">${[1,3,5,10].map(n=>`<button data-minutes="${n}" aria-pressed="${state.sitMinutes===n}">${n} ${t('minutes')}</button>`).join('')}</div>`:''}<div class="row">${!a?button('start','sit-start','primary'):button(a.running?'pause':'resume','pause','primary')}${a?button('finish','finish'):''}${a?button('wood','wood'):''}</div><p class="section-label" id="wood-count" ${!a?'hidden':''}>${t('woodCount')}: ${state.wood}</p><div class="row"><label class="ambient-label" for="ambient">${t('ambient')}</label><div class="choice-row ambient-options">${['none','forest','rain'].map(k=>`<button data-ambient="${k}" aria-pressed="${audio.ambientKind===k}">${t(k)}</button>`).join('')}</div></div>${button('back','home','back-button')}</div>`;
   }else if(state.view==='mo'){
     $('#controls').innerHTML=`<div class="stack"><p id="daily-wood" class="count">${t('dailyWood',{count:dailyWood()})}</p><p id="wood-message" role="status">${woodSession>=108?t('wood108'):''}</p><div class="row">${button(woodAuto?'woodStop':'woodAuto','wood-auto','primary',`aria-pressed="${!!woodAuto}"`)}${button('back','home')}</div></div>`;
   }else if(state.view==='beads'){
-    $('#controls').innerHTML=`<button class="bead-control" id="bead-control" data-action="bead" aria-label="${t('beadAction')}"><svg viewBox="0 0 220 180" aria-hidden="true">${Array.from({length:108},(_,i)=>{const a=i/108*Math.PI*2-Math.PI/2;return `<circle class="bead-dot ${i===state.bead%108?'current':''}" cx="${110+98*Math.cos(a)}" cy="${90+77*Math.sin(a)}" r="2.6"/>`;}).join('')}</svg><span>${state.bead} / 108</span></button>${button('back','home','text-button')}`;
-    bindSwipe();
+    $('#controls').innerHTML=`<div class="beads-area"><button class="bead-control" id="bead-control" data-action="bead" aria-label="${escapeHTML(t('beadAction'))}"><span class="bead-thread" aria-hidden="true"></span><span class="thumb-point" aria-hidden="true"></span><span class="bead-track" aria-hidden="true">${Array.from({length:9},()=>'<i class="strand-bead"></i>').join('')}</span><span id="bead-count" role="status" aria-live="polite">${state.bead} / 108</span></button></div><p class="bead-hint">${t('beadHint')}</p>${button('back','home','back-button')}`;
+    beadCleanup?.();beadCleanup=mountBeads($('#bead-control'),{step:bead,count:state.bead,reduced:reduced.matches});
   }
-  $('#more-toggle').hidden=state.view==='entry';$('#more-toggle').setAttribute('aria-label',t('more'));
-  $('#wood-prop').hidden=state.view!=='mo';$('#mallet-prop').hidden=state.view!=='mo';
+  $('#more-toggle').hidden=false;$('#more-toggle').setAttribute('aria-label',t('more'));
+  $('#wood-prop').hidden=state.view!=='mo'||state.busy;$('#mallet-prop').hidden=state.view!=='mo'||state.busy;
   $('#wood-prop').setAttribute('aria-label',t('wood'));
-  if(state.view==='mo')for(const [id,key] of [['wood-art','mo'],['mallet-prop','mo-mallet']]){const c=$('#'+id),im=renderAssets.art[key];c.width=im.width;c.height=im.height;c.getContext('2d').drawImage(im,0,0);}
-  fx();updateCounters();fitScene();
+  if(state.view==='mo'&&renderAssets?.art.mo&&!state.busy)for(const [id,key] of [['wood-art','mo'],['mallet-prop','mo-mallet']]){const c=$('#'+id),im=renderAssets.art[key];c.width=im.width;c.height=im.height;c.getContext('2d').drawImage(im,0,0);}
+  if(state.layout)fx();updateCounters();fitScene();
   if(focused&&!focused.isConnected){const replacement=action?document.querySelector(`[data-action="${action}"]`):target?document.querySelector(`[data-target="${target}"]`):minutes?document.querySelector(`[data-minutes="${minutes}"]`):null;if(replacement&&!replacement.disabled)replacement.focus({preventScroll:true});}
 }
 function fitScene(){
@@ -151,14 +200,16 @@ function fitScene(){
   const stage=$('.stage'),heading=$('.scene-heading').getBoundingClientRect(),controls=$('#controls').getBoundingClientRect(),box=stage.getBoundingClientRect();
   // Cover would crop the Buddha and visitor on opposite edges; preserve their shared region.
   const top=heading.bottom-box.top+8,bottom=controls.top-box.top-8;
-  const region=sceneName()==='hall-side'?[300,1280]:sceneName()==='courtyard'?[420,1400]:[300,1400];
-  const fullScene=['entry','choose','home'].includes(state.view);
-  const scale=fullScene?Math.max(box.width/941,box.height/1672):box.width/941;
-  const sceneTop=fullScene?(box.height-1672*scale)/2:state.view==='mo'?0:Math.min(top-region[0]*scale,bottom-region[1]*scale);
+  const region=sceneName()==='hall-side'?[300,1280]:sceneName()==='courtyard'?[420,state.layout.courtyard.bottom+(state.view==='beads'?360:42)]:[300,1400];
+  const fullScene=['entry','choose','home','leave','mo'].includes(state.view);
+  const scale=fullScene||sceneName()==='courtyard'?Math.max(box.width/941,box.height/1672):box.width/941;
+  let sceneTop=fullScene?(box.height-1672*scale)/2:state.view==='mo'?0:Math.min(top-region[0]*scale,bottom-region[1]*scale);
+  if(sceneName()==='courtyard'&&!fullScene)sceneTop=Math.max(sceneTop,bottom+8-1672*scale);
   stage.style.setProperty('--scene-width',941*scale+'px');
   stage.style.setProperty('--scene-top',sceneTop+'px');
   stage.style.setProperty('--scene-image','none');
-  if(state.view==='mo'){const width=box.width*.32,art=renderAssets.art.mo,height=width*art.height/art.width;$('#wood-prop').style.cssText=`width:${width}px;height:${height}px;left:${(box.width-width)/2}px;top:${controls.top-box.top-16-height}px`;$('#mallet-prop').style.cssText=`width:${width*.49}px;height:auto;left:${(box.width+width)/2-8}px;top:${controls.top-box.top-16-height-8}px`;}
+  if(state.view==='choose'){const overlay=$('#entry-overlay'),pos=placement(state.layout,state.visitor,'sit');overlay.style.top='0';overlay.style.bottom='0';const person=$('.choice-person');if(person)person.style.cssText=`inset:auto;left:${(box.width-941*scale)/2+pos.x*scale-20}px;top:${sceneTop+pos.y*scale}px;width:${pos.w*scale}px;height:${pos.h*scale}px;max-width:none;margin:0`;}
+  if(state.view==='mo'&&renderAssets.art.mo){const width=box.width*.40,art=renderAssets.art.mo,height=width*art.height/art.width;$('#wood-prop').style.cssText=`width:${width}px;height:${height}px;left:${(box.width-width)/2}px;top:${controls.top-box.top-16-height}px`;$('#mallet-prop').style.cssText=`width:${width*.49}px;height:auto;left:${(box.width+width)/2-8}px;top:${controls.top-box.top-16-height-8}px`;}
 }
 new ResizeObserver(fitScene).observe($('#app'));
 new ResizeObserver(fitScene).observe($('#controls'));
@@ -166,7 +217,7 @@ function formatTime(ms){const seconds=Math.ceil(Math.max(0,ms)/1000);return `${M
 function remaining(a){return a.running?Math.max(0,a.deadline-Date.now()):a.left;}
 function updateCounters(){
   const a=state.activity;
-  if(state.view==='incense'&&a){const left=remaining(a);if($('#incense-progress'))$('#incense-progress').style.width=`${100*(1-left/60000)}%`;if($('#incense-status'))$('#incense-status').textContent=`${t('burning')} · ${formatTime(left)}`;}
+  if(state.view==='incense'&&a){const left=remaining(a);if($('#incense-progress'))$('#incense-progress').style.transform=`scaleY(${left/60000})`;if($('#incense-status'))$('#incense-status').textContent=`${t('burning')} · ${formatTime(left)}`;}
   if(state.view==='sit'&&a&&$('#timer'))$('#timer').textContent=formatTime(remaining(a));
 }
 function complete(kind,elapsed=0){
@@ -175,7 +226,7 @@ function complete(kind,elapsed=0){
   state.result={kind,elapsed,count:kind==='bow'?old?.count:kind==='beads'?108:1,reflection:Math.floor(Math.random()*reflections.length)};
   const stored=read('ct-totals',{}),count=Number.isFinite(stored?.count)&&stored.count>=0?stored.count:0,seconds=Number.isFinite(stored?.seconds)&&stored.seconds>=0?stored.seconds:0;
   write('ct-totals',{count:count+1,seconds:seconds+Math.round(elapsed/1000)});
-  stopActivity();audio.strike('bell');render();paint();
+  stopActivity();audio.strike('bell');if(kind==='incense')feedback('medium');render();paint();
 }
 function bowOnce(){
   if(state.result||state.activity?.bowStart!=null)return;
@@ -185,15 +236,11 @@ function bowOnce(){
 function bead(){
   if(state.result||state.bead>=108)return;
   state.activity??={kind:'beads',started:Date.now()};state.bead++;
-  if(!haptic(state.bead===108?'heavy':'light'))try{navigator.vibrate?.(state.bead===108?[50,35,70]:10);}catch{/* Optional haptics. */}
-  if(state.bead===108)complete('beads',Date.now()-state.activity.started);else render();
-}
-function bindSwipe(){
-  const b=$('#bead-control');let start=null,moved=false;
-  b.addEventListener('pointerdown',e=>{start={x:e.clientX,y:e.clientY};moved=false;b.setPointerCapture(e.pointerId);});
-  b.addEventListener('pointerup',e=>{if(start&&start.y-e.clientY>25&&Math.abs(start.x-e.clientX)<70){moved=true;bead();}start=null;});
-  b.addEventListener('pointercancel',()=>{start=null;});
-  b.addEventListener('click',e=>{if(moved){e.preventDefault();e.stopPropagation();moved=false;}});
+  const marker=state.bead%27===0;
+  feedback(state.bead===108?'heavy':marker?'medium':'light');
+  if(!audio.strike('bead-v1',1,.97+Math.random()*.06))audio.strike('wood',.35,1.6);
+  if(state.bead===108)complete('beads',Date.now()-state.activity.started);
+  else {if(marker)audio.strike('keisu',.25);$('#bead-count').textContent=`${state.bead} / 108`;bounce($('#bead-count'));}
 }
 
 export const audio=createTempleAudio({onChange:updateSoundUI,onError:()=>showSoundHint('soundUnavailable',6000),volume:()=>Number($('#volume').value)/100});
@@ -210,7 +257,7 @@ async function enableSound(automatic=false){
  const began=Date.now();const pending=audio.enable();
  if(automatic)showSoundHint('tapMute');
  else setTimeout(()=>{if(audio.enabled&&audio.lastPlayed<began)showSoundHint('silentTip',6000);},2000);
- if(await pending){audio.strike('bell',.6);if(state.view==='sit'&&state.activity?.running)audio.ambient(audio.ambientKind);}
+ if(await pending){audio.strike('bell',.6);if(state.view==='sit'&&state.activity?.running)audio.ambient(audio.ambientKind);if(state.view==='incense'&&state.activity?.running)audio.ambient('forest',.6,2);if(state.view==='beads')void audio.load('bead-v1').catch(()=>{});}
 }
 function localDay(){const d=new Date();return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;}
 function dailyWood(){const stored=read('ct-wood',{});if(stored.day===localDay()&&Number.isSafeInteger(stored.count)&&stored.count>=0)return stored.count;return 0;}
@@ -218,14 +265,14 @@ function stopWoodAuto(){if(woodAuto){clearInterval(woodAuto);woodAuto=null;}}
 function tapWood(){
  const count=dailyWood()+1;write('ct-wood',{day:localDay(),count});audio.strike('wood');
  if(state.view==='mo'){
-  woodSession++;$('#daily-wood').textContent=t('dailyWood',{count});if(woodSession===108)$('#wood-message').textContent=t('wood108');
+  woodSession++;$('#daily-wood').textContent=t('dailyWood',{count});if(woodSession===108){$('#wood-message').textContent=t('wood108');audio.strike('bell',.5);}bounce($('#daily-wood'));
   if(!haptic('light'))try{navigator.vibrate?.(10);}catch{}
   if(!reduced.matches){
    const mallet=$('#mallet-prop');mallet.getAnimations().forEach(a=>a.cancel());mallet.animate([{transform:'translate(0,0) rotate(0deg)'},{transform:'translate(-24px,25px) rotate(-12deg)',offset:.5},{transform:'translate(0,0) rotate(0deg)'}],{duration:140});
    const art=$('#wood-art');art.getAnimations().forEach(a=>a.cancel());art.animate([{transform:'scale(1)'},{transform:'scale(.97)',offset:.5},{transform:'scale(1)'}],{duration:140});
    const ring=document.createElement('span');ring.className='wood-ripple';$('#wood-prop').append(ring);ring.animate([{transform:'scale(.3)',opacity:.25},{transform:'scale(1.2)',opacity:0}],{duration:650}).onfinish=()=>ring.remove();
   }
- }else if(state.view==='sit'){state.wood++;$('#wood-count').textContent=`${t('woodCount')}: ${state.wood}`;}
+ }else if(state.view==='sit'){feedback('light');state.wood++;$('#wood-count').textContent=`${t('woodCount')}: ${state.wood}`;}
 }
 
 function openModal(title,body){lastFocus=document.activeElement;$('#modal-title').textContent=t(title);$('#modal-body').innerHTML=body;$('#modal').showModal();telegramBack(true);$('#close-modal').focus();}
@@ -284,17 +331,21 @@ async function shareFile(){
 document.addEventListener('click',async e=>{
   const b=e.target.closest('button');if(!b||b.disabled)return;
   if(b.dataset.target){state.bowTarget=Number(b.dataset.target);stopActivity();render();paint();return;}
+  if(b.dataset.ambient){audio.ambientKind=b.dataset.ambient;if(state.activity?.running)void audio.ambient(b.dataset.ambient);render();return;}
   if(b.dataset.minutes){state.sitMinutes=Number(b.dataset.minutes);render();return;}
-  const action=b.dataset.action;if(!action)return;if(state.busy)return;
+  const action=b.dataset.action;if(!action)return;
   switch(action){
     case 'more':openMore();break;
     case 'enter':if(!read('ct-muted',false)&&!audio.enabled)void enableSound(true);await navigate('choose');break;
-    case 'change':state.visitor=state.layout.v1_scope.visitors[(state.layout.v1_scope.visitors.indexOf(state.visitor)+1)%6];write('ct-visitor',state.visitor);render();break;
+    case 'change':changeVisitor();break;
+    case 'previous':changeVisitor(-1);break;
     case 'continue':write('ct-visitor',state.visitor);await navigate('home');break;
     case 'incense':case 'bow':case 'sit':case 'beads':case 'mo':case 'home':await navigate(action);break;
-    case 'leave':await navigate('entry');$('#notice').textContent=t('goodbye');break;
-    case 'retry':await navigate(state.view);break;
-    case 'light':if(!state.activity){state.activity={kind:'incense',running:true,deadline:Date.now()+60000,started:Date.now()};render();}break;
+    case 'leave':audio.strike('bell',.5);await navigate('leave');break;
+    case 'reenter':await navigate('entry');break;
+    case 'retry-choice':images.delete(`visitor-${state.visitor}-choose-v1.webp`);b.remove();void showChoice();break;
+    case 'retry':images.clear();tinted.clear();await navigate(state.view);break;
+    case 'light':if(!state.activity){state.activity={kind:'incense',running:true,deadline:Date.now()+60000,started:Date.now()};audio.strike('keisu',.6);feedback('soft');void audio.ambient('forest',.6,2);render();}break;
     case 'bow-once':bowOnce();break;
     case 'auto':if(!state.activity){bowOnce();state.activity.auto=true;}else{state.activity.auto=!state.activity.auto;if(state.activity.auto&&state.activity.bowStart==null)bowOnce();}render();break;
     case 'sit-start':state.activity={kind:'sit',running:true,deadline:Date.now()+state.sitMinutes*60000,left:state.sitMinutes*60000,total:state.sitMinutes*60000};audio.ambient(audio.ambientKind);render();animation();break;
@@ -302,7 +353,7 @@ document.addEventListener('click',async e=>{
     case 'finish':if(state.activity)complete('sit',state.activity.total-remaining(state.activity));break;
     case 'wood':tapWood();break;
     case 'wood-auto':if(woodAuto)stopWoodAuto();else if(!document.hidden)woodAuto=setInterval(tapWood,1000);render();break;
-    case 'bead':bead();break;
+    case 'bead':break;
     case 'share':await makeShare();break;
     case 'share-file':await shareFile();break;
     case 'download':download();break;
@@ -314,22 +365,24 @@ $('#sound-toggle').addEventListener('click',()=>{if(audio.enabled){write('ct-mut
 $('#volume').addEventListener('input',()=>audio.volume());
 $('#controls').addEventListener('pointerdown',e=>{const action=e.target.closest('[data-action]')?.dataset.action;if(action==='enter')void image(`visitor-${state.visitor}-sit.webp`);else if(['incense','bow','sit','beads','mo'].includes(action))void image(sceneFile(action,periodNow()));});
 document.addEventListener('click',()=>{void audio.wake();},true);
-document.addEventListener('change',e=>{if(e.target.id==='ambient'){audio.ambientKind=e.target.value;if(state.activity?.running)audio.ambient(e.target.value);};});
 reduced.addEventListener('change',()=>{animation();fx();});
-document.addEventListener('visibilitychange',async()=>{if(document.hidden){stopWoodAuto();audio.stopBackground();cancelAnimationFrame(drawFrame);if(state.view==='mo')render();}else{await audio.wake();tick();animation();if(state.view==='sit'&&state.activity?.running)audio.ambient(audio.ambientKind);}});
+document.addEventListener('visibilitychange',async()=>{if(document.hidden){stopWoodAuto();audio.stopBackground();cancelAnimationFrame(drawFrame);if(state.view==='mo')render();}else{await audio.wake();tick();animation();if(state.view==='sit'&&state.activity?.running)audio.ambient(audio.ambientKind);if(state.view==='incense'&&state.activity?.running)audio.ambient('forest',.6,2);if(state.view==='beads')void audio.load('bead-v1').catch(()=>{});}});
 let periodUpdating=false;
 async function tick(){
   if(!state.layout||state.busy)return;
   const a=state.activity,now=Date.now();
-  if(a?.kind==='bow'&&a.bowStart!=null&&now-a.bowStart>=4000){a.bowStart=null;a.count++;haptic('soft');audio.strike('keisu');if(a.count>=state.bowTarget)complete('bow',a.count*4000);else{render();paint();if(a.auto)bowOnce();}}
+  if(a?.kind==='bow'&&a.bowStart!=null&&now-a.bowStart>=4000){a.bowStart=null;a.count++;feedback('soft');audio.strike('keisu');if(a.count>=state.bowTarget)complete('bow',a.count*4000);else{render();paint();if(a.auto)bowOnce();}}
   else if(a?.running&&remaining(a)<=0){if(a.kind==='incense')complete('incense',60000);if(a.kind==='sit')complete('sit',a.total);}
   updateCounters();if(state.view==='mo'&&$('#daily-wood'))$('#daily-wood').textContent=t('dailyWood',{count:dailyWood()});
   const period=periodNow();if(period!==state.period&&!periodUpdating){periodUpdating=true;const token=transitionId,view=state.view;try{const assets=await prepare(view,period);if(token===transitionId){state.period=period;renderAssets=assets;render();paint();}}catch{/* Keep the last fully loaded scene on transient failures. */}finally{periodUpdating=false;}}
 }
 setInterval(tick,200);
+let resolveLayout;const layoutReady=new Promise(resolve=>resolveLayout=resolve);
 async function init(){
+  state.period=periodNow();document.body.dataset.period=state.period;$('#eyebrow').textContent=t(state.period);$('#subtitle').textContent=t('tagline');updateSoundUI();
   await initTelegram(()=>{if($('#more-menu').open)$('#more-menu').close();else if($('#modal').open)closeModal();else navigate(state.view==='choose'?'entry':'home');},openMore);
-  try{const response=await fetch(assetURL('processed-v1/layout-v1.json'),{credentials:'omit'});if(!response.ok)throw new Error('layout');state.layout=await response.json();const saved=read('ct-visitor',null);state.visitor=state.layout.v1_scope.visitors.includes(saved)?saved:state.layout.v1_scope.visitors[Math.floor(Math.random()*6)];await navigate('entry');}
+  try{const response=await fetch(assetURL('processed-v1/layout-v1.json'),{credentials:'omit'});if(!response.ok)throw new Error('layout');state.layout=await response.json();const saved=read('ct-visitor',null);state.visitor=state.layout.v1_scope.visitors.includes(saved)?saved:state.layout.v1_scope.visitors[Math.floor(Math.random()*6)];state.period=periodNow();resolveLayout();if(!transitionId)await navigate('entry');}
   catch{$('#loading').hidden=true;$('#notice').textContent=t('loadError');$('#controls').innerHTML=button('retry','reload');$('#controls').onclick=e=>{if(e.target.dataset.action==='reload')location.reload();};$('#app').setAttribute('aria-busy','false');}
 }
+performance.mark('ct-interactive');
 init();

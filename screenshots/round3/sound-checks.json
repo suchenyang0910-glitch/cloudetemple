@@ -1,0 +1,19 @@
+{
+  "passed": true,
+  "checks": [
+    "incense keisu 0.6",
+    "incense fade-out",
+    "27 bead recordings",
+    "spacer keisu 0.25",
+    "leave bell 0.5",
+    "mute new actions",
+    "diagnostic lazy load",
+    "diagnostic 200 decode clock",
+    "diagnostic HTML audio",
+    "diagnostic resume",
+    "diagnostic 401",
+    "diagnostic invalid audio"
+  ],
+  "diagnosticSHA256": "34062fbe3f4931e7f88c459298cb4d55037dc7045155bbee37a69532a32c0bbf",
+  "limitation": "Browser playback chain only, not audible iPhone verification"
+}

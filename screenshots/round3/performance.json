@@ -1,0 +1,66 @@
+{
+  "engine": "WebKit 26.4 Windows, not physical Safari",
+  "network": "1.6Mbps shared download, 150ms response delay, cold cache; external fonts blocked equally; excludes TLS/DNS/authentication/Cloudflare latency",
+  "records": [
+    {
+      "variant": "before",
+      "run": 1,
+      "interactiveMs": 1771,
+      "firstSceneMs": 1776,
+      "bytes": 164805,
+      "audioRequests": 0
+    },
+    {
+      "variant": "before",
+      "run": 2,
+      "interactiveMs": 1720,
+      "firstSceneMs": 1726,
+      "bytes": 164805,
+      "audioRequests": 0
+    },
+    {
+      "variant": "before",
+      "run": 3,
+      "interactiveMs": 1704,
+      "firstSceneMs": 1708,
+      "bytes": 164805,
+      "audioRequests": 0
+    },
+    {
+      "variant": "after",
+      "run": 1,
+      "interactiveMs": 944,
+      "firstSceneMs": 1807,
+      "bytes": 178931,
+      "audioRequests": 0
+    },
+    {
+      "variant": "after",
+      "run": 2,
+      "interactiveMs": 949,
+      "firstSceneMs": 1780,
+      "bytes": 178931,
+      "audioRequests": 0
+    },
+    {
+      "variant": "after",
+      "run": 3,
+      "interactiveMs": 944,
+      "firstSceneMs": 1861,
+      "bytes": 178931,
+      "audioRequests": 0
+    }
+  ],
+  "medians": {
+    "before": {
+      "interactiveMs": 1720,
+      "firstSceneMs": 1726,
+      "bytes": 164805
+    },
+    "after": {
+      "interactiveMs": 944,
+      "firstSceneMs": 1807,
+      "bytes": 178931
+    }
+  }
+}

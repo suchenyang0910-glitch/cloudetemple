@@ -1,7 +1,7 @@
 // Decoded recordings only. No context, request or source exists until an explicit enable gesture.
 import {assetURL} from './resources.js';
 export function createTempleAudio({onChange=()=>{},onError=()=>{},volume=()=>.25}={}){
- const a={enabled:false,loading:false,context:null,master:null,ambientKind:'none',background:null,buffers:new Map(),requests:new Map(),voices:new Set(),slots:Array(6).fill(0),lastPlayed:0,epoch:0,controller:null,observe:()=>{},native:new Map(),
+ const a={enabled:false,loading:false,context:null,master:null,ambientKind:'none',background:null,buffers:new Map(),requests:new Map(),voices:new Set(),slots:Array(6).fill(0),lastPlayed:0,epoch:0,controller:null,observe:()=>{},native:new Map(),ambientVersion:0,fading:new Set(),backgroundLevel:null,
   async enable(){
    if(this.enabled)return !this.loading;
    const epoch=++this.epoch;this.enabled=true;this.loading=true;this.controller=new AbortController();onChange();
@@ -33,29 +33,37 @@ export function createTempleAudio({onChange=()=>{},onError=()=>{},volume=()=>.25
    this.requests.set(name,request);return request;
   },
   volume(){if(this.master)this.master.gain.value=this.enabled?Math.max(0,Math.min(1,volume())):0;},
-  mute(){this.epoch++;this.enabled=false;this.loading=false;this.controller?.abort();this.requests.clear();this.volume();this.stopBackground();for(const el of this.native.values())el.pause();for(const source of this.voices){try{source.stop();}catch{}}this.voices.clear();this.slots.fill(0);onChange();},
+  mute(){this.epoch++;this.enabled=false;this.loading=false;this.controller?.abort();this.requests.clear();this.volume();this.stopBackground();for(const source of this.fading){try{source.stop();}catch{}}this.fading.clear();for(const el of this.native.values())el.pause();for(const source of this.voices){try{source.stop();}catch{}}this.voices.clear();this.slots.fill(0);onChange();},
   playNative(name,gain=1){
    if(!this.enabled||document.hidden)return false;const el=this.native.get(name);if(!el)return false;
    // Emergency fallback reuses one element per sound; rapid overlaps still use Web Audio.
    el.volume=Math.max(0,Math.min(1,volume()*gain));el.currentTime=0;
    const epoch=this.epoch;el.play().then(()=>{if(!this.enabled||epoch!==this.epoch){el.pause();return;}this.lastPlayed=Date.now();this.observe({event:'native',name,result:'playing',gain:el.volume});}).catch(e=>{this.observe({event:'native',name,result:e.name+': '+e.message});onError();});return true;
   },
-  strike(kind,gain=1){
+  strike(kind,gain=1,rate=1){
    if(!this.enabled||document.hidden)return false;
    const name=kind==='wood'?'mo':kind;
    if(this.context?.state!=='running'){void this.wake();if(navigator.userActivation?.isActive)return this.playNative(name,gain);return false;}
    const buffer=this.buffers.get(name);if(!buffer)return false;
-   const source=this.context.createBufferSource(),level=this.context.createGain();source.buffer=buffer;level.gain.value=gain;source.connect(level);level.connect(this.master);
+   const source=this.context.createBufferSource(),level=this.context.createGain();source.buffer=buffer;source.playbackRate.value=rate;level.gain.value=gain;source.connect(level);level.connect(this.master);
    const now=this.context.currentTime;let when=now;
-   if(name==='mo'){const i=this.slots.indexOf(Math.min(...this.slots));when=Math.max(now,this.slots[i]);this.slots[i]=when+buffer.duration;}
+   if(name==='mo'){const i=this.slots.indexOf(Math.min(...this.slots));when=Math.max(now,this.slots[i]);this.slots[i]=when+buffer.duration/rate;}
    this.voices.add(source);source.onended=()=>{this.voices.delete(source);source.disconnect();level.disconnect();};source.start(when);this.lastPlayed=Date.now();this.observe({event:'play',name,when,gain,master:this.master.gain.value});return true;
   },
-  stopBackground(){if(this.background){this.background.stop();this.background.disconnect();this.background=null;}},
-  async ambient(kind){
-   this.ambientKind=kind;this.stopBackground();const epoch=this.epoch;
+  stopBackground(fade=0){
+   this.ambientVersion++;
+   const source=this.background,level=this.backgroundLevel;this.background=null;this.backgroundLevel=null;
+   if(!source)return;
+   if(fade&&this.enabled&&level){const now=this.context.currentTime;level.gain.cancelScheduledValues(now);level.gain.setValueAtTime(level.gain.value,now);level.gain.linearRampToValueAtTime(0,now+fade);this.fading.add(source);source.stop(now+fade);}
+   else {try{source.stop();}catch{}source.disconnect();level?.disconnect();}
+  },
+  async ambient(kind,gain=1,fade=0){
+   this.ambientKind=kind;this.stopBackground(fade);const epoch=this.epoch,version=this.ambientVersion;
    if(!this.enabled||kind==='none'||document.hidden)return;
-   try{const buffer=await this.load(kind==='forest'?'ambient-courtyard':'ambient-rain');if(!this.enabled||this.epoch!==epoch||this.ambientKind!==kind||document.hidden)return;
-    this.stopBackground();const source=this.context.createBufferSource();source.buffer=buffer;source.loop=true;source.loopEnd=Math.min(60,buffer.duration);source.connect(this.master);source.start();this.background=source;this.lastPlayed=Date.now();
+   try{const buffer=await this.load(kind==='forest'?'ambient-courtyard':'ambient-rain');if(!this.enabled||this.epoch!==epoch||this.ambientVersion!==version||this.ambientKind!==kind||document.hidden)return;
+    const source=this.context.createBufferSource(),level=this.context.createGain();source.buffer=buffer;source.loop=true;source.loopEnd=Math.min(60,buffer.duration);source.connect(level);level.connect(this.master);
+    level.gain.setValueAtTime(fade?0:gain,this.context.currentTime);if(fade)level.gain.linearRampToValueAtTime(gain,this.context.currentTime+fade);
+    source.onended=()=>{source.disconnect();level.disconnect();this.fading.delete(source);};source.start();this.background=source;this.backgroundLevel=level;this.lastPlayed=Date.now();
    }catch(e){if(e.name!=='AbortError'&&this.enabled)onError();}
   },
   async wake(){if(this.enabled&&this.context&&this.context.state!=='running'){try{await this.context.resume();}catch(e){this.observe({event:'resume',error:e.name+': '+e.message});onError();}}}

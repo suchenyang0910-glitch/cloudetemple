@@ -1,6 +1,7 @@
 // Every entry, including English, is pending Vietnamese native-speaker review.
 const entry=(vi,en)=>({vi,en,review:'待越南母语者审核'});
 export const copy={
+reenter:entry('Vào lại','Enter again'),leaveNote:entry('Cảm ơn bạn đã ghé qua.','Thank you for stopping by.'),beadHint:entry('Chạm hoặc vuốt xuống để lần một hạt.','Tap or swipe down for one bead.'),
 imageLoading:entry('Đang tải hình ảnh…','Loading image…'),imageUnavailable:entry('Chưa tải được hình ảnh','Image unavailable'),
 mo:entry('Gõ mõ','Wooden fish'),moNote:entry('Từng nhịp, chậm rãi.','One gentle tap at a time.'),
 forest:entry('Núi rừng','Mountain forest'),
@@ -18,7 +19,7 @@ incenseNote:entry('Một phút, chỉ ở đây.','One minute, just here.'),ligh
 bowNote:entry('Chậm rãi, theo nhịp của bạn.','Slowly, at your own pace.'),bowOnce:entry('Một lần lễ bái','Bow once'),auto:entry('Tự động chậm','Slow auto bow'),stopAuto:entry('Dừng tự động','Stop auto bow'),bowTarget:entry('Số lần lễ bái','Number of bows'),
 sitNote:entry('Không cần làm gì thêm.','Nothing more to do.'),minutes:entry('phút','min'),duration:entry('Thời gian ngồi yên','Time to sit'),start:entry('Bắt đầu','Begin'),pause:entry('Tạm dừng','Pause'),resume:entry('Tiếp tục','Resume'),finish:entry('Kết thúc sớm','Finish early'),wood:entry('Gõ mõ','Tap woodblock'),woodCount:entry('Nhịp mõ','Woodblock taps'),
 ambient:entry('Âm nền','Background sound'),none:entry('Yên lặng','Silence'),wind:entry('Gió','Wind'),rain:entry('Mưa','Rain'),
-beadsNote:entry('Chạm hoặc vuốt lên để lần một hạt.','Tap or swipe up for one bead.'),beadAction:entry('Lần một hạt','Move one bead'),
+beadsNote:entry('Chạm hoặc vuốt xuống để lần một hạt.','Tap or swipe down for one bead.'),beadAction:entry('Lần một hạt','Move one bead'),
 completed:entry('Một khoảng lặng đã qua.','A quiet moment, completed.'),share:entry('Lưu khoảnh khắc','Keep this moment'),shareTitle:entry('Một chút bình yên mang theo','A little quiet to take with you'),shareAction:entry('Chia sẻ','Share'),download:entry('Tải ảnh','Download image'),shareDone:entry('Ảnh đã sẵn sàng.','Your image is ready.'),shareError:entry('Chưa thể chia sẻ. Bạn vẫn có thể tải ảnh.','Sharing is unavailable. You can still download the image.'),
 shareIncense:entry('Hôm nay, tôi đã dành một phút thắp hương.','Today, I took a minute to light incense.'),shareBow:entry('Hôm nay, tôi đã dành thời gian lễ bái.','Today, I made time to bow.'),shareSit:entry('Hôm nay, tôi đã ngồi yên {minutes}\u00a0phút.','Today, I sat quietly for {minutes}\u00a0minutes.'),shareBeads:entry('Hôm nay, tôi đã lần một vòng chuỗi.','Today, I completed a circle of beads.'),
 memorial:entry('Lập bài vị cho gia đình · Sắp ra mắt','A family memorial · Coming soon'),memorialTitle:entry('Một nơi để nhớ về gia đình','A place to remember family'),memorialInfo:entry('Chúng tôi đang chuẩn bị tính năng nhắc ngày giỗ hằng năm và mời người thân cùng thắp hương. Tính năng này chưa hoạt động.','We are preparing annual remembrance reminders and a way to invite family to light incense together. This feature is not available yet.'),

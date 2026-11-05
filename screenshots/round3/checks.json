@@ -1,0 +1,82 @@
+[
+  {
+    "choice10ClicksNoBlankFrames": 75
+  },
+  "slow drag counts 3 while held",
+  "reverse / horizontal / edge do not count",
+  "fast drag catches 5 beads with rate limit; release does not add",
+  {
+    "frameTiming": {
+      "engine": "desktop Chromium, 393x852; not physical iPhone",
+      "frames": 515,
+      "medianMs": 16.7,
+      "p95Ms": 16.8
+    }
+  },
+  {
+    "engine": "chromium",
+    "size": [
+      375,
+      667
+    ],
+    "eightPagesNoScrollAndButtons48": true
+  },
+  {
+    "engine": "chromium",
+    "size": [
+      390,
+      844
+    ],
+    "eightPagesNoScrollAndButtons48": true
+  },
+  {
+    "engine": "chromium",
+    "size": [
+      393,
+      852
+    ],
+    "eightPagesNoScrollAndButtons48": true
+  },
+  {
+    "engine": "chromium",
+    "size": [
+      430,
+      932
+    ],
+    "eightPagesNoScrollAndButtons48": true
+  },
+  {
+    "engine": "webkit",
+    "size": [
+      375,
+      667
+    ],
+    "eightPagesNoScrollAndButtons48": true
+  },
+  {
+    "engine": "webkit",
+    "size": [
+      390,
+      844
+    ],
+    "eightPagesNoScrollAndButtons48": true
+  },
+  {
+    "engine": "webkit",
+    "size": [
+      393,
+      852
+    ],
+    "eightPagesNoScrollAndButtons48": true
+  },
+  {
+    "engine": "webkit",
+    "size": [
+      430,
+      932
+    ],
+    "eightPagesNoScrollAndButtons48": true
+  },
+  "first text immediate, loading delayed >400ms, transparent nonblocking",
+  "failure retry recovery; reduced-motion swipe exactly one"
+]

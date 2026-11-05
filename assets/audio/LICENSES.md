@@ -37,3 +37,10 @@ Verified from public Freesound source pages on 2026-11-05. Sources are public HQ
 - License: [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/)
 - Changes: 60-second loop: 62-second source segment, 2-second tail/head crossfade; approximately -24 LUFS. Exact source offsets and measured loudness: measurements.json.
 
+
+## bead-v1.m4a / bead-v1.mp3
+- Title: Wooden beaded doorway curtain XY - 7
+- Author: Sadiquecat
+- Source: https://freesound.org/people/Sadiquecat/sounds/789008/
+- License verified 2026-11-05: CC0 1.0 https://creativecommons.org/publicdomain/zero/1.0/
+- Anonymous public HQ MP3 preview; no account. Cut 0.895–1.045 seconds, mono 44.1 kHz, 2ms fade-in and final 50ms fade-out, +3.6dB. PCM duration 0.15s. Integrated loudness approximately -22 LUFS with silence padded to the 400ms EBU measurement window; codec delay may extend container duration. Human timbre review pending.

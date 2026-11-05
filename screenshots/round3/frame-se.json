@@ -1,0 +1,6 @@
+{
+  "engine": "Isolated desktop headless Chromium, 375x667, not physical iPhone SE",
+  "frames": 439,
+  "medianMs": 16.7,
+  "p95Ms": 16.7
+}
