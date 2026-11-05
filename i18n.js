@@ -1,6 +1,7 @@
 // Every entry, including English, is pending Vietnamese native-speaker review.
 const entry=(vi,en)=>({vi,en,review:'待越南母语者审核'});
 export const copy={
+more:entry('Thêm','More'),
 brand:entry('Chùa Mây','Cloud Temple'),tagline:entry('Một khoảng lặng cho hôm nay.','A quiet moment for today.'),
 enter:entry('Vào chùa','Enter the temple'),entryTitle:entry('Chậm lại một chút.','Take a slower moment.'),entryNote:entry('Không tài khoản. Không vội vàng.','No account. No hurry.'),
 choose:entry('Một người khách, một khoảng lặng.','A visitor. A moment of quiet.'),change:entry('Đổi người','Change visitor'),continue:entry('Bước vào','Step inside'),

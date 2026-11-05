@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#eee8dc">
   <meta name="description" content="Chùa Mây — Một khoảng lặng cho hôm nay.">
   <title>Chùa Mây · Cloud Temple</title>
@@ -17,14 +17,6 @@
 </head>
 <body>
   <main id="app" aria-busy="true">
-    <header class="topbar">
-      <a class="wordmark" href="./">Chùa Mây<span>CLOUD TEMPLE</span></a>
-      <div class="utilities">
-        <select id="language" aria-label="Language"><option value="vi">VI</option><option value="en">EN</option></select>
-        <button id="sound-toggle" class="quiet" type="button" aria-pressed="false">Âm thanh</button>
-      </div>
-    </header>
-    <div id="sound-controls" hidden><label for="volume" data-i18n="volume"></label><input id="volume" type="range" min="0" max="100" value="25"></div>
     <section class="stage" aria-label="Chùa Mây">
       <canvas id="scene" width="941" height="1672" role="img" aria-label="Chùa Mây"></canvas>
       <svg id="effects" viewBox="0 0 941 1672" aria-hidden="true"></svg>
@@ -35,9 +27,18 @@
     </section>
     <section id="controls" class="controls" aria-label="Actions"></section>
     <p id="notice" class="notice" role="status" aria-live="polite"></p>
-    <footer><span data-i18n="privacy"></span><button id="memorial" class="text-button" data-i18n="memorial"></button><nav class="legal-links"><a href="/gioi-thieu">Giới thiệu / About</a><a href="/quyen-rieng-tu">Quyền riêng tư / Privacy</a><a href="/dieu-khoan">Điều khoản / Terms</a></nav></footer>
+
   </main>
   <dialog id="modal" aria-labelledby="modal-title"><div class="modal-inner"><button id="close-modal" class="close" type="button" data-i18n="close"></button><h2 id="modal-title"></h2><div id="modal-body"></div></div></dialog>
+  <dialog id="more-menu" aria-labelledby="more-title"><div class="modal-inner"><button id="close-more" class="close" data-i18n="close"></button><h2 id="more-title" data-i18n="more"></h2>    <header class="topbar">
+      <a class="wordmark" href="./">Chùa Mây<span>CLOUD TEMPLE</span></a>
+      <div class="utilities">
+        <select id="language" aria-label="Language"><option value="vi">VI</option><option value="en">EN</option></select>
+        <button id="sound-toggle" class="quiet" type="button" aria-pressed="false">Âm thanh</button>
+      </div>
+    </header>
+    <div id="sound-controls" hidden><label for="volume" data-i18n="volume"></label><input id="volume" type="range" min="0" max="100" value="25"></div>
+    <footer><span data-i18n="privacy"></span><button id="memorial" class="text-button" data-i18n="memorial"></button><nav class="legal-links"><a href="/gioi-thieu">Giới thiệu / About</a><a href="/quyen-rieng-tu">Quyền riêng tư / Privacy</a><a href="/dieu-khoan">Điều khoản / Terms</a></nav></footer></div></dialog>
   <noscript>JavaScript is needed to enter Cloud Temple.</noscript>
 </body>
 </html>

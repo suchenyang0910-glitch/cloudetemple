@@ -29,7 +29,7 @@ async(page)=>{
       if(view==='sit'){await page.locator('[data-action=sit-start]').click();await measure('sit-running');await page.locator('[data-action=finish]').click();await page.locator('[data-action=share]').click();await page.locator('.share-preview').waitFor();await measure('share');await page.locator('#close-modal').click();}
       await page.locator('[data-action=home]').click();await page.locator('[data-action=incense]').waitFor();
     }
-    await page.locator('#memorial').click();await measure('memorial');await page.locator('#close-modal').click();
+    await page.locator('[data-action=more]').click();await page.locator('#memorial').click();await measure('memorial');await page.locator('#close-modal').click();
   }
   const share=await page.evaluate(async()=>{
     await document.fonts.ready;const {copy}=await import('/i18n.js'),c=document.createElement('canvas').getContext('2d');c.font='500 44px "Be Vietnam Pro", sans-serif';

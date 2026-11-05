@@ -27,11 +27,11 @@ async (page) => {
   await page.locator('#close-modal').click();await click('home');await click('beads');await page.locator('#bead-control').focus();
   await page.keyboard.press('Enter');await page.keyboard.press('Enter');assert(await page.locator('#bead-control').innerText()==='2 / 108','keyboard focus');await shot('06-beads');
   for(let i=2;i<108;i++)await click('bead');await page.locator('[data-action=share]').waitFor();
-  await page.locator('#memorial').click();await shot('08-memorial');await page.locator('#waitlist-form button').click();assert((await page.locator('#form-status').innerText()).length>0,'form validation');await page.locator('#close-modal').click();
-  await click('home');await page.clock.setSystemTime(new Date('2026-11-05T22:00:00+07:00'));await click('bow');await click('bow-once');await page.clock.runFor(1300);await shot('09-night-bow');
+  await click('home');await click('more');await page.locator('#memorial').click();await shot('08-memorial');await page.locator('#waitlist-form button').click();assert((await page.locator('#form-status').innerText()).length>0,'form validation');await page.locator('#close-modal').click();
+  await page.clock.setSystemTime(new Date('2026-11-05T22:00:00+07:00'));await click('bow');await click('bow-once');await page.clock.runFor(1300);await shot('09-night-bow');
   assert(await page.locator('body').getAttribute('data-period')==='night','night');
   await page.emulateMedia({reducedMotion:'reduce'});await page.waitForFunction(()=>getComputedStyle(document.querySelector('.halo-pulse')).animationName==='none');
   for(const width of [375,390,430]){await page.setViewportSize({width,height:844});assert(await page.evaluate(()=>document.documentElement.scrollWidth===innerWidth),'overflow');}
-  await page.setViewportSize({width:390,height:844});await page.locator('#language').selectOption('en');assert(await page.locator('html').getAttribute('lang')==='en','English');
+  await page.setViewportSize({width:390,height:844});await click('home');await click('more');await page.locator('#language').selectOption('en');assert(await page.locator('html').getAttribute('lang')==='en','English');
   return {passed:true,screenshots:9,paused:held,viewportWidths:[375,390,430]};
 }

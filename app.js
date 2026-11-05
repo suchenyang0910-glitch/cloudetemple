@@ -1,5 +1,5 @@
 import {copy,reflections} from './i18n.js';
-import {apiURL,initTelegram,inTelegram,initData,telegramBack,haptic,telegramShare} from './telegram.js';
+import {apiURL,initTelegram,inTelegram,initData,telegramBack,telegramAppearance,haptic,telegramShare} from './telegram.js';
 
 const $=s=>document.querySelector(s);
 const imageRoot='assets/processed-v1/img/';
@@ -101,7 +101,8 @@ async function navigate(view,{keepResult=false}={}){
 }
 function render(){
   const focused=document.activeElement,action=focused?.dataset?.action,target=focused?.dataset?.target,minutes=focused?.dataset?.minutes;
-  document.documentElement.lang=state.lang;document.body.dataset.period=state.period;
+  document.documentElement.lang=state.lang;document.body.dataset.period=state.period;document.body.dataset.view=state.view;
+  telegramAppearance(state.period,!!state.activity?.running&&['incense','sit'].includes(state.view));
   document.querySelectorAll('[data-i18n]').forEach(e=>e.textContent=t(e.dataset.i18n));
   $('#language').setAttribute('aria-label',t('language'));$('#controls').setAttribute('aria-label',t('actions'));
   if(inTelegram())$('#memorial').textContent=t('remind');
@@ -114,7 +115,7 @@ function render(){
   canvas.setAttribute('aria-label',t(sceneName()==='hall-front'?'sceneFront':sceneName()==='hall-side'?'sceneSide':'sceneCourt'));
   $('#notice').textContent='';$('#stage-note').textContent='';$('#entry-overlay').innerHTML='';
   if(state.view==='entry'){
-    $('#entry-overlay').innerHTML=`<p class="entry-caption">${t('entryNote')}</p>${button('enter','enter','primary')}`;$('#controls').innerHTML=`<p class="section-label">${t('tagline')}</p>`;
+    $('#controls').innerHTML=button('enter','enter','primary');
   }else if(state.view==='choose'){
     $('#controls').innerHTML=`<div class="visitor-choice"><img class="preview" src="${imageRoot}visitor-${state.visitor}-sit.webp" alt="${escapeHTML(t('choose'))}">${button('change','change')}${button('continue','continue','primary')}</div>`;
   }else if(state.view==='home'){
@@ -134,9 +135,23 @@ function render(){
     $('#controls').innerHTML=`<button class="bead-control" id="bead-control" data-action="bead" aria-label="${t('beadAction')}"><svg viewBox="0 0 220 180" aria-hidden="true">${Array.from({length:108},(_,i)=>{const a=i/108*Math.PI*2-Math.PI/2;return `<circle class="bead-dot ${i===state.bead%108?'current':''}" cx="${110+98*Math.cos(a)}" cy="${90+77*Math.sin(a)}" r="2.6"/>`;}).join('')}</svg><span>${state.bead} / 108</span></button>${button('back','home','text-button')}`;
     bindSwipe();
   }
-  fx();updateCounters();
+  if(state.view==='home')$('#controls').insertAdjacentHTML('beforeend',button('more','more','text-button'));
+  fx();updateCounters();fitScene();
   if(focused&&!focused.isConnected){const replacement=action?document.querySelector(`[data-action="${action}"]`):target?document.querySelector(`[data-target="${target}"]`):minutes?document.querySelector(`[data-minutes="${minutes}"]`):null;if(replacement&&!replacement.disabled)replacement.focus({preventScroll:true});}
 }
+function fitScene(){
+  if(!renderAssets)return;
+  const stage=$('.stage'),heading=$('.scene-heading').getBoundingClientRect(),controls=$('#controls').getBoundingClientRect(),box=stage.getBoundingClientRect();
+  // Cover would crop the Buddha and visitor on opposite edges; preserve their shared region.
+  const top=heading.bottom-box.top+8,bottom=controls.top-box.top-8;
+  const region=sceneName()==='hall-side'?[300,1280]:sceneName()==='courtyard'?[420,1400]:[300,1400];
+  const scale=Math.min(box.width/941,(bottom-top)/(region[1]-region[0]));
+  stage.style.setProperty('--scene-width',941*scale+'px');
+  stage.style.setProperty('--scene-top',top-region[0]*scale+'px');
+  stage.style.setProperty('--scene-image',`url("${renderAssets.scene.src}")`);
+}
+new ResizeObserver(fitScene).observe($('#app'));
+new ResizeObserver(fitScene).observe($('#controls'));
 function formatTime(ms){const seconds=Math.ceil(Math.max(0,ms)/1000);return `${Math.floor(seconds/60).toString().padStart(2,'0')}:${(seconds%60).toString().padStart(2,'0')}`;}
 function remaining(a){return a.running?Math.max(0,a.deadline-Date.now()):a.left;}
 function updateCounters(){
@@ -197,7 +212,11 @@ function openModal(title,body){lastFocus=document.activeElement;$('#modal-title'
 function closeModal(){if($('#modal').open)$('#modal').close();}
 $('#close-modal').addEventListener('click',closeModal);
 $('#modal').addEventListener('close',()=>{if(shareURL){URL.revokeObjectURL(shareURL);shareURL=null;}telegramBack(!['entry','home'].includes(state.view));lastFocus?.focus?.();});
+function openMore(){closeModal();$('#more-menu').showModal();telegramBack(true);}
+$('#close-more').onclick=()=>$('#more-menu').close();
+$('#more-menu').addEventListener('close',()=>telegramBack(!['entry','home'].includes(state.view)));
 function memorial(){
+  $('#more-menu').close();
   if(inTelegram()){
     openModal('remind',`<p>${t('remindInfo')}</p><form id="remind-form"><label class="consent"><input type="checkbox" required><span>${t('remindConsent')}</span></label><button class="primary">${t('remind')}</button><p role="status" id="remind-status"></p></form>`);
     $('#remind-form').addEventListener('submit',async e=>{e.preventDefault();const b=e.currentTarget.querySelector('button');if(b.disabled)return;b.disabled=true;try{const r=await fetch(apiURL('/telegram/remind'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({initData:initData(),consent:true,consentAt:new Date().toISOString()}),signal:AbortSignal.timeout(12000)});$('#remind-status').textContent=t(r.ok?'registered':'unavailable');}catch{$('#remind-status').textContent=t('unavailable');}finally{b.disabled=false;}});return;
@@ -248,6 +267,7 @@ document.addEventListener('click',async e=>{
   if(b.dataset.minutes){state.sitMinutes=Number(b.dataset.minutes);render();return;}
   const action=b.dataset.action;if(!action)return;if(state.busy)return;
   switch(action){
+    case 'more':openMore();break;
     case 'enter':await navigate('choose');break;
     case 'change':state.visitor=state.layout.v1_scope.visitors[(state.layout.v1_scope.visitors.indexOf(state.visitor)+1)%6];write('ct-visitor',state.visitor);render();break;
     case 'continue':write('ct-visitor',state.visitor);audio.strike('bell');await navigate('home');break;
@@ -285,7 +305,7 @@ async function tick(){
 }
 setInterval(tick,200);
 async function init(){
-  await initTelegram(()=>{if($('#modal').open)closeModal();else navigate(state.view==='choose'?'entry':'home');});
+  await initTelegram(()=>{if($('#more-menu').open)$('#more-menu').close();else if($('#modal').open)closeModal();else navigate(state.view==='choose'?'entry':'home');},openMore);
   try{const response=await fetch('assets/processed-v1/layout-v1.json');if(!response.ok)throw new Error('layout');state.layout=await response.json();const saved=read('ct-visitor',null);state.visitor=state.layout.v1_scope.visitors.includes(saved)?saved:state.layout.v1_scope.visitors[Math.floor(Math.random()*6)];await navigate('entry');}
   catch{$('#loading').hidden=true;$('#notice').textContent=t('loadError');$('#controls').innerHTML=button('retry','reload');$('#controls').onclick=e=>{if(e.target.dataset.action==='reload')location.reload();};$('#app').setAttribute('aria-busy','false');}
 }
