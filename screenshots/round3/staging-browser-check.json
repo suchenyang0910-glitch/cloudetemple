@@ -1,0 +1,8 @@
+{
+  "passed": true,
+  "release": "ef2c9068c536",
+  "count": "1 / 108",
+  "errors": [],
+  "failedResources": [],
+  "scope": "Local packaged HTML supplied in browser; all JS/CSS/images from real public staging URLs. Authentication not tested."
+}
