@@ -1,0 +1,51 @@
+[
+  {
+    "file": "app.5f78b17c7761.js",
+    "status": "200",
+    "sha256": "e6557f771ec0d7ec171db795e017311bcfad2323a22d9853909f9ceb02ba91b9",
+    "match": true,
+    "immutable": true
+  },
+  {
+    "file": "audio.5f78b17c7761.js",
+    "status": "200",
+    "sha256": "b6d48ce763dc3d582ecc83842db53d8b8e8cbf984b5df29ef3b5f13d5f8c7f4e",
+    "match": true,
+    "immutable": true
+  },
+  {
+    "file": "audio-debug.5f78b17c7761.js",
+    "status": "200",
+    "sha256": "22e726543778c8f411684f37fb12e0fc53a5c70d9f591bddb61c355965fb46c4",
+    "match": true,
+    "immutable": true
+  },
+  {
+    "file": "beads.5f78b17c7761.js",
+    "status": "200",
+    "sha256": "c82d888d192eb8cde7500fd780e818ce45b63226fe7ff464807eb748da373645",
+    "match": true,
+    "immutable": true
+  },
+  {
+    "file": "styles.5f78b17c7761.css",
+    "status": "200",
+    "sha256": "40463707f47e4517044f26510345df66e395000ca01b3dbc7ff41605004f97b0",
+    "match": true,
+    "immutable": true
+  },
+  {
+    "file": "assets/releases/5f78b17c7761/audio/bell-v2.mp3",
+    "status": "200",
+    "sha256": "de29ce5ed450145f8a7e6b894e82f86036d199aeec8f2c84584dce5f73b41b87",
+    "match": true,
+    "immutable": true
+  },
+  {
+    "file": "assets/releases/5f78b17c7761/audio/keisu-v2.mp3",
+    "status": "200",
+    "sha256": "6454ec05dc792f145efc643dfdde410120a3e99692dc67b942907f07f38ffd75",
+    "match": true,
+    "immutable": true
+  }
+]
