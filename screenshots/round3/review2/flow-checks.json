@@ -1,0 +1,69 @@
+{
+  "entryChoose": [
+    {
+      "engine": "chromium",
+      "size": [
+        375,
+        548
+      ],
+      "entryChoose": true
+    },
+    {
+      "engine": "chromium",
+      "size": [
+        393,
+        659
+      ],
+      "entryChoose": true
+    },
+    {
+      "engine": "chromium",
+      "size": [
+        375,
+        667
+      ],
+      "entryChoose": true
+    },
+    {
+      "engine": "chromium",
+      "size": [
+        393,
+        852
+      ],
+      "entryChoose": true
+    },
+    {
+      "engine": "webkit",
+      "size": [
+        375,
+        548
+      ],
+      "entryChoose": true
+    },
+    {
+      "engine": "webkit",
+      "size": [
+        393,
+        659
+      ],
+      "entryChoose": true
+    },
+    {
+      "engine": "webkit",
+      "size": [
+        375,
+        667
+      ],
+      "entryChoose": true
+    },
+    {
+      "engine": "webkit",
+      "size": [
+        393,
+        852
+      ],
+      "entryChoose": true
+    }
+  ],
+  "normalIncense": "still burning at 59s; completes after 60s; share preview visible"
+}
