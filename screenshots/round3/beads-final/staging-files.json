@@ -1,0 +1,38 @@
+[
+  {
+    "file": "app.6cf23bbf16d8.js",
+    "status": "200",
+    "sha256": "6abde7c6bb218259f3afa1dc1668873b1db6e89f5c2d55feb65f5ea12ead03fc",
+    "matches": true
+  },
+  {
+    "file": "beads.6cf23bbf16d8.js",
+    "status": "200",
+    "sha256": "d74b68431703d95e6b89101d5e17c1afd1e6850ec0cc66a0c5c3fadd4b8051d1",
+    "matches": true
+  },
+  {
+    "file": "styles.6cf23bbf16d8.css",
+    "status": "200",
+    "sha256": "83fa53602029e1276ca46d61b4d39cb5b7105a94bcdcfecadb6a8c5aa142303b",
+    "matches": true
+  },
+  {
+    "file": "assets/releases/6cf23bbf16d8/processed-v1/img/bead-wood-v2.webp",
+    "status": "200",
+    "sha256": "1b7778899bd7db369d1516621a658a8b5e5c9e08a68cfd55b5bde3bf588dfa21",
+    "matches": true
+  },
+  {
+    "file": "assets/releases/6cf23bbf16d8/processed-v1/img/bead-spacer-v2.webp",
+    "status": "200",
+    "sha256": "29503a1bab2510818d7f9886c066cf12b26f798d51f17a004cd83749b2237e00",
+    "matches": true
+  },
+  {
+    "file": "assets/releases/6cf23bbf16d8/processed-v1/img/bead-guru-v2.webp",
+    "status": "200",
+    "sha256": "696b80b0405edf071c6e910503c365381325843e4478d10c7587f7bd589a940e",
+    "matches": true
+  }
+]
