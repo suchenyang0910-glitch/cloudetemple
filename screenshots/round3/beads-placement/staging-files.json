@@ -1,0 +1,20 @@
+[
+  {
+    "file": "app.cd25a38309df.js",
+    "status": "200",
+    "sha256": "6d25a6953fa99199efbca7617af0c13880a9f40db29f4446b91473bba0a90e51",
+    "matches": true
+  },
+  {
+    "file": "beads.cd25a38309df.js",
+    "status": "200",
+    "sha256": "67e65d57fcf986f53cd6aed6b1e9f6496d86b3c2662e60545a66d4fb80367f85",
+    "matches": true
+  },
+  {
+    "file": "styles.cd25a38309df.css",
+    "status": "200",
+    "sha256": "88829fc5b5e9ba9393769ec624aa0b4a7dc5ce376ac01e0a5a11ddcae894275a",
+    "matches": true
+  }
+]
