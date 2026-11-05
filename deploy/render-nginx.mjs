@@ -18,7 +18,8 @@ for(const [host,port,env,mini,api] of [['h5',8800,'production',false,false],['mi
   ${headers}
   ${host==='staging'?'auth_basic "Chua May staging"; auth_basic_user_file /etc/chuamay/staging.htpasswd;\n  add_header X-Robots-Tag noindex always;':''}
   ${api?`location / { ${proxy} }`:`location / { try_files $uri $uri.html $uri/ =404; }`}
-  ${host==='staging'?`location /api/ { ${proxy.replace('8791;','8791/;')} }
+  ${host==='staging'?`location ~ \\.(m4a|mp3)$ { types { audio/mp4 m4a; audio/mpeg mp3; } try_files $uri =404; }
+  location /api/ { ${proxy.replace('8791;','8791/;')} }
   # Telegram cannot supply browser Basic Auth; this one route uses the webhook secret instead.
   location = /api/telegram/webhook { auth_basic off; ${proxy.replace('8791;','8791/telegram/webhook;')} }`:''}
 }\n`);

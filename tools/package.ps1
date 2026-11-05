@@ -1,3 +1,4 @@
+param([ValidateSet('production','staging')][string]$Environment='production')
 $ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path -Parent $PSScriptRoot
 $outputRoot = Join-Path $projectRoot 'dist'
@@ -16,3 +17,10 @@ $audioOutput = Join-Path $outputRoot 'assets/audio'
 New-Item -ItemType Directory -Path $audioOutput -Force | Out-Null
 Get-ChildItem -LiteralPath (Join-Path $projectRoot 'assets/audio') -File | Copy-Item -Destination $audioOutput -Force
 foreach ($name in @('mo.webp','mo-mallet.webp')) { Copy-Item -LiteralPath (Join-Path $projectRoot "assets/processed-v1/img/$name") -Destination $imageOutput -Force }
+$debugOutput=Join-Path $outputRoot 'audio-debug.js'
+if($Environment -eq 'staging'){
+  Copy-Item -LiteralPath (Join-Path $projectRoot 'audio-debug.js') -Destination $debugOutput -Force
+  $index=Join-Path $outputRoot 'index.html'
+  $html=[IO.File]::ReadAllText($index).Replace('</body>','<script type="module" src="audio-debug.js"></script></body>')
+  [IO.File]::WriteAllText($index,$html,[Text.UTF8Encoding]::new($false))
+}elseif(Test-Path -LiteralPath $debugOutput){Remove-Item -LiteralPath $debugOutput}

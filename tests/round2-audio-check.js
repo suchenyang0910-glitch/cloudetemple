@@ -3,7 +3,7 @@ async(page)=>{
  const assert=(v,m)=>{if(!v)throw Error(m)},errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.addInitScript(()=>{
   window.audioAudit={contexts:0,starts:[]};const Original=window.AudioContext;
-  if(Original)window.AudioContext=class extends Original{constructor(...args){super(...args);audioAudit.contexts++;const create=this.createBufferSource.bind(this);this.createBufferSource=()=>{const s=create(),start=s.start.bind(s);s.start=(when=0,...args)=>{audioAudit.starts.push({when:when||this.currentTime,duration:s.buffer?.duration,loop:s.loop});return start(when,...args)};return s;};}};
+  if(Original)window.AudioContext=class extends Original{constructor(...args){super(...args);audioAudit.contexts++;const create=this.createBufferSource.bind(this);this.createBufferSource=()=>{const s=create(),start=s.start.bind(s);s.start=(when=0,...args)=>{if(s.buffer?.duration>.001)audioAudit.starts.push({when:when||this.currentTime,duration:s.buffer?.duration,loop:s.loop});return start(when,...args)};return s;};}};
  });
  await page.setViewportSize({width:393,height:852});await page.clock.install({time:new Date('2026-11-05T10:00:00+07:00')});
  await page.goto('http://127.0.0.1:8798');await page.evaluate(()=>localStorage.clear());await page.reload();await page.locator('[data-action=enter]').waitFor();
@@ -28,3 +28,4 @@ async(page)=>{
  await page.evaluate(()=>{Object.defineProperty(document,'hidden',{configurable:true,value:true});document.dispatchEvent(new Event('visibilitychange'))});await page.evaluate(()=>{Object.defineProperty(document,'hidden',{configurable:true,value:false});document.dispatchEvent(new Event('visibilitychange'))});await page.waitForFunction(()=>audioAudit.starts.filter(s=>s.loop).length>=2);
  assert(errors.length===0,errors.join(';'));return {passed:true,voices,backgroundDurations:loops,errors};
 }
+

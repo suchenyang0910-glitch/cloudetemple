@@ -196,7 +196,7 @@ function bindSwipe(){
   b.addEventListener('click',e=>{if(moved){e.preventDefault();e.stopPropagation();moved=false;}});
 }
 
-const audio=createTempleAudio({onChange:updateSoundUI,onError:()=>showSoundHint('soundUnavailable',6000),volume:()=>Number($('#volume').value)/100});
+export const audio=createTempleAudio({onChange:updateSoundUI,onError:()=>showSoundHint('soundUnavailable',6000),volume:()=>Number($('#volume').value)/100});
 let hintTimer=0,woodAuto=null,woodSession=0;
 function updateSoundUI(){
  const b=$('#sound-toggle');if(!b)return;
@@ -210,7 +210,7 @@ async function enableSound(automatic=false){
  const began=Date.now();const pending=audio.enable();
  if(automatic)showSoundHint('tapMute');
  else setTimeout(()=>{if(audio.enabled&&audio.lastPlayed<began)showSoundHint('silentTip',6000);},2000);
- if(await pending){audio.strike('bell',.45);if(state.view==='sit'&&state.activity?.running)audio.ambient(audio.ambientKind);}
+ if(await pending){audio.strike('bell',.6);if(state.view==='sit'&&state.activity?.running)audio.ambient(audio.ambientKind);}
 }
 function localDay(){const d=new Date();return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;}
 function dailyWood(){const stored=read('ct-wood',{});if(stored.day===localDay()&&Number.isSafeInteger(stored.count)&&stored.count>=0)return stored.count;return 0;}
@@ -312,6 +312,7 @@ $('#memorial').addEventListener('click',memorial);
 $('#language').addEventListener('change',e=>{state.lang=e.target.value;closeModal();render();});
 $('#sound-toggle').addEventListener('click',()=>{if(audio.enabled){write('ct-muted',true);audio.mute();}else{write('ct-muted',false);void enableSound();}});
 $('#volume').addEventListener('input',()=>audio.volume());
+document.addEventListener('click',()=>{void audio.wake();},true);
 document.addEventListener('change',e=>{if(e.target.id==='ambient'){audio.ambientKind=e.target.value;if(state.activity?.running)audio.ambient(e.target.value);};});
 reduced.addEventListener('change',()=>{animation();fx();});
 document.addEventListener('visibilitychange',async()=>{if(document.hidden){stopWoodAuto();audio.stopBackground();cancelAnimationFrame(drawFrame);if(state.view==='mo')render();}else{await audio.wake();tick();animation();if(state.view==='sit'&&state.activity?.running)audio.ambient(audio.ambientKind);}});

@@ -5,7 +5,7 @@ $root=Split-Path -Parent $PSScriptRoot
 Push-Location $root
 try {
   if(git status --porcelain --untracked-files=no){throw 'Commit tracked changes before deployment.'}
-  & powershell -ExecutionPolicy Bypass -File tools/package.ps1
+  & powershell -ExecutionPolicy Bypass -File tools/package.ps1 -Environment $Environment
   if($LASTEXITCODE){throw 'Packaging failed'}
   $release=(git rev-parse --short=12 HEAD).Trim()
   $archive=Join-Path $PSScriptRoot "chuamay-$release.tar.gz"
