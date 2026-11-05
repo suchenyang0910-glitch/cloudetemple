@@ -41,5 +41,3 @@ with sync_playwright() as pw:
    ctx.close();print(f'{phase} {width} {period}: {len(rows)} screenshots',flush=True)
  b.close()
 (out/'audit.json').write_text(json.dumps(rows,ensure_ascii=False,indent=2),encoding='utf-8')
-
-

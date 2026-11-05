@@ -14,4 +14,3 @@ async(page)=>{
  return {passed:true,checks:['first scene only','old scene retained','400ms indicator','controls usable during load','duplicate navigation one request','six approved visitor thumbnails idle prefetch','home scene and pose idle prefetch','no muted audio downloads']};
  }finally{await p.close();}
 }
-
