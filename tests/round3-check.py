@@ -31,7 +31,7 @@ with sync_playwright() as pw:
  checks.append({'frameTiming':{'engine':'desktop Chromium, 393x852; not physical iPhone','frames':len(times),'medianMs':round(statistics.median(times),2),'p95Ms':round(sorted(times)[int(len(times)*.95)],2)}})
  p.wait_for_timeout(700);video=p.video;c.close();video.save_as(str(out/'beads-drag-393.webm'))
  for engine in [b,pw.webkit.launch(headless=True)]:
-  for width,height in [(375,667),(390,844),(393,852),(430,932)]:
+  for width,height in [(375,548),(393,659),(375,667),(390,844),(393,852),(430,932)]:
    ctx=engine.new_context(viewport={'width':width,'height':height});p=ctx.new_page();p.add_init_script("localStorage.setItem('ct-muted','true')");p.goto(base);ready()
    for v in ['entry','choose','home','incense','bow','sit','mo','beads']:
     if v=='choose':click('enter')

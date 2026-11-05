@@ -6,7 +6,7 @@ root=Path(__file__).resolve().parents[1];phase=sys.argv[1] if len(sys.argv)>1 el
 out=root/'screenshots/round3'/phase;out.mkdir(parents=True,exist_ok=True);rows=[]
 with sync_playwright() as pw:
  b=pw.chromium.launch(headless=True)
- for width,height in [(393,852),(375,667)]:
+ for width,height in [(393,659),(375,548),(393,852),(375,667)]:
   for period,hour in [('dawn',6),('day',10),('dusk',18),('night',22)]:
    ctx=b.new_context(viewport={'width':width,'height':height},timezone_id='Asia/Ho_Chi_Minh');p=ctx.new_page()
    p.add_init_script("localStorage.setItem('ct-muted','true');localStorage.setItem('ct-visitor',JSON.stringify('bun-light'))")
@@ -15,7 +15,7 @@ with sync_playwright() as pw:
    def shot(name,wait=True):
     if wait:
      p.wait_for_function("document.querySelector('#app')?.getAttribute('aria-busy')!=='true'");p.locator('#loading').wait_for(state='hidden');p.clock.run_for(500);p.evaluate("document.getAnimations().filter(a=>a.effect.getTiming().iterations!==Infinity).forEach(a=>a.finish())")
-    file=f'{width}-{period}-{name}.png';p.screenshot(path=str(out/file),scale='css')
+    file=f'{width}x{height}-{period}-{name}.png';p.screenshot(path=str(out/file),scale='css')
     metrics=p.evaluate("""()=>({scroll:document.documentElement.scrollHeight>innerHeight||document.documentElement.scrollWidth>innerWidth,smallButtons:[...document.querySelectorAll('button')].filter(e=>e.getClientRects().length&&e.getBoundingClientRect().height<47).map(e=>e.textContent.trim()||e.getAttribute('aria-label')),view:document.body.dataset.view})""")
     rows.append({'file':file,'state':name,'width':width,'period':period,**metrics})
    p.goto(base);p.locator('[data-action=enter]').wait_for();shot('entry');click('enter');shot('choose');click('change');shot('choose-changed');click('continue');shot('home')

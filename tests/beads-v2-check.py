@@ -38,7 +38,7 @@ with sync_playwright() as pw:
  p.evaluate('sampling=false');times=p.evaluate('ft');checks.append({'desktop393FrameMs':{'median':statistics.median(times),'p95':sorted(times)[int(len(times)*.95)]},'note':'desktop Chromium, not physical iPhone FPS'})
  video=p.video;c.close();video.save_as(str(out/'gestures-393.webm'));checks.append('108 then guru completes; next round starts at zero; left hand persists')
  for engine in [b,pw.webkit.launch()]:
-  for w,h in [(375,667),(390,844),(393,852),(430,932)]:
+  for w,h in [(375,548),(393,659),(375,667),(390,844),(393,852),(430,932)]:
    c,p=setup(engine,w,h)
    for view,action in [('entry',None),('choose','enter'),('home','continue'),('incense','incense'),('bow','bow'),('sit','sit'),('mo','mo'),('beads','beads')]:
     if action:click(p,action)
@@ -49,7 +49,7 @@ with sync_playwright() as pw:
      if w in [375,393] and engine==b:
       for period,hour in [('dawn',6),('day',10),('dusk',17),('night',21)]:
        p.clock.set_fixed_time(datetime(2026,11,5,hour,tzinfo=timezone.utc));p.wait_for_function(f"document.body.dataset.period==='{period}'")
-       p.screenshot(path=str(out/f'{w}-{period}-right.png'));click(p,'bead-hand');p.screenshot(path=str(out/f'{w}-{period}-left.png'));click(p,'bead-hand')
+       p.screenshot(path=str(out/f'{w}x{h}-{period}-right.png'));click(p,'bead-hand');p.screenshot(path=str(out/f'{w}x{h}-{period}-left.png'));click(p,'bead-hand')
     if view not in ['entry','choose','home']:click(p,'home')
    checks.append({'engine':engine.browser_type.name,'size':[w,h],'eightPagesNoScrollButtons48':True});c.close()
   if engine!=b:engine.close()
@@ -58,7 +58,7 @@ with sync_playwright() as pw:
  for _ in range(3):drag(p,0,200,x=290)
  p.evaluate('sampling=false');times=p.evaluate('ft');checks.append({'desktopSEFrameMs':{'median':statistics.median(times),'p95':sorted(times)[int(len(times)*.95)]},'note':'375x667 desktop emulation, not physical SE'});c.close()
  # Real audio decoding and six diagnostic buttons, with no claim about physical loudness.
- c,p=setup(b);requests=[];p.on('request',lambda r:requests.append(r.url));p.goto(base+'/?debug=audio');ready(p)
+ c,p=setup(b);requests=[];p.on('request',lambda r:requests.append(r.url));p.goto(base+'/?debug=audio');ready(p);p.locator('#audio-debug summary').click()
  assert p.locator('#volume').input_value()=='80';assert not any('/audio/' in u for u in requests)
  for name in ['bell','keisu','mo','bead-v1','forest','rain']:
   p.locator(f'[data-audition="{name}"]').click();p.wait_for_timeout(800)
@@ -69,7 +69,7 @@ with sync_playwright() as pw:
  p.locator('#volume').evaluate("e=>{e.value=63;e.dispatchEvent(new Event('input',{bubbles:true}))}");p.reload();ready(p);assert p.locator('#volume').input_value()=='63'
  for invalid in ['"loud"','-1','101','null']:
   p.evaluate('(v)=>localStorage.setItem("ct-volume",v)',invalid);p.reload();ready(p);assert p.locator('#volume').input_value()=='80'
- p.locator('#audio-test').click();p.wait_for_timeout(1200);assert 'mo' in p.locator('#audio-debug textarea').input_value()
+ p.locator('#audio-debug').evaluate('(e)=>e.open=true');p.locator('#audio-test').click();p.wait_for_timeout(1200);assert 'mo' in p.locator('#audio-debug textarea').input_value()
  p.locator('#audio-test').click();p.locator('#audio-stop').click();p.wait_for_timeout(700)
  assert p.evaluate("async()=>{const a=(await import('./app.js')).audio;return a.voices.size===0&&!a.background&&[...a.native.values()].every(e=>e.paused)}")
  p.locator('#audio-native-test').click();p.wait_for_timeout(500)

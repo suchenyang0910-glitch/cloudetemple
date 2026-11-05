@@ -17,7 +17,7 @@ for(const [distance,expected] of [[1.6,2],[1.4,1],[1.5,1]]){
 const cancelled=new BeadMotion(()=>{throw Error('cancel must not count')});cancelled.begin(100,100);cancelled.move(100,130);cancelled.frame(0);cancelled.end(100,false);assert.equal(cancelled.position,0);
 console.log('Bead motion: slow / capped catch-up / release / reverse / horizontal / edge / taps passed');
 const edge=new BeadMotion(()=>{throw Error('edge counted');});edge.begin(390,100,393);edge.move(390,400);edge.frame(0);assert(!edge.active);
-for(const width of [375,390,393,430])for(let offset=-300;offset<=300;offset+=10){const right=beadArc(width,600,offset),left=beadArc(width,600,offset,true);assert(Math.abs(right.x+left.x-width)<1e-8);assert.equal(right.y,left.y);assert(Math.abs(Math.hypot(right.x-width*4.9,right.y-(600*.65-width*4*Math.sin(.04)))-width*4)<1e-8);}
+for(const width of [375,390,393,430])for(let offset=-300;offset<=300;offset+=10){const right=beadArc(width,600,offset),left=beadArc(width,600,offset,true);assert(Math.abs(right.x+left.x-width)<1e-8);assert.equal(right.y,left.y);assert(Math.abs(Math.hypot(right.x-width*2.58,right.y-(600*.65-width*1.8*Math.sin(.2)))-width*1.8)<1e-8);}
 const loop=new BeadMotion(()=>{});for(let n=0;n<109;n++)assert(loop.tap(n*100));assert.equal(loop.count,109);
 
-for(const [w,h] of [[375,667],[390,844],[393,852],[430,932]])assert(Math.abs(beadArc(w,h,0).y/h-.65)<1e-9);
+for(const [w,h] of [[375,548],[393,659],[375,667],[390,844],[393,852],[430,932]])assert(Math.abs(beadArc(w,h,0).y/h-.65)<1e-9);

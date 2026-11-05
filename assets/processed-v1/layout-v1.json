@@ -118,7 +118,21 @@
         "cushionWidth": 238
       }
     ],
-    "v1": "show no visitors (no fake presence). Slots 0-2 are the back row for the v2 'together' feature; draw back row before front row."
+    "v1": "show no visitors (no fake presence). Slots 0-2 are the back row for the v2 'together' feature; draw back row before front row.",
+    "protected": {
+      "altar": [
+        230,
+        748,
+        714,
+        1044
+      ],
+      "halo": [
+        360,
+        350,
+        570,
+        740
+      ]
+    }
   },
   "front_image_anchors": {
     "visitor-short-light-sit.webp": {

@@ -4,10 +4,13 @@ import {soundFile} from './audio.js';
 import {inTelegram} from './telegram.js';
 import {release,imageStatus} from './resources.js';
 if(['staging.chuamay.org','127.0.0.1','localhost'].includes(location.hostname)&&new URLSearchParams(location.search).get('debug')==='audio'){
- const panel=document.createElement('details');panel.id='audio-debug';panel.open=true;
- panel.style.cssText='position:fixed;z-index:1000;bottom:env(safe-area-inset-bottom,0px);left:4px;right:4px;max-height:48dvh;overflow:auto;padding:8px;background:#201c18;color:#fff;border:1px solid #baa98d;font:12px/1.4 monospace;border-radius:8px';
- panel.innerHTML='<summary>Audio diagnostics · staging（点此收起）</summary><div style="display:flex;gap:4px;flex-wrap:wrap"><button type="button" id="audio-test">测试声音：440Hz → 木鱼</button><button type="button" id="audio-native-test">单独测试 HTML 音频</button><button type="button" id="audio-copy">复制诊断</button></div><textarea readonly aria-label="Audio diagnostic text" rows="10" style="width:100%;box-sizing:border-box;font:11px/1.4 monospace;color:#fff;background:#201c18"></textarea><p id="audio-debug-note">只在本机显示；测试会开启声音。请分别记录哪一种能听到。</p>';
- document.body.append(panel);panel.addEventListener('toggle',()=>{panel.style.top=panel.open?'auto':'80px';panel.style.bottom=panel.open?'env(safe-area-inset-bottom,0px)':'auto';});const out=panel.querySelector('textarea'),files=new Map();let last={},native={},previousTime=null,advanced='not sampled',resumeError='none';
+ const panel=document.createElement('details');panel.id='audio-debug';panel.open=false;
+ panel.style.cssText='position:fixed;z-index:1000;top:84px;left:4px;right:4px;max-height:48dvh;overflow:auto;padding:8px;background:#201c18;color:#fff;border:1px solid #baa98d;font:12px/1.4 monospace;border-radius:8px';
+ panel.innerHTML='<summary>Audio diagnostics · staging</summary><div style="display:flex;gap:4px;flex-wrap:wrap"><button type="button" id="audio-test">测试声音：440Hz → 木鱼</button><button type="button" id="audio-native-test">单独测试 HTML 音频</button><button type="button" id="audio-copy">复制诊断</button></div><textarea readonly aria-label="Audio diagnostic text" rows="10" style="width:100%;box-sizing:border-box;font:11px/1.4 monospace;color:#fff;background:#201c18"></textarea><p id="audio-debug-note">只在本机显示；测试会开启声音。请分别记录哪一种能听到。</p>';
+ document.body.append(panel);
+ const fit=()=>{panel.style.maxHeight=Math.max(44,document.querySelector('#controls').getBoundingClientRect().top-92)+'px';panel.style.right=panel.open?'4px':'auto';};
+ panel.querySelector('summary').style.cssText='min-height:44px;display:flex;align-items:center;cursor:pointer';
+ panel.addEventListener('toggle',fit);const resize=new ResizeObserver(fit);resize.observe(document.querySelector('#app'));resize.observe(document.querySelector('#controls'));fit();const out=panel.querySelector('textarea'),files=new Map();let last={},native={},previousTime=null,advanced='not sampled',resumeError='none';
  audio.observe=e=>{if(e.event==='file'){const key=e.name+'.'+e.ext;files.set(key,{...files.get(key),...e});}else if(e.event==='play')last=e;else if(e.event==='native')native=e;else if(e.event==='resume')resumeError=e.error;};
  const samples=[['bell','钟'],['keisu','磬'],['mo','木鱼'],['bead-v1','木珠'],['forest','山林'],['rain','雨']];
  const auditions=document.createElement('div');auditions.style.cssText='display:flex;flex-wrap:wrap;gap:4px';

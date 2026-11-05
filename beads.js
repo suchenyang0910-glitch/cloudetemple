@@ -21,9 +21,8 @@ export class BeadMotion {
 }
 
 export function beadArc(width,height,offset,left=false){
- // A larger circle keeps the foreground clear of the visitor at the lower thumb position.
- const radius=width*4,angle=.04+offset/radius;
- const x=width*4.9-radius*Math.cos(angle),y=height*.65-radius*Math.sin(.04)+radius*Math.sin(angle);
+ const radius=width*1.8,angle=.2+offset/radius;
+ const x=width*2.58-radius*Math.cos(angle),y=height*.65-radius*Math.sin(.2)+radius*Math.sin(angle);
  return {x:left?width-x:x,y,angle:(left?-1:1)*-angle*180/Math.PI};
 }
 
@@ -43,10 +42,11 @@ export function mountBeads(el,{step,count=0,reduced=false,left=false}){
    node.className='strand-bead'+(number===109?' guru':[27,54,81].includes(number)?' spacer':'');
    node.dataset.number=number;
    node.style.transform=`translate(${x}px,${y}px) translate(-50%,-50%) rotate(${angle}deg) scale(${1+near*.07})`;
-   node.style.opacity=String(Math.max(0,Math.min(1,(y-(model.pitch-6)*.76-100)/45,(height+20-y)/45)));
+   const half=(model.pitch-6)*.76;
+   node.style.opacity=String(Math.max(0,Math.min(1,(y-half-100)/35,(height+20-y)/45,(Math.min(x,width-x)-half-10)/8)));
   });
  };
- const resize=new ResizeObserver(()=>{width=area.clientWidth;height=area.clientHeight;const size=model.pitch-6;area.style.setProperty('--bead-size',size+'px');area.style.setProperty('--bead-touch-top',Math.max(100,document.querySelector('.scene-heading').getBoundingClientRect().bottom-area.getBoundingClientRect().top+8)+'px');const p=beadArc(width,height,0,left);el.querySelector('.thumb-point').style.cssText=`left:${p.x}px;top:${p.y}px`;const r=width*4;el.querySelector('.bead-thread').style.cssText=`width:${r*2}px;height:${r*2}px;left:${(left?-width*3.9:width*4.9)-r}px;top:${height*.65-r*Math.sin(.04)-r}px`;draw(model.position);});resize.observe(area);resize.observe(document.querySelector('.scene-heading'));
+ const resize=new ResizeObserver(()=>{width=area.clientWidth;height=area.clientHeight;const size=model.pitch-6;area.style.setProperty('--bead-size',size+'px');area.style.setProperty('--bead-touch-top',Math.max(100,document.querySelector('.scene-heading').getBoundingClientRect().bottom-area.getBoundingClientRect().top+8)+'px');const p=beadArc(width,height,0,left);el.querySelector('.thumb-point').style.cssText=`left:${p.x}px;top:${p.y}px`;const r=width*1.8;el.querySelector('.bead-thread').style.cssText=`width:${r*2}px;height:${r*2}px;left:${(left?-width*1.58:width*2.58)-r}px;top:${height*.65-r*Math.sin(.2)-r}px`;draw(model.position);});resize.observe(area);resize.observe(document.querySelector('.scene-heading'));
  const frame=now=>{
   if(disposed)return;
   if(model.active&&!reduced){model.frame(now);draw(model.position);}

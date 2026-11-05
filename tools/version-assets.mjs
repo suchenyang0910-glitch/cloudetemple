@@ -10,11 +10,11 @@ const names=(await fs.readdir(root)).filter(n=>/^[a-z0-9-]+\.(js|css)$/.test(n))
 const rewrite=text=>names.reduce((s,n)=>{
  const versioned=n.replace(/\.(js|css)$/,`.${release}.$1`);
  return s.replaceAll('/'+n,'/'+versioned).replaceAll('"'+n+'"','"'+versioned+'"').replaceAll("'"+n+"'","'"+versioned+"'");
-},text).replaceAll('__CT_RELEASE__',release);
+},text).replaceAll('__CT_RELEASE__',release).replaceAll('assets/fonts/','assets/releases/'+release+'/fonts/');
 for(const name of names)await fs.writeFile(path.join(root,name.replace(/\.(js|css)$/,`.${release}.$1`)),rewrite(await fs.readFile(path.join(root,name),'utf8')));
 for(const name of (await fs.readdir(root)).filter(n=>n.endsWith('.html')))await fs.writeFile(path.join(root,name),rewrite(await fs.readFile(path.join(root,name),'utf8')));
 const dest=path.join(root,'assets','releases',release);await fs.mkdir(dest,{recursive:true});
-for(const name of ['audio','processed-v1'])await fs.rename(path.join(root,'assets',name),path.join(dest,name));
+for(const name of ['audio','processed-v1','fonts'])await fs.rename(path.join(root,'assets',name),path.join(dest,name));
 const archive=path.resolve(root,'../_archive',`inputs-${release}-${Date.now()}`);
 await fs.mkdir(archive,{recursive:true});
 for(const name of names)await fs.rename(path.join(root,name),path.join(archive,name));
