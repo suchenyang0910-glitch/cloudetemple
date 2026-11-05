@@ -1,6 +1,10 @@
 .env
 .env.*
+*.env
+*.password
+*.htpasswd
 !.env.example
+!*.env.example
 *.sqlite*
 *.db
 *.pem

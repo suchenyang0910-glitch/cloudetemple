@@ -1,5 +1,7 @@
 # Cloud Temple / Chùa Mây
 
+The `feat/telegram-staging` branch adds the systemd/better-sqlite3 API and Telegram integration. See [operations manual](运维手册.md). Staging HTTPS, real bot credentials and offsite backup credentials must be configured before activation; production requires user approval.
+
 Vietnam-first quiet temple website. Native HTML/CSS/JS; approved raster assets only. No login or social presence.
 
 ## Preview and test
