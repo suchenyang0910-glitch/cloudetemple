@@ -7,7 +7,7 @@ import {apiURL,initTelegram,inTelegram,initData,telegramBack,telegramAppearance,
 
 const $=s=>document.querySelector(s);
 const reduced=matchMedia('(prefers-reduced-motion: reduce)');
-const state={view:'entry',lang:'vi',visitor:null,period:'day',layout:null,busy:false,activity:null,result:null,bowTarget:3,sitMinutes:3,wood:0,bead:0};
+const state={view:'entry',lang:'vi',visitor:null,period:'day',layout:null,busy:false,activity:null,result:null,bowTarget:3,sitMinutes:3,wood:0,bead:0,beadRound:1,beadHand:'right'};
 const images=new Map(),tinted=new Map();
 let beadCleanup=null,pendingView=null,choiceToken=0,choiceFront=0;
 let transitionId=0,drawFrame=0,lastFocus=null,shareBlob=null,shareURL=null;
@@ -109,7 +109,7 @@ async function navigate(view,{keepResult=false}={}){
  const old=renderAssets?canvas.cloneNode():null;
  if(old){old.id='scene-old';old.className='scene-surface';old.setAttribute('aria-hidden','true');old.style.cssText=`width:${canvas.getBoundingClientRect().width}px;top:${canvas.offsetTop}px`;old.getContext('2d').drawImage(canvas,0,0);canvas.before(old);}
  state.view=view;state.period=periodNow();if(!keepResult)state.result=null;
- if(view==='mo')woodSession=0;if(view==='beads')state.bead=0;if(view==='sit')state.wood=0;
+ if(view==='mo')woodSession=0;if(view==='beads'){state.bead=0;state.beadRound=1;}if(view==='sit')state.wood=0;
  render();$('#app').setAttribute('aria-busy','true');canvas.style.opacity='0';
  const timer=setTimeout(()=>{if(token===transitionId){$('#loading').hidden=false;$('#loading').textContent=t('loading');}},400);
  try{
@@ -146,7 +146,7 @@ function bounce(e){if(e&&!reduced.matches)e.animate([{transform:'translateY(0)'}
 
 function render(){
   const focused=document.activeElement,action=focused?.dataset?.action,target=focused?.dataset?.target,minutes=focused?.dataset?.minutes;
-  document.documentElement.lang=state.lang;document.body.dataset.period=state.period;document.body.dataset.view=state.view;
+  document.documentElement.lang=state.lang;document.body.dataset.period=state.period;document.body.dataset.view=state.view;document.body.dataset.hand=state.beadHand;
   telegramAppearance(state.period,!!state.activity?.running&&['incense','sit'].includes(state.view));
   document.querySelectorAll('[data-i18n]').forEach(e=>e.textContent=t(e.dataset.i18n));
   $('#language').setAttribute('aria-label',t('language'));$('#controls').setAttribute('aria-label',t('actions'));
@@ -156,7 +156,7 @@ function render(){
   $('#sound-controls').hidden=!audio.enabled;
   $('#eyebrow').textContent=t(state.period);
   const heading=state.view==='entry'?'entryTitle':state.view==='choose'?'choose':state.view==='home'?'home':state.view;
-  $('#heading').textContent=t(heading);$('#subtitle').textContent=t(state.view==='home'?'homeNote':state.view==='entry'||state.view==='choose'?'tagline':`${state.view}Note`);
+  $('#heading').textContent=t(heading)+(state.view==='beads'?' · '+t('beadRound',{n:state.beadRound}):'');$('#subtitle').textContent=t(state.view==='home'?'homeNote':state.view==='entry'||state.view==='choose'?'tagline':`${state.view}Note`);
   canvas.setAttribute('aria-label',t(sceneName()==='hall-front'?'sceneFront':sceneName()==='hall-side'?'sceneSide':'sceneCourt'));
   $('#notice').textContent='';$('#stage-note').textContent='';if(state.view!=='choose')$('#entry-overlay').innerHTML='';
   if(state.view==='entry'){
@@ -172,7 +172,7 @@ function render(){
   }else if(state.view==='leave'){
     $('#controls').innerHTML=`<p class="leave-message">${t('goodbye')}</p>${button('reenter','reenter','primary')}`;
   }else if(state.result){
-    $('#controls').innerHTML=`<div class="completion"><p>${reflections[state.result.reflection][state.lang]}</p><div class="row">${button('share','share','primary')}${button('back','home')}</div></div>`;
+    $('#controls').innerHTML=`<div class="completion"><p>${reflections[state.result.reflection][state.lang]}</p>${state.result.kind==='beads'?button('beadAgain','bead-again','primary'):''}<div class="row">${button('share','share',state.result.kind==='beads'?'text-button':'primary')}${button('back','home')}</div></div>`;
     $('#subtitle').textContent=t('completed');
   }else if(state.view==='incense'){
     $('#controls').innerHTML=`<div class="stack"><div id="incense-status" class="section-label"></div><div class="incense-stick" aria-hidden="true"><span id="incense-progress"></span></div><div class="row">${button('light','light','primary',state.activity?'disabled':'')}${button('back','home')}</div></div>`;
@@ -185,8 +185,8 @@ function render(){
   }else if(state.view==='mo'){
     $('#controls').innerHTML=`<div class="stack"><p id="daily-wood" class="count">${t('dailyWood',{count:dailyWood()})}</p><p id="wood-message" role="status">${woodSession>=108?t('wood108'):''}</p><div class="row">${button(woodAuto?'woodStop':'woodAuto','wood-auto','primary',`aria-pressed="${!!woodAuto}"`)}${button('back','home')}</div></div>`;
   }else if(state.view==='beads'){
-    $('#controls').innerHTML=`<div class="beads-area"><button class="bead-control" id="bead-control" data-action="bead" aria-label="${escapeHTML(t('beadAction'))}"><span class="bead-thread" aria-hidden="true"></span><span class="thumb-point" aria-hidden="true"></span><span class="bead-track" aria-hidden="true">${Array.from({length:9},()=>'<i class="strand-bead"></i>').join('')}</span><span id="bead-count" role="status" aria-live="polite">${state.bead} / 108</span></button></div><p class="bead-hint">${t('beadHint')}</p>${button('back','home','back-button')}`;
-    beadCleanup?.();beadCleanup=mountBeads($('#bead-control'),{step:bead,count:state.bead,reduced:reduced.matches});
+    $('#controls').innerHTML=`<div class="beads-area"><button class="bead-control" id="bead-control" data-action="bead" aria-label="${escapeHTML(t('beadAction'))}"><span class="bead-thread" aria-hidden="true"></span><span class="thumb-point" aria-hidden="true"></span><span class="bead-track" aria-hidden="true">${Array.from({length:13},()=>'<i class="strand-bead"></i>').join('')}</span></button></div><div class="bead-summary"><span id="bead-count" role="status" aria-live="polite">${Math.min(108,state.bead)} / 108</span>${button(state.beadHand==='left'?'leftHand':'rightHand','bead-hand','','aria-label="'+escapeHTML(t('switchHand'))+'"')}</div>${button('back','home','back-button')}`;
+    beadCleanup?.();beadCleanup=mountBeads($('#bead-control'),{step:bead,count:state.bead,reduced:reduced.matches,left:state.beadHand==='left'});
   }
   $('#more-toggle').hidden=false;$('#more-toggle').setAttribute('aria-label',t('more'));
   $('#wood-prop').hidden=state.view!=='mo'||state.busy;$('#mallet-prop').hidden=state.view!=='mo'||state.busy;
@@ -252,13 +252,13 @@ function bowOnce(now=performance.now()){
 }
 
 function bead(){
-  if(state.result||state.bead>=108)return;
+  if(state.result||state.bead>=109)return;
   state.activity??={kind:'beads',started:Date.now()};state.bead++;
-  const marker=state.bead%27===0;
-  feedback(state.bead===108?'heavy':marker?'medium':'light');
+  const marker=[27,54,81].includes(state.bead);
+  feedback(state.bead===109?'heavy':marker?'medium':'light');
   if(!audio.strike('bead-v1',1,.97+Math.random()*.06))audio.strike('wood',.35,1.6);
-  if(state.bead===108)complete('beads',Date.now()-state.activity.started);
-  else {if(marker)audio.strike('keisu',.25);$('#bead-count').textContent=`${state.bead} / 108`;bounce($('#bead-count'));}
+  if(state.bead===109)complete('beads',Date.now()-state.activity.started);
+  else {if(marker)audio.strike('keisu',.25);$('#bead-count').textContent=`${Math.min(108,state.bead)} / 108`;bounce($('#bead-count'));}
 }
 
 export const audio=createTempleAudio({onChange:updateSoundUI,onError:()=>showSoundHint('soundUnavailable',6000),volume:()=>Number($('#volume').value)/100});
@@ -372,6 +372,8 @@ document.addEventListener('click',async e=>{
     case 'wood':tapWood();break;
     case 'wood-auto':if(woodAuto)stopWoodAuto();else if(!document.hidden)woodAuto=setInterval(tapWood,1000);render();break;
     case 'bead':break;
+    case 'bead-hand':state.beadHand=state.beadHand==='left'?'right':'left';write('ct-bead-hand',state.beadHand);render();break;
+    case 'bead-again':state.result=null;state.bead=0;state.beadRound++;render();paint();$('#bead-control').focus({preventScroll:true});break;
     case 'share':await makeShare();break;
     case 'share-file':await shareFile();break;
     case 'download':download();break;
@@ -380,10 +382,12 @@ document.addEventListener('click',async e=>{
 $('#memorial').addEventListener('click',memorial);
 $('#language').addEventListener('change',e=>{state.lang=e.target.value;closeModal();render();});
 $('#sound-toggle').addEventListener('click',()=>{if(audio.enabled){write('ct-muted',true);audio.mute();}else{write('ct-muted',false);void enableSound();}});
-$('#volume').addEventListener('input',()=>audio.volume());
+const savedVolume=read('ct-volume',80);$('#volume').value=typeof savedVolume==='number'&&Number.isFinite(savedVolume)&&savedVolume>=0&&savedVolume<=100?savedVolume:80;
+state.beadHand=read('ct-bead-hand','right')==='left'?'left':'right';
+$('#volume').addEventListener('input',()=>{write('ct-volume',Number($('#volume').value));audio.volume();});
 $('#controls').addEventListener('pointerdown',e=>{const action=e.target.closest('[data-action]')?.dataset.action;if(action==='enter')void image(`visitor-${state.visitor}-sit.webp`);else if(['incense','bow','sit','beads','mo'].includes(action))void image(sceneFile(action,periodNow()));});
 document.addEventListener('click',()=>{void audio.wake();},true);
-reduced.addEventListener('change',()=>{animation();fx();});
+reduced.addEventListener('change',()=>{animation();fx();if(state.view==='beads')render();});
 document.addEventListener('visibilitychange',async()=>{if(document.hidden){stopWoodAuto();audio.stopBackground();cancelAnimationFrame(drawFrame);if(state.view==='mo')render();}else{await audio.wake();tick();animation();if(state.view==='sit'&&state.activity?.running)audio.ambient(audio.ambientKind);if(state.view==='incense'&&state.activity?.running)audio.ambient('forest',.6,2);if(state.view==='beads')void audio.load('bead-v1').catch(()=>{});}});
 let periodUpdating=false;
 async function tick(){

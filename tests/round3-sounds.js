@@ -1,7 +1,7 @@
 async(page)=>{
  const p=await page.context().browser().newPage({viewport:{width:393,height:852}}),check=(v,m)=>{if(!v)throw Error(m)};
  try{
- await p.addInitScript(()=>localStorage.setItem('ct-muted','true'));await p.goto('http://127.0.0.1:8821');
+ await p.addInitScript(()=>localStorage.setItem('ct-muted','true'));await p.goto('http://127.0.0.1:8824');
  const ready=()=>p.waitForFunction(()=>document.querySelector('#app').getAttribute('aria-busy')==='false');
  const click=async a=>{await p.locator(`[data-action=${a}]`).click();await ready();};await ready();
  await p.locator('#sound-toggle').click();await p.waitForFunction(async()=>{const {audio}=await import('/app.js');return audio.enabled&&!audio.loading;});

@@ -1,0 +1,30 @@
+[
+  {
+    "file": "bell-v2.mp3",
+    "bytes": 64617,
+    "LUFS": -17.46,
+    "truePeakDb": -6.17,
+    "EQ": "highpass=f=140,equalizer=f=1800:t=q:w=0.8:g=3"
+  },
+  {
+    "file": "bell-v2.m4a",
+    "bytes": 66705,
+    "LUFS": -17.01,
+    "truePeakDb": -5.63,
+    "EQ": "highpass=f=140,equalizer=f=1800:t=q:w=0.8:g=3"
+  },
+  {
+    "file": "keisu-v2.mp3",
+    "bytes": 32643,
+    "LUFS": -17.44,
+    "truePeakDb": -6.9,
+    "EQ": "highpass=f=140,equalizer=f=1800:t=q:w=0.8:g=3"
+  },
+  {
+    "file": "keisu-v2.m4a",
+    "bytes": 33875,
+    "LUFS": -17.0,
+    "truePeakDb": -6.34,
+    "EQ": "highpass=f=140,equalizer=f=1800:t=q:w=0.8:g=3"
+  }
+]

@@ -2,11 +2,11 @@ async(page)=>{
  const p=await page.context().browser().newPage({viewport:{width:393,height:852}}),assert=(v,m)=>{if(!v)throw Error(m)},errors=[];
  p.on('pageerror',e=>errors.push(e.message));
  try{
-  await p.goto('http://127.0.0.1:8821/?debug=audio');await p.locator('#audio-test').waitFor();
+  await p.goto('http://127.0.0.1:8824/?debug=audio');await p.locator('#audio-test').waitFor();
   assert(await p.evaluate(()=>performance.getEntriesByType('resource').every(r=>!r.name.includes('/assets/audio/'))),'debug does not preload sound');
   await p.locator('#audio-test').click();await p.waitForFunction(()=>document.querySelector('#audio-debug textarea').value.includes('mo.mp3: HTTP=200')&&document.querySelector('#audio-debug textarea').value.includes('"name":"mo"'));
   const good=await p.locator('#audio-debug textarea').inputValue();assert(good.includes('decode=ok')&&good.includes('advancing=yes'),'decode and clock');
-  await p.screenshot({path:'E:/cloudtemple/screenshots/round3/audio-debug-unchanged.png'});
+  await p.screenshot({path:'E:/cloudtemple/screenshots/round3/beads-v2/audio-debug-regression.png'});
   await p.locator('#audio-native-test').click();await p.waitForFunction(()=>document.querySelector('#audio-debug textarea').value.includes('"result":"playing"'));
   await p.locator('#audio-debug summary').click();await p.locator('[data-action=enter]').click();await p.locator('[data-action=continue]').click();await p.locator('[data-action=mo]').click();
   await p.evaluate(async()=>{const {audio}=await import('/app.js');await audio.context.suspend();});

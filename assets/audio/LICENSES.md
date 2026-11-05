@@ -44,3 +44,6 @@ Verified from public Freesound source pages on 2026-11-05. Sources are public HQ
 - Source: https://freesound.org/people/Sadiquecat/sounds/789008/
 - License verified 2026-11-05: CC0 1.0 https://creativecommons.org/publicdomain/zero/1.0/
 - Anonymous public HQ MP3 preview; no account. Cut 0.895–1.045 seconds, mono 44.1 kHz, 2ms fade-in and final 50ms fade-out, +3.6dB. PCM duration 0.15s. Integrated loudness approximately -22 LUFS with silence padded to the 400ms EBU measurement window; codec delay may extend container duration. Human timbre review pending.
+
+## bell-v2.* / keisu-v2.*
+Same authors, source recordings and licenses as bell / keisu above. Derived from the retained lossless edits: 140 Hz high-pass, broad +3 dB EQ at 1.8 kHz, static gain targeting -17 LUFS, mono 44.1 kHz, 64 kbps MP3/AAC. Original decay retained; no dynamic gain pumping. Measurements: measurements-v2.json. Physical iPhone loudness/timbre review remains pending.

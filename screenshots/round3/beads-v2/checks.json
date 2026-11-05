@@ -1,0 +1,90 @@
+[
+  "slow / fast / reverse / horizontal / edge / tap / 27 passed",
+  "109 bead cues, 3 spacer cues, 1 completion bell; playback-call test only",
+  {
+    "desktop393FrameMs": {
+      "median": 16.0,
+      "p95": 18
+    },
+    "note": "desktop Chromium, not physical iPhone FPS"
+  },
+  "108 then guru completes; next round starts at zero; left hand persists",
+  {
+    "engine": "chromium",
+    "size": [
+      375,
+      667
+    ],
+    "eightPagesNoScrollButtons48": true
+  },
+  {
+    "engine": "chromium",
+    "size": [
+      390,
+      844
+    ],
+    "eightPagesNoScrollButtons48": true
+  },
+  {
+    "engine": "chromium",
+    "size": [
+      393,
+      852
+    ],
+    "eightPagesNoScrollButtons48": true
+  },
+  {
+    "engine": "chromium",
+    "size": [
+      430,
+      932
+    ],
+    "eightPagesNoScrollButtons48": true
+  },
+  {
+    "engine": "webkit",
+    "size": [
+      375,
+      667
+    ],
+    "eightPagesNoScrollButtons48": true
+  },
+  {
+    "engine": "webkit",
+    "size": [
+      390,
+      844
+    ],
+    "eightPagesNoScrollButtons48": true
+  },
+  {
+    "engine": "webkit",
+    "size": [
+      393,
+      852
+    ],
+    "eightPagesNoScrollButtons48": true
+  },
+  {
+    "engine": "webkit",
+    "size": [
+      430,
+      932
+    ],
+    "eightPagesNoScrollButtons48": true
+  },
+  "reduced motion drag counts once",
+  {
+    "desktopSEFrameMs": {
+      "median": 16,
+      "p95": 18
+    },
+    "note": "375x667 desktop emulation, not physical SE"
+  },
+  {
+    "sixAudioDecoded": true,
+    "default80Saved63InvalidFallback80": true,
+    "muteMaster0Voices0": true,
+    "diagnostic": "audio-debug v1\nenabled=true loading=false Telegram=false\nstate=running sampleRate=44100 currentTime=4.551 advancing=yes\naudioSession=false type=-\nmaster=0.800000011920929 lastPlay=2026-11-05T10:00:00.000Z\nschedule={\"event\":\"play\",\"name\":\"bead-v1\",\"when\":2.5106575963718822,\"gain\":1,\"master\":0.800000011920929} native={}\nresumeError=none\nbell-v2.mp3: HTTP=200 mime=audio/mpeg request=ok decode=ok \nkeisu-v2.mp3: HTTP=200 mime=audio/mpeg request=ok decode=ok \nmo.mp3: HTTP=200 mime=audio/mpeg request=ok decode=ok \nbead-v1.mp3: HTTP=200 mime=audio/mpeg request=ok decode=ok \nambient-courtyard.mp3: HTTP=200 mime=audio/mpeg request=ok decode=ok \nambient-rain.mp3: HTTP=200 mime=audio/mpeg request=ok decode=ok \nrelease: __CT_RELEASE__\nimage scene-vn-hall-front-day.webp: {\"attempt\":1,\"status\":200,\"state\":\"ok\"}\nUA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/147.0.7727.15 Safari/537.36"
+  }
+]

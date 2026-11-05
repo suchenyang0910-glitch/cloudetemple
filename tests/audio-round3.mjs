@@ -1,10 +1,11 @@
 import assert from 'node:assert/strict';
-import {createTempleAudio} from '../audio.js';
+import {createTempleAudio,soundFile} from '../audio.js';
 globalThis.document={hidden:false};
 const nodes=[],events=[];
 const gain=()=>({value:1,cancelScheduledValues(){},setValueAtTime(v){this.value=v;events.push(['set',v]);},linearRampToValueAtTime(v,t){events.push(['ramp',v,t]);}});
 const context={state:'running',currentTime:1,createGain(){return {gain:gain(),connect(){},disconnect(){}};},createBufferSource(){const s={playbackRate:{value:1},connect(){},disconnect(){},start(t){events.push(['start',t]);},stop(t){events.push(['stop',t]);}};nodes.push(s);return s;}};
 const a=createTempleAudio();a.context=context;a.master=context.createGain();a.enabled=true;a.buffers.set('ambient-courtyard',{duration:60});a.buffers.set('bead-v1',{duration:.15});
+a.volume();assert.equal(a.master.gain.value,.8);assert.equal(soundFile('bell'),'bell-v2');assert.equal(soundFile('keisu'),'keisu-v2');assert.equal(soundFile('mo'),'mo');
 await a.ambient('forest',.6,2);assert(events.some(e=>e[0]==='ramp'&&e[1]===.6&&e[2]===3));
 await a.ambient('none',1,2);assert(events.some(e=>e[0]==='ramp'&&e[1]===0&&e[2]===3));assert.equal(a.fading.size,1);
 assert(a.strike('bead-v1',1,1.02));assert.equal(nodes.at(-1).playbackRate.value,1.02);a.mute();const n=nodes.length;assert(!a.strike('bead-v1'));await a.ambient('forest');assert.equal(nodes.length,n);assert.equal(a.fading.size,0);

@@ -1,0 +1,9 @@
+{
+  "enabled": false,
+  "state": null,
+  "master": null,
+  "buffers": [],
+  "errors": [],
+  "status": "NOT_RUN / ENV_MISSING",
+  "reason": "Windows Playwright WebKit exposes neither AudioContext nor webkitAudioContext. Layout checked; audio requires actual Safari/iPhone."
+}

@@ -1,0 +1,20 @@
+{
+  "sounds": [
+    "incense keisu .6",
+    "incense fade-out",
+    "27 real decoded bead cues",
+    "spacer .25",
+    "leave bell .5",
+    "mute stops new actions"
+  ],
+  "diagnostics": [
+    "lazy",
+    "200/decode/clock",
+    "native HTML audio",
+    "suspended recovery",
+    "mute both routes",
+    "401 visible",
+    "decode error visible"
+  ],
+  "environment": "Desktop Chromium via Playwright, not audible device listening"
+}
