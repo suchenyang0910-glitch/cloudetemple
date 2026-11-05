@@ -1,5 +1,25 @@
 # Telegram 与自有服务器交付 · 2026-11-05
 
+## 正式发布更新（用户已明确批准）
+
+已发布h5.chuamay.org、miniapp.chuamay.org和api.chuamay.org，HTTPS可访问。正式API使用`/var/lib/chuamay/production/api.sqlite`，systemd低权限运行并开机自启，密钥只在服务器600权限文件中。
+
+实际h5浏览器活动回归通过并保存9张`production-*.png`；正式邮箱登记201、同IP重复提交429、外站CORS403、本站预检204、webhook缺密钥401。合成测试邮箱核验后清理。
+
+@ChuaMayBot已验证getMe，webhook指向正式API，菜单打开miniapp，越南语和英语命令已设置。没有冒充真实Telegram用户执行/start；真实客户端返回键、主题、震动、提醒登记仍需用户在机器人中打开检查。
+
+Cloudflare后台现已自动注入Web Analytics；同步CSP仅允许官方统计域名，并更新隐私页。其后台SSL模式及完整统计报表未读取。
+
+未完成项：Restic的R2/S3凭据与异地恢复验证、staging独立测试机器人配置、母语和真机审核。下文先前的“正式发布等待批准”和“正式API缺Token”是历史记录，以本更新为准。
+
+## HTTPS 更新（2026-11-05，后续状态覆盖下文证书待配置项）
+
+用户保存的文件实际位于 `E:/cloudtemple/chuamay-certs/`，已验证证书/私钥匹配、私钥有效，SAN包含`*.chuamay.org`和`chuamay.org`，有效期至2041-11-01。证书上传至`/etc/ssl/chuamay/`，属主caddy:caddy、文件600、目录750；未输出或提交私钥。
+
+已新增staging独立Caddy配置，通过validate后reload。服务器实际呈现的证书指纹与上传文件一致；公网HTTPS未认证401，使用现有Basic Auth后curl访问首页及三个说明页均200，HSTS和noindex存在。Python urllib的一次公网探测返回403，curl同凭据重试四页均成功，未因此修改Cloudflare安全规则。
+
+原Caddyfile内容哈希保持不变，只追加staging import；所有既有容器ID不变。Cloudflare后台Full(strict)设置未读取，需用户确认。此更新仅完成staging HTTPS，不代表API/Telegram/Restic已启用。
+
 本轮在 `feat/telegram-staging` 分支，不合并正式main，不启动正式域名/正式机器人。此前首版VPS预览仍在原独立端口运行。
 
 ## 已实测确认的

@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 const destination=process.argv[2];if(!destination)throw Error('Output directory required');await fs.mkdir(destination,{recursive:true});
-const csp="default-src 'self'; script-src 'self' SCRIPT; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://api.chuamay.org; media-src 'self' blob:; object-src 'none'; base-uri 'self'; frame-ancestors FRAME; form-action 'self'";
+const csp="default-src 'self'; script-src 'self' https://static.cloudflareinsights.com SCRIPT; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://cloudflareinsights.com https://api.chuamay.org; media-src 'self' blob:; object-src 'none'; base-uri 'self'; frame-ancestors FRAME; form-action 'self'";
 for(const [host,port,env,mini,api] of [['h5',8800,'production',false,false],['miniapp',8801,'production',true,false],['api',8802,'production',false,true],['staging',8803,'staging',true,false]]){
   const headers=`add_header X-Content-Type-Options nosniff always;
   add_header Referrer-Policy strict-origin-when-cross-origin always;
