@@ -1,0 +1,897 @@
+{
+  "characters": [
+    {
+      "file": "visitor-bun-dark-back.webp",
+      "size": [
+        600,
+        900
+      ],
+      "bytes": 50048,
+      "source": "visitor-bun-dark-back.png",
+      "cushionColorNormalized": true
+    },
+    {
+      "file": "visitor-bun-dark-beads.webp",
+      "size": [
+        600,
+        900
+      ],
+      "bytes": 56430,
+      "source": "visitor-bun-dark-beads.png",
+      "cushionColorNormalized": true
+    },
+    {
+      "file": "visitor-bun-dark-bow-1.webp",
+      "size": [
+        600,
+        600
+      ],
+      "bytes": 40788,
+      "source": "visitor-bun-dark-bow-3frames.png",
+      "anchor": [
+        570,
+        570
+      ],
+      "sourceFoot": [
+        552,
+        685
+      ],
+      "scale": 0.8557844690966719,
+      "offset": [
+        98,
+        -16
+      ]
+    },
+    {
+      "file": "visitor-bun-dark-bow-2.webp",
+      "size": [
+        600,
+        600
+      ],
+      "bytes": 47390,
+      "source": "visitor-bun-dark-bow-3frames.png",
+      "anchor": [
+        570,
+        570
+      ],
+      "sourceFoot": [
+        647,
+        685
+      ],
+      "scale": 0.8557844690966719,
+      "offset": [
+        16,
+        -16
+      ]
+    },
+    {
+      "file": "visitor-bun-dark-bow-3.webp",
+      "size": [
+        600,
+        600
+      ],
+      "bytes": 29834,
+      "source": "visitor-bun-dark-bow-3frames.png",
+      "anchor": [
+        570,
+        570
+      ],
+      "sourceFoot": [
+        699,
+        690
+      ],
+      "scale": 0.8557844690966719,
+      "offset": [
+        -28,
+        -20
+      ]
+    },
+    {
+      "file": "visitor-bun-dark-kneel.webp",
+      "size": [
+        600,
+        900
+      ],
+      "bytes": 50538,
+      "source": "visitor-bun-dark-kneel.png",
+      "cushionColorNormalized": false
+    },
+    {
+      "file": "visitor-bun-dark-sit.webp",
+      "size": [
+        600,
+        900
+      ],
+      "bytes": 54036,
+      "source": "visitor-bun-dark-sit.png",
+      "cushionColorNormalized": true
+    },
+    {
+      "file": "visitor-bun-light-back.webp",
+      "size": [
+        600,
+        900
+      ],
+      "bytes": 51602,
+      "source": "visitor-bun-light-back.png",
+      "cushionColorNormalized": true
+    },
+    {
+      "file": "visitor-bun-light-beads.webp",
+      "size": [
+        600,
+        900
+      ],
+      "bytes": 57110,
+      "source": "visitor-bun-light-beads.png",
+      "cushionColorNormalized": true
+    },
+    {
+      "file": "visitor-bun-light-bow-1.webp",
+      "size": [
+        600,
+        600
+      ],
+      "bytes": 44846,
+      "source": "visitor-bun-light-bow-3frames.png",
+      "anchor": [
+        570,
+        570
+      ],
+      "sourceFoot": [
+        552,
+        685
+      ],
+      "scale": 0.8585055643879174,
+      "offset": [
+        96,
+        -18
+      ]
+    },
+    {
+      "file": "visitor-bun-light-bow-2.webp",
+      "size": [
+        600,
+        600
+      ],
+      "bytes": 51596,
+      "source": "visitor-bun-light-bow-3frames.png",
+      "anchor": [
+        570,
+        570
+      ],
+      "sourceFoot": [
+        648,
+        685
+      ],
+      "scale": 0.8585055643879174,
+      "offset": [
+        14,
+        -18
+      ]
+    },
+    {
+      "file": "visitor-bun-light-bow-3.webp",
+      "size": [
+        600,
+        600
+      ],
+      "bytes": 32902,
+      "source": "visitor-bun-light-bow-3frames.png",
+      "anchor": [
+        570,
+        570
+      ],
+      "sourceFoot": [
+        699,
+        689
+      ],
+      "scale": 0.8585055643879174,
+      "offset": [
+        -30,
+        -22
+      ]
+    },
+    {
+      "file": "visitor-bun-light-kneel.webp",
+      "size": [
+        600,
+        900
+      ],
+      "bytes": 58036,
+      "source": "visitor-bun-light-kneel.png",
+      "cushionColorNormalized": false
+    },
+    {
+      "file": "visitor-bun-light-sit.webp",
+      "size": [
+        600,
+        900
+      ],
+      "bytes": 55450,
+      "source": "visitor-bun-light-sit.png",
+      "cushionColorNormalized": true
+    },
+    {
+      "file": "visitor-curly-dark-back.webp",
+      "size": [
+        600,
+        900
+      ],
+      "bytes": 51026,
+      "source": "visitor-curly-dark-back.png",
+      "cushionColorNormalized": true
+    },
+    {
+      "file": "visitor-curly-dark-beads.webp",
+      "size": [
+        600,
+        900
+      ],
+      "bytes": 56226,
+      "source": "visitor-curly-dark-beads.png",
+      "cushionColorNormalized": true
+    },
+    {
+      "file": "visitor-curly-dark-bow-1.webp",
+      "size": [
+        600,
+        600
+      ],
+      "bytes": 33830,
+      "source": "visitor-curly-dark-bow-3frames.png",
+      "anchor": [
+        570,
+        570
+      ],
+      "sourceFoot": [
+        510,
+        699
+      ],
+      "scale": 0.7792207792207793,
+      "offset": [
+        173,
+        25
+      ]
+    },
+    {
+      "file": "visitor-curly-dark-bow-2.webp",
+      "size": [
+        600,
+        600
+      ],
+      "bytes": 39228,
+      "source": "visitor-curly-dark-bow-3frames.png",
+      "anchor": [
+        570,
+        570
+      ],
+      "sourceFoot": [
+        673,
+        698
+      ],
+      "scale": 0.7792207792207793,
+      "offset": [
+        46,
+        26
+      ]
+    },
+    {
+      "file": "visitor-curly-dark-bow-3.webp",
+      "size": [
+        600,
+        600
+      ],
+      "bytes": 30510,
+      "source": "visitor-curly-dark-bow-3frames.png",
+      "anchor": [
+        570,
+        570
+      ],
+      "sourceFoot": [
+        755,
+        699
+      ],
+      "scale": 0.7792207792207793,
+      "offset": [
+        -18,
+        25
+      ]
+    },
+    {
+      "file": "visitor-curly-dark-kneel.webp",
+      "size": [
+        600,
+        900
+      ],
+      "bytes": 54040,
+      "source": "visitor-curly-dark-kneel.png",
+      "cushionColorNormalized": false
+    },
+    {
+      "file": "visitor-curly-dark-sit.webp",
+      "size": [
+        600,
+        900
+      ],
+      "bytes": 54338,
+      "source": "visitor-curly-dark-sit.png",
+      "cushionColorNormalized": true
+    },
+    {
+      "file": "visitor-curly-medium-back.webp",
+      "size": [
+        600,
+        900
+      ],
+      "bytes": 51090,
+      "source": "visitor-curly-medium-back.png",
+      "cushionColorNormalized": true
+    },
+    {
+      "file": "visitor-curly-medium-beads.webp",
+      "size": [
+        600,
+        900
+      ],
+      "bytes": 59230,
+      "source": "visitor-curly-medium-beads.png",
+      "cushionColorNormalized": true
+    },
+    {
+      "file": "visitor-curly-medium-bow-1.webp",
+      "size": [
+        600,
+        600
+      ],
+      "bytes": 35876,
+      "source": "visitor-curly-medium-bow-3frames.png",
+      "anchor": [
+        570,
+        570
+      ],
+      "sourceFoot": [
+        511,
+        700
+      ],
+      "scale": 0.7758620689655172,
+      "offset": [
+        174,
+        27
+      ]
+    },
+    {
+      "file": "visitor-curly-medium-bow-2.webp",
+      "size": [
+        600,
+        600
+      ],
+      "bytes": 40866,
+      "source": "visitor-curly-medium-bow-3frames.png",
+      "anchor": [
+        570,
+        570
+      ],
+      "sourceFoot": [
+        670,
+        698
+      ],
+      "scale": 0.7758620689655172,
+      "offset": [
+        50,
+        28
+      ]
+    },
+    {
+      "file": "visitor-curly-medium-bow-3.webp",
+      "size": [
+        600,
+        600
+      ],
+      "bytes": 31596,
+      "source": "visitor-curly-medium-bow-3frames.png",
+      "anchor": [
+        570,
+        570
+      ],
+      "sourceFoot": [
+        756,
+        699
+      ],
+      "scale": 0.7758620689655172,
+      "offset": [
+        -17,
+        28
+      ]
+    },
+    {
+      "file": "visitor-curly-medium-kneel.webp",
+      "size": [
+        600,
+        900
+      ],
+      "bytes": 47976,
+      "source": "visitor-curly-medium-kneel.png",
+      "cushionColorNormalized": false
+    },
+    {
+      "file": "visitor-curly-medium-sit.webp",
+      "size": [
+        600,
+        900
+      ],
+      "bytes": 55070,
+      "source": "visitor-curly-medium-sit.png",
+      "cushionColorNormalized": true
+    },
+    {
+      "file": "visitor-ponytail-medium-back.webp",
+      "size": [
+        600,
+        900
+      ],
+      "bytes": 54004,
+      "source": "visitor-ponytail-medium-back.png",
+      "cushionColorNormalized": true
+    },
+    {
+      "file": "visitor-ponytail-medium-beads.webp",
+      "size": [
+        600,
+        900
+      ],
+      "bytes": 58494,
+      "source": "visitor-ponytail-medium-beads.png",
+      "cushionColorNormalized": true
+    },
+    {
+      "file": "visitor-ponytail-medium-bow-1.webp",
+      "size": [
+        600,
+        600
+      ],
+      "bytes": 44122,
+      "source": "visitor-ponytail-medium-bow-3frames.png",
+      "anchor": [
+        570,
+        570
+      ],
+      "sourceFoot": [
+        551,
+        685
+      ],
+      "scale": 0.8585055643879174,
+      "offset": [
+        97,
+        -18
+      ]
+    },
+    {
+      "file": "visitor-ponytail-medium-bow-2.webp",
+      "size": [
+        600,
+        600
+      ],
+      "bytes": 49892,
+      "source": "visitor-ponytail-medium-bow-3frames.png",
+      "anchor": [
+        570,
+        570
+      ],
+      "sourceFoot": [
+        646,
+        685
+      ],
+      "scale": 0.8585055643879174,
+      "offset": [
+        15,
+        -18
+      ]
+    },
+    {
+      "file": "visitor-ponytail-medium-bow-3.webp",
+      "size": [
+        600,
+        600
+      ],
+      "bytes": 31014,
+      "source": "visitor-ponytail-medium-bow-3frames.png",
+      "anchor": [
+        570,
+        570
+      ],
+      "sourceFoot": [
+        700,
+        689
+      ],
+      "scale": 0.8585055643879174,
+      "offset": [
+        -31,
+        -22
+      ]
+    },
+    {
+      "file": "visitor-ponytail-medium-kneel.webp",
+      "size": [
+        600,
+        900
+      ],
+      "bytes": 57638,
+      "source": "visitor-ponytail-medium-kneel.png",
+      "cushionColorNormalized": false
+    },
+    {
+      "file": "visitor-ponytail-medium-sit.webp",
+      "size": [
+        600,
+        900
+      ],
+      "bytes": 58894,
+      "source": "visitor-ponytail-medium-sit.png",
+      "cushionColorNormalized": true
+    },
+    {
+      "file": "visitor-short-light-back.webp",
+      "size": [
+        600,
+        900
+      ],
+      "bytes": 48918,
+      "source": "visitor-short-light-back.png",
+      "cushionColorNormalized": true
+    },
+    {
+      "file": "visitor-short-light-beads.webp",
+      "size": [
+        600,
+        900
+      ],
+      "bytes": 59120,
+      "source": "visitor-short-light-beads.png",
+      "cushionColorNormalized": true
+    },
+    {
+      "file": "visitor-short-light-bow-1.webp",
+      "size": [
+        600,
+        600
+      ],
+      "bytes": 35726,
+      "source": "visitor-short-light-bow-3frames.png",
+      "anchor": [
+        570,
+        570
+      ],
+      "sourceFoot": [
+        498,
+        699
+      ],
+      "scale": 0.7780979827089337,
+      "offset": [
+        183,
+        26
+      ]
+    },
+    {
+      "file": "visitor-short-light-bow-2.webp",
+      "size": [
+        600,
+        600
+      ],
+      "bytes": 42458,
+      "source": "visitor-short-light-bow-3frames.png",
+      "anchor": [
+        570,
+        570
+      ],
+      "sourceFoot": [
+        677,
+        698
+      ],
+      "scale": 0.7780979827089337,
+      "offset": [
+        43,
+        27
+      ]
+    },
+    {
+      "file": "visitor-short-light-bow-3.webp",
+      "size": [
+        600,
+        600
+      ],
+      "bytes": 32086,
+      "source": "visitor-short-light-bow-3frames.png",
+      "anchor": [
+        570,
+        570
+      ],
+      "sourceFoot": [
+        757,
+        699
+      ],
+      "scale": 0.7780979827089337,
+      "offset": [
+        -19,
+        26
+      ]
+    },
+    {
+      "file": "visitor-short-light-kneel.webp",
+      "size": [
+        600,
+        900
+      ],
+      "bytes": 48384,
+      "source": "visitor-short-light-kneel.png",
+      "cushionColorNormalized": false
+    },
+    {
+      "file": "visitor-short-light-sit.webp",
+      "size": [
+        600,
+        900
+      ],
+      "bytes": 54276,
+      "source": "visitor-short-light-sit.png",
+      "cushionColorNormalized": true
+    }
+  ],
+  "method": "rembg 2.0.86 isnet-general-use + alpha matting; common right-foot/ground anchor for each bow triplet",
+  "scenes": [
+    {
+      "file": "scene-vn-courtyard-dawn.webp",
+      "size": [
+        941,
+        1672
+      ],
+      "bytes": 242650,
+      "quality": 88,
+      "source": "review\\batch-step4-vn\\scene-vn-courtyard-dawn.png"
+    },
+    {
+      "file": "scene-vn-courtyard-day.webp",
+      "size": [
+        941,
+        1672
+      ],
+      "bytes": 257158,
+      "quality": 84,
+      "source": "review\\batch-step4-vn\\scene-vn-courtyard-day.png"
+    },
+    {
+      "file": "scene-vn-courtyard-dusk.webp",
+      "size": [
+        941,
+        1672
+      ],
+      "bytes": 242104,
+      "quality": 88,
+      "source": "review\\batch-step4-vn\\scene-vn-courtyard-dusk.png"
+    },
+    {
+      "file": "scene-vn-courtyard-night.webp",
+      "size": [
+        941,
+        1672
+      ],
+      "bytes": 170332,
+      "quality": 88,
+      "source": "review\\batch-step4-vn\\scene-vn-courtyard-night.png"
+    },
+    {
+      "file": "scene-vn-hall-front-dawn.webp",
+      "size": [
+        941,
+        1672
+      ],
+      "bytes": 268838,
+      "quality": 88,
+      "source": "review\\batch-step4-vn\\scene-vn-hall-front-dawn.png"
+    },
+    {
+      "file": "scene-vn-hall-front-day.webp",
+      "size": [
+        941,
+        1672
+      ],
+      "bytes": 259632,
+      "quality": 88,
+      "source": "review\\batch-step4-vn\\scene-vn-hall-front-day.png"
+    },
+    {
+      "file": "scene-vn-hall-front-dusk.webp",
+      "size": [
+        941,
+        1672
+      ],
+      "bytes": 219968,
+      "quality": 88,
+      "source": "review\\batch-step4-vn\\scene-vn-hall-front-dusk.png"
+    },
+    {
+      "file": "scene-vn-hall-front-night.webp",
+      "size": [
+        941,
+        1672
+      ],
+      "bytes": 180248,
+      "quality": 88,
+      "source": "review\\batch-step4-vn\\scene-vn-hall-front-night.png"
+    },
+    {
+      "file": "scene-vn-hall-side-dawn.webp",
+      "size": [
+        941,
+        1672
+      ],
+      "bytes": 211802,
+      "quality": 88,
+      "source": "review\\batch-step4-vn\\scene-vn-hall-side-dawn.png"
+    },
+    {
+      "file": "scene-vn-hall-side-day.webp",
+      "size": [
+        941,
+        1672
+      ],
+      "bytes": 233524,
+      "quality": 88,
+      "source": "review\\batch-step4-vn\\scene-vn-hall-side-day.png"
+    },
+    {
+      "file": "scene-vn-hall-side-dusk.webp",
+      "size": [
+        941,
+        1672
+      ],
+      "bytes": 206824,
+      "quality": 88,
+      "source": "review\\batch-step4-vn\\scene-vn-hall-side-dusk.png"
+    },
+    {
+      "file": "scene-vn-hall-side-night.webp",
+      "size": [
+        941,
+        1672
+      ],
+      "bytes": 165192,
+      "quality": 88,
+      "source": "review\\batch-step4-vn\\scene-vn-hall-side-night.png"
+    },
+    {
+      "file": "scene-tk-courtyard-dawn.webp",
+      "size": [
+        941,
+        1672
+      ],
+      "bytes": 223162,
+      "quality": 88,
+      "source": "review\\batch-step5-tk\\scene-tk-courtyard-dawn.png"
+    },
+    {
+      "file": "scene-tk-courtyard-day.webp",
+      "size": [
+        941,
+        1672
+      ],
+      "bytes": 249924,
+      "quality": 84,
+      "source": "review\\batch-step5-tk\\scene-tk-courtyard-day.png"
+    },
+    {
+      "file": "scene-tk-courtyard-dusk.webp",
+      "size": [
+        941,
+        1672
+      ],
+      "bytes": 286834,
+      "quality": 88,
+      "source": "review\\batch-step5-tk\\scene-tk-courtyard-dusk.png"
+    },
+    {
+      "file": "scene-tk-courtyard-night.webp",
+      "size": [
+        941,
+        1672
+      ],
+      "bytes": 208324,
+      "quality": 88,
+      "source": "review\\batch-step5-tk\\scene-tk-courtyard-night.png"
+    },
+    {
+      "file": "scene-tk-hall-front-dawn.webp",
+      "size": [
+        941,
+        1672
+      ],
+      "bytes": 275146,
+      "quality": 88,
+      "source": "review\\batch-step5-tk\\scene-tk-hall-front-dawn.png"
+    },
+    {
+      "file": "scene-tk-hall-front-day.webp",
+      "size": [
+        941,
+        1672
+      ],
+      "bytes": 266744,
+      "quality": 88,
+      "source": "review\\batch-step5-tk\\scene-tk-hall-front-day.png"
+    },
+    {
+      "file": "scene-tk-hall-front-dusk.webp",
+      "size": [
+        941,
+        1672
+      ],
+      "bytes": 237970,
+      "quality": 88,
+      "source": "review\\batch-step5-tk\\scene-tk-hall-front-dusk.png"
+    },
+    {
+      "file": "scene-tk-hall-front-night.webp",
+      "size": [
+        941,
+        1672
+      ],
+      "bytes": 171234,
+      "quality": 88,
+      "source": "review\\batch-step5-tk\\scene-tk-hall-front-night.png"
+    },
+    {
+      "file": "scene-tk-hall-side-dawn.webp",
+      "size": [
+        941,
+        1671
+      ],
+      "bytes": 247174,
+      "quality": 88,
+      "source": "review\\batch-step5-tk\\scene-tk-hall-side-dawn.png"
+    },
+    {
+      "file": "scene-tk-hall-side-day.webp",
+      "size": [
+        941,
+        1671
+      ],
+      "bytes": 264376,
+      "quality": 88,
+      "source": "review\\batch-step5-tk\\scene-tk-hall-side-day.png"
+    },
+    {
+      "file": "scene-tk-hall-side-dusk.webp",
+      "size": [
+        941,
+        1671
+      ],
+      "bytes": 221916,
+      "quality": 88,
+      "source": "review\\batch-step5-tk\\scene-tk-hall-side-dusk.png"
+    },
+    {
+      "file": "scene-tk-hall-side-night.webp",
+      "size": [
+        941,
+        1671
+      ],
+      "bytes": 165094,
+      "quality": 88,
+      "source": "review\\batch-step5-tk\\scene-tk-hall-side-night.png"
+    }
+  ],
+  "props": [
+    {
+      "file": "mo.webp",
+      "source": "review/mo/v5/mo.webp",
+      "approved": true,
+      "bytes": 64838
+    },
+    {
+      "file": "mo-mallet.webp",
+      "source": "review/mo/v5/mo-mallet.webp",
+      "approved": true,
+      "bytes": 44848
+    }
+  ]
+}

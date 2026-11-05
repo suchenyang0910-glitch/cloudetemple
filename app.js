@@ -1,3 +1,4 @@
+import {createTempleAudio} from './audio.js';
 import {copy,reflections} from './i18n.js';
 import {apiURL,initTelegram,inTelegram,initData,telegramBack,telegramAppearance,haptic,telegramShare} from './telegram.js';
 
@@ -16,6 +17,7 @@ const actionIcons={
   bow:'<path d="m4 21 3-9 3-8q2-2 2 1v10l-4 6m12 0-3-9-3-8q-2-2-2 1v10l4 6"/>',
   sit:'<ellipse cx="12" cy="14" rx="9" ry="4"/><path d="M3 14v4c0 5 18 5 18 0v-4M7 13h10"/>',
   beads:'<circle cx="12" cy="11" r="8" stroke-dasharray="1 4" stroke-width="3"/><path d="m12 19-2 4m2-4 2 4"/>',
+  mo:'<path d="M3 15c0-9 13-11 18 1-3 6-16 6-18-1Zm2-2 13 3m-3-11 6 5"/>',
   leave:'<path d="M4 21V3h12v6M2 21h14v-4m-5-4h11m-4-4 4 4-4 4"/>'
 };
 const read=(key,fallback)=>{try{return JSON.parse(localStorage.getItem(key))??fallback;}catch{return fallback;}};
@@ -49,13 +51,13 @@ function poses(view){return view==='bow'?['bow-1','bow-2','bow-3']:view==='incen
 async function prepare(view,period){
   const scene=await image(sceneFile(view,period));
   const art={};
-  for(const pose of poses(view)){
-    const name=`visitor-${state.visitor}-${pose}.webp`,key=name+period;
+  for(const pose of (view==='mo'?['mo','mo-mallet']:poses(view))){
+    const name=view==='mo'?`${pose}.webp`:`visitor-${state.visitor}-${pose}.webp`,key=name+period;
     if(!tinted.has(key)){
       const im=await image(name),c=document.createElement('canvas');c.width=im.width;c.height=im.height;
       const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(im,0,0);
       const data=x.getImageData(0,0,c.width,c.height),tone=state.layout.toneRGB[period];
-      for(let i=0;i<data.data.length;i+=4){for(let j=0;j<3;j++)data.data[i+j]*=tone[j];}
+      for(let i=0;i<data.data.length;i+=4){for(let j=0;j<3;j++)data.data[i+j]*=tone[j]*(view==='mo'&&period==='night'?.9:1);}
       x.putImageData(data,0,0);tinted.set(key,c);
     }
     art[pose]=tinted.get(key);
@@ -87,15 +89,15 @@ function fx(){
   const f=state.layout.fx_hall_side,lit=state.view==='incense'&&state.activity?.running,bowing=state.view==='bow';
   $('#effects').innerHTML=`${bowing?`<ellipse class="halo-pulse" cx="${f.halo_center[0]}" cy="${f.halo_center[1]}" rx="92" ry="112" fill="#ffe2a6" opacity=".07"/>`:''}${lit?[-10,0,10].map((dx,i)=>`<circle class="fire" cx="${f.incense_tips[0]+dx}" cy="${f.incense_tips[1]}" r="4"/><path class="smoke" style="animation-delay:-${i*2}s" d="M${f.incense_tips[0]+dx} ${f.incense_tips[1]-5} c-18 -40 30 -65 3 -100 s23 -65 8 -95"/>`).join(''):''}`;
 }
-function stopActivity(){state.activity=null;cancelAnimationFrame(drawFrame);audio.ambient('none');}
+function stopActivity(){stopWoodAuto();state.activity=null;cancelAnimationFrame(drawFrame);audio.ambient('none');}
 async function navigate(view,{keepResult=false}={}){
   const token=++transitionId;stopActivity();state.busy=true;$('#loading').hidden=false;$('#loading').textContent=t('loading');
   try{
     const period=periodNow(),assets=await prepare(view,period);
     if(token!==transitionId)return;
     state.view=view;state.period=period;renderAssets=assets;if(!keepResult)state.result=null;
-    if(view==='beads')state.bead=0;if(view==='sit')state.wood=0;
-    state.busy=false;render();paint();if(!reduced.matches)canvas.animate([{opacity:.55},{opacity:1}],{duration:450});$('#heading').focus({preventScroll:true});
+    if(view==='mo')woodSession=0;if(view==='beads')state.bead=0;if(view==='sit')state.wood=0;
+    state.busy=false;render();paint();$('#heading').focus({preventScroll:true});
   }catch{if(token===transitionId){state.busy=false;$('#notice').textContent=t('loadError');$('#controls').insertAdjacentHTML('beforeend',button('retry','retry'));}}
   finally{if(token===transitionId){$('#loading').hidden=true;$('#app').setAttribute('aria-busy','false');}}
 }
@@ -107,7 +109,7 @@ function render(){
   $('#language').setAttribute('aria-label',t('language'));$('#controls').setAttribute('aria-label',t('actions'));
   if(inTelegram())$('#memorial').textContent=t('remind');
   telegramBack(!['entry','home'].includes(state.view));
-  $('#sound-toggle').textContent=t(audio.enabled?'soundOn':'soundOff');$('#sound-toggle').setAttribute('aria-pressed',String(audio.enabled));
+  updateSoundUI();
   $('#sound-controls').hidden=!audio.enabled;
   $('#eyebrow').textContent=t(state.period);
   const heading=state.view==='entry'?'entryTitle':state.view==='choose'?'choose':state.view==='home'?'home':state.view;
@@ -119,7 +121,7 @@ function render(){
   }else if(state.view==='choose'){
     $('#controls').innerHTML=`<div class="visitor-choice"><img class="preview" src="${imageRoot}visitor-${state.visitor}-sit.webp" alt="${escapeHTML(t('choose'))}">${button('change','change')}${button('continue','continue','primary')}</div>`;
   }else if(state.view==='home'){
-    $('#controls').innerHTML=`<nav class="action-nav">${['incense','bow','sit','beads','leave'].map(key=>`<button data-action="${key}"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">${actionIcons[key]}</svg>${t(key)}</button>`).join('')}</nav>`;
+    $('#controls').innerHTML=`<nav class="action-nav">${['incense','bow','sit','mo','beads','leave'].map(key=>`<button data-action="${key}"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">${actionIcons[key]}</svg>${t(key)}</button>`).join('')}</nav>`;
   }else if(state.result){
     $('#controls').innerHTML=`<div class="completion"><p>${reflections[state.result.reflection][state.lang]}</p><div class="row">${button('share','share','primary')}${button('back','home')}</div></div>`;
     $('#stage-note').textContent=t('completed');
@@ -130,12 +132,17 @@ function render(){
     $('#controls').innerHTML=`<div class="stack"><p class="section-label">${t('bowTarget')}</p><div class="choice-row">${[3,27,54,108].map(n=>`<button data-target="${n}" aria-pressed="${state.bowTarget===n}" ${a?.bowStart!=null?'disabled':''}>${n}</button>`).join('')}</div><p class="count" id="bow-count">${a?.count??0} / ${state.bowTarget}</p><div class="row">${button('bowOnce','bow-once','primary',a?.bowStart!=null?'disabled':'')}${button(a?.auto?'stopAuto':'auto','auto','',`aria-pressed="${!!a?.auto}"`)}</div>${button('back','home','text-button')}</div>`;
   }else if(state.view==='sit'){
     const a=state.activity;
-    $('#controls').innerHTML=`<div class="stack"><p class="timer" id="timer" role="timer">${formatTime(a?remaining(a):state.sitMinutes*60000)}</p>${!a?`<div class="choice-row" aria-label="${t('duration')}">${[1,3,5,10].map(n=>`<button data-minutes="${n}" aria-pressed="${state.sitMinutes===n}">${n} ${t('minutes')}</button>`).join('')}</div>`:''}<div class="row">${!a?button('start','sit-start','primary'):button(a.running?'pause':'resume','pause','primary')}${a?button('finish','finish'):''}${button('wood','wood')}</div><p class="section-label" id="wood-count">${t('woodCount')}: ${state.wood}</p><div class="row"><label class="ambient-label" for="ambient">${t('ambient')}</label><select id="ambient" class="ambient">${['none','wind','rain'].map(k=>`<option value="${k}" ${audio.ambientKind===k?'selected':''}>${t(k)}</option>`).join('')}</select></div>${button('back','home','text-button')}</div>`;
+    $('#controls').innerHTML=`<div class="stack"><p class="timer" id="timer" role="timer">${formatTime(a?remaining(a):state.sitMinutes*60000)}</p>${!a?`<div class="choice-row" aria-label="${t('duration')}">${[1,3,5,10].map(n=>`<button data-minutes="${n}" aria-pressed="${state.sitMinutes===n}">${n} ${t('minutes')}</button>`).join('')}</div>`:''}<div class="row">${!a?button('start','sit-start','primary'):button(a.running?'pause':'resume','pause','primary')}${a?button('finish','finish'):''}${button('wood','wood')}</div><p class="section-label" id="wood-count">${t('woodCount')}: ${state.wood}</p><div class="row"><label class="ambient-label" for="ambient">${t('ambient')}</label><select id="ambient" class="ambient">${['none','forest','rain'].map(k=>`<option value="${k}" ${audio.ambientKind===k?'selected':''}>${t(k)}</option>`).join('')}</select></div>${button('back','home','text-button')}</div>`;
+  }else if(state.view==='mo'){
+    $('#controls').innerHTML=`<div class="stack"><p id="daily-wood" class="count">${t('dailyWood',{count:dailyWood()})}</p><p id="wood-message" role="status">${woodSession>=108?t('wood108'):''}</p><div class="row">${button(woodAuto?'woodStop':'woodAuto','wood-auto','primary',`aria-pressed="${!!woodAuto}"`)}${button('back','home')}</div></div>`;
   }else if(state.view==='beads'){
     $('#controls').innerHTML=`<button class="bead-control" id="bead-control" data-action="bead" aria-label="${t('beadAction')}"><svg viewBox="0 0 220 180" aria-hidden="true">${Array.from({length:108},(_,i)=>{const a=i/108*Math.PI*2-Math.PI/2;return `<circle class="bead-dot ${i===state.bead%108?'current':''}" cx="${110+98*Math.cos(a)}" cy="${90+77*Math.sin(a)}" r="2.6"/>`;}).join('')}</svg><span>${state.bead} / 108</span></button>${button('back','home','text-button')}`;
     bindSwipe();
   }
-  if(state.view==='home')$('#controls').insertAdjacentHTML('beforeend',button('more','more','text-button'));
+  $('#more-toggle').hidden=state.view==='entry';$('#more-toggle').setAttribute('aria-label',t('more'));
+  $('#wood-prop').hidden=state.view!=='mo';$('#mallet-prop').hidden=state.view!=='mo';
+  $('#wood-prop').setAttribute('aria-label',t('wood'));
+  if(state.view==='mo')for(const [id,key] of [['wood-art','mo'],['mallet-prop','mo-mallet']]){const c=$('#'+id),im=renderAssets.art[key];c.width=im.width;c.height=im.height;c.getContext('2d').drawImage(im,0,0);}
   fx();updateCounters();fitScene();
   if(focused&&!focused.isConnected){const replacement=action?document.querySelector(`[data-action="${action}"]`):target?document.querySelector(`[data-target="${target}"]`):minutes?document.querySelector(`[data-minutes="${minutes}"]`):null;if(replacement&&!replacement.disabled)replacement.focus({preventScroll:true});}
 }
@@ -145,10 +152,13 @@ function fitScene(){
   // Cover would crop the Buddha and visitor on opposite edges; preserve their shared region.
   const top=heading.bottom-box.top+8,bottom=controls.top-box.top-8;
   const region=sceneName()==='hall-side'?[300,1280]:sceneName()==='courtyard'?[420,1400]:[300,1400];
-  const scale=Math.min(box.width/941,(bottom-top)/(region[1]-region[0]));
+  const fullScene=['entry','choose','home'].includes(state.view);
+  const scale=fullScene?Math.max(box.width/941,box.height/1672):box.width/941;
+  const sceneTop=fullScene?(box.height-1672*scale)/2:state.view==='mo'?0:Math.min(top-region[0]*scale,bottom-region[1]*scale);
   stage.style.setProperty('--scene-width',941*scale+'px');
-  stage.style.setProperty('--scene-top',top-region[0]*scale+'px');
+  stage.style.setProperty('--scene-top',sceneTop+'px');
   stage.style.setProperty('--scene-image',`url("${renderAssets.scene.src}")`);
+  if(state.view==='mo'){const width=box.width*.32,art=renderAssets.art.mo,height=width*art.height/art.width;$('#wood-prop').style.cssText=`width:${width}px;height:${height}px;left:${(box.width-width)/2}px;top:${controls.top-box.top-16-height}px`;$('#mallet-prop').style.cssText=`width:${width*.49}px;height:auto;left:${(box.width+width)/2-8}px;top:${controls.top-box.top-16-height-8}px`;}
 }
 new ResizeObserver(fitScene).observe($('#app'));
 new ResizeObserver(fitScene).observe($('#controls'));
@@ -186,27 +196,37 @@ function bindSwipe(){
   b.addEventListener('click',e=>{if(moved){e.preventDefault();e.stopPropagation();moved=false;}});
 }
 
-const audio={enabled:false,context:null,master:null,ambientKind:'none',sources:[],
-  async enable(){
-    try{const Context=window.AudioContext||window.webkitAudioContext;if(!Context)throw new Error('audio');
-      this.context??=new Context();if(!this.master){this.master=this.context.createGain();this.master.gain.value=0;this.master.connect(this.context.destination);}await this.context.resume();this.enabled=true;this.volume();this.ambient(this.ambientKind);
-    }catch{$('#notice').textContent=t('soundUnavailable');}
-  },
-  volume(){if(this.master){this.master.gain.cancelScheduledValues(0);this.master.gain.value=this.enabled?Number($('#volume').value)/100:0;}},
-  mute(){this.enabled=false;this.volume();const kind=this.ambientKind;this.ambient('none');this.ambientKind=kind;},
-  strike(kind){if(!this.enabled||!this.context)return;const c=this.context,now=c.currentTime;
-    for(const [freq,amp,decay] of kind==='wood'?[[520,.35,.07],[830,.12,.045]]:[[220,.12,3],[440,.06,2.3],[594,.035,1.7]]){
-      const o=c.createOscillator(),g=c.createGain();o.type='sine';o.frequency.setValueAtTime(freq,now);if(kind==='wood')o.frequency.exponentialRampToValueAtTime(freq*.55,now+.07);
-      g.gain.setValueAtTime(0,now);g.gain.linearRampToValueAtTime(amp,now+.003);g.gain.exponentialRampToValueAtTime(.0001,now+decay);o.connect(g);g.connect(this.master);o.start(now);o.stop(now+decay+.05);o.onended=()=>{o.disconnect();g.disconnect();};
-    }
-  },
-  ambient(kind){this.ambientKind=kind;for(const s of this.sources){try{s.stop();s.disconnect();}catch{}}this.sources=[];
-    if(!this.enabled||kind==='none'||!this.context||state.view!=='sit'||!state.activity?.running)return;
-    const c=this.context,buffer=c.createBuffer(1,c.sampleRate*4,c.sampleRate),data=buffer.getChannelData(0);let last=0;
-    for(let i=0;i<data.length;i++){const white=Math.random()*2-1;last=(last+.02*white)/1.02;data[i]=kind==='wind'?last*3:white*.12;}
-    const source=c.createBufferSource(),filter=c.createBiquadFilter(),gain=c.createGain();source.buffer=buffer;source.loop=true;filter.type=kind==='wind'?'lowpass':'highpass';filter.frequency.value=kind==='wind'?450:800;gain.gain.value=.22;source.connect(filter);filter.connect(gain);gain.connect(this.master);source.start();this.sources=[source];source.onended=()=>{filter.disconnect();gain.disconnect();};
+const audio=createTempleAudio({onChange:updateSoundUI,onError:()=>showSoundHint('soundUnavailable',6000),volume:()=>Number($('#volume').value)/100});
+let hintTimer=0,woodAuto=null,woodSession=0;
+function updateSoundUI(){
+ const b=$('#sound-toggle');if(!b)return;
+ const label=t(audio.enabled?'muteSound':'enableSound');b.setAttribute('aria-label',label);b.title=label;b.setAttribute('aria-pressed',String(audio.enabled));b.setAttribute('aria-busy',String(audio.loading));
+ b.innerHTML=`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z"/>${audio.enabled?'<path d="M16 8q5 4 0 8m3-11q7 7 0 14"/>':'<path d="m16 9 5 6m0-6-5 6"/>'}</svg>`;
+ $('#sound-controls').hidden=!audio.enabled;
+ $('#audio-status').textContent=audio.loading?t('audioLoading'):'';
+}
+function showSoundHint(key,ms=3000){clearTimeout(hintTimer);const hint=$('#sound-hint');hint.getAnimations().forEach(a=>a.cancel());hint.textContent=t(key);hint.hidden=false;if(!reduced.matches)hint.animate([{opacity:1,offset:0},{opacity:1,offset:Math.max(0,1-300/ms)},{opacity:0}],{duration:ms});hintTimer=setTimeout(()=>{hint.hidden=true;},ms);}
+async function enableSound(automatic=false){
+ const began=Date.now();const pending=audio.enable();
+ if(automatic)showSoundHint('tapMute');
+ else setTimeout(()=>{if(audio.enabled&&audio.lastPlayed<began)showSoundHint('silentTip',6000);},2000);
+ if(await pending){audio.strike('bell',.45);if(state.view==='sit'&&state.activity?.running)audio.ambient(audio.ambientKind);}
+}
+function localDay(){const d=new Date();return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;}
+function dailyWood(){const stored=read('ct-wood',{});if(stored.day===localDay()&&Number.isSafeInteger(stored.count)&&stored.count>=0)return stored.count;return 0;}
+function stopWoodAuto(){if(woodAuto){clearInterval(woodAuto);woodAuto=null;}}
+function tapWood(){
+ const count=dailyWood()+1;write('ct-wood',{day:localDay(),count});audio.strike('wood');
+ if(state.view==='mo'){
+  woodSession++;$('#daily-wood').textContent=t('dailyWood',{count});if(woodSession===108)$('#wood-message').textContent=t('wood108');
+  if(!haptic('light'))try{navigator.vibrate?.(10);}catch{}
+  if(!reduced.matches){
+   const mallet=$('#mallet-prop');mallet.getAnimations().forEach(a=>a.cancel());mallet.animate([{transform:'translate(0,0) rotate(0deg)'},{transform:'translate(-24px,25px) rotate(-12deg)',offset:.5},{transform:'translate(0,0) rotate(0deg)'}],{duration:140});
+   const art=$('#wood-art');art.getAnimations().forEach(a=>a.cancel());art.animate([{transform:'scale(1)'},{transform:'scale(.97)',offset:.5},{transform:'scale(1)'}],{duration:140});
+   const ring=document.createElement('span');ring.className='wood-ripple';$('#wood-prop').append(ring);ring.animate([{transform:'scale(.3)',opacity:.25},{transform:'scale(1.2)',opacity:0}],{duration:650}).onfinish=()=>ring.remove();
   }
-};
+ }else if(state.view==='sit'){state.wood++;$('#wood-count').textContent=`${t('woodCount')}: ${state.wood}`;}
+}
 
 function openModal(title,body){lastFocus=document.activeElement;$('#modal-title').textContent=t(title);$('#modal-body').innerHTML=body;$('#modal').showModal();telegramBack(true);$('#close-modal').focus();}
 function closeModal(){if($('#modal').open)$('#modal').close();}
@@ -268,10 +288,10 @@ document.addEventListener('click',async e=>{
   const action=b.dataset.action;if(!action)return;if(state.busy)return;
   switch(action){
     case 'more':openMore();break;
-    case 'enter':await navigate('choose');break;
+    case 'enter':if(!read('ct-muted',false)&&!audio.enabled)void enableSound(true);await navigate('choose');break;
     case 'change':state.visitor=state.layout.v1_scope.visitors[(state.layout.v1_scope.visitors.indexOf(state.visitor)+1)%6];write('ct-visitor',state.visitor);render();break;
-    case 'continue':write('ct-visitor',state.visitor);audio.strike('bell');await navigate('home');break;
-    case 'incense':case 'bow':case 'sit':case 'beads':case 'home':await navigate(action);break;
+    case 'continue':write('ct-visitor',state.visitor);await navigate('home');break;
+    case 'incense':case 'bow':case 'sit':case 'beads':case 'mo':case 'home':await navigate(action);break;
     case 'leave':await navigate('entry');$('#notice').textContent=t('goodbye');break;
     case 'retry':await navigate(state.view);break;
     case 'light':if(!state.activity){state.activity={kind:'incense',running:true,deadline:Date.now()+60000,started:Date.now()};render();}break;
@@ -280,7 +300,8 @@ document.addEventListener('click',async e=>{
     case 'sit-start':state.activity={kind:'sit',running:true,deadline:Date.now()+state.sitMinutes*60000,left:state.sitMinutes*60000,total:state.sitMinutes*60000};audio.ambient(audio.ambientKind);render();animation();break;
     case 'pause':{const a=state.activity;if(!a)break;if(a.running){a.left=remaining(a);a.running=false;const kind=audio.ambientKind;audio.ambient('none');audio.ambientKind=kind;}else{a.deadline=Date.now()+a.left;a.running=true;audio.ambient(audio.ambientKind);}render();animation();break;}
     case 'finish':if(state.activity)complete('sit',state.activity.total-remaining(state.activity));break;
-    case 'wood':state.wood++;audio.strike('wood');if($('#wood-count'))$('#wood-count').textContent=`${t('woodCount')}: ${state.wood}`;break;
+    case 'wood':tapWood();break;
+    case 'wood-auto':if(woodAuto)stopWoodAuto();else if(!document.hidden)woodAuto=setInterval(tapWood,1000);render();break;
     case 'bead':bead();break;
     case 'share':await makeShare();break;
     case 'share-file':await shareFile();break;
@@ -289,18 +310,18 @@ document.addEventListener('click',async e=>{
 });
 $('#memorial').addEventListener('click',memorial);
 $('#language').addEventListener('change',e=>{state.lang=e.target.value;closeModal();render();});
-$('#sound-toggle').addEventListener('click',async()=>{if(audio.enabled)audio.mute();else await audio.enable();render();});
+$('#sound-toggle').addEventListener('click',()=>{if(audio.enabled){write('ct-muted',true);audio.mute();}else{write('ct-muted',false);void enableSound();}});
 $('#volume').addEventListener('input',()=>audio.volume());
-document.addEventListener('change',e=>{if(e.target.id==='ambient')audio.ambient(e.target.value);});
+document.addEventListener('change',e=>{if(e.target.id==='ambient'){audio.ambientKind=e.target.value;if(state.activity?.running)audio.ambient(e.target.value);};});
 reduced.addEventListener('change',()=>{animation();fx();});
-document.addEventListener('visibilitychange',()=>{tick();animation();});
+document.addEventListener('visibilitychange',async()=>{if(document.hidden){stopWoodAuto();audio.stopBackground();cancelAnimationFrame(drawFrame);if(state.view==='mo')render();}else{await audio.wake();tick();animation();if(state.view==='sit'&&state.activity?.running)audio.ambient(audio.ambientKind);}});
 let periodUpdating=false;
 async function tick(){
   if(!state.layout||state.busy)return;
   const a=state.activity,now=Date.now();
-  if(a?.kind==='bow'&&a.bowStart!=null&&now-a.bowStart>=4000){a.bowStart=null;a.count++;haptic('soft');if(a.count>=state.bowTarget)complete('bow',a.count*4000);else{render();paint();if(a.auto)bowOnce();}}
+  if(a?.kind==='bow'&&a.bowStart!=null&&now-a.bowStart>=4000){a.bowStart=null;a.count++;haptic('soft');audio.strike('keisu');if(a.count>=state.bowTarget)complete('bow',a.count*4000);else{render();paint();if(a.auto)bowOnce();}}
   else if(a?.running&&remaining(a)<=0){if(a.kind==='incense')complete('incense',60000);if(a.kind==='sit')complete('sit',a.total);}
-  updateCounters();
+  updateCounters();if(state.view==='mo'&&$('#daily-wood'))$('#daily-wood').textContent=t('dailyWood',{count:dailyWood()});
   const period=periodNow();if(period!==state.period&&!periodUpdating){periodUpdating=true;const token=transitionId,view=state.view;try{const assets=await prepare(view,period);if(token===transitionId){state.period=period;renderAssets=assets;render();paint();}}catch{/* Keep the last fully loaded scene on transient failures. */}finally{periodUpdating=false;}}
 }
 setInterval(tick,200);

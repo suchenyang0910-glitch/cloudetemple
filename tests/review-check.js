@@ -20,7 +20,7 @@ async(page)=>{
     }
   }
   for(const [period,hour] of [['dusk',18],['night',22]]){
-    await page.clock.setSystemTime(new Date(`2026-11-05T${hour}:00:00+07:00`));await page.goto('http://127.0.0.1:8788');
+    await page.clock.setSystemTime(new Date(`2026-11-05T${hour}:00:00+07:00`));await page.goto('http://127.0.0.1:8798');
     await page.locator('[data-action=enter]').waitFor();await measure('entry');
     await page.locator('[data-action=enter]').click();await page.locator('[data-action=continue]').waitFor();await measure('choose');
     await page.locator('[data-action=continue]').click();await page.locator('[data-action=incense]').waitFor();await measure('home');

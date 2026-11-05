@@ -1,0 +1,102 @@
+[
+  {
+    "file": "bell.m4a",
+    "source": "bell.mp3",
+    "start": 0,
+    "duration": 8.0,
+    "bytes": 66480,
+    "LUFS": -18.01,
+    "truePeakDb": -5.83,
+    "channels": 1
+  },
+  {
+    "file": "bell.mp3",
+    "source": "bell.mp3",
+    "start": 0,
+    "duration": 8.0,
+    "bytes": 64617,
+    "LUFS": -17.99,
+    "truePeakDb": -5.96,
+    "channels": 1
+  },
+  {
+    "file": "keisu.m4a",
+    "source": "keisu.mp3",
+    "start": 0.046,
+    "duration": 4.0,
+    "bytes": 33824,
+    "LUFS": -18.03,
+    "truePeakDb": -7.2,
+    "channels": 1
+  },
+  {
+    "file": "keisu.mp3",
+    "source": "keisu.mp3",
+    "start": 0.046,
+    "duration": 4.0,
+    "bytes": 32643,
+    "LUFS": -17.98,
+    "truePeakDb": -7.09,
+    "channels": 1
+  },
+  {
+    "file": "mo.m4a",
+    "source": "mo.mp3",
+    "start": 1.664,
+    "duration": 0.4,
+    "bytes": 4512,
+    "LUFS": -19.45,
+    "truePeakDb": -1.52,
+    "channels": 1
+  },
+  {
+    "file": "mo.mp3",
+    "source": "mo.mp3",
+    "start": 1.664,
+    "duration": 0.4,
+    "bytes": 3804,
+    "LUFS": -19.65,
+    "truePeakDb": -1.55,
+    "channels": 1
+  },
+  {
+    "file": "ambient-courtyard.m4a",
+    "source": "ambient-courtyard.mp3",
+    "start": 10,
+    "duration": 60.0,
+    "bytes": 493687,
+    "LUFS": -23.96,
+    "truePeakDb": -2.13,
+    "channels": 1
+  },
+  {
+    "file": "ambient-courtyard.mp3",
+    "source": "ambient-courtyard.mp3",
+    "start": 10,
+    "duration": 60.0,
+    "bytes": 480487,
+    "LUFS": -23.99,
+    "truePeakDb": -1.82,
+    "channels": 1
+  },
+  {
+    "file": "ambient-rain.m4a",
+    "source": "ambient-rain.mp3",
+    "start": 30,
+    "duration": 60.0,
+    "bytes": 493481,
+    "LUFS": -23.92,
+    "truePeakDb": -3.48,
+    "channels": 1
+  },
+  {
+    "file": "ambient-rain.mp3",
+    "source": "ambient-rain.mp3",
+    "start": 30,
+    "duration": 60.0,
+    "bytes": 480487,
+    "LUFS": -24.01,
+    "truePeakDb": -3.41,
+    "channels": 1
+  }
+]

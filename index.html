@@ -17,9 +17,14 @@
 </head>
 <body>
   <main id="app" aria-busy="true">
+    <button id="sound-toggle" class="corner-button" type="button" aria-pressed="false" aria-label="Bật âm thanh"></button>
+    <button id="more-toggle" class="corner-button" type="button" data-action="more" aria-label="Thêm" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg></button>
+    <p id="audio-status" role="status"></p><p id="sound-hint" role="status" hidden></p>
     <section class="stage" aria-label="Chùa Mây">
       <canvas id="scene" width="941" height="1672" role="img" aria-label="Chùa Mây"></canvas>
       <svg id="effects" viewBox="0 0 941 1672" aria-hidden="true"></svg>
+      <button id="wood-prop" data-action="wood" type="button" aria-label="Gõ mõ" hidden><canvas id="wood-art" aria-hidden="true"></canvas></button>
+      <canvas id="mallet-prop" aria-hidden="true" hidden></canvas>
       <div class="scene-heading"><p id="eyebrow"></p><h1 id="heading" tabindex="-1"></h1><p id="subtitle"></p></div>
       <div id="entry-overlay" class="entry-overlay"></div>
       <div id="stage-note" class="stage-note" aria-live="polite"></div>
@@ -33,8 +38,8 @@
   <dialog id="more-menu" aria-labelledby="more-title"><div class="modal-inner"><button id="close-more" class="close" data-i18n="close"></button><h2 id="more-title" data-i18n="more"></h2>    <header class="topbar">
       <a class="wordmark" href="./">Chùa Mây<span>CLOUD TEMPLE</span></a>
       <div class="utilities">
-        <select id="language" aria-label="Language"><option value="vi">VI</option><option value="en">EN</option></select>
-        <button id="sound-toggle" class="quiet" type="button" aria-pressed="false">Âm thanh</button>
+        <label for="language" data-i18n="language"></label><select id="language" aria-label="Language"><option value="vi">VI</option><option value="en">EN</option></select>
+
       </div>
     </header>
     <div id="sound-controls" hidden><label for="volume" data-i18n="volume"></label><input id="volume" type="range" min="0" max="100" value="25"></div>

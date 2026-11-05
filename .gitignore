@@ -23,3 +23,6 @@ assets/processed-v1/img/*-back.webp
 assets/processed-v1/img/*-kneel.webp
 deploy/*.tar.gz
 deploy/*.tmp
+
+audio/raw/
+tools/*.tmp.py

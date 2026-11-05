@@ -1,0 +1,39 @@
+# Sounds / Âm thanh
+
+Verified from public Freesound source pages on 2026-11-05. Sources are public HQ MP3 previews; no login or credentials used. Output: mono 44.1 kHz AAC / MP3, 64 kbps.
+
+## bell.m4a / bell.mp3
+- Title: Temple bell
+- Author: tec_studio
+- Source: https://freesound.org/people/tec_studio/sounds/668647/
+- License: [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/)
+- Changes: Single hit; trimmed, natural fade; loudness normalized; mo additionally compressed/limited to tame its transient; source starts at the strike, 10ms fade-in rather than invented pre-roll. Exact source offsets and measured loudness: measurements.json.
+
+## keisu.m4a / keisu.mp3
+- Title: Keisu temple bell
+- Author: milivolt
+- Source: https://freesound.org/people/milivolt/sounds/367128/
+- License: [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
+- Changes: Single hit; trimmed, natural fade; loudness normalized; mo additionally compressed/limited to tame its transient. Exact source offsets and measured loudness: measurements.json.
+
+## mo.m4a / mo.mp3
+- Title: Fischtrommel Muyu
+- Author: the_very_Real_Horst
+- Source: https://freesound.org/people/the_very_Real_Horst/sounds/205999/
+- License: [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
+- Changes: Single hit; trimmed, natural fade; loudness normalized; mo additionally compressed/limited to tame its transient. Exact source offsets and measured loudness: measurements.json.
+
+## ambient-courtyard.m4a / ambient-courtyard.mp3
+- Title: BR_017_VN_QuietFields
+- Author: kevp888
+- Source: https://freesound.org/people/kevp888/sounds/578503/
+- License: [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
+- Changes: 60-second loop: 62-second source segment, 2-second tail/head crossfade; approximately -24 LUFS. Exact source offsets and measured loudness: measurements.json.
+
+## ambient-rain.m4a / ambient-rain.mp3
+- Title: Indoor roomtone with light–medium rain
+- Author: TSP-Talk
+- Source: https://freesound.org/people/TSP-Talk/sounds/846307/
+- License: [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/)
+- Changes: 60-second loop: 62-second source segment, 2-second tail/head crossfade; approximately -24 LUFS. Exact source offsets and measured loudness: measurements.json.
+

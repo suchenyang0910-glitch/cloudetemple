@@ -1,6 +1,12 @@
 // Every entry, including English, is pending Vietnamese native-speaker review.
 const entry=(vi,en)=>({vi,en,review:'待越南母语者审核'});
 export const copy={
+mo:entry('Gõ mõ','Wooden fish'),moNote:entry('Từng nhịp, chậm rãi.','One gentle tap at a time.'),
+forest:entry('Núi rừng','Mountain forest'),
+dailyWood:entry('Nhịp mõ hôm nay: {count}','Today’s woodblock taps: {count}'),
+woodAuto:entry('Tự động','Auto tap'),woodStop:entry('Dừng','Stop'),wood108:entry('Một trăm lẻ tám tiếng mõ.','One hundred and eight taps.'),
+enableSound:entry('Bật âm thanh','Enable sound'),muteSound:entry('Tắt âm thanh','Mute sound'),audioLoading:entry('Đang tải âm thanh…','Loading sounds…'),
+tapMute:entry('Chạm để tắt âm thanh','Tap to mute'),silentTip:entry('Nếu không nghe thấy, hãy tắt chế độ im lặng trên điện thoại.','If you hear nothing, turn off silent mode on your phone.'),
 more:entry('Thêm','More'),
 brand:entry('Chùa Mây','Cloud Temple'),tagline:entry('Một khoảng lặng cho hôm nay.','A quiet moment for today.'),
 enter:entry('Vào chùa','Enter the temple'),entryTitle:entry('Chậm lại một chút.','Take a slower moment.'),entryNote:entry('Không tài khoản. Không vội vàng.','No account. No hurry.'),

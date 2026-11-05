@@ -1,12 +1,12 @@
 // Run through Playwright browser_run_code_unsafe(filename=absolute path), with tools/serve.mjs running.
 async (page) => {
   const assert=(value,message)=>{if(!value)throw new Error(message);};
-  const click=action=>page.locator(`[data-action="${action}"]`).click();
+  const click=action=>page.locator(`[data-action="${action}"]:visible`).click();
   const shot=async name=>{await page.clock.runFor(600);await page.locator('#scene').evaluate(e=>e.getAnimations().forEach(a=>a.finish()));await page.screenshot({path:`E:/cloudtemple/screenshots/${name}.png`,fullPage:true});};
   await page.setViewportSize({width:390,height:844});
   await page.emulateMedia({reducedMotion:'no-preference'});
   await page.clock.install({time:new Date('2026-11-05T10:00:00+07:00')});
-  await page.goto('http://127.0.0.1:8788');
+  await page.goto('http://127.0.0.1:8798');
   await page.locator('[data-action=enter]').waitFor();
   await shot('01-entry');
   await click('enter');await click('continue');
