@@ -91,12 +91,12 @@ body[data-view=choose] .controls .primary{width:100%}
 .incense-stick>span::before{content:'';position:absolute;top:0;left:0;width:5px;height:4px;background:#e7a26a;border-radius:50%}
 .share-preview{max-height:calc(90dvh - 235px);width:100%;object-fit:contain;margin-bottom:8px}
 .modal-inner{padding:16px}.modal-inner h2{margin-bottom:12px}.close{margin-bottom:8px}
-.beads-area{position:absolute;bottom:calc(100% + 8px);left:0;width:100%;height:calc(var(--app-height,100dvh) - 175px);pointer-events:none;overflow:hidden;--bead-size:56px}
-.bead-control{position:absolute;inset:0;width:100%;height:100%;padding:0!important;border:0!important;border-radius:0;background:transparent!important;color:var(--ink)!important;touch-action:none;clip-path:inset(0 0 0 50%);pointer-events:auto;overflow:hidden}
-body[data-hand=left] .bead-control{clip-path:inset(0 50% 0 0)}
+.beads-area{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:hidden;--bead-size:56px;--bead-touch-top:100px;z-index:2;clip-path:inset(100px 0 0)}
+.bead-control{position:absolute;inset:0;width:100%;height:100%;padding:0!important;border:0!important;border-radius:0;background:transparent!important;color:var(--ink)!important;touch-action:none;clip-path:inset(var(--bead-touch-top) 0 0 50%);pointer-events:auto;overflow:hidden}
+body[data-hand=left] .bead-control{clip-path:inset(var(--bead-touch-top) 50% 0 0)}
 .bead-control:active{transform:none}.bead-control span{display:block;position:absolute;inset:auto;pointer-events:none}
 .bead-control .bead-track{inset:0;width:100%;height:100%}
-.strand-bead{position:absolute;top:0;left:0;width:var(--bead-size);height:var(--bead-size);background:var(--bead-wood) center/contain no-repeat;will-change:transform,opacity}
+.strand-bead{position:absolute;top:0;left:0;width:var(--bead-size);height:var(--bead-size);background:var(--bead-wood) center/contain no-repeat;will-change:transform,opacity;filter:drop-shadow(0 4px 8px rgba(0,0,0,.25))}
 .strand-bead.spacer{background-image:var(--bead-spacer)}
 .strand-bead.guru{background:none;z-index:2}
 .strand-bead.guru::before{content:'';position:absolute;inset:0 0 auto;width:100%;height:calc(var(--bead-size) * 2.12);background:var(--bead-guru) top center/100% auto no-repeat;pointer-events:none}
@@ -118,3 +118,6 @@ body[data-view=bow] .controls .row button:disabled{opacity:1}
 body[data-view=beads] .completion>.primary{width:100%;margin-bottom:8px}
 body[data-view=beads] .completion .row{display:grid;grid-template-columns:1fr 1fr}
 .controls button.text-button{background:transparent!important;border-color:transparent;color:var(--ink)!important}
+
+body[data-view=beads] .stage::after{content:"";position:absolute;inset:0;background:rgba(0,0,0,.08);pointer-events:none;z-index:1}
+body[data-view=beads] .scene-heading{z-index:3}

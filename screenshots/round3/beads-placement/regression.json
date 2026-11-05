@@ -1,0 +1,14 @@
+[
+  {
+    "engine": "chromium",
+    "releaseCounts": true,
+    "reducedMotion": true,
+    "touchRegion": true
+  },
+  {
+    "engine": "webkit",
+    "releaseCounts": true,
+    "reducedMotion": true,
+    "touchRegion": true
+  }
+]
