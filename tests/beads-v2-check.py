@@ -70,6 +70,8 @@ with sync_playwright() as pw:
  for invalid in ['"loud"','-1','101','null']:
   p.evaluate('(v)=>localStorage.setItem("ct-volume",v)',invalid);p.reload();ready(p);assert p.locator('#volume').input_value()=='80'
  p.locator('#audio-test').click();p.wait_for_timeout(1200);assert 'mo' in p.locator('#audio-debug textarea').input_value()
+ p.locator('#audio-test').click();p.locator('#audio-stop').click();p.wait_for_timeout(700)
+ assert p.evaluate("async()=>{const a=(await import('./app.js')).audio;return a.voices.size===0&&!a.background&&[...a.native.values()].every(e=>e.paused)}")
  p.locator('#audio-native-test').click();p.wait_for_timeout(500)
  p.evaluate("async()=>{const {audio}=await import('./app.js');audio.mute();window.mutedCheck={master:audio.master.gain.value,voices:audio.voices.size,played:audio.strike('bell')}}")
  assert p.evaluate('mutedCheck')=={'master':0,'voices':0,'played':False}

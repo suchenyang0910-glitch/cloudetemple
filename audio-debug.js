@@ -29,15 +29,15 @@ if(['staging.chuamay.org','127.0.0.1','localhost'].includes(location.hostname)&&
   if(time!=null&&previousTime!=null)advanced=time>previousTime?'yes':'no';previousTime=time;
   const lines=['audio-debug v2',`enabled=${audio.enabled} loading=${audio.loading} Telegram=${inTelegram()}`,`state=${c?.state??'not created'} sampleRate=${c?.sampleRate??'-'} currentTime=${time?.toFixed(3)??'-'} advancing=${advanced}`,`audioSession=${!!navigator.audioSession} type=${navigator.audioSession?.type??'-'}`,`master=${audio.master?.gain.value??'-'} lastPlay=${audio.lastPlayed?new Date(audio.lastPlayed).toISOString():'none'}`,`schedule=${JSON.stringify(last)} native=${JSON.stringify(native)}`,`resumeError=${resumeError}`];
   for(const name of ['bell','keisu','mo','bead-v1','ambient-courtyard','ambient-rain']){const attempts=[...files.values()].filter(f=>f.name===name);lines.push(attempts.length?attempts.map(f=>`${soundFile(name)}.${f.ext}: HTTP=${f.status??'-'} mime=${f.mime??'-'} request=${f.request??'ok'} decode=${f.decode??'-'} ${f.error??''}`).join('\n'):`${soundFile(name)}: not requested`);}
-  auditions.querySelectorAll('small').forEach(e=>e.textContent=`gain=1 × ${audio.enabled?(audio.master?.gain.value??0).toFixed(2):'0.00'}`);
+  auditions.querySelectorAll('small').forEach(e=>e.textContent=`gain=${audio.enabled?(audio.master?.gain.value??0).toFixed(2):'0.00'} (1 × master)`);
   lines.push('release: '+release);for(const [name,result] of imageStatus)lines.push('image '+name+': '+JSON.stringify(result));lines.push('UA: '+navigator.userAgent);out.value=lines.join('\n');
  };
  render();setInterval(render,500);
  panel.querySelector('#audio-test').onclick=async()=>{
-  const pending=audio.enable(),c=audio.context,epoch=audio.epoch;
+  stop();const version=audition,pending=audio.enable(),c=audio.context,epoch=audio.epoch;
   if(c){const oscillator=c.createOscillator(),gain=c.createGain();oscillator.frequency.value=440;gain.gain.value=.5;oscillator.connect(gain);gain.connect(audio.master);audio.voices.add(oscillator);oscillator.onended=()=>{audio.voices.delete(oscillator);oscillator.disconnect();gain.disconnect();};oscillator.start();oscillator.stop(c.currentTime+.3);last={name:'440Hz test',when:c.currentTime,gain:.5,master:audio.master.gain.value};}
-  if(await pending)setTimeout(()=>{if(epoch===audio.epoch)audio.strike('mo');},400);
+  if(await pending)setTimeout(()=>{if(epoch===audio.epoch&&version===audition)audio.strike('mo');},400);
  };
- panel.querySelector('#audio-native-test').onclick=()=>{void audio.enable();audio.playNative('mo');};
+ panel.querySelector('#audio-native-test').onclick=()=>{stop();void audio.enable();audio.playNative('mo');};
  panel.querySelector('#audio-copy').onclick=async()=>{render();try{await navigator.clipboard.writeText(out.value);panel.querySelector('#audio-debug-note').textContent='已复制。';}catch{out.focus();out.select();panel.querySelector('#audio-debug-note').textContent='请长按选中的文字复制。';}};
 }
