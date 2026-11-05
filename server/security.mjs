@@ -4,7 +4,6 @@ import ranges from './cloudflare-ips.json' with {type:'json'};
 const cf=new BlockList();for(const range of ranges){const [ip,prefix]=range.split('/');cf.addSubnet(ip,Number(prefix),isIP(ip)===6?'ipv6':'ipv4');}
 export const equal=(a,b)=>{const x=Buffer.from(a||''),y=Buffer.from(b||'');return x.length===y.length&&timingSafeEqual(x,y);};
 export const hash=(secret,text)=>createHmac('sha256',secret).update(text).digest('hex');
-export const origins=new Set(['https://h5.chuamay.org','https://miniapp.chuamay.org','https://staging.chuamay.org']);
 export function clientIP(req,trustLocal){
   const normalize=ip=>ip?.replace(/^::ffff:/,'');
   let peer=normalize(req.socket.remoteAddress);
@@ -28,6 +27,8 @@ export function validateInitData(raw,token,now=Date.now()){
 export function config(env){
   for(const k of ['TELEGRAM_BOT_TOKEN','TELEGRAM_WEBHOOK_SECRET','HASH_SECRET'])if(!env[k]?.trim())throw Error(`Missing ${k}`);
   if(env.HASH_SECRET.length<32||!/^[A-Za-z0-9_-]{32,256}$/.test(env.TELEGRAM_WEBHOOK_SECRET))throw Error('Invalid secret configuration');
+  const origins=new Set((env.ALLOWED_ORIGINS||'').split(',').map(s=>s.trim()).filter(Boolean));
+  for(const origin of origins){let url;try{url=new URL(origin);}catch{throw Error('Invalid ALLOWED_ORIGINS');}if(url.origin!==origin||url.protocol!=='https:'||url.username||url.password)throw Error('Invalid ALLOWED_ORIGINS');}
   const mini=env.MINIAPP_URL||'https://miniapp.chuamay.org';if(!['https://miniapp.chuamay.org','https://staging.chuamay.org'].includes(new URL(mini).origin))throw Error('Invalid Mini App origin');
-  return {token:env.TELEGRAM_BOT_TOKEN,webhookSecret:env.TELEGRAM_WEBHOOK_SECRET,hashSecret:env.HASH_SECRET,db:env.DB_PATH||'/var/lib/chuamay/api.sqlite',port:Number(env.PORT||8790),trustLocal:env.TRUST_LOCAL_PROXY==='1',mini};
+  return {origins,token:env.TELEGRAM_BOT_TOKEN,webhookSecret:env.TELEGRAM_WEBHOOK_SECRET,hashSecret:env.HASH_SECRET,db:env.DB_PATH||'/var/lib/chuamay/api.sqlite',port:Number(env.PORT||8790),trustLocal:env.TRUST_LOCAL_PROXY==='1',mini};
 }

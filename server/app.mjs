@@ -1,5 +1,5 @@
 import http from 'node:http';
-import {origins,equal,hash,clientIP,validateInitData} from './security.mjs';
+import {equal,hash,clientIP,validateInitData} from './security.mjs';
 import {botCopy} from './bot-copy.mjs';
 export function createServer(settings,store,send=async(method,body)=>{const r=await fetch(`https://api.telegram.org/bot${settings.token}/${method}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal:AbortSignal.timeout(10000)});if(!r.ok||!(await r.json()).ok)throw Error('telegram unavailable');}){
   const cooldown=new Map(),updates=new Map();
@@ -8,13 +8,13 @@ export function createServer(settings,store,send=async(method,body)=>{const r=aw
     try{
       const route=new URL(req.url,'http://localhost').pathname,origin=req.headers.origin;
       if(route==='/healthz'&&req.method==='GET')return reply(200);
-      if(origin&&!origins.has(origin))return reply(403,'origin');
+      if(origin&&!settings.origins?.has(origin))return reply(403,'origin');
       if(origin){res.setHeader('Access-Control-Allow-Origin',origin);res.setHeader('Vary','Origin');}
       if(req.method==='OPTIONS'){if(!origin)return reply(403,'origin');res.setHeader('Access-Control-Allow-Methods','POST, OPTIONS');res.setHeader('Access-Control-Allow-Headers','Content-Type');return reply(204);}
       if(!['/waitlist','/telegram/remind','/telegram/webhook'].includes(route))return reply(404,'route');
       if(req.method!=='POST'){res.setHeader('Allow','POST');return reply(405,'method');}
       if(route==='/telegram/webhook'){if(!equal(req.headers['x-telegram-bot-api-secret-token'],settings.webhookSecret))return reply(401,'secret');}
-      else if(!origin)return reply(403,'origin');
+      else if(!origin&&req.headers['sec-fetch-site']!=='same-origin')return reply(403,'origin');
       if(!/^application\/json(?:\s*;|$)/i.test(req.headers['content-type']||''))return reply(415,'content_type');
       const chunks=[];let size=0;for await(const part of req){size+=part.length;if(size>(route==='/waitlist'?4096:16384))return reply(400,'body');chunks.push(part);}
       let body;try{body=JSON.parse(Buffer.concat(chunks));}catch{return reply(400,'body');}
