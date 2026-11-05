@@ -1,0 +1,34 @@
+[
+  {
+    "healthz": 200
+  },
+  {
+    "origin": "https://h5.chuamay.org",
+    "status": 204,
+    "allowOrigin": "https://h5.chuamay.org"
+  },
+  {
+    "origin": "https://miniapp.chuamay.org",
+    "status": 204,
+    "allowOrigin": "https://miniapp.chuamay.org"
+  },
+  {
+    "origin": "https://staging.chuamay.org",
+    "status": 403,
+    "allowOrigin": null
+  },
+  {
+    "origin": "http://localhost:8788",
+    "status": 403,
+    "allowOrigin": null
+  },
+  {
+    "origin": "https://example.invalid",
+    "status": 403,
+    "allowOrigin": null
+  },
+  {
+    "emptyPayload": 400,
+    "noEmailSubmitted": true
+  }
+]

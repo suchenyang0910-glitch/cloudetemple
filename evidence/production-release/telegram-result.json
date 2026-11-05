@@ -1,0 +1,22 @@
+{
+  "networkHTTP": 302,
+  "getMe": {
+    "HTTP": 200,
+    "ok": true,
+    "description": null
+  },
+  "getWebhookInfo": {
+    "HTTP": 200,
+    "ok": true,
+    "description": null,
+    "webhookDomain": "api.chuamay.org"
+  },
+  "getChatMenuButton": {
+    "HTTP": 200,
+    "ok": true,
+    "description": null
+  },
+  "internalExpectedWebhookAndMenuChecksExitCode": 0,
+  "classification": "other: earlier failure not reproduced; current network, authentication and expected webhook/menu checks pass",
+  "settingsChanged": false
+}

@@ -1,0 +1,18 @@
+{
+  "frontendSource": "22a76741d1d7",
+  "productionFiles": 105,
+  "totalBytes": 7829044,
+  "removed": [
+    "audio-debug.22a76741d1d7.js"
+  ],
+  "changed": {
+    "index.html": "removed audio-debug script tag only"
+  },
+  "normalizedCheckoutLineEndings": [
+    "_routes.json",
+    "assets/releases/22a76741d1d7/fonts/OFL-v1.txt",
+    "bow.22a76741d1d7.js",
+    "styles.22a76741d1d7.css"
+  ],
+  "remainingFilesByteIdentical": true
+}

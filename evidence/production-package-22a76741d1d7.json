@@ -1,0 +1,532 @@
+{
+  "release": "22a76741d1d7",
+  "fileCount": 105,
+  "totalBytes": 7829044,
+  "files": [
+    {
+      "path": "_headers",
+      "bytes": 586,
+      "sha256": "93a3dd3fd90337cb63c2e905eae2bacd9537ccc78f45d0211741db3d5f5a77a4"
+    },
+    {
+      "path": "_routes.json",
+      "bytes": 55,
+      "sha256": "56fa4522f7769c01603c713812c438ba6b945f1c937ae93be1df290be1c03e51"
+    },
+    {
+      "path": "app.22a76741d1d7.js",
+      "bytes": 41599,
+      "sha256": "680105311bb0f33262194915daf2c05b7841d897a9f12e39d20ede1c9cb3ae69"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/audio/ambient-courtyard.m4a",
+      "bytes": 493687,
+      "sha256": "c6ea008ed19edc87e07c84383abb2f54d1dbd2f36c84e22b758020de8bd67da0"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/audio/ambient-courtyard.mp3",
+      "bytes": 480487,
+      "sha256": "ade6419bca2c6cb009577ed57cbf92ada0b23c7cdb9052f3e97eed32c3cc3ca5"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/audio/ambient-rain.m4a",
+      "bytes": 493481,
+      "sha256": "c1a42638c67c75f3e352fafdcf59c8c5ec90554802bf2605723abcf543faee56"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/audio/ambient-rain.mp3",
+      "bytes": 480487,
+      "sha256": "88b9b22fd02836651f6e7fa61b3e0678d018526056b9f41368d37eb0e6f1a71e"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/audio/bead-v1.m4a",
+      "bytes": 2385,
+      "sha256": "4cd06d4d3ccccfa2f1a07a55d6d79d3dec9507485f0a7a13d0a3d6fb4e2ecc0e"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/audio/bead-v1.mp3",
+      "bytes": 1714,
+      "sha256": "4c6e2f437611f54f27f4fda94ba836300455aec975599d76eacad9bd15fb9b9e"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/audio/bell-v2.m4a",
+      "bytes": 66705,
+      "sha256": "42c09cbd4671f979ee2fe34bdc7c11a8de994489bcb16a070bb711201db13051"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/audio/bell-v2.mp3",
+      "bytes": 64617,
+      "sha256": "de29ce5ed450145f8a7e6b894e82f86036d199aeec8f2c84584dce5f73b41b87"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/audio/keisu-v2.m4a",
+      "bytes": 33875,
+      "sha256": "39b0def80950d45543cff76027964c31c1027c722cafe477670796877ebcddeb"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/audio/keisu-v2.mp3",
+      "bytes": 32643,
+      "sha256": "6454ec05dc792f145efc643dfdde410120a3e99692dc67b942907f07f38ffd75"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/audio/LICENSES.md",
+      "bytes": 3285,
+      "sha256": "d05afae2c573152439c9c286018f04b1a2b8d0bd0c970100066158b01ff68f79"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/audio/measurements-v2.json",
+      "bytes": 669,
+      "sha256": "58206bfcde847a0b676e7a7e01518de8df5b851aec194d6c19bd7597175649fa"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/audio/measurements.json",
+      "bytes": 1998,
+      "sha256": "4576dd767bebd96a01974d88fdcb985650fef44ea13067c238aff5cd29f40e26"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/audio/mo.m4a",
+      "bytes": 4512,
+      "sha256": "7992a02cba083f1f0bb92bb29162c4940f8d013762170f51ef345d08476db7d4"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/audio/mo.mp3",
+      "bytes": 3804,
+      "sha256": "ab14db1ea9db799beb41bb713dd9e70f2a1fb5e6fa3b1477470b036b5fb316d1"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/fonts/be-vietnam-pro-v12-400-latin.woff2",
+      "bytes": 21168,
+      "sha256": "03d1b589cff172e1a670b3573e731d3380bc326f80cf83b0d3504e3188e2e074"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/fonts/be-vietnam-pro-v12-400-vietnamese.woff2",
+      "bytes": 11532,
+      "sha256": "dc085e2fba3414e5c5bf1e6172f921a9f81c5859946a4ed3d63c1e470d96a9e2"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/fonts/be-vietnam-pro-v12-500-latin.woff2",
+      "bytes": 21892,
+      "sha256": "b621f77d35f777023aa11ca524462d511b4b28a813adbc0e9d15a10fc61dfe4e"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/fonts/be-vietnam-pro-v12-500-vietnamese.woff2",
+      "bytes": 12172,
+      "sha256": "86341610cbe907eecf461c9159c168d5efb52bb1a33963813a08f520555d8e66"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/fonts/be-vietnam-pro-v12-600-latin.woff2",
+      "bytes": 22032,
+      "sha256": "9503dec2a7c532c8331e9600bcafea287a4fd208573b8668d85ab8d8de1863c7"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/fonts/be-vietnam-pro-v12-600-vietnamese.woff2",
+      "bytes": 12176,
+      "sha256": "97658c6f9a384f29a3005c3d96e2a0d1c810192cf68979071c290f5a377a9f99"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/fonts/OFL-v1.txt",
+      "bytes": 4397,
+      "sha256": "6b7f8f73609a25ea78c891e34cf37b06f8a676b7ea986e941e43b009110f2a85"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/fonts/sources.json",
+      "bytes": 1017,
+      "sha256": "e01bb5501ac9d7d28818e7444f1b94fef3b8a32e6926189c7100b1f6fae0707b"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/processed-v1/img/bead-guru-v2.webp",
+      "bytes": 7128,
+      "sha256": "696b80b0405edf071c6e910503c365381325843e4478d10c7587f7bd589a940e"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/processed-v1/img/bead-spacer-v2.webp",
+      "bytes": 8640,
+      "sha256": "29503a1bab2510818d7f9886c066cf12b26f798d51f17a004cd83749b2237e00"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/processed-v1/img/bead-wood-v2.webp",
+      "bytes": 7608,
+      "sha256": "1b7778899bd7db369d1516621a658a8b5e5c9e08a68cfd55b5bde3bf588dfa21"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/processed-v1/img/mo-mallet.webp",
+      "bytes": 44848,
+      "sha256": "c451ad33b5fa5cad4252c3791ee4aa33efc17cf6647711723093ad3b8c25711c"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/processed-v1/img/mo.webp",
+      "bytes": 64838,
+      "sha256": "6bdac6df2d5957e9e1848b244f8f5661f71290e264720dac8691cb530d0cd0ba"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/processed-v1/img/scene-vn-courtyard-dawn.webp",
+      "bytes": 242650,
+      "sha256": "d245f4f8613b4c34338d71a2035264b9019031383e4ca72a4c0b4377b986345b"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/processed-v1/img/scene-vn-courtyard-day.webp",
+      "bytes": 257158,
+      "sha256": "5dfa933a0fd44f9980900a95056b3e887937ef68032f817ce156f0fbf5a962d2"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/processed-v1/img/scene-vn-courtyard-dusk.webp",
+      "bytes": 242104,
+      "sha256": "1ac33b116a5acb28df8b9fcc714de3c0f25a0a07247eb972fed9cda97b4ac338"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/processed-v1/img/scene-vn-courtyard-night.webp",
+      "bytes": 170332,
+      "sha256": "fc8d75d1460854b5c329d543e0c811030abeb8bbb394f5a582b2dd0cebfd5ed0"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/processed-v1/img/scene-vn-hall-front-dawn.webp",
+      "bytes": 268838,
+      "sha256": "8935e6292f4ddc47dc333e52e8bf985bb1aa610bb910ce6798c58b9a9666f95b"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/processed-v1/img/scene-vn-hall-front-day.webp",
+      "bytes": 259632,
+      "sha256": "8cc77cd8fa19e65f0b09d5c9169d2fb17beb2d24b101c6fb797e426b97ee3bf0"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/processed-v1/img/scene-vn-hall-front-dusk.webp",
+      "bytes": 219968,
+      "sha256": "11758be9067c534784625a4f060660c1455fc1b6bf069ea8a01288a6ad766dac"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/processed-v1/img/scene-vn-hall-front-night.webp",
+      "bytes": 180248,
+      "sha256": "cf1db52070aad3ae348977b6db6e1a0702261b8bdfc816f46c6d581eb3aed059"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/processed-v1/img/scene-vn-hall-side-dawn.webp",
+      "bytes": 211802,
+      "sha256": "66a0c7d5ee0115b5a95481e3ff95d80bd22f2f704db8c23bee3f81daa2668b23"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/processed-v1/img/scene-vn-hall-side-day.webp",
+      "bytes": 233524,
+      "sha256": "ec24694a84af0a163a9eb620d208dddc7072d6396697bd48e83899b819c4790e"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/processed-v1/img/scene-vn-hall-side-dusk.webp",
+      "bytes": 206824,
+      "sha256": "f00742e73b109f2ea622643792a32057aa82a0994e3e823d8218f83c28870ceb"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/processed-v1/img/scene-vn-hall-side-night.webp",
+      "bytes": 165192,
+      "sha256": "8c91db27ae35a03585c4dd7f66ec0595c9e871896387dbd192009cd431cdcdd9"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/processed-v1/img/visitor-bun-dark-beads.webp",
+      "bytes": 56430,
+      "sha256": "579071a5a89f8453251b3380f0db56c9e62aa0c8529d1c427c883ed67dedb6d3"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/processed-v1/img/visitor-bun-dark-bow-1.webp",
+      "bytes": 40788,
+      "sha256": "f5414fb245ebb2b757e6b2e1574a1e98bcb4f58cf631d3a7a22f9664479734bd"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/processed-v1/img/visitor-bun-dark-bow-2.webp",
+      "bytes": 47390,
+      "sha256": "632e3b383e5313aba438e3e16456be0c2b9dd7e4a6ce2d17c0ccc799d72238d6"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/processed-v1/img/visitor-bun-dark-bow-3.webp",
+      "bytes": 29834,
+      "sha256": "9bc2b438b7c77e7611832a49626f12e17c5a77ae4153a8e7d6b93071c1264a76"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/processed-v1/img/visitor-bun-dark-choose-v1.webp",
+      "bytes": 11180,
+      "sha256": "f861d3bd38b569256df219d9fc0b3092a8cfa18c987ffcffac32a6b33b97dbf8"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/processed-v1/img/visitor-bun-dark-sit.webp",
+      "bytes": 54036,
+      "sha256": "e02857ffa289a6c1144e2d159dfe2901e378f73f7713aa6158ca61e10c1ef10d"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/processed-v1/img/visitor-bun-light-beads.webp",
+      "bytes": 57110,
+      "sha256": "99bc26897db6679715367fcbf352f68a69c6b3674c42414b2a650995e7ae86b1"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/processed-v1/img/visitor-bun-light-bow-1.webp",
+      "bytes": 44846,
+      "sha256": "e909295668352ce521bab11abeecced0d4b056f9483ca064cde8a11679da1cb1"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/processed-v1/img/visitor-bun-light-bow-2.webp",
+      "bytes": 51596,
+      "sha256": "a7a54be832aa48cc6d3f39c168622edef3ac9f9f062db0357fbc077c0ea4220f"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/processed-v1/img/visitor-bun-light-bow-3.webp",
+      "bytes": 32902,
+      "sha256": "dae678b82eb0de61151c4ca0ea2bbd6539fe45a20eb7069a84545fd6f4b6a6c8"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/processed-v1/img/visitor-bun-light-choose-v1.webp",
+      "bytes": 11510,
+      "sha256": "ed62345224b0519106afcd56f3ff8ed8ce2543884f8d704b21c4e3541e61dc68"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/processed-v1/img/visitor-bun-light-sit.webp",
+      "bytes": 55450,
+      "sha256": "5188aa4c770134aab2433502a88be8775fa9e49353b49a10f07b6d555009541b"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/processed-v1/img/visitor-curly-dark-beads.webp",
+      "bytes": 56226,
+      "sha256": "cf998b1adc9d817d50f3937057c02fe09d9cb401d93bc7ab7f52c86361df46ad"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/processed-v1/img/visitor-curly-dark-bow-1.webp",
+      "bytes": 33830,
+      "sha256": "ca0925fcdf8ef1c1d6e62bce75ff8796631cabb9cabd2d3ddbcfefec918a427c"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/processed-v1/img/visitor-curly-dark-bow-2.webp",
+      "bytes": 39228,
+      "sha256": "975dc2fe5e475501847b2bea60246ff9a28597887257835b6dab51b0341f6081"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/processed-v1/img/visitor-curly-dark-bow-3.webp",
+      "bytes": 30510,
+      "sha256": "194cbc177eb47ff584a18266954a4648a5adf42a13bd0837db460d0e96cbab41"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/processed-v1/img/visitor-curly-dark-choose-v1.webp",
+      "bytes": 11424,
+      "sha256": "55154f21b72e9537522a14e236dc08930b7f4511edbfa60a127f0ff2589e9364"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/processed-v1/img/visitor-curly-dark-sit.webp",
+      "bytes": 54338,
+      "sha256": "6a037c2d27f56d15fefd304d4941e186fbc1e009341063a311d396d0fe682c07"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/processed-v1/img/visitor-curly-medium-beads.webp",
+      "bytes": 59230,
+      "sha256": "1efdb40aa18f5485ca3f2519b5abeb0f5b757634df30404e821966da04c676fc"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/processed-v1/img/visitor-curly-medium-bow-1.webp",
+      "bytes": 35876,
+      "sha256": "be4619123042694fb6e38a5fa2ddd3ccc0a83ee9402dfc5ccd565b02f47d2f7e"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/processed-v1/img/visitor-curly-medium-bow-2.webp",
+      "bytes": 40866,
+      "sha256": "b7efbe314434f6ef617b2f404fda1cb78408914945fe823a7fc62b60c92be11a"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/processed-v1/img/visitor-curly-medium-bow-3.webp",
+      "bytes": 31596,
+      "sha256": "557a911455d6710489b55af16d106e7759b1258e01a1d5d4d6dfa019d2fa9b0d"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/processed-v1/img/visitor-curly-medium-choose-v1.webp",
+      "bytes": 11568,
+      "sha256": "df0dd68a2f465f02ddbd05763b381ba697b27d72b7bf4963b6e03c8701ade0c7"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/processed-v1/img/visitor-curly-medium-sit.webp",
+      "bytes": 55070,
+      "sha256": "18245577a9844f23b736cc8744750eb9017a9c46b77046aa7f121f73c14e0d9c"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/processed-v1/img/visitor-ponytail-medium-beads.webp",
+      "bytes": 58494,
+      "sha256": "6649a4f3222e7d74b9cdad736c2b0f163492ec070189eaf1db8601fe8970f00e"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/processed-v1/img/visitor-ponytail-medium-bow-1.webp",
+      "bytes": 44122,
+      "sha256": "c1529fff89a984e5ba3328afab6206127b09ea7d5e0a811b13c406a5b3014d10"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/processed-v1/img/visitor-ponytail-medium-bow-2.webp",
+      "bytes": 49892,
+      "sha256": "a3fddbf6ef47e238135482905bcf271a75b02ddda5462252141a70bd1d143765"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/processed-v1/img/visitor-ponytail-medium-bow-3.webp",
+      "bytes": 31014,
+      "sha256": "af76e9e0a18c387d1fba42891128103b73e9ec4048809a71923c3b6e75bd4042"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/processed-v1/img/visitor-ponytail-medium-choose-v1.webp",
+      "bytes": 11898,
+      "sha256": "9706f75f03b64880590db93c3be8f7a5013b9e31332ccba8267944b0fd6b34f0"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/processed-v1/img/visitor-ponytail-medium-sit.webp",
+      "bytes": 58894,
+      "sha256": "4b2458141ddc2471758273adb532c8cecf4204c9efcbccc9fbfb34e40fd3ddcc"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/processed-v1/img/visitor-short-light-beads.webp",
+      "bytes": 59120,
+      "sha256": "c895ceb9bf1c73b37e65c12be22b988c4840f9cc6c48c35580c736a8d335a071"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/processed-v1/img/visitor-short-light-bow-1.webp",
+      "bytes": 35726,
+      "sha256": "f1d3da17a54c8276b39eea6aa1cfd866c4a36795d15c04f2973e73ad7cf7fbaf"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/processed-v1/img/visitor-short-light-bow-2.webp",
+      "bytes": 42458,
+      "sha256": "dafc7056b08019dcd669368dd1186cc3680b92e395a9df303cfe67855f7adb0f"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/processed-v1/img/visitor-short-light-bow-3.webp",
+      "bytes": 32086,
+      "sha256": "749a8bec5291c9bcb9f9a2dbe55df4830983550a14a8002bc7e9bc9f8f0c4441"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/processed-v1/img/visitor-short-light-choose-v1.webp",
+      "bytes": 11628,
+      "sha256": "362065b5fcaef8ae2db873c06db51353dfb2620220b2ff769c98d59c7d1ec1fd"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/processed-v1/img/visitor-short-light-sit.webp",
+      "bytes": 54276,
+      "sha256": "b4e9a0136f7a574a8596302a5af9d57933c3ef7d862b008b48a155ed56ee026f"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/processed-v1/layout-v1.json",
+      "bytes": 5970,
+      "sha256": "7f7dfc054ef209502aa2cc55f085494667f198f3883224b7f85ce2a595972a61"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/processed-v1/mobile/measurements.json",
+      "bytes": 1958,
+      "sha256": "6a259d4c257687782666dde4d492a6a5d84d1690dca859462d5cbd123107ead3"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/processed-v1/mobile/scene-vn-courtyard-dawn.webp",
+      "bytes": 102184,
+      "sha256": "add4fecd1b773aa97603a16715a396f952a96755d0879ba7753daa492c3a63b6"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/processed-v1/mobile/scene-vn-courtyard-day.webp",
+      "bytes": 116192,
+      "sha256": "496606c44c8fbb8cf24ef8c05de6d802c5064be9768b7d9d5f27a64a3f6cc16d"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/processed-v1/mobile/scene-vn-courtyard-dusk.webp",
+      "bytes": 107178,
+      "sha256": "a7e4f2d29c2f1a4e4a6d78bbcc3ed9e11317619665c3d9f79545e4c0e87e4495"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/processed-v1/mobile/scene-vn-courtyard-night.webp",
+      "bytes": 90898,
+      "sha256": "587bda7b92e9917d0fb8cf2406744b1e29aac565f331d3f6b6b1d889136a7d5a"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/processed-v1/mobile/scene-vn-hall-front-dawn.webp",
+      "bytes": 108438,
+      "sha256": "d6f9f06810e1e323ec4485a4a57eca880289102b7ae25b702f390a3d44561e5b"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/processed-v1/mobile/scene-vn-hall-front-day.webp",
+      "bytes": 105608,
+      "sha256": "230911845f1ac620385dab4a7b3e25223ff2b1613d30ab03ac0adaad0333a7ea"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/processed-v1/mobile/scene-vn-hall-front-dusk.webp",
+      "bytes": 111740,
+      "sha256": "511894f7973931eac5c34a75a24500cffdf406ae0f9c53763b8377d47636e73d"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/processed-v1/mobile/scene-vn-hall-front-night.webp",
+      "bytes": 83356,
+      "sha256": "6ef3d7f7d14a120373661fddf2bd2d9cba16f539d4da3cb896332da06b31d8cc"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/processed-v1/mobile/scene-vn-hall-side-dawn.webp",
+      "bytes": 112920,
+      "sha256": "7d4cbdc5a4786bd3e48e3b551ea212da1a03f11c0b6d17fc1ce314b9d22bd3b5"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/processed-v1/mobile/scene-vn-hall-side-day.webp",
+      "bytes": 95176,
+      "sha256": "f3f0562e1b189f779ef13fd228afc899e54d9522f88d7feeee9535a6dff62da4"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/processed-v1/mobile/scene-vn-hall-side-dusk.webp",
+      "bytes": 99806,
+      "sha256": "4adbdf8ab4a127c3ff03a0fd0690661d6513c05567ad5b8eb309f6837b400540"
+    },
+    {
+      "path": "assets/releases/22a76741d1d7/processed-v1/mobile/scene-vn-hall-side-night.webp",
+      "bytes": 74648,
+      "sha256": "71a8205b6f26ee5daf35225ba1cef4722dbdb6ffc9361ebc42247f9c73667156"
+    },
+    {
+      "path": "audio.22a76741d1d7.js",
+      "bytes": 7485,
+      "sha256": "91d89b8dd832b0640389761a3080726f399cbf406bfed1374834b98d8d0999a1"
+    },
+    {
+      "path": "beads.22a76741d1d7.js",
+      "bytes": 5587,
+      "sha256": "38eaa3732c030516cf333a38ca5db8c9c5901e6c1a10248bd857dcf31a91fa77"
+    },
+    {
+      "path": "bow.22a76741d1d7.js",
+      "bytes": 474,
+      "sha256": "7aab43cd7dde0435470dc557a4ee4d46ef4da85e68fbc195a77d3b0c9fa5c1dd"
+    },
+    {
+      "path": "dieu-khoan.html",
+      "bytes": 1568,
+      "sha256": "146e3fb3ca13893e9c55a6f9bb8df7dd2c0cd980b818e66e7e54a0e3f645572e"
+    },
+    {
+      "path": "gioi-thieu.html",
+      "bytes": 3672,
+      "sha256": "27a806f8ee37ba3fb2177c48dd56926a9fb5cd1476da5f0382d0d9b00473e340"
+    },
+    {
+      "path": "i18n.22a76741d1d7.js",
+      "bytes": 10437,
+      "sha256": "073c976af1ace0962e38314539e4199067c2ff42708b8c4d7b095e40258aa3a0"
+    },
+    {
+      "path": "index.html",
+      "bytes": 4176,
+      "sha256": "622c262fcb959858a691b19bd6a263b525109f77c0b1ecc34b4f10323c16b84b"
+    },
+    {
+      "path": "quyen-rieng-tu.html",
+      "bytes": 3123,
+      "sha256": "45ac000507cd06540ba59d4d8b388b4d58102684752ff5208005e813417602fc"
+    },
+    {
+      "path": "release.json",
+      "bytes": 27,
+      "sha256": "f506392007513ccb416bb369908d10c8f4975de4945b5cadc772260ac45544c9"
+    },
+    {
+      "path": "resources.22a76741d1d7.js",
+      "bytes": 2059,
+      "sha256": "eaf2a7ba43016f91a39cf41462a5a438cd2e824aef9a9ab38d4f2d985b9b5863"
+    },
+    {
+      "path": "styles.22a76741d1d7.css",
+      "bytes": 25348,
+      "sha256": "4329451feeae126e049c357db9eff0b36abfb7a957a6830198cb9bdce4156c5a"
+    },
+    {
+      "path": "telegram.22a76741d1d7.js",
+      "bytes": 2265,
+      "sha256": "f7a4fbbbcebd37042191a29dd6b335193922c3cff0790133c4b07eed2ae81a88"
+    }
+  ]
+}

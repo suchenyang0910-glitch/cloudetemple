@@ -6,7 +6,7 @@ for(const [host,port,env,mini,api] of [['h5',8800,'production',false,false],['mi
   add_header Referrer-Policy strict-origin-when-cross-origin always;
   add_header Permissions-Policy "camera=(), microphone=(), geolocation=()" always;
   add_header Strict-Transport-Security "max-age=31536000" always;
-  ${host==='miniapp'?'':'add_header X-Frame-Options DENY always;'}
+  ${host==='miniapp'?'add_header X-Robots-Tag noindex always;':'add_header X-Frame-Options DENY always;'}
   add_header Content-Security-Policy "${csp.replace('SCRIPT',mini?'https://telegram.org':'').replace('FRAME',host==='miniapp'?'https://web.telegram.org':"'none'")}" always;`;
   const proxy=`proxy_pass http://127.0.0.1:${env==='staging'?8791:8790};
       proxy_set_header X-Chuamay-Peer $http_x_chuamay_peer;

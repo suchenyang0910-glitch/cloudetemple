@@ -1,0 +1,610 @@
+[
+  {
+    "host": "h5.chuamay.org",
+    "index": 200,
+    "sha256": "match",
+    "headers": {
+      "date": "Thu, 05 Nov 2026 17:28:50 GMT",
+      "content-type": "text/html",
+      "transfer-encoding": "chunked",
+      "connection": "keep-alive",
+      "accept-ranges": "bytes",
+      "alt-svc": "h3=\":443\"; ma=86400",
+      "cache-control": "no-cache",
+      "content-security-policy": "default-src 'self'; script-src 'self' https://static.cloudflareinsights.com ; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src 'self' https://cloudflareinsights.com https://api.chuamay.org; media-src 'self' blob:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'",
+      "report-to": "{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=rLHAvsYORrwOxL7tv3YelEXbAElo1dHfIsRuLJuEgJbexTXhGnK5im1A690qPbLmNYZscxNLpemWXwV9DZhh3rlqVFNGoiJu4m1r7E7q3EjHHecrQy1Xg9lQqjOvIFrVHA%3D%3D\"}]}",
+      "last-modified": "Thu, 05 Nov 2026 17:15:13 GMT",
+      "permissions-policy": "camera=(), microphone=(), geolocation=()",
+      "referrer-policy": "strict-origin-when-cross-origin",
+      "server": "cloudflare",
+      "strict-transport-security": "max-age=31536000",
+      "x-content-type-options": "nosniff",
+      "x-frame-options": "DENY",
+      "cf-cache-status": "DYNAMIC",
+      "nel": "{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}",
+      "cf-ray": "a55d93c23cccfda6-SIN"
+    }
+  },
+  {
+    "host": "miniapp.chuamay.org",
+    "index": 200,
+    "sha256": "match",
+    "headers": {
+      "date": "Thu, 05 Nov 2026 17:28:50 GMT",
+      "content-type": "text/html",
+      "transfer-encoding": "chunked",
+      "connection": "keep-alive",
+      "accept-ranges": "bytes",
+      "alt-svc": "h3=\":443\"; ma=86400",
+      "cache-control": "no-cache",
+      "content-security-policy": "default-src 'self'; script-src 'self' https://static.cloudflareinsights.com https://telegram.org; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src 'self' https://cloudflareinsights.com https://api.chuamay.org; media-src 'self' blob:; object-src 'none'; base-uri 'self'; frame-ancestors https://web.telegram.org; form-action 'self'",
+      "report-to": "{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=hifKDdp1%2BTJZVQ%2BvZau1erVc016uRzFkBALNh5gPKQjUQTgzp%2FDk1O8FeMbZhHSkFStTMVCEEqyA%2By7cc%2FKIFz1stM6pRYZHAyvwqISYFVY1cWdb5iBefBsHY40Gzw39ivd5Tyit\"}]}",
+      "last-modified": "Thu, 05 Nov 2026 17:15:13 GMT",
+      "permissions-policy": "camera=(), microphone=(), geolocation=()",
+      "referrer-policy": "strict-origin-when-cross-origin",
+      "server": "cloudflare",
+      "strict-transport-security": "max-age=31536000",
+      "x-content-type-options": "nosniff",
+      "x-robots-tag": "noindex",
+      "cf-cache-status": "DYNAMIC",
+      "nel": "{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}",
+      "cf-ray": "a55d93c389a087d5-SIN"
+    }
+  },
+  {
+    "host": "h5.chuamay.org",
+    "file": "app.22a76741d1d7.js",
+    "status": 200,
+    "mime": "application/javascript",
+    "cache": "public, max-age=31536000, immutable",
+    "cf": "HIT",
+    "sha256": "match"
+  },
+  {
+    "host": "h5.chuamay.org",
+    "file": "assets/releases/22a76741d1d7/audio/ambient-courtyard.m4a",
+    "status": 200,
+    "mime": "audio/mp4",
+    "cache": "public, max-age=31536000, immutable",
+    "cf": "DYNAMIC",
+    "sha256": "match"
+  },
+  {
+    "host": "h5.chuamay.org",
+    "file": "assets/releases/22a76741d1d7/audio/ambient-courtyard.mp3",
+    "status": 200,
+    "mime": "audio/mpeg",
+    "cache": "public, max-age=31536000, immutable",
+    "cf": "MISS",
+    "sha256": "match"
+  },
+  {
+    "host": "h5.chuamay.org",
+    "file": "assets/releases/22a76741d1d7/audio/ambient-rain.m4a",
+    "status": 200,
+    "mime": "audio/mp4",
+    "cache": "public, max-age=31536000, immutable",
+    "cf": "DYNAMIC",
+    "sha256": "match"
+  },
+  {
+    "host": "h5.chuamay.org",
+    "file": "assets/releases/22a76741d1d7/audio/ambient-rain.mp3",
+    "status": 200,
+    "mime": "audio/mpeg",
+    "cache": "public, max-age=31536000, immutable",
+    "cf": "MISS",
+    "sha256": "match"
+  },
+  {
+    "host": "h5.chuamay.org",
+    "file": "assets/releases/22a76741d1d7/audio/bead-v1.m4a",
+    "status": 200,
+    "mime": "audio/mp4",
+    "cache": "public, max-age=31536000, immutable",
+    "cf": "DYNAMIC",
+    "sha256": "match"
+  },
+  {
+    "host": "h5.chuamay.org",
+    "file": "assets/releases/22a76741d1d7/audio/bead-v1.mp3",
+    "status": 200,
+    "mime": "audio/mpeg",
+    "cache": "public, max-age=31536000, immutable",
+    "cf": "MISS",
+    "sha256": "match"
+  },
+  {
+    "host": "h5.chuamay.org",
+    "file": "assets/releases/22a76741d1d7/audio/bell-v2.m4a",
+    "status": 200,
+    "mime": "audio/mp4",
+    "cache": "public, max-age=31536000, immutable",
+    "cf": "DYNAMIC",
+    "sha256": "match"
+  },
+  {
+    "host": "h5.chuamay.org",
+    "file": "assets/releases/22a76741d1d7/audio/bell-v2.mp3",
+    "status": 200,
+    "mime": "audio/mpeg",
+    "cache": "public, max-age=31536000, immutable",
+    "cf": "MISS",
+    "sha256": "match"
+  },
+  {
+    "host": "h5.chuamay.org",
+    "file": "assets/releases/22a76741d1d7/audio/keisu-v2.m4a",
+    "status": 200,
+    "mime": "audio/mp4",
+    "cache": "public, max-age=31536000, immutable",
+    "cf": "DYNAMIC",
+    "sha256": "match"
+  },
+  {
+    "host": "h5.chuamay.org",
+    "file": "assets/releases/22a76741d1d7/audio/keisu-v2.mp3",
+    "status": 200,
+    "mime": "audio/mpeg",
+    "cache": "public, max-age=31536000, immutable",
+    "cf": "HIT",
+    "sha256": "match"
+  },
+  {
+    "host": "h5.chuamay.org",
+    "file": "assets/releases/22a76741d1d7/audio/mo.m4a",
+    "status": 200,
+    "mime": "audio/mp4",
+    "cache": "public, max-age=31536000, immutable",
+    "cf": "DYNAMIC",
+    "sha256": "match"
+  },
+  {
+    "host": "h5.chuamay.org",
+    "file": "assets/releases/22a76741d1d7/audio/mo.mp3",
+    "status": 200,
+    "mime": "audio/mpeg",
+    "cache": "public, max-age=31536000, immutable",
+    "cf": "HIT",
+    "sha256": "match"
+  },
+  {
+    "host": "h5.chuamay.org",
+    "file": "assets/releases/22a76741d1d7/fonts/be-vietnam-pro-v12-400-latin.woff2",
+    "status": 200,
+    "mime": "font/woff2",
+    "cache": "public, max-age=31536000, immutable",
+    "cf": "MISS",
+    "sha256": "match"
+  },
+  {
+    "host": "h5.chuamay.org",
+    "file": "assets/releases/22a76741d1d7/fonts/be-vietnam-pro-v12-400-vietnamese.woff2",
+    "status": 200,
+    "mime": "font/woff2",
+    "cache": "public, max-age=31536000, immutable",
+    "cf": "MISS",
+    "sha256": "match"
+  },
+  {
+    "host": "h5.chuamay.org",
+    "file": "assets/releases/22a76741d1d7/fonts/be-vietnam-pro-v12-500-latin.woff2",
+    "status": 200,
+    "mime": "font/woff2",
+    "cache": "public, max-age=31536000, immutable",
+    "cf": "HIT",
+    "sha256": "match"
+  },
+  {
+    "host": "h5.chuamay.org",
+    "file": "assets/releases/22a76741d1d7/fonts/be-vietnam-pro-v12-500-vietnamese.woff2",
+    "status": 200,
+    "mime": "font/woff2",
+    "cache": "public, max-age=31536000, immutable",
+    "cf": "HIT",
+    "sha256": "match"
+  },
+  {
+    "host": "h5.chuamay.org",
+    "file": "assets/releases/22a76741d1d7/fonts/be-vietnam-pro-v12-600-latin.woff2",
+    "status": 200,
+    "mime": "font/woff2",
+    "cache": "public, max-age=31536000, immutable",
+    "cf": "HIT",
+    "sha256": "match"
+  },
+  {
+    "host": "h5.chuamay.org",
+    "file": "assets/releases/22a76741d1d7/fonts/be-vietnam-pro-v12-600-vietnamese.woff2",
+    "status": 200,
+    "mime": "font/woff2",
+    "cache": "public, max-age=31536000, immutable",
+    "cf": "HIT",
+    "sha256": "match"
+  },
+  {
+    "host": "h5.chuamay.org",
+    "file": "assets/releases/22a76741d1d7/processed-v1/img/bead-guru-v2.webp",
+    "status": 200,
+    "mime": "image/webp",
+    "cache": "public, max-age=31536000, immutable",
+    "cf": "HIT",
+    "sha256": "match"
+  },
+  {
+    "host": "h5.chuamay.org",
+    "file": "assets/releases/22a76741d1d7/processed-v1/img/bead-spacer-v2.webp",
+    "status": 200,
+    "mime": "image/webp",
+    "cache": "public, max-age=31536000, immutable",
+    "cf": "HIT",
+    "sha256": "match"
+  },
+  {
+    "host": "h5.chuamay.org",
+    "file": "assets/releases/22a76741d1d7/processed-v1/img/bead-wood-v2.webp",
+    "status": 200,
+    "mime": "image/webp",
+    "cache": "public, max-age=31536000, immutable",
+    "cf": "HIT",
+    "sha256": "match"
+  },
+  {
+    "host": "h5.chuamay.org",
+    "file": "assets/releases/22a76741d1d7/processed-v1/img/mo.webp",
+    "status": 200,
+    "mime": "image/webp",
+    "cache": "public, max-age=31536000, immutable",
+    "cf": "HIT",
+    "sha256": "match"
+  },
+  {
+    "host": "h5.chuamay.org",
+    "file": "audio.22a76741d1d7.js",
+    "status": 200,
+    "mime": "application/javascript",
+    "cache": "public, max-age=31536000, immutable",
+    "cf": "HIT",
+    "sha256": "match"
+  },
+  {
+    "host": "h5.chuamay.org",
+    "file": "beads.22a76741d1d7.js",
+    "status": 200,
+    "mime": "application/javascript",
+    "cache": "public, max-age=31536000, immutable",
+    "cf": "HIT",
+    "sha256": "match"
+  },
+  {
+    "host": "h5.chuamay.org",
+    "file": "bow.22a76741d1d7.js",
+    "status": 200,
+    "mime": "application/javascript",
+    "cache": "public, max-age=31536000, immutable",
+    "cf": "HIT",
+    "sha256": "match"
+  },
+  {
+    "host": "h5.chuamay.org",
+    "file": "i18n.22a76741d1d7.js",
+    "status": 200,
+    "mime": "application/javascript",
+    "cache": "public, max-age=31536000, immutable",
+    "cf": "HIT",
+    "sha256": "match"
+  },
+  {
+    "host": "h5.chuamay.org",
+    "file": "resources.22a76741d1d7.js",
+    "status": 200,
+    "mime": "application/javascript",
+    "cache": "public, max-age=31536000, immutable",
+    "cf": "MISS",
+    "sha256": "match"
+  },
+  {
+    "host": "h5.chuamay.org",
+    "file": "styles.22a76741d1d7.css",
+    "status": 200,
+    "mime": "text/css",
+    "cache": "public, max-age=31536000, immutable",
+    "cf": "HIT",
+    "sha256": "match"
+  },
+  {
+    "host": "h5.chuamay.org",
+    "file": "telegram.22a76741d1d7.js",
+    "status": 200,
+    "mime": "application/javascript",
+    "cache": "public, max-age=31536000, immutable",
+    "cf": "HIT",
+    "sha256": "match"
+  },
+  {
+    "host": "miniapp.chuamay.org",
+    "file": "app.22a76741d1d7.js",
+    "status": 200,
+    "mime": "application/javascript",
+    "cache": "public, max-age=31536000, immutable",
+    "cf": "HIT",
+    "sha256": "match"
+  },
+  {
+    "host": "miniapp.chuamay.org",
+    "file": "assets/releases/22a76741d1d7/audio/ambient-courtyard.m4a",
+    "status": 200,
+    "mime": "audio/mp4",
+    "cache": "public, max-age=31536000, immutable",
+    "cf": "DYNAMIC",
+    "sha256": "match"
+  },
+  {
+    "host": "miniapp.chuamay.org",
+    "file": "assets/releases/22a76741d1d7/audio/ambient-courtyard.mp3",
+    "status": 200,
+    "mime": "audio/mpeg",
+    "cache": "public, max-age=31536000, immutable",
+    "cf": "MISS",
+    "sha256": "match"
+  },
+  {
+    "host": "miniapp.chuamay.org",
+    "file": "assets/releases/22a76741d1d7/audio/ambient-rain.m4a",
+    "status": 200,
+    "mime": "audio/mp4",
+    "cache": "public, max-age=31536000, immutable",
+    "cf": "DYNAMIC",
+    "sha256": "match"
+  },
+  {
+    "host": "miniapp.chuamay.org",
+    "file": "assets/releases/22a76741d1d7/audio/ambient-rain.mp3",
+    "status": 200,
+    "mime": "audio/mpeg",
+    "cache": "public, max-age=31536000, immutable",
+    "cf": "HIT",
+    "sha256": "match"
+  },
+  {
+    "host": "miniapp.chuamay.org",
+    "file": "assets/releases/22a76741d1d7/audio/bead-v1.m4a",
+    "status": 200,
+    "mime": "audio/mp4",
+    "cache": "public, max-age=31536000, immutable",
+    "cf": "DYNAMIC",
+    "sha256": "match"
+  },
+  {
+    "host": "miniapp.chuamay.org",
+    "file": "assets/releases/22a76741d1d7/audio/bead-v1.mp3",
+    "status": 200,
+    "mime": "audio/mpeg",
+    "cache": "public, max-age=31536000, immutable",
+    "cf": "HIT",
+    "sha256": "match"
+  },
+  {
+    "host": "miniapp.chuamay.org",
+    "file": "assets/releases/22a76741d1d7/audio/bell-v2.m4a",
+    "status": 200,
+    "mime": "audio/mp4",
+    "cache": "public, max-age=31536000, immutable",
+    "cf": "DYNAMIC",
+    "sha256": "match"
+  },
+  {
+    "host": "miniapp.chuamay.org",
+    "file": "assets/releases/22a76741d1d7/audio/bell-v2.mp3",
+    "status": 200,
+    "mime": "audio/mpeg",
+    "cache": "public, max-age=31536000, immutable",
+    "cf": "MISS",
+    "sha256": "match"
+  },
+  {
+    "host": "miniapp.chuamay.org",
+    "file": "assets/releases/22a76741d1d7/audio/keisu-v2.m4a",
+    "status": 200,
+    "mime": "audio/mp4",
+    "cache": "public, max-age=31536000, immutable",
+    "cf": "DYNAMIC",
+    "sha256": "match"
+  },
+  {
+    "host": "miniapp.chuamay.org",
+    "file": "assets/releases/22a76741d1d7/audio/keisu-v2.mp3",
+    "status": 200,
+    "mime": "audio/mpeg",
+    "cache": "public, max-age=31536000, immutable",
+    "cf": "MISS",
+    "sha256": "match"
+  },
+  {
+    "host": "miniapp.chuamay.org",
+    "file": "assets/releases/22a76741d1d7/audio/mo.m4a",
+    "status": 200,
+    "mime": "audio/mp4",
+    "cache": "public, max-age=31536000, immutable",
+    "cf": "DYNAMIC",
+    "sha256": "match"
+  },
+  {
+    "host": "miniapp.chuamay.org",
+    "file": "assets/releases/22a76741d1d7/audio/mo.mp3",
+    "status": 200,
+    "mime": "audio/mpeg",
+    "cache": "public, max-age=31536000, immutable",
+    "cf": "MISS",
+    "sha256": "match"
+  },
+  {
+    "host": "miniapp.chuamay.org",
+    "file": "assets/releases/22a76741d1d7/fonts/be-vietnam-pro-v12-400-latin.woff2",
+    "status": 200,
+    "mime": "font/woff2",
+    "cache": "public, max-age=31536000, immutable",
+    "cf": "MISS",
+    "sha256": "match"
+  },
+  {
+    "host": "miniapp.chuamay.org",
+    "file": "assets/releases/22a76741d1d7/fonts/be-vietnam-pro-v12-400-vietnamese.woff2",
+    "status": 200,
+    "mime": "font/woff2",
+    "cache": "public, max-age=31536000, immutable",
+    "cf": "MISS",
+    "sha256": "match"
+  },
+  {
+    "host": "miniapp.chuamay.org",
+    "file": "assets/releases/22a76741d1d7/fonts/be-vietnam-pro-v12-500-latin.woff2",
+    "status": 200,
+    "mime": "font/woff2",
+    "cache": "public, max-age=31536000, immutable",
+    "cf": "MISS",
+    "sha256": "match"
+  },
+  {
+    "host": "miniapp.chuamay.org",
+    "file": "assets/releases/22a76741d1d7/fonts/be-vietnam-pro-v12-500-vietnamese.woff2",
+    "status": 200,
+    "mime": "font/woff2",
+    "cache": "public, max-age=31536000, immutable",
+    "cf": "MISS",
+    "sha256": "match"
+  },
+  {
+    "host": "miniapp.chuamay.org",
+    "file": "assets/releases/22a76741d1d7/fonts/be-vietnam-pro-v12-600-latin.woff2",
+    "status": 200,
+    "mime": "font/woff2",
+    "cache": "public, max-age=31536000, immutable",
+    "cf": "HIT",
+    "sha256": "match"
+  },
+  {
+    "host": "miniapp.chuamay.org",
+    "file": "assets/releases/22a76741d1d7/fonts/be-vietnam-pro-v12-600-vietnamese.woff2",
+    "status": 200,
+    "mime": "font/woff2",
+    "cache": "public, max-age=31536000, immutable",
+    "cf": "HIT",
+    "sha256": "match"
+  },
+  {
+    "host": "miniapp.chuamay.org",
+    "file": "assets/releases/22a76741d1d7/processed-v1/img/bead-guru-v2.webp",
+    "status": 200,
+    "mime": "image/webp",
+    "cache": "public, max-age=31536000, immutable",
+    "cf": "MISS",
+    "sha256": "match"
+  },
+  {
+    "host": "miniapp.chuamay.org",
+    "file": "assets/releases/22a76741d1d7/processed-v1/img/bead-spacer-v2.webp",
+    "status": 200,
+    "mime": "image/webp",
+    "cache": "public, max-age=31536000, immutable",
+    "cf": "MISS",
+    "sha256": "match"
+  },
+  {
+    "host": "miniapp.chuamay.org",
+    "file": "assets/releases/22a76741d1d7/processed-v1/img/bead-wood-v2.webp",
+    "status": 200,
+    "mime": "image/webp",
+    "cache": "public, max-age=31536000, immutable",
+    "cf": "MISS",
+    "sha256": "match"
+  },
+  {
+    "host": "miniapp.chuamay.org",
+    "file": "assets/releases/22a76741d1d7/processed-v1/img/mo.webp",
+    "status": 200,
+    "mime": "image/webp",
+    "cache": "public, max-age=31536000, immutable",
+    "cf": "HIT",
+    "sha256": "match"
+  },
+  {
+    "host": "miniapp.chuamay.org",
+    "file": "audio.22a76741d1d7.js",
+    "status": 200,
+    "mime": "application/javascript",
+    "cache": "public, max-age=31536000, immutable",
+    "cf": "HIT",
+    "sha256": "match"
+  },
+  {
+    "host": "miniapp.chuamay.org",
+    "file": "beads.22a76741d1d7.js",
+    "status": 200,
+    "mime": "application/javascript",
+    "cache": "public, max-age=31536000, immutable",
+    "cf": "MISS",
+    "sha256": "match"
+  },
+  {
+    "host": "miniapp.chuamay.org",
+    "file": "bow.22a76741d1d7.js",
+    "status": 200,
+    "mime": "application/javascript",
+    "cache": "public, max-age=31536000, immutable",
+    "cf": "HIT",
+    "sha256": "match"
+  },
+  {
+    "host": "miniapp.chuamay.org",
+    "file": "i18n.22a76741d1d7.js",
+    "status": 200,
+    "mime": "application/javascript",
+    "cache": "public, max-age=31536000, immutable",
+    "cf": "HIT",
+    "sha256": "match"
+  },
+  {
+    "host": "miniapp.chuamay.org",
+    "file": "resources.22a76741d1d7.js",
+    "status": 200,
+    "mime": "application/javascript",
+    "cache": "public, max-age=31536000, immutable",
+    "cf": "MISS",
+    "sha256": "match"
+  },
+  {
+    "host": "miniapp.chuamay.org",
+    "file": "styles.22a76741d1d7.css",
+    "status": 200,
+    "mime": "text/css",
+    "cache": "public, max-age=31536000, immutable",
+    "cf": "HIT",
+    "sha256": "match"
+  },
+  {
+    "host": "miniapp.chuamay.org",
+    "file": "telegram.22a76741d1d7.js",
+    "status": 200,
+    "mime": "application/javascript",
+    "cache": "public, max-age=31536000, immutable",
+    "cf": "HIT",
+    "sha256": "match"
+  },
+  {
+    "cacheRepeat": "h5.chuamay.org/assets/releases/22a76741d1d7/audio/mo.mp3",
+    "cf": "HIT"
+  },
+  {
+    "cacheRepeat": "h5.chuamay.org/assets/releases/22a76741d1d7/processed-v1/img/mo.webp",
+    "cf": "HIT"
+  },
+  {
+    "cacheRepeat": "miniapp.chuamay.org/assets/releases/22a76741d1d7/audio/mo.mp3",
+    "cf": "HIT"
+  },
+  {
+    "cacheRepeat": "miniapp.chuamay.org/assets/releases/22a76741d1d7/processed-v1/img/mo.webp",
+    "cf": "HIT"
+  }
+]

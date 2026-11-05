@@ -1,0 +1,13 @@
+{
+  "frontend": "22a76741d1d7",
+  "backendCommit": "890186098a0c",
+  "productionPath": "/opt/chuamay/production/releases/22a76741d1d7",
+  "healthz": 200,
+  "service": "active",
+  "envPermissions": "600 chuamay:chuamay",
+  "backendFileHashes": {
+    "security.mjs": "d629e499def5e3751643c7230c1e88c0d9d80455ed713b5e9154d3bcacb78fda",
+    "app.mjs": "8d2af11ef2abcec189db2e497fd04320fe63da2ff55b598ca74314eb323fc7ec"
+  },
+  "verifiedUTC": "2026-11-05T17:31:02Z"
+}

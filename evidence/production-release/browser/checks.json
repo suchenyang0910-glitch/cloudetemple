@@ -1,0 +1,98 @@
+[
+  {
+    "engine": "chromium",
+    "host": "h5.chuamay.org",
+    "viewport": [
+      375,
+      548
+    ],
+    "fullFlow": true,
+    "errors": [],
+    "resourceErrors": [],
+    "invalidFormNoRequest": true
+  },
+  {
+    "engine": "chromium",
+    "host": "h5.chuamay.org",
+    "viewport": [
+      393,
+      659
+    ],
+    "fullFlow": true,
+    "errors": [],
+    "resourceErrors": [],
+    "invalidFormNoRequest": true
+  },
+  {
+    "engine": "chromium",
+    "host": "miniapp.chuamay.org",
+    "viewport": [
+      375,
+      548
+    ],
+    "fullFlow": true,
+    "errors": [],
+    "resourceErrors": [],
+    "invalidFormNoRequest": true
+  },
+  {
+    "engine": "chromium",
+    "host": "miniapp.chuamay.org",
+    "viewport": [
+      393,
+      659
+    ],
+    "fullFlow": true,
+    "errors": [],
+    "resourceErrors": [],
+    "invalidFormNoRequest": true
+  },
+  {
+    "engine": "webkit",
+    "host": "h5.chuamay.org",
+    "viewport": [
+      375,
+      548
+    ],
+    "fullFlow": true,
+    "errors": [],
+    "resourceErrors": [],
+    "invalidFormNoRequest": true
+  },
+  {
+    "engine": "webkit",
+    "host": "h5.chuamay.org",
+    "viewport": [
+      393,
+      659
+    ],
+    "fullFlow": true,
+    "errors": [],
+    "resourceErrors": [],
+    "invalidFormNoRequest": true
+  },
+  {
+    "engine": "webkit",
+    "host": "miniapp.chuamay.org",
+    "viewport": [
+      375,
+      548
+    ],
+    "fullFlow": true,
+    "errors": [],
+    "resourceErrors": [],
+    "invalidFormNoRequest": true
+  },
+  {
+    "engine": "webkit",
+    "host": "miniapp.chuamay.org",
+    "viewport": [
+      393,
+      659
+    ],
+    "fullFlow": true,
+    "errors": [],
+    "resourceErrors": [],
+    "invalidFormNoRequest": true
+  }
+]
