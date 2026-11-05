@@ -1,7 +1,7 @@
 // Every entry, including English, is pending Vietnamese native-speaker review.
 const entry=(vi,en)=>({vi,en,review:'待越南母语者审核'});
 export const copy={
-beadRound:entry('Vòng {n}','Round {n}'),beadAgain:entry('Tiếp tục vòng mới','Start another round'),leftHand:entry('Tay trái','Left hand'),rightHand:entry('Tay phải','Right hand'),switchHand:entry('Đổi tay trái / phải','Switch left / right hand'),
+beadRound:entry('Vòng {n}','Round {n}'),beadAgain:entry('Tiếp tục vòng mới','Start another round'),leftHand:entry('Tay trái','Left hand'),rightHand:entry('Tay phải','Right hand'),switchHand:entry('Đổi tay','Switch hand'),currentLeft:entry('Đang dùng tay trái','Currently using left hand'),currentRight:entry('Đang dùng tay phải','Currently using right hand'),
 reenter:entry('Vào lại','Enter again'),leaveNote:entry('Cảm ơn bạn đã ghé qua.','Thank you for stopping by.'),beadHint:entry('Chạm hoặc vuốt xuống để lần một hạt.','Tap or swipe down for one bead.'),
 imageLoading:entry('Đang tải hình ảnh…','Loading image…'),imageUnavailable:entry('Chưa tải được hình ảnh','Image unavailable'),
 mo:entry('Gõ mõ','Wooden fish'),moNote:entry('Từng nhịp, chậm rãi.','One gentle tap at a time.'),

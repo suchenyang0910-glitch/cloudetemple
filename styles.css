@@ -96,10 +96,11 @@ body[data-view=choose] .controls .primary{width:100%}
 body[data-hand=left] .bead-control{clip-path:inset(0 50% 0 0)}
 .bead-control:active{transform:none}.bead-control span{display:block;position:absolute;inset:auto;pointer-events:none}
 .bead-control .bead-track{inset:0;width:100%;height:100%}
-.strand-bead{position:absolute;top:0;left:0;width:var(--bead-size);height:var(--bead-size);border-radius:50%;background:repeating-linear-gradient(115deg,transparent 0 6px,#30241b25 7px 8px,transparent 9px 13px),radial-gradient(circle at 30% 25%,#998574,#705b49 65%,#493b30);border:1px solid #574535;will-change:transform,opacity}
-.strand-bead::after{content:'';position:absolute;left:45%;top:3px;width:10%;height:4px;border-radius:50%;background:#382d23}
-.strand-bead.spacer{background:repeating-linear-gradient(110deg,transparent 0 8px,#30241b35 9px 10px),radial-gradient(circle at 30% 25%,#7e6d5b,#493b2f 75%);outline:2px solid #675440}
-.strand-bead.guru{outline:2px solid #907a62}.strand-bead.guru::before{content:'';position:absolute;top:90%;left:38%;width:24%;height:28px;background:repeating-linear-gradient(90deg,#574635 0 1px,transparent 1px 3px)}
+.strand-bead{position:absolute;top:0;left:0;width:var(--bead-size);height:var(--bead-size);background:var(--bead-wood) center/contain no-repeat;will-change:transform,opacity}
+.strand-bead.spacer{background-image:var(--bead-spacer)}
+.strand-bead.guru{background:none;z-index:2}
+.strand-bead.guru::before{content:'';position:absolute;inset:0 0 auto;width:100%;height:calc(var(--bead-size) * 2.12);background:var(--bead-guru) top center/100% auto no-repeat;pointer-events:none}
+.hand-arrows{width:20px;height:20px;vertical-align:middle;margin-right:6px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
 .bead-control .bead-thread{border:1px solid #5a4838;border-radius:50%}
 .bead-control .thumb-point{width:68px;height:68px;transform:translate(-50%,-50%);border:1px solid #aa825750;border-radius:50%;background:#d6b38220}
 .bead-summary{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px}#bead-count{font-size:28px;line-height:1.4;font-variant-numeric:tabular-nums;min-width:8ch}

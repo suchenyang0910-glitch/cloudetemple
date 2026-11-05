@@ -1,3 +1,7 @@
+# Approved and integrated
+
+User explicitly approved these three files in the third-round four-point review. The exact WebP bytes are now copied to assets/processed-v1/img; v2 night dimming is retained. Previous review notes below are historical.
+
 # Bead art v2 — pending user review
 
 Generated with imagegen on 2026-11-05. Warm walnut, thin ink outline, watercolor wood grain; transparent background. Three separate original generations, originals retained locally. Cropped transparent margins and exported to WebP, each <20KB. New v2 filenames preserve previous review files.

@@ -53,6 +53,7 @@ async function prepare(view,period){
   const visitor=state.visitor;
   const scene=await image(sceneFile(view,period));
   const art={};
+  if(view==='beads')await Promise.all(['wood','spacer','guru'].map(kind=>image(`bead-${kind}-v2.webp`)));
   for(const pose of (view==='mo'?['mo','mo-mallet']:poses(view))){
     const name=view==='mo'?`${pose}.webp`:`visitor-${visitor}-${pose}.webp`,key=name+period;
     if(!tinted.has(key)){
@@ -185,7 +186,7 @@ function render(){
   }else if(state.view==='mo'){
     $('#controls').innerHTML=`<div class="stack"><p id="daily-wood" class="count">${t('dailyWood',{count:dailyWood()})}</p><p id="wood-message" role="status">${woodSession>=108?t('wood108'):''}</p><div class="row">${button(woodAuto?'woodStop':'woodAuto','wood-auto','primary',`aria-pressed="${!!woodAuto}"`)}${button('back','home')}</div></div>`;
   }else if(state.view==='beads'){
-    $('#controls').innerHTML=`<div class="beads-area"><button class="bead-control" id="bead-control" data-action="bead" aria-label="${escapeHTML(t('beadAction'))}"><span class="bead-thread" aria-hidden="true"></span><span class="thumb-point" aria-hidden="true"></span><span class="bead-track" aria-hidden="true">${Array.from({length:13},()=>'<i class="strand-bead"></i>').join('')}</span></button></div><div class="bead-summary"><span id="bead-count" role="status" aria-live="polite">${Math.min(108,state.bead)} / 108</span>${button(state.beadHand==='left'?'leftHand':'rightHand','bead-hand','','aria-label="'+escapeHTML(t('switchHand'))+'"')}</div>${button('back','home','back-button')}`;
+    $('#controls').innerHTML=`<div class="beads-area"><button class="bead-control" id="bead-control" data-action="bead" aria-label="${escapeHTML(t('beadAction'))}"><span class="bead-thread" aria-hidden="true"></span><span class="thumb-point" aria-hidden="true"></span><span class="bead-track" aria-hidden="true">${Array.from({length:13},()=>'<i class="strand-bead"></i>').join('')}</span></button></div><div class="bead-summary"><span id="bead-count" role="status" aria-live="polite">${Math.min(108,state.bead)} / 108</span><button type="button" data-action="bead-hand" aria-label="${escapeHTML(t('switchHand')+' · '+t(state.beadHand==='left'?'currentLeft':'currentRight'))}"><svg class="hand-arrows" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8h18M7 4 3 8l4 4m14 4H3m14-4 4 4-4 4"/></svg>${t('switchHand')}</button></div>${button('back','home','back-button')}`;
     beadCleanup?.();beadCleanup=mountBeads($('#bead-control'),{step:bead,count:state.bead,reduced:reduced.matches,left:state.beadHand==='left'});
   }
   $('#more-toggle').hidden=false;$('#more-toggle').setAttribute('aria-label',t('more'));

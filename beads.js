@@ -1,4 +1,4 @@
-// The pending artwork is deliberately not referenced here: CSS beads remain until review.
+import {assetURL} from './resources.js';
 export class BeadMotion {
  constructor(step){this.step=step;this.pitch=42;this.position=0;this.count=0;this.last=-Infinity;}
  begin(x,y,width=Infinity){this.start={x,y};this.origin=this.position;this.startCount=this.count;this.target=this.origin;this.axis=null;this.active=x>=20&&x<=width-20;}
@@ -9,7 +9,14 @@ export class BeadMotion {
   this.position=Math.min(this.target,next-0.01);
   if(this.target>=next&&now-this.last>=90){this.count++;this.last=now;this.position=next;this.step(this.count);}
  }
- end(){const tapped=this.active&&!this.axis;this.active=false;this.position=this.target<this.origin?this.origin:Math.round(this.position/this.pitch)*this.pitch;return tapped;}
+ end(now=performance.now(),commit=true){
+  const tapped=this.active&&!this.axis;
+  const advance=commit&&this.active&&this.axis==='y'&&this.position-this.count*this.pitch>this.pitch*.5;
+  this.active=false;
+  if(advance){this.count++;this.last=now;this.position=this.count*this.pitch;this.step(this.count);}
+  else this.position=this.count*this.pitch;
+  return tapped;
+ }
  tap(now){if(now-this.last<90)return false;this.count++;this.last=now;this.position+=this.pitch;this.step(this.count);return true;}
 }
 
@@ -22,6 +29,7 @@ export function beadArc(width,height,offset,left=false){
 export function mountBeads(el,{step,count=0,reduced=false,left=false}){
  const track=el.querySelector('.bead-track'),nodes=[...track.children],model=new BeadMotion(step);
  const area=el.parentElement;
+ for(const kind of ['wood','spacer','guru'])area.style.setProperty(`--bead-${kind}`,`url("${assetURL(`processed-v1/img/bead-${kind}-v2.webp`)}")`);
  let width=area.clientWidth,height=area.clientHeight;
  model.pitch=Math.max(48,Math.min(58,width*.142))+6;
  model.count=count;model.position=count*model.pitch;
@@ -29,7 +37,7 @@ export function mountBeads(el,{step,count=0,reduced=false,left=false}){
  const draw=position=>{
   const base=Math.floor(position/model.pitch),fraction=position/model.pitch-base;
   nodes.forEach((node,i)=>{
-   const offset=(i-7+fraction)*model.pitch,number=model.count+8-i;
+   const offset=(i-7+fraction)*model.pitch,number=base+8-i;
    const {x,y,angle}=beadArc(width,height,offset,left),near=Math.max(0,1-Math.abs(offset)/model.pitch);
    node.className='strand-bead'+(number===109?' guru':[27,54,81].includes(number)?' spacer':'');
    node.dataset.number=number;
@@ -47,9 +55,9 @@ export function mountBeads(el,{step,count=0,reduced=false,left=false}){
  const settle=(start,end)=>{cancelAnimationFrame(raf);from=start;to=end;if(reduced){draw(end);return;}animationStart=performance.now();raf=requestAnimationFrame(frame);};
  el.addEventListener('pointerdown',e=>{if(e.clientX<20||e.clientX>innerWidth-20||e.button!==0)return;el.focus({preventScroll:true});down={x:e.clientX,y:e.clientY};model.begin(e.clientX,e.clientY,innerWidth);el.setPointerCapture(e.pointerId);cancelAnimationFrame(raf);raf=requestAnimationFrame(frame);});
  el.addEventListener('pointermove',e=>model.move(e.clientX,e.clientY));
- const release=e=>{if(!down)return;const previous=model.position,tapped=model.end();if(tapped||(reduced&&e.clientY-down.y>25&&Math.abs(e.clientX-down.x)<Math.abs(e.clientY-down.y)))model.tap(performance.now());down=null;settle(previous,model.position);};
+ const release=e=>{if(!down)return;const previous=model.position,tapped=model.end(performance.now(),!reduced);if(tapped||(reduced&&e.clientY-down.y>25&&Math.abs(e.clientX-down.x)<Math.abs(e.clientY-down.y)))model.tap(performance.now());down=null;settle(previous,model.position);};
  el.addEventListener('pointerup',release);
- el.addEventListener('pointercancel',()=>{if(!down)return;down=null;const previous=model.position;model.end();settle(previous,model.position);});
+ el.addEventListener('pointercancel',()=>{if(!down)return;down=null;const previous=model.position;model.end(performance.now(),false);settle(previous,model.position);});
  el.addEventListener('click',e=>{e.stopPropagation();if(e.detail===0){const previous=model.position;model.tap(performance.now());settle(previous,model.position);}});
  el.addEventListener('keydown',e=>{if(['Enter',' '].includes(e.key)){e.preventDefault();const previous=model.position;model.tap(performance.now());settle(previous,model.position);}});
  draw(model.position);

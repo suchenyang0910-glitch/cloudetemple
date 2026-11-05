@@ -2,6 +2,14 @@ param([ValidateSet('production','staging')][string]$Environment='production')
 $ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path -Parent $PSScriptRoot
 $outputRoot = Join-Path $projectRoot 'dist'
+$archiveRoot = Join-Path $projectRoot ('_archive/package-' + [DateTime]::UtcNow.ToString('yyyyMMdd-HHmmss-fff'))
+if (Test-Path -LiteralPath $outputRoot) {
+  $resolvedOutput = (Resolve-Path -LiteralPath $outputRoot).Path
+  if ($resolvedOutput -ne [IO.Path]::GetFullPath((Join-Path $projectRoot 'dist')) -or
+      -not [IO.Path]::GetFullPath($archiveRoot).StartsWith([IO.Path]::GetFullPath($projectRoot) + [IO.Path]::DirectorySeparatorChar)) { throw 'Unexpected package/archive path' }
+  New-Item -ItemType Directory -Path $archiveRoot -Force | Out-Null
+  Move-Item -LiteralPath $resolvedOutput -Destination (Join-Path $archiveRoot 'dist')
+}
 New-Item -ItemType Directory -Path $outputRoot -Force | Out-Null
 foreach ($name in @('index.html','styles.css','app.js','i18n.js','telegram.js','audio.js','resources.js','beads.js','bow.js','gioi-thieu.html','quyen-rieng-tu.html','dieu-khoan.html','_headers','_routes.json')) { Copy-Item -LiteralPath (Join-Path $projectRoot $name) -Destination (Join-Path $outputRoot $name) -Force }
 $imageOutput = Join-Path $outputRoot 'assets/processed-v1/img'
@@ -15,8 +23,11 @@ Write-Output 'Static files packaged in dist. Deploy with Wrangler from project r
 
 $audioOutput = Join-Path $outputRoot 'assets/audio'
 New-Item -ItemType Directory -Path $audioOutput -Force | Out-Null
-Get-ChildItem -LiteralPath (Join-Path $projectRoot 'assets/audio') -File | Copy-Item -Destination $audioOutput -Force
-foreach ($name in @('mo.webp','mo-mallet.webp')) { Copy-Item -LiteralPath (Join-Path $projectRoot "assets/processed-v1/img/$name") -Destination $imageOutput -Force }
+foreach ($sound in @('bell-v2','keisu-v2','mo','bead-v1','ambient-courtyard','ambient-rain')) {
+  foreach ($ext in @('mp3','m4a')) { Copy-Item -LiteralPath (Join-Path $projectRoot "assets/audio/$sound.$ext") -Destination $audioOutput }
+}
+foreach ($name in @('LICENSES.md','measurements.json','measurements-v2.json')) { Copy-Item -LiteralPath (Join-Path $projectRoot "assets/audio/$name") -Destination $audioOutput }
+foreach ($name in @('mo.webp','mo-mallet.webp','bead-wood-v2.webp','bead-spacer-v2.webp','bead-guru-v2.webp')) { Copy-Item -LiteralPath (Join-Path $projectRoot "assets/processed-v1/img/$name") -Destination $imageOutput -Force }
 Copy-Item -LiteralPath (Join-Path $projectRoot 'assets/processed-v1/mobile') -Destination (Join-Path $outputRoot 'assets/processed-v1') -Recurse -Force
 $debugOutput=Join-Path $outputRoot 'audio-debug.js'
 if($Environment -eq 'staging'){
@@ -24,7 +35,6 @@ if($Environment -eq 'staging'){
   $index=Join-Path $outputRoot 'index.html'
   $html=[IO.File]::ReadAllText($index).Replace('</body>','<script type="module" src="audio-debug.js"></script></body>')
   [IO.File]::WriteAllText($index,$html,[Text.UTF8Encoding]::new($false))
-}elseif(Test-Path -LiteralPath $debugOutput){Remove-Item -LiteralPath $debugOutput}
-if($Environment -eq 'production'){Get-ChildItem -LiteralPath $outputRoot -Filter 'audio-debug.*.js' | Remove-Item -Force}
+}
 & node (Join-Path $PSScriptRoot 'version-assets.mjs')
 if($LASTEXITCODE){throw 'Versioning failed'}

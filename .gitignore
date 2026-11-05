@@ -11,6 +11,7 @@
 *.key
 node_modules/
 dist/
+_archive/
 .venv-assets/
 .playwright-mcp/
 review/

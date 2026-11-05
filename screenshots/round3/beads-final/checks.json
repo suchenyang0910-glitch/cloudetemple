@@ -1,0 +1,23 @@
+{
+  "results": [
+    {
+      "drag": 1.6,
+      "count": 2,
+      "decodedBeadSounds": 2,
+      "hapticCalls": 2,
+      "snapErrorPx": 0.01287841796875
+    },
+    {
+      "drag": 1.4,
+      "count": 1,
+      "decodedBeadSounds": 1,
+      "hapticCalls": 1,
+      "snapErrorPx": 0.01287841796875
+    }
+  ],
+  "errors": [],
+  "approvedArtwork": true,
+  "languageLabels": true,
+  "spacerGuru": true,
+  "scope": "Desktop Chromium; actual decoded sound scheduling and mocked vibration calls, not physical iPhone listening or haptics"
+}
