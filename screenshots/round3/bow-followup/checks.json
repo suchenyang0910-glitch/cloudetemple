@@ -1,0 +1,67 @@
+{
+  "frames": 1030,
+  "panelMaxDelta": 0,
+  "nodesRetained": true,
+  "anchorMaxDelta": 0,
+  "sounds": [
+    {
+      "at": 1842.7000000476837,
+      "args": [
+        "keisu"
+      ]
+    },
+    {
+      "at": 5636.300000011921,
+      "args": [
+        "keisu"
+      ]
+    },
+    {
+      "at": 9437.300000011921,
+      "args": [
+        "keisu"
+      ]
+    },
+    {
+      "at": 13252.700000047684,
+      "args": [
+        "keisu"
+      ]
+    },
+    {
+      "at": 17068.200000047684,
+      "args": [
+        "keisu"
+      ]
+    }
+  ],
+  "count": "5 / 27",
+  "completionSounds": [
+    {
+      "at": 2768,
+      "args": [
+        "keisu"
+      ]
+    },
+    {
+      "at": 6560,
+      "args": [
+        "keisu"
+      ]
+    },
+    {
+      "at": 10368,
+      "args": [
+        "keisu"
+      ]
+    },
+    {
+      "at": 12880,
+      "args": [
+        "bell",
+        0.8
+      ]
+    }
+  ],
+  "errors": []
+}

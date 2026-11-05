@@ -1,3 +1,4 @@
+import {bowFrame} from './bow.js';
 import {mountBeads} from './beads.js';
 import {createTempleAudio} from './audio.js';
 import {assetURL,loadImage,placeholder} from './resources.js';
@@ -66,15 +67,14 @@ async function prepare(view,period){
   return {scene,art,view};
 }
 let renderAssets=null;
-function paint(now=Date.now()){
+function paint(now=performance.now()){
   if(!renderAssets||renderAssets.view!==state.view)return;
   ctx.clearRect(0,0,941,1672);ctx.drawImage(renderAssets.scene,0,0,941,1672);
   const available=poses(state.view);if(!available.length)return;
   let pose=available[0],previous=null,mix=1;
   const a=state.activity;
   if(state.view==='bow'&&a?.bowStart!==null&&a?.bowStart!==undefined){
-    const elapsed=Math.max(0,now-a.bowStart),sequence=['bow-1','bow-2','bow-3','bow-2','bow-1'],i=Math.min(4,Math.floor(elapsed/800));
-    pose=sequence[i];previous=i>0?sequence[i-1]:null;mix=reduced.matches?1:Math.min(1,(elapsed-i*800)/280);
+    const frame=bowFrame(now-a.bowStart,reduced.matches);pose=`bow-${frame.to}`;previous=`bow-${frame.from}`;mix=frame.mix;
   }
   const pos=placement(state.layout,state.visitor,pose),s=state.layout;
   if(sceneName()==='courtyard'){const box=$('.stage').getBoundingClientRect(),space=$('#controls').getBoundingClientRect().top-$('.scene-heading').getBoundingClientRect().bottom-48;const factor=Math.max(.3,Math.min(.72,space/(pos.h*(parseFloat($('.stage').style.getPropertyValue('--scene-width'))||box.width)/941))); pos.x=s.courtyard.x+(pos.x-s.courtyard.x)*factor;pos.y=s.courtyard.bottom+(pos.y-s.courtyard.bottom)*factor;pos.w*=factor;pos.h*=factor;}
@@ -86,7 +86,7 @@ function paint(now=Date.now()){
   if(previous&&mix<1&&renderAssets.art[previous]){ctx.globalAlpha=1-mix;ctx.drawImage(renderAssets.art[previous],pos.x,pos.y,pos.w,pos.h);}
   ctx.globalAlpha=mix;ctx.drawImage(renderAssets.art[pose],pos.x,pos.y+breath,pos.w,pos.h);ctx.globalAlpha=1;
 }
-function animation(){cancelAnimationFrame(drawFrame);const run=()=>{paint();if((state.view==='bow'&&state.activity?.bowStart!=null)||(state.view==='sit'&&state.activity?.running&&!reduced.matches))drawFrame=requestAnimationFrame(run);};run();}
+function animation(){cancelAnimationFrame(drawFrame);const run=()=>{const now=performance.now();advanceBow(now);paint(now);if((state.view==='bow'&&state.activity?.bowStart!=null)||(state.view==='sit'&&state.activity?.running&&!reduced.matches))drawFrame=requestAnimationFrame(run);};run();}
 function fx(){
   const f=state.layout.fx_hall_side,lit=state.view==='incense'&&state.activity?.running,bowing=state.view==='bow';
   $('#effects').innerHTML=`${bowing?`<ellipse class="halo-pulse" cx="${f.halo_center[0]}" cy="${f.halo_center[1]}" rx="92" ry="112" fill="#ffe2a6" opacity=".07"/>`:''}${lit?[-10,0,10].map((dx,i)=>`<circle class="fire" cx="${f.incense_tips[0]+dx}" cy="${f.incense_tips[1]}" r="4"/><path class="smoke" style="animation-delay:-${i*2}s" d="M${f.incense_tips[0]+dx} ${f.incense_tips[1]-5} c-18 -40 30 -65 3 -100 s23 -65 8 -95"/>`).join(''):''}`;
@@ -192,7 +192,7 @@ function render(){
   $('#wood-prop').hidden=state.view!=='mo'||state.busy;$('#mallet-prop').hidden=state.view!=='mo'||state.busy;
   $('#wood-prop').setAttribute('aria-label',t('wood'));
   if(state.view==='mo'&&renderAssets?.art.mo&&!state.busy)for(const [id,key] of [['wood-art','mo'],['mallet-prop','mo-mallet']]){const c=$('#'+id),im=renderAssets.art[key];c.width=im.width;c.height=im.height;c.getContext('2d').drawImage(im,0,0);}
-  if(state.layout)fx();updateCounters();fitScene();
+  if(state.layout)fx();updateCounters();if(state.view==='bow')syncBowControls();fitScene();
   if(focused&&!focused.isConnected){const replacement=action?document.querySelector(`[data-action="${action}"]`):target?document.querySelector(`[data-target="${target}"]`):minutes?document.querySelector(`[data-minutes="${minutes}"]`):null;if(replacement&&!replacement.disabled)replacement.focus({preventScroll:true});}
 }
 function fitScene(){
@@ -226,13 +226,31 @@ function complete(kind,elapsed=0){
   state.result={kind,elapsed,count:kind==='bow'?old?.count:kind==='beads'?108:1,reflection:Math.floor(Math.random()*reflections.length)};
   const stored=read('ct-totals',{}),count=Number.isFinite(stored?.count)&&stored.count>=0?stored.count:0,seconds=Number.isFinite(stored?.seconds)&&stored.seconds>=0?stored.seconds:0;
   write('ct-totals',{count:count+1,seconds:seconds+Math.round(elapsed/1000)});
-  stopActivity();audio.strike('bell');if(kind==='incense')feedback('medium');render();paint();
+  stopActivity();audio.strike('bell',kind==='bow'?.8:1);if(['incense','bow'].includes(kind))feedback('medium');render();paint();$('.scene-heading').animate([{opacity:.65},{opacity:1}],{duration:reduced.matches?150:200});
 }
-function bowOnce(){
-  if(state.result||state.activity?.bowStart!=null)return;
-  state.activity??={kind:'bow',count:0,auto:false,bowStart:null,started:Date.now()};
-  state.activity.bowStart=Date.now();render();animation();
+function syncBowControls(){
+ const a=state.activity,active=a?.bowStart!=null;
+ const counter=$('#bow-count');if(!counter)return;
+ counter.textContent=`${a?.count??0} / ${state.bowTarget}`;
+ const once=$('[data-action=bow-once]'),auto=$('[data-action=auto]');
+ once.disabled=active;once.classList.toggle('primary',!a?.auto);
+ auto.textContent=t(a?.auto?'stopAuto':'auto');auto.setAttribute('aria-pressed',String(!!a?.auto));auto.classList.toggle('primary',!!a?.auto);
+ document.querySelectorAll('[data-target]').forEach(e=>{e.disabled=active;});
 }
+function advanceBow(now){
+ const a=state.activity;if(state.view!=='bow'||a?.bowStart==null)return;
+ const elapsed=now-a.bowStart;
+ if(!a.struck&&elapsed>=1200){a.struck=true;audio.strike('keisu');feedback('soft');}
+ if(!a.counted&&elapsed>=3200){a.counted=true;a.count++;syncBowControls();}
+ if(a.count>=state.bowTarget&&elapsed>=3700){complete('bow',a.count*3800);return;}
+ if(elapsed>=3800){a.bowStart=null;if(a.auto)Object.assign(a,{bowStart:now,struck:false,counted:false});syncBowControls();}
+}
+function bowOnce(now=performance.now()){
+ if(state.result||state.activity?.bowStart!=null||state.activity?.count>=state.bowTarget)return;
+ state.activity??={kind:'bow',count:0,auto:false,bowStart:null,started:now};
+ Object.assign(state.activity,{bowStart:now,struck:false,counted:false});syncBowControls();animation();
+}
+
 function bead(){
   if(state.result||state.bead>=108)return;
   state.activity??={kind:'beads',started:Date.now()};state.bead++;
@@ -347,7 +365,7 @@ document.addEventListener('click',async e=>{
     case 'retry':images.clear();tinted.clear();await navigate(state.view);break;
     case 'light':if(!state.activity){state.activity={kind:'incense',running:true,deadline:Date.now()+60000,started:Date.now()};audio.strike('keisu',.6);feedback('soft');void audio.ambient('forest',.6,2);render();}break;
     case 'bow-once':bowOnce();break;
-    case 'auto':if(!state.activity){bowOnce();state.activity.auto=true;}else{state.activity.auto=!state.activity.auto;if(state.activity.auto&&state.activity.bowStart==null)bowOnce();}render();break;
+    case 'auto':if(!state.activity){bowOnce();state.activity.auto=true;}else{state.activity.auto=!state.activity.auto;if(state.activity.auto&&state.activity.bowStart==null)bowOnce();}syncBowControls();break;
     case 'sit-start':state.activity={kind:'sit',running:true,deadline:Date.now()+state.sitMinutes*60000,left:state.sitMinutes*60000,total:state.sitMinutes*60000};audio.ambient(audio.ambientKind);render();animation();break;
     case 'pause':{const a=state.activity;if(!a)break;if(a.running){a.left=remaining(a);a.running=false;const kind=audio.ambientKind;audio.ambient('none');audio.ambientKind=kind;}else{a.deadline=Date.now()+a.left;a.running=true;audio.ambient(audio.ambientKind);}render();animation();break;}
     case 'finish':if(state.activity)complete('sit',state.activity.total-remaining(state.activity));break;
@@ -371,8 +389,7 @@ let periodUpdating=false;
 async function tick(){
   if(!state.layout||state.busy)return;
   const a=state.activity,now=Date.now();
-  if(a?.kind==='bow'&&a.bowStart!=null&&now-a.bowStart>=4000){a.bowStart=null;a.count++;feedback('soft');audio.strike('keisu');if(a.count>=state.bowTarget)complete('bow',a.count*4000);else{render();paint();if(a.auto)bowOnce();}}
-  else if(a?.running&&remaining(a)<=0){if(a.kind==='incense')complete('incense',60000);if(a.kind==='sit')complete('sit',a.total);}
+  if(a?.running&&remaining(a)<=0){if(a.kind==='incense')complete('incense',60000);if(a.kind==='sit')complete('sit',a.total);}
   updateCounters();if(state.view==='mo'&&$('#daily-wood'))$('#daily-wood').textContent=t('dailyWood',{count:dailyWood()});
   const period=periodNow();if(period!==state.period&&!periodUpdating){periodUpdating=true;const token=transitionId,view=state.view;try{const assets=await prepare(view,period);if(token===transitionId){state.period=period;renderAssets=assets;render();paint();}}catch{/* Keep the last fully loaded scene on transient failures. */}finally{periodUpdating=false;}}
 }

@@ -111,3 +111,8 @@ body[data-view=beads] .bead-control .bead-track{top:0}
 body[data-view=beads] .bead-control .thumb-point{top:208px}
 body[data-view=beads] .bead-control #bead-count{top:265px;padding:6px 10px;border-radius:6px;background:var(--paper);font-size:22px}
 .choice-person{pointer-events:none}.choice-arrow{z-index:3}
+
+#bow-count{width:9ch;min-height:1.4em;line-height:1.4;margin:0 auto;font-variant-numeric:tabular-nums}
+body[data-view=bow] .controls .row{display:grid;grid-template-columns:1fr 1fr}
+body[data-view=bow] .controls .row button{width:100%;min-width:0;border-width:1px}
+body[data-view=bow] .controls .row button:disabled{opacity:1}
