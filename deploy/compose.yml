@@ -1,0 +1,28 @@
+services:
+  web:
+    image: node:22.22.1-bookworm-slim@sha256:4f77a690f2f8946ab16fe1e791a3ac0667ae1c3575c3e4d0d4589e9ed5bfaf3d
+    user: "1000:1000"
+    working_dir: /app
+    command: ["node", "deploy/server.mjs"]
+    init: true
+    restart: unless-stopped
+    env_file: /opt/cloudtemple/shared/runtime.env
+    volumes:
+      - ${RELEASE_DIR}:/app:ro
+      - /opt/cloudtemple/shared/data:/data
+    ports:
+      - "127.0.0.1:8789:8789"
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    mem_limit: 192m
+    cpus: 0.25
+    pids_limit: 64
+    logging:
+      driver: json-file
+      options: {max-size: "5m", max-file: "2"}
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8789/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3

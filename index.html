@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#eee8dc">
+  <meta name="description" content="Chùa Mây — Một khoảng lặng cho hôm nay.">
+  <title>Chùa Mây · Cloud Temple</title>
+  <link rel="icon" href="data:,">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script type="module" src="app.js"></script>
+  <!-- Cloudflare Web Analytics token: REPLACE_WITH_CLOUDFLARE_TOKEN.
+       Disabled until configured in the Cloudflare dashboard. No placeholder request is sent. -->
+</head>
+<body>
+  <main id="app" aria-busy="true">
+    <header class="topbar">
+      <a class="wordmark" href="./">Chùa Mây<span>CLOUD TEMPLE</span></a>
+      <div class="utilities">
+        <select id="language" aria-label="Language"><option value="vi">VI</option><option value="en">EN</option></select>
+        <button id="sound-toggle" class="quiet" type="button" aria-pressed="false">Âm thanh</button>
+      </div>
+    </header>
+    <div id="sound-controls" hidden><label for="volume" data-i18n="volume"></label><input id="volume" type="range" min="0" max="100" value="25"></div>
+    <section class="stage" aria-label="Chùa Mây">
+      <canvas id="scene" width="941" height="1672" role="img" aria-label="Chùa Mây"></canvas>
+      <svg id="effects" viewBox="0 0 941 1672" aria-hidden="true"></svg>
+      <div class="scene-heading"><p id="eyebrow"></p><h1 id="heading" tabindex="-1"></h1><p id="subtitle"></p></div>
+      <div id="entry-overlay" class="entry-overlay"></div>
+      <div id="stage-note" class="stage-note" aria-live="polite"></div>
+      <div id="loading" class="loading" hidden></div>
+    </section>
+    <section id="controls" class="controls" aria-label="Actions"></section>
+    <p id="notice" class="notice" role="status" aria-live="polite"></p>
+    <footer><span data-i18n="privacy"></span><button id="memorial" class="text-button" data-i18n="memorial"></button></footer>
+  </main>
+  <dialog id="modal" aria-labelledby="modal-title"><div class="modal-inner"><button id="close-modal" class="close" type="button" data-i18n="close"></button><h2 id="modal-title"></h2><div id="modal-body"></div></div></dialog>
+  <noscript>JavaScript is needed to enter Cloud Temple.</noscript>
+</body>
+</html>

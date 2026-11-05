@@ -1,0 +1,273 @@
+{
+  "version": "v1-vietnam",
+  "status": "official for v1 web build (Vietnam only)",
+  "images_dir": "assets/processed-v1/img/",
+  "canvas": [
+    941,
+    1672
+  ],
+  "v1_scope": {
+    "scenes_used": "scene-vn-{hall-side|courtyard|hall-front}-{dawn|day|dusk|night}.webp",
+    "scenes_not_used_in_v1": "scene-tk-* (Thai/Cambodian, kept for later expansion)",
+    "visitors": [
+      "short-light",
+      "curly-dark",
+      "curly-medium",
+      "bun-light",
+      "bun-dark",
+      "ponytail-medium"
+    ],
+    "poses_used": {
+      "hall-side": [
+        "bow-1",
+        "bow-2",
+        "bow-3"
+      ],
+      "courtyard": [
+        "sit",
+        "beads"
+      ],
+      "hall-front": [
+        "back (v2 only)"
+      ]
+    },
+    "poses_not_used_in_v1": [
+      "kneel (its canvas does not share the bow anchor; use bow-1 as the kneeling pose instead)"
+    ]
+  },
+  "periods": {
+    "dawn": "05:00-07:59",
+    "day": "08:00-16:59",
+    "dusk": "17:00-18:59",
+    "night": "19:00-04:59"
+  },
+  "toneRGB": {
+    "dawn": [
+      1,
+      0.98,
+      0.94
+    ],
+    "day": [
+      1,
+      1,
+      1
+    ],
+    "dusk": [
+      0.84,
+      0.72,
+      0.59
+    ],
+    "night": [
+      0.48,
+      0.5,
+      0.51
+    ]
+  },
+  "hall-side": {
+    "foot": [
+      898,
+      1249
+    ],
+    "bowCanvasWidth": 370,
+    "anchor": [
+      570,
+      570
+    ],
+    "sourceCanvas": [
+      600,
+      600
+    ],
+    "rule": "scale = bowCanvasWidth/600; draw the 600x600 frame so its anchor (570,570) lands on foot (898,1249). All three frames share this, so they cross-fade in place."
+  },
+  "courtyard": {
+    "x": 471,
+    "bottom": 1384,
+    "cushionWidth": 378,
+    "rule": "scale = cushionWidth / image cushionWidth; draw so the image cushionBottomCenter lands on (x,bottom)."
+  },
+  "hall-front": {
+    "slots": [
+      {
+        "x": 190,
+        "bottom": 1228,
+        "cushionWidth": 184
+      },
+      {
+        "x": 470,
+        "bottom": 1228,
+        "cushionWidth": 180
+      },
+      {
+        "x": 750,
+        "bottom": 1228,
+        "cushionWidth": 184
+      },
+      {
+        "x": 155,
+        "bottom": 1401,
+        "cushionWidth": 234
+      },
+      {
+        "x": 471,
+        "bottom": 1401,
+        "cushionWidth": 230
+      },
+      {
+        "x": 788,
+        "bottom": 1401,
+        "cushionWidth": 238
+      }
+    ],
+    "v1": "show no visitors (no fake presence). Slots 0-2 are the back row for the v2 'together' feature; draw back row before front row."
+  },
+  "front_image_anchors": {
+    "visitor-short-light-sit.webp": {
+      "cushionBottomCenter": [
+        297,
+        833
+      ],
+      "cushionWidth": 335
+    },
+    "visitor-short-light-beads.webp": {
+      "cushionBottomCenter": [
+        297,
+        833
+      ],
+      "cushionWidth": 334
+    },
+    "visitor-short-light-back.webp": {
+      "cushionBottomCenter": [
+        297,
+        833
+      ],
+      "cushionWidth": 334
+    },
+    "visitor-curly-dark-sit.webp": {
+      "cushionBottomCenter": [
+        297,
+        834
+      ],
+      "cushionWidth": 334
+    },
+    "visitor-curly-dark-beads.webp": {
+      "cushionBottomCenter": [
+        297,
+        833
+      ],
+      "cushionWidth": 338
+    },
+    "visitor-curly-dark-back.webp": {
+      "cushionBottomCenter": [
+        298,
+        833
+      ],
+      "cushionWidth": 337
+    },
+    "visitor-curly-medium-sit.webp": {
+      "cushionBottomCenter": [
+        297,
+        833
+      ],
+      "cushionWidth": 337
+    },
+    "visitor-curly-medium-beads.webp": {
+      "cushionBottomCenter": [
+        297,
+        833
+      ],
+      "cushionWidth": 336
+    },
+    "visitor-curly-medium-back.webp": {
+      "cushionBottomCenter": [
+        297,
+        833
+      ],
+      "cushionWidth": 337
+    },
+    "visitor-bun-light-sit.webp": {
+      "cushionBottomCenter": [
+        295,
+        813
+      ],
+      "cushionWidth": 339
+    },
+    "visitor-bun-light-beads.webp": {
+      "cushionBottomCenter": [
+        295,
+        813
+      ],
+      "cushionWidth": 338
+    },
+    "visitor-bun-light-back.webp": {
+      "cushionBottomCenter": [
+        295,
+        813
+      ],
+      "cushionWidth": 340
+    },
+    "visitor-bun-dark-sit.webp": {
+      "cushionBottomCenter": [
+        295,
+        813
+      ],
+      "cushionWidth": 339
+    },
+    "visitor-bun-dark-beads.webp": {
+      "cushionBottomCenter": [
+        295,
+        813
+      ],
+      "cushionWidth": 337
+    },
+    "visitor-bun-dark-back.webp": {
+      "cushionBottomCenter": [
+        294,
+        813
+      ],
+      "cushionWidth": 338
+    },
+    "visitor-ponytail-medium-sit.webp": {
+      "cushionBottomCenter": [
+        294,
+        813
+      ],
+      "cushionWidth": 338
+    },
+    "visitor-ponytail-medium-beads.webp": {
+      "cushionBottomCenter": [
+        294,
+        813
+      ],
+      "cushionWidth": 338
+    },
+    "visitor-ponytail-medium-back.webp": {
+      "cushionBottomCenter": [
+        294,
+        813
+      ],
+      "cushionWidth": 338
+    }
+  },
+  "fx_hall_side": {
+    "incense_tips": [
+      288,
+      850
+    ],
+    "halo_center": [
+      142,
+      478
+    ],
+    "lamps": [
+      [
+        173,
+        935
+      ],
+      [
+        366,
+        935
+      ]
+    ]
+  },
+  "shadow": "very faint dark ellipse under each visitor, about 0.9 x cushion width; the visitor's own cushion covers the scene cushion",
+  "verified": "Composite rendered from this file alone (hall-side bow 1-3 dawn, courtyard dusk, hall-front night back row) matched visually on 2026-11-05."
+}
