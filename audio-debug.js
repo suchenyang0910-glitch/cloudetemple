@@ -1,6 +1,7 @@
 // Staging-only entry point. No telemetry, storage, credentials or remote logging.
 import {audio} from './app.js';
 import {inTelegram} from './telegram.js';
+import {release,imageStatus} from './resources.js';
 if(['staging.chuamay.org','127.0.0.1','localhost'].includes(location.hostname)&&new URLSearchParams(location.search).get('debug')==='audio'){
  const panel=document.createElement('details');panel.id='audio-debug';panel.open=true;
  panel.style.cssText='position:fixed;z-index:1000;bottom:env(safe-area-inset-bottom,0px);left:4px;right:4px;max-height:48dvh;overflow:auto;padding:8px;background:#201c18;color:#fff;border:1px solid #baa98d;font:12px/1.4 monospace;border-radius:8px';
@@ -12,7 +13,7 @@ if(['staging.chuamay.org','127.0.0.1','localhost'].includes(location.hostname)&&
   if(time!=null&&previousTime!=null)advanced=time>previousTime?'yes':'no';previousTime=time;
   const lines=['audio-debug v1',`enabled=${audio.enabled} loading=${audio.loading} Telegram=${inTelegram()}`,`state=${c?.state??'not created'} sampleRate=${c?.sampleRate??'-'} currentTime=${time?.toFixed(3)??'-'} advancing=${advanced}`,`audioSession=${!!navigator.audioSession} type=${navigator.audioSession?.type??'-'}`,`master=${audio.master?.gain.value??'-'} lastPlay=${audio.lastPlayed?new Date(audio.lastPlayed).toISOString():'none'}`,`schedule=${JSON.stringify(last)} native=${JSON.stringify(native)}`,`resumeError=${resumeError}`];
   for(const name of ['bell','keisu','mo','ambient-courtyard','ambient-rain']){const attempts=[...files.values()].filter(f=>f.name===name);lines.push(attempts.length?attempts.map(f=>`${name}.${f.ext}: HTTP=${f.status??'-'} mime=${f.mime??'-'} request=${f.request??'ok'} decode=${f.decode??'-'} ${f.error??''}`).join('\n'):`${name}: not requested`);}
-  lines.push('UA: '+navigator.userAgent);out.value=lines.join('\n');
+  lines.push('release: '+release);for(const [name,result] of imageStatus)lines.push('image '+name+': '+JSON.stringify(result));lines.push('UA: '+navigator.userAgent);out.value=lines.join('\n');
  };
  render();setInterval(render,500);
  panel.querySelector('#audio-test').onclick=async()=>{

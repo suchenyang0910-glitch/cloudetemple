@@ -1,0 +1,94 @@
+{
+  "engine": "Playwright WebKit 26.4 Windows; not physical Safari",
+  "network": "server shaped 1.6 Mbps aggregate download / 150ms response delay, cold cache; external fonts blocked equally; no TLS/DNS/BasicAuth prompt/Cloudflare delay",
+  "records": [
+    {
+      "variant": "before",
+      "run": 1,
+      "interactiveMs": 2789,
+      "bytes": 337465,
+      "images": [
+        {
+          "url": "http://127.0.0.1:8812/before/assets/processed-v1/img/scene-vn-hall-front-day.webp",
+          "bytes": 259632
+        }
+      ],
+      "audio": 0
+    },
+    {
+      "variant": "before",
+      "run": 2,
+      "interactiveMs": 2720,
+      "bytes": 337465,
+      "images": [
+        {
+          "url": "http://127.0.0.1:8812/before/assets/processed-v1/img/scene-vn-hall-front-day.webp",
+          "bytes": 259632
+        }
+      ],
+      "audio": 0
+    },
+    {
+      "variant": "before",
+      "run": 3,
+      "interactiveMs": 2725,
+      "bytes": 337465,
+      "images": [
+        {
+          "url": "http://127.0.0.1:8812/before/assets/processed-v1/img/scene-vn-hall-front-day.webp",
+          "bytes": 259632
+        }
+      ],
+      "audio": 0
+    },
+    {
+      "variant": "after",
+      "run": 1,
+      "interactiveMs": 2223,
+      "bytes": 186817,
+      "images": [
+        {
+          "url": "http://127.0.0.1:8812/after/assets/releases/e014a4fca306/processed-v1/mobile/scene-vn-hall-front-day.webp",
+          "bytes": 105608
+        }
+      ],
+      "audio": 0
+    },
+    {
+      "variant": "after",
+      "run": 2,
+      "interactiveMs": 2210,
+      "bytes": 186817,
+      "images": [
+        {
+          "url": "http://127.0.0.1:8812/after/assets/releases/e014a4fca306/processed-v1/mobile/scene-vn-hall-front-day.webp",
+          "bytes": 105608
+        }
+      ],
+      "audio": 0
+    },
+    {
+      "variant": "after",
+      "run": 3,
+      "interactiveMs": 2209,
+      "bytes": 186817,
+      "images": [
+        {
+          "url": "http://127.0.0.1:8812/after/assets/releases/e014a4fca306/processed-v1/mobile/scene-vn-hall-front-day.webp",
+          "bytes": 105608
+        }
+      ],
+      "audio": 0
+    }
+  ],
+  "medians": {
+    "before": {
+      "interactiveMs": 2725,
+      "bytes": 337465
+    },
+    "after": {
+      "interactiveMs": 2210,
+      "bytes": 186817
+    }
+  }
+}

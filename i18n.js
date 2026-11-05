@@ -1,6 +1,7 @@
 // Every entry, including English, is pending Vietnamese native-speaker review.
 const entry=(vi,en)=>({vi,en,review:'待越南母语者审核'});
 export const copy={
+imageLoading:entry('Đang tải hình ảnh…','Loading image…'),imageUnavailable:entry('Chưa tải được hình ảnh','Image unavailable'),
 mo:entry('Gõ mõ','Wooden fish'),moNote:entry('Từng nhịp, chậm rãi.','One gentle tap at a time.'),
 forest:entry('Núi rừng','Mountain forest'),
 dailyWood:entry('Nhịp mõ hôm nay: {count}','Today’s woodblock taps: {count}'),

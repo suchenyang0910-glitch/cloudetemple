@@ -1,9 +1,9 @@
 import {createTempleAudio} from './audio.js';
+import {assetURL,loadImage,placeholder} from './resources.js';
 import {copy,reflections} from './i18n.js';
 import {apiURL,initTelegram,inTelegram,initData,telegramBack,telegramAppearance,haptic,telegramShare} from './telegram.js';
 
 const $=s=>document.querySelector(s);
-const imageRoot='assets/processed-v1/img/';
 const reduced=matchMedia('(prefers-reduced-motion: reduce)');
 const state={view:'entry',lang:'vi',visitor:null,period:'day',layout:null,busy:false,activity:null,result:null,bowTarget:3,sitMinutes:3,wood:0,bead:0};
 const images=new Map(),tinted=new Map();
@@ -40,9 +40,7 @@ export function placement(layout,id,pose){
   return {x:s.x-a.cushionBottomCenter[0]*scale,y:s.bottom-a.cushionBottomCenter[1]*scale,w:600*scale,h:900*scale};
 }
 function image(name){
-  if(!images.has(name)) images.set(name,new Promise((resolve,reject)=>{
-    const im=new Image();im.onload=()=>resolve(im);im.onerror=()=>{images.delete(name);reject(new Error('image'));};im.src=imageRoot+name;
-  }));
+  if(!images.has(name))images.set(name,loadImage(name,t('imageUnavailable')));
   return images.get(name);
 }
 function sceneName(view=state.view){return ['incense','bow'].includes(view)?'hall-side':['sit','beads'].includes(view)?'courtyard':'hall-front';}
@@ -58,7 +56,7 @@ async function prepare(view,period){
       const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(im,0,0);
       const data=x.getImageData(0,0,c.width,c.height),tone=state.layout.toneRGB[period];
       for(let i=0;i<data.data.length;i+=4){for(let j=0;j<3;j++)data.data[i+j]*=tone[j]*(view==='mo'&&period==='night'?.9:1);}
-      x.putImageData(data,0,0);tinted.set(key,c);
+      x.putImageData(data,0,0);if(!im.placeholder)tinted.set(key,c);else {art[pose]=c;continue;}
     }
     art[pose]=tinted.get(key);
   }
@@ -92,14 +90,15 @@ function fx(){
 function stopActivity(){stopWoodAuto();state.activity=null;cancelAnimationFrame(drawFrame);audio.ambient('none');}
 async function navigate(view,{keepResult=false}={}){
   const token=++transitionId;stopActivity();state.busy=true;$('#loading').hidden=false;$('#loading').textContent=t('loading');
+  const period=periodNow();let revealed=false;
+  const reveal=()=>{if(token!==transitionId)return;if(!revealed){state.view=view;state.period=period;if(!keepResult)state.result=null;if(view==='mo')woodSession=0;if(view==='beads')state.bead=0;if(view==='sit')state.wood=0;revealed=true;}state.busy=false;$('#loading').hidden=true;render();paint();$('#app').setAttribute('aria-busy','false');};
+  const timer=setTimeout(()=>{if(token!==transitionId)return;renderAssets={scene:placeholder(sceneFile(view,period),t('imageLoading')),art:Object.fromEntries((view==='mo'?['mo','mo-mallet']:poses(view)).map(p=>[p,placeholder(p,t('imageLoading'))]))};reveal();},3000);
   try{
-    const period=periodNow(),assets=await prepare(view,period);
+    const assets=await prepare(view,period);
     if(token!==transitionId)return;
-    state.view=view;state.period=period;renderAssets=assets;if(!keepResult)state.result=null;
-    if(view==='mo')woodSession=0;if(view==='beads')state.bead=0;if(view==='sit')state.wood=0;
-    state.busy=false;render();paint();$('#heading').focus({preventScroll:true});
+    renderAssets=assets;reveal();animation();if(!reduced.matches)canvas.animate([{opacity:0},{opacity:1}],{duration:200});$('#heading').focus({preventScroll:true});
   }catch{if(token===transitionId){state.busy=false;$('#notice').textContent=t('loadError');$('#controls').insertAdjacentHTML('beforeend',button('retry','retry'));}}
-  finally{if(token===transitionId){$('#loading').hidden=true;$('#app').setAttribute('aria-busy','false');}}
+  finally{clearTimeout(timer);if(token===transitionId){$('#loading').hidden=true;$('#app').setAttribute('aria-busy','false');}}
 }
 function render(){
   const focused=document.activeElement,action=focused?.dataset?.action,target=focused?.dataset?.target,minutes=focused?.dataset?.minutes;
@@ -119,7 +118,8 @@ function render(){
   if(state.view==='entry'){
     $('#controls').innerHTML=button('enter','enter','primary');
   }else if(state.view==='choose'){
-    $('#controls').innerHTML=`<div class="visitor-choice"><img class="preview" src="${imageRoot}visitor-${state.visitor}-sit.webp" alt="${escapeHTML(t('choose'))}">${button('change','change')}${button('continue','continue','primary')}</div>`;
+    $('#controls').innerHTML=`<div class="visitor-choice"><canvas class="preview" width="600" height="900" role="img" aria-label="${escapeHTML(t('choose'))}"></canvas>${button('change','change')}${button('continue','continue','primary')}</div>`;
+    const preview=$('.preview'),name=`visitor-${state.visitor}-sit.webp`,x=preview.getContext('2d');x.drawImage(placeholder(name,t('imageLoading')),0,0,600,900);image(name).then(im=>{if(preview.isConnected){x.clearRect(0,0,600,900);x.drawImage(im,0,0,600,900);if(im.placeholder)preview.setAttribute('aria-label',t('imageUnavailable'));}});
   }else if(state.view==='home'){
     $('#controls').innerHTML=`<nav class="action-nav">${['incense','bow','sit','mo','beads','leave'].map(key=>`<button data-action="${key}"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">${actionIcons[key]}</svg>${t(key)}</button>`).join('')}</nav>`;
   }else if(state.result){
@@ -157,7 +157,7 @@ function fitScene(){
   const sceneTop=fullScene?(box.height-1672*scale)/2:state.view==='mo'?0:Math.min(top-region[0]*scale,bottom-region[1]*scale);
   stage.style.setProperty('--scene-width',941*scale+'px');
   stage.style.setProperty('--scene-top',sceneTop+'px');
-  stage.style.setProperty('--scene-image',`url("${renderAssets.scene.src}")`);
+  stage.style.setProperty('--scene-image','none');
   if(state.view==='mo'){const width=box.width*.32,art=renderAssets.art.mo,height=width*art.height/art.width;$('#wood-prop').style.cssText=`width:${width}px;height:${height}px;left:${(box.width-width)/2}px;top:${controls.top-box.top-16-height}px`;$('#mallet-prop').style.cssText=`width:${width*.49}px;height:auto;left:${(box.width+width)/2-8}px;top:${controls.top-box.top-16-height-8}px`;}
 }
 new ResizeObserver(fitScene).observe($('#app'));
@@ -312,6 +312,7 @@ $('#memorial').addEventListener('click',memorial);
 $('#language').addEventListener('change',e=>{state.lang=e.target.value;closeModal();render();});
 $('#sound-toggle').addEventListener('click',()=>{if(audio.enabled){write('ct-muted',true);audio.mute();}else{write('ct-muted',false);void enableSound();}});
 $('#volume').addEventListener('input',()=>audio.volume());
+$('#controls').addEventListener('pointerdown',e=>{const action=e.target.closest('[data-action]')?.dataset.action;if(action==='enter')void image(`visitor-${state.visitor}-sit.webp`);else if(['incense','bow','sit','beads','mo'].includes(action))void image(sceneFile(action,periodNow()));});
 document.addEventListener('click',()=>{void audio.wake();},true);
 document.addEventListener('change',e=>{if(e.target.id==='ambient'){audio.ambientKind=e.target.value;if(state.activity?.running)audio.ambient(e.target.value);};});
 reduced.addEventListener('change',()=>{animation();fx();});
@@ -328,7 +329,7 @@ async function tick(){
 setInterval(tick,200);
 async function init(){
   await initTelegram(()=>{if($('#more-menu').open)$('#more-menu').close();else if($('#modal').open)closeModal();else navigate(state.view==='choose'?'entry':'home');},openMore);
-  try{const response=await fetch('assets/processed-v1/layout-v1.json');if(!response.ok)throw new Error('layout');state.layout=await response.json();const saved=read('ct-visitor',null);state.visitor=state.layout.v1_scope.visitors.includes(saved)?saved:state.layout.v1_scope.visitors[Math.floor(Math.random()*6)];await navigate('entry');}
+  try{const response=await fetch(assetURL('processed-v1/layout-v1.json'),{credentials:'omit'});if(!response.ok)throw new Error('layout');state.layout=await response.json();const saved=read('ct-visitor',null);state.visitor=state.layout.v1_scope.visitors.includes(saved)?saved:state.layout.v1_scope.visitors[Math.floor(Math.random()*6)];await navigate('entry');}
   catch{$('#loading').hidden=true;$('#notice').textContent=t('loadError');$('#controls').innerHTML=button('retry','reload');$('#controls').onclick=e=>{if(e.target.dataset.action==='reload')location.reload();};$('#app').setAttribute('aria-busy','false');}
 }
 init();

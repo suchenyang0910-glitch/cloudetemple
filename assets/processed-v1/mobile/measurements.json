@@ -1,0 +1,98 @@
+[
+  {
+    "name": "scene-vn-courtyard-dawn.webp",
+    "original": 242650,
+    "mobile": 102184,
+    "width": 720,
+    "height": 1279,
+    "quality": 80
+  },
+  {
+    "name": "scene-vn-courtyard-day.webp",
+    "original": 257158,
+    "mobile": 116192,
+    "width": 720,
+    "height": 1279,
+    "quality": 75
+  },
+  {
+    "name": "scene-vn-courtyard-dusk.webp",
+    "original": 242104,
+    "mobile": 107178,
+    "width": 720,
+    "height": 1279,
+    "quality": 80
+  },
+  {
+    "name": "scene-vn-courtyard-night.webp",
+    "original": 170332,
+    "mobile": 90898,
+    "width": 720,
+    "height": 1279,
+    "quality": 85
+  },
+  {
+    "name": "scene-vn-hall-front-dawn.webp",
+    "original": 268838,
+    "mobile": 108438,
+    "width": 720,
+    "height": 1279,
+    "quality": 80
+  },
+  {
+    "name": "scene-vn-hall-front-day.webp",
+    "original": 259632,
+    "mobile": 105608,
+    "width": 720,
+    "height": 1279,
+    "quality": 80
+  },
+  {
+    "name": "scene-vn-hall-front-dusk.webp",
+    "original": 219968,
+    "mobile": 111740,
+    "width": 720,
+    "height": 1279,
+    "quality": 85
+  },
+  {
+    "name": "scene-vn-hall-front-night.webp",
+    "original": 180248,
+    "mobile": 83356,
+    "width": 720,
+    "height": 1279,
+    "quality": 85
+  },
+  {
+    "name": "scene-vn-hall-side-dawn.webp",
+    "original": 211802,
+    "mobile": 112920,
+    "width": 720,
+    "height": 1279,
+    "quality": 85
+  },
+  {
+    "name": "scene-vn-hall-side-day.webp",
+    "original": 233524,
+    "mobile": 95176,
+    "width": 720,
+    "height": 1279,
+    "quality": 80
+  },
+  {
+    "name": "scene-vn-hall-side-dusk.webp",
+    "original": 206824,
+    "mobile": 99806,
+    "width": 720,
+    "height": 1279,
+    "quality": 85
+  },
+  {
+    "name": "scene-vn-hall-side-night.webp",
+    "original": 165192,
+    "mobile": 74648,
+    "width": 720,
+    "height": 1279,
+    "quality": 85
+  }
+]
