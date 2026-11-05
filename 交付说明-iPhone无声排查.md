@@ -2,6 +2,14 @@
 
 2026-11-05。用户截图来自 iPhone Chrome，未当成 Safari 测试证据。声音和触感分别处理。
 
+## 部署证据
+
+- staging 已切到 `cb4e5f6f3f4e`；分支 `fix/staging-iphone-audio` 已推送，未合并 main。上一静态版本 `f2e3804fc2b6` 保留。
+- app.js、audio.js、audio-debug.js 服务器 SHA256 与本地 staging 包一致。
+- 仅 staging Nginx 增加音频 MIME location，`nginx -t` 通过并 reload；原配置保存在服务器 staging 目录。没有关闭 Basic Auth。
+- 未认证音频请求仍为 HTTP 401（预期保护行为，不是已登录浏览器的请求证据）。认证后的真实状态与 MIME 请看手机诊断条。
+- 正式环境发布指针仍为 `849bafb840ec`，HTTP 200；未 reload 正式 Nginx、未变更正式代码/API/机器人配置。
+
 ## 已确认的代码缺口 / 尚未确认的根因
 
 - 原代码遇到 AudioContext 非 running 时直接跳过敲击，没有在该次手势恢复。这是确认的代码缺口；本地用真实 AudioContext.suspend() 模拟后，修复版点击可以恢复 running。
