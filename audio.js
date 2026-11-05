@@ -24,7 +24,8 @@ export function createTempleAudio({onChange=()=>{},onError=()=>{},volume=()=>.25
    if(this.requests.has(name))return this.requests.get(name);
    const signal=this.controller.signal;
    const request=(async()=>{
-    let error;for(const ext of ['m4a','mp3']){
+    // MP3 is eligible for Cloudflare's default extension cache; AAC remains a decode fallback.
+    let error;for(const ext of ['mp3','m4a']){
      if(signal.aborted)throw new DOMException('Muted','AbortError');
      let phase='request';try{const response=await fetch(assetURL(`audio/${name}.${ext}`),{signal,credentials:'omit'});this.observe({event:'file',name,ext,status:response.status,mime:response.headers.get('content-type'),decode:'pending'});if(!response.ok)throw Error(`HTTP ${response.status}`);phase='decode';const buffer=await this.context.decodeAudioData(await response.arrayBuffer());if(signal.aborted)throw new DOMException('Muted','AbortError');this.buffers.set(name,buffer);this.observe({event:'file',name,ext,decode:'ok',duration:buffer.duration});return buffer;}catch(e){error=e;this.observe({event:'file',name,ext,[phase]:'failed',error:`${e.name}: ${e.message}`});if(signal.aborted)throw e;}
     }throw error;

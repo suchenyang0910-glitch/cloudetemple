@@ -2,9 +2,9 @@ async(page)=>{
  const p=await page.context().browser().newPage({viewport:{width:393,height:852}}),assert=(v,m)=>{if(!v)throw Error(m)},errors=[];
  p.on('pageerror',e=>errors.push(e.message));
  try{
-  await p.goto('http://127.0.0.1:8800/?debug=audio');await p.locator('#audio-test').waitFor();
+  await p.goto('http://127.0.0.1:8813/?debug=audio');await p.locator('#audio-test').waitFor();
   assert(await p.evaluate(()=>performance.getEntriesByType('resource').every(r=>!r.name.includes('/assets/audio/'))),'debug does not preload sound');
-  await p.locator('#audio-test').click();await p.waitForFunction(()=>document.querySelector('#audio-debug textarea').value.includes('mo.m4a: HTTP=200')&&document.querySelector('#audio-debug textarea').value.includes('"name":"mo"'));
+  await p.locator('#audio-test').click();await p.waitForFunction(()=>document.querySelector('#audio-debug textarea').value.includes('mo.mp3: HTTP=200')&&document.querySelector('#audio-debug textarea').value.includes('"name":"mo"'));
   const good=await p.locator('#audio-debug textarea').inputValue();assert(good.includes('decode=ok')&&good.includes('advancing=yes'),'decode and clock');
   await p.screenshot({path:'E:/cloudtemple/screenshots/iphone-audio-debug.png'});
   await p.locator('#audio-native-test').click();await p.waitForFunction(()=>document.querySelector('#audio-debug textarea').value.includes('"result":"playing"'));
