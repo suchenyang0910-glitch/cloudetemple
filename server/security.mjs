@@ -1,0 +1,33 @@
+import {createHmac,timingSafeEqual} from 'node:crypto';
+import {BlockList,isIP} from 'node:net';
+import ranges from './cloudflare-ips.json' with {type:'json'};
+const cf=new BlockList();for(const range of ranges){const [ip,prefix]=range.split('/');cf.addSubnet(ip,Number(prefix),isIP(ip)===6?'ipv6':'ipv4');}
+export const equal=(a,b)=>{const x=Buffer.from(a||''),y=Buffer.from(b||'');return x.length===y.length&&timingSafeEqual(x,y);};
+export const hash=(secret,text)=>createHmac('sha256',secret).update(text).digest('hex');
+export const origins=new Set(['https://h5.chuamay.org','https://miniapp.chuamay.org','https://staging.chuamay.org']);
+export function clientIP(req,trustLocal){
+  const normalize=ip=>ip?.replace(/^::ffff:/,'');
+  let peer=normalize(req.socket.remoteAddress);
+  if(trustLocal&&['127.0.0.1','::1'].includes(peer))peer=normalize(req.headers['x-chuamay-peer']);
+  if(!peer||!isIP(peer))throw Error('peer');
+  const forwarded=normalize(req.headers['cf-connecting-ip']);
+  return cf.check(peer,isIP(peer)===6?'ipv6':'ipv4')&&forwarded&&isIP(forwarded)?forwarded:peer;
+}
+export function validateInitData(raw,token,now=Date.now()){
+  if(typeof raw!=='string'||raw.length>8192)throw Error('initData');
+  const data=new URLSearchParams(raw),seen=new Set();for(const [key] of data){if(seen.has(key))throw Error('duplicate');seen.add(key);}
+  const signature=data.get('hash');if(!/^[a-f0-9]{64}$/i.test(signature||''))throw Error('hash');data.delete('hash');
+  const check=[...data].sort(([a],[b])=>a<b?-1:a>b?1:0).map(([k,v])=>`${k}=${v}`).join('\n');
+  const secret=createHmac('sha256','WebAppData').update(token).digest();
+  if(!equal(hash(secret,check),signature.toLowerCase()))throw Error('signature');
+  const date=Number(data.get('auth_date'));
+  if(!Number.isInteger(date)||date*1000<now-86400000||date*1000>now+120000)throw Error('expired');
+  const user=JSON.parse(data.get('user'));if(!Number.isSafeInteger(user?.id)||user.id<=0)throw Error('user');
+  return {id:String(user.id),language:user.language_code?.startsWith('vi')?'vi':'en'};
+}
+export function config(env){
+  for(const k of ['TELEGRAM_BOT_TOKEN','TELEGRAM_WEBHOOK_SECRET','HASH_SECRET'])if(!env[k]?.trim())throw Error(`Missing ${k}`);
+  if(env.HASH_SECRET.length<32||!/^[A-Za-z0-9_-]{32,256}$/.test(env.TELEGRAM_WEBHOOK_SECRET))throw Error('Invalid secret configuration');
+  const mini=env.MINIAPP_URL||'https://miniapp.chuamay.org';if(!['https://miniapp.chuamay.org','https://staging.chuamay.org'].includes(new URL(mini).origin))throw Error('Invalid Mini App origin');
+  return {token:env.TELEGRAM_BOT_TOKEN,webhookSecret:env.TELEGRAM_WEBHOOK_SECRET,hashSecret:env.HASH_SECRET,db:env.DB_PATH||'/var/lib/chuamay/api.sqlite',port:Number(env.PORT||8790),trustLocal:env.TRUST_LOCAL_PROXY==='1',mini};
+}

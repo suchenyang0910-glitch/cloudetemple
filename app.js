@@ -1,4 +1,5 @@
 import {copy,reflections} from './i18n.js';
+import {apiURL,initTelegram,inTelegram,initData,telegramBack,haptic,telegramShare} from './telegram.js';
 
 const $=s=>document.querySelector(s);
 const imageRoot='assets/processed-v1/img/';
@@ -103,6 +104,8 @@ function render(){
   document.documentElement.lang=state.lang;document.body.dataset.period=state.period;
   document.querySelectorAll('[data-i18n]').forEach(e=>e.textContent=t(e.dataset.i18n));
   $('#language').setAttribute('aria-label',t('language'));$('#controls').setAttribute('aria-label',t('actions'));
+  if(inTelegram())$('#memorial').textContent=t('remind');
+  telegramBack(!['entry','home'].includes(state.view));
   $('#sound-toggle').textContent=t(audio.enabled?'soundOn':'soundOff');$('#sound-toggle').setAttribute('aria-pressed',String(audio.enabled));
   $('#sound-controls').hidden=!audio.enabled;
   $('#eyebrow').textContent=t(state.period);
@@ -157,7 +160,7 @@ function bowOnce(){
 function bead(){
   if(state.result||state.bead>=108)return;
   state.activity??={kind:'beads',started:Date.now()};state.bead++;
-  try{navigator.vibrate?.(state.bead===108?[50,35,70]:10);}catch{/* Optional haptics. */}
+  if(!haptic(state.bead===108?'heavy':'light'))try{navigator.vibrate?.(state.bead===108?[50,35,70]:10);}catch{/* Optional haptics. */}
   if(state.bead===108)complete('beads',Date.now()-state.activity.started);else render();
 }
 function bindSwipe(){
@@ -190,11 +193,15 @@ const audio={enabled:false,context:null,master:null,ambientKind:'none',sources:[
   }
 };
 
-function openModal(title,body){lastFocus=document.activeElement;$('#modal-title').textContent=t(title);$('#modal-body').innerHTML=body;$('#modal').showModal();$('#close-modal').focus();}
+function openModal(title,body){lastFocus=document.activeElement;$('#modal-title').textContent=t(title);$('#modal-body').innerHTML=body;$('#modal').showModal();telegramBack(true);$('#close-modal').focus();}
 function closeModal(){if($('#modal').open)$('#modal').close();}
 $('#close-modal').addEventListener('click',closeModal);
-$('#modal').addEventListener('close',()=>{if(shareURL){URL.revokeObjectURL(shareURL);shareURL=null;}lastFocus?.focus?.();});
+$('#modal').addEventListener('close',()=>{if(shareURL){URL.revokeObjectURL(shareURL);shareURL=null;}telegramBack(!['entry','home'].includes(state.view));lastFocus?.focus?.();});
 function memorial(){
+  if(inTelegram()){
+    openModal('remind',`<p>${t('remindInfo')}</p><form id="remind-form"><label class="consent"><input type="checkbox" required><span>${t('remindConsent')}</span></label><button class="primary">${t('remind')}</button><p role="status" id="remind-status"></p></form>`);
+    $('#remind-form').addEventListener('submit',async e=>{e.preventDefault();const b=e.currentTarget.querySelector('button');if(b.disabled)return;b.disabled=true;try{const r=await fetch(apiURL('/telegram/remind'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({initData:initData(),consent:true,consentAt:new Date().toISOString()}),signal:AbortSignal.timeout(12000)});$('#remind-status').textContent=t(r.ok?'registered':'unavailable');}catch{$('#remind-status').textContent=t('unavailable');}finally{b.disabled=false;}});return;
+  }
   openModal('memorialTitle',`<p>${t('memorialInfo')}</p><form id="waitlist-form" novalidate><label for="email">${t('email')}</label><input id="email" name="email" type="email" autocomplete="email" maxlength="254" required><label class="consent"><input id="consent" type="checkbox" required><span>${t('consent')}</span></label><p id="form-status" role="status" class="error-inline"></p><button class="primary" type="submit">${t('register')}</button></form><p class="small" style="margin-top:20px">${t('zaloNote')}</p><a href="https://zalo.me/REPLACE_WITH_OFFICIAL_ACCOUNT" aria-disabled="true" id="zalo-link">${t('zalo')}</a>`);
   $('#zalo-link').addEventListener('click',e=>{e.preventDefault();$('#form-status').textContent=t('zaloNote');});
   $('#waitlist-form').addEventListener('submit',submitWaitlist);
@@ -205,7 +212,7 @@ async function submitWaitlist(e){
   if(!form.email.validity.valid||!email||!consent){status.textContent=t('invalid');(!form.email.validity.valid||!email?form.email:$('#consent')).focus();return;}
   submit.disabled=true;submit.textContent=t('sending');status.textContent='';
   try{
-    const response=await fetch('/api/waitlist',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,language:state.lang,consent:true,consentAt:new Date().toISOString()}),signal:AbortSignal.timeout(12000)});
+    const response=await fetch(apiURL('/waitlist'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,language:state.lang,consent:true,consentAt:new Date().toISOString()}),signal:AbortSignal.timeout(12000)});
     if(!response.ok){status.textContent=t(response.status===429?'rateLimit':'unavailable');return;}
     const data=await response.json();if(data.ok!==true)throw new Error('invalid response');form.replaceChildren(Object.assign(document.createElement('p'),{textContent:t('registered')}));
   }catch{status.textContent=t('unavailable');}
@@ -229,6 +236,7 @@ async function makeShare(){
 }
 function download(){if(!shareBlob)return;const url=URL.createObjectURL(shareBlob),a=document.createElement('a');a.href=url;a.download='chua-may.png';a.click();setTimeout(()=>URL.revokeObjectURL(url),30000);}
 async function shareFile(){
+  if(telegramShare(t('tagline')))return;
   const file=new File([shareBlob],'chua-may.png',{type:'image/png'});
   if(navigator.canShare?.({files:[file]})&&navigator.share){try{await navigator.share({files:[file],title:t('brand')});}catch(e){if(e.name!=='AbortError')$('#share-status').textContent=t('shareError');}}
   else download();
@@ -270,13 +278,14 @@ let periodUpdating=false;
 async function tick(){
   if(!state.layout||state.busy)return;
   const a=state.activity,now=Date.now();
-  if(a?.kind==='bow'&&a.bowStart!=null&&now-a.bowStart>=4000){a.bowStart=null;a.count++;if(a.count>=state.bowTarget)complete('bow',a.count*4000);else{render();paint();if(a.auto)bowOnce();}}
+  if(a?.kind==='bow'&&a.bowStart!=null&&now-a.bowStart>=4000){a.bowStart=null;a.count++;haptic('soft');if(a.count>=state.bowTarget)complete('bow',a.count*4000);else{render();paint();if(a.auto)bowOnce();}}
   else if(a?.running&&remaining(a)<=0){if(a.kind==='incense')complete('incense',60000);if(a.kind==='sit')complete('sit',a.total);}
   updateCounters();
   const period=periodNow();if(period!==state.period&&!periodUpdating){periodUpdating=true;const token=transitionId,view=state.view;try{const assets=await prepare(view,period);if(token===transitionId){state.period=period;renderAssets=assets;render();paint();}}catch{/* Keep the last fully loaded scene on transient failures. */}finally{periodUpdating=false;}}
 }
 setInterval(tick,200);
 async function init(){
+  await initTelegram(()=>{if($('#modal').open)closeModal();else navigate(state.view==='choose'?'entry':'home');});
   try{const response=await fetch('assets/processed-v1/layout-v1.json');if(!response.ok)throw new Error('layout');state.layout=await response.json();const saved=read('ct-visitor',null);state.visitor=state.layout.v1_scope.visitors.includes(saved)?saved:state.layout.v1_scope.visitors[Math.floor(Math.random()*6)];await navigate('entry');}
   catch{$('#loading').hidden=true;$('#notice').textContent=t('loadError');$('#controls').innerHTML=button('retry','reload');$('#controls').onclick=e=>{if(e.target.dataset.action==='reload')location.reload();};$('#app').setAttribute('aria-busy','false');}
 }

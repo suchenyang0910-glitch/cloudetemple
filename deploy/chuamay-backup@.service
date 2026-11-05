@@ -1,0 +1,10 @@
+[Unit]
+Description=Chua May offsite backup (%i)
+[Service]
+Type=oneshot
+User=chuamay
+Group=chuamay
+UMask=0077
+ExecStart=/bin/bash /opt/chuamay/%i/current/deploy/backup.sh %i
+NoNewPrivileges=true
+PrivateTmp=true

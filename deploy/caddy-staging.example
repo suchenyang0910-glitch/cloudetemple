@@ -1,0 +1,10 @@
+# Append only after origin certificate and staging API health checks pass.
+staging.chuamay.org {
+    tls /etc/ssl/chuamay/origin.pem /etc/ssl/chuamay/origin.key
+    reverse_proxy 127.0.0.1:8803 {
+        header_up X-Chuamay-Peer {remote_host}
+    }
+}
+# Use equivalent isolated sites: h5 -> 8800, miniapp -> 8801, api -> 8802.
+# Do not enable production sites before user approval.
+# Origin certificate private key mode600: Caddy service user must own/read it.
