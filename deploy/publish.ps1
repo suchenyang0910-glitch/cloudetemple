@@ -9,7 +9,7 @@ try {
   if($LASTEXITCODE){throw 'Packaging failed'}
   $release=(git rev-parse --short=12 HEAD).Trim()
   $archive=Join-Path $PSScriptRoot "chuamay-$release.tar.gz"
-  tar -czf $archive --exclude=server/node_modules --exclude=server/*.sqlite* --exclude=server/api.env --exclude=server/*.env -- dist server deploy/activate.sh deploy/backup.sh
+  tar -czf $archive --exclude=server/node_modules --exclude=server/*.sqlite* --exclude=server/api.env --exclude=server/*.env -- dist server deploy/activate.sh deploy/check-secret-permissions.sh deploy/backup.sh
   if($LASTEXITCODE){throw 'Archive failed'}
   scp $archive "root@159.223.92.104:/tmp/chuamay-$release.tar.gz"
   if($LASTEXITCODE){throw 'Upload failed'}
