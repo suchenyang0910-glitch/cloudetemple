@@ -1,0 +1,10 @@
+[Unit]
+Description=Daily Chua May family reminders (%i)
+
+[Timer]
+OnCalendar=*-*-* 07:00:00 Asia/Ho_Chi_Minh
+Persistent=true
+Unit=chuamay-reminders@%i.service
+
+[Install]
+WantedBy=timers.target

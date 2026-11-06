@@ -26,17 +26,27 @@ const mobile=JSON.parse(await fs.readFile(new URL(`assets/releases/${release}/pr
 assert.equal(mobile.length,12);assert(mobile.every(x=>x.mobile<=120000&&x.width===720));
 if(process.argv.includes('--production')){
  assert(!files.some(n=>/^audio-debug(\.|$)/.test(n)));
+ assert(!files.some(n=>/^(family|dev-outbox)(\.|$)/.test(n)),'production excludes family pilot and outbox');
  for(const name of files){const item=new URL(name,root);if((await fs.stat(item)).isFile())assert(!(await fs.readFile(item)).includes(Buffer.from('debug_mode')),name+' contains debug_mode');}
  const analytics=versioned.find(n=>n.startsWith('analytics.'));
  assert(analytics,'production analytics module');
  assert((await fs.readFile(new URL(analytics,root),'utf8')).includes('const debug={}'),'production analytics has no debug fields');
  assert((await fs.readFile(new URL(`config.${release}.js`,root),'utf8')).includes("'pass-through'"),'production guru rule');
+ const app=versioned.find(n=>n.startsWith('app.')&&n.endsWith('.js'));
+ assert(app,'production app module');
+ assert((await fs.readFile(new URL(app,root),'utf8')).includes("const familyEnabled='0'==='1'"),'production family entry disabled');
 }
 if(process.argv.includes('--staging')){
  const analytics=versioned.find(n=>n.startsWith('analytics.'));
  assert(analytics,'staging analytics module');
  assert((await fs.readFile(new URL(analytics,root),'utf8')).includes('debug_mode:true'),'staging debug_mode');
  assert((await fs.readFile(new URL(`config.${release}.js`,root),'utf8')).includes("'turn-back'"),'staging guru rule');
+ for(const name of ['family.html','dev/outbox.html'])await fs.access(new URL(name,root));
+ const outboxHTML=await fs.readFile(new URL('dev/outbox.html',root),'utf8');
+ assert(outboxHTML.includes(`dev-outbox.${release}.js`),'staging outbox references hashed script');
+ const familyApp=versioned.find(n=>n.startsWith('family.')&&n.endsWith('.js'));
+ assert(familyApp,'staging family app');
+ assert((await fs.readFile(new URL(versioned.find(n=>n.startsWith('app.')),root),'utf8')).includes("const familyEnabled='1'==='1'"));
 }
 assert((await fs.readFile(new URL('index.html',root),'utf8')).includes('id="ga-choice"'),'analytics consent rendered');
 const manifest=JSON.parse(await fs.readFile(new URL(`../deploy/package-${release}.json`,root)));

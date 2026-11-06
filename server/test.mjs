@@ -52,3 +52,8 @@ test('disabled Telegram needs only HASH_SECRET and leaves registration available
  }
  assert.equal(f.sent.length,0);assert.equal((await f.post(valid())).status,201);
 });
+test('outbox mail provider is rejected outside staging',()=>{
+ const env={TELEGRAM_ENABLED:'0',HASH_SECRET:settings.hashSecret,CHUAMAY_ENV:'production',MAIL_PROVIDER:'outbox'};
+ assert.throws(()=>config(env),/Outbox is staging-only/);
+ assert.equal(config({...env,CHUAMAY_ENV:'staging'}).mailProvider,'outbox');
+});

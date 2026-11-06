@@ -1,7 +1,7 @@
 import http from 'node:http';
 import {equal,hash,clientIP,validateInitData} from './security.mjs';
 import {botCopy} from './bot-copy.mjs';
-export function createServer(settings,store,send=async(method,body)=>{const r=await fetch(`https://api.telegram.org/bot${settings.token}/${method}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal:AbortSignal.timeout(10000)});if(!r.ok||!(await r.json()).ok)throw Error('telegram unavailable');}){
+export function createServer(settings,store,send=async(method,body)=>{const r=await fetch(`https://api.telegram.org/bot${settings.token}/${method}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal:AbortSignal.timeout(10000)});if(!r.ok||!(await r.json()).ok)throw Error('telegram unavailable');},family=async()=>false){
   const cooldown=new Map(),updates=new Map();
   return http.createServer(async(req,res)=>{
     const reply=(status,error,data={})=>{res.writeHead(status,{'Content-Type':'application/json','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'});res.end(JSON.stringify(error?{ok:false,error}:{ok:true,...data}));};
@@ -11,7 +11,8 @@ export function createServer(settings,store,send=async(method,body)=>{const r=aw
       if(origin&&!settings.origins?.has(origin))return reply(403,'origin');
       if(origin){res.setHeader('Access-Control-Allow-Origin',origin);res.setHeader('Vary','Origin');}
       if(settings.telegramEnabled===false&&route.startsWith('/telegram/'))return reply(503,'telegram_disabled');
-      if(req.method==='OPTIONS'){if(!origin)return reply(403,'origin');res.setHeader('Access-Control-Allow-Methods','POST, OPTIONS');res.setHeader('Access-Control-Allow-Headers','Content-Type');return reply(204);}
+      if(req.method==='OPTIONS'){if(!origin)return reply(403,'origin');res.setHeader('Access-Control-Allow-Methods','GET, POST, PATCH, PUT, DELETE, OPTIONS');res.setHeader('Access-Control-Allow-Headers','Content-Type, X-CSRF-Token');return reply(204);}
+      if(await family(req,res,route))return;
       if(!['/waitlist','/telegram/remind','/telegram/webhook'].includes(route))return reply(404,'route');
       if(req.method!=='POST'){res.setHeader('Allow','POST');return reply(405,'method');}
       if(route==='/telegram/webhook'){if(!equal(req.headers['x-telegram-bot-api-secret-token'],settings.webhookSecret))return reply(401,'secret');}

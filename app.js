@@ -7,6 +7,7 @@ import {copy,reflections} from './i18n.js';
 import {apiURL,initTelegram,inTelegram,initData,telegramBack,telegramAppearance,haptic,telegramShare,telegramStory,telegramStartParam} from './telegram.js';
 
 let analytics,woodStarted;
+const familyEnabled='__CT_FAMILY_ENABLED__'==='1';
 const event=(name,params)=>analytics?.event(name,params);
 function completed(activity,ms,n){event('activity_complete',{activity,duration_bucket:ms<60000?'<1m':ms<180000?'1-3m':ms<=600000?'3-10m':'>10m',count_bucket:n>=108?'108+':n>=54?'54-107':n>=27?'27-53':n>1?'2-26':'1'})}
 const $=s=>document.querySelector(s);
@@ -31,7 +32,8 @@ const actionIcons={
   sit:'<ellipse cx="12" cy="14" rx="9" ry="4"/><path d="M3 14v4c0 5 18 5 18 0v-4M7 13h10"/>',
   beads:'<circle cx="12" cy="11" r="8" stroke-dasharray="1 4" stroke-width="3"/><path d="m12 19-2 4m2-4 2 4"/>',
   mo:'<path d="M3 15c0-9 13-11 18 1-3 6-16 6-18-1Zm2-2 13 3m-3-11 6 5"/>',
-  leave:'<path d="M4 21V3h12v6M2 21h14v-4m-5-4h11m-4-4 4 4-4 4"/>'
+  leave:'<path d="M4 21V3h12v6M2 21h14v-4m-5-4h11m-4-4 4 4-4 4"/>',
+  memorial:'<path d="M5 21h14M7 21V9h10v12M9 9V4h6v5M10 13h4m-2-2v4"/>'
 };
 const read=(key,fallback)=>{try{return JSON.parse(localStorage.getItem(key))??fallback;}catch{return fallback;}};
 const write=(key,value)=>{try{localStorage.setItem(key,JSON.stringify(value));}catch{/* Private browsing still permits a complete visit. */}};
@@ -185,7 +187,8 @@ function render(){
      let x=null;$('#entry-overlay').onpointerdown=e=>{x=e.clientX;};$('#entry-overlay').onpointerup=e=>{if(x!==null&&Math.abs(e.clientX-x)>35)changeVisitor(e.clientX<x?1:-1);x=null;};
     }void showChoice();
   }else if(state.view==='home'){
-    $('#controls').innerHTML=`<nav class="action-nav">${['incense','bow','sit','mo','beads','leave'].map(key=>`<button data-action="${key}"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">${actionIcons[key]}</svg>${t(key)}</button>`).join('')}</nav>`;
+    const actions=['incense','bow','sit','mo','beads',familyEnabled?'memorial':'leave'];
+    $('#controls').innerHTML=`<nav class="action-nav">${actions.map(key=>`<button data-action="${key}"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">${actionIcons[key]}</svg>${key==='memorial'?(state.lang==='vi'?'Bàn thờ gia tiên':'Family altar'):t(key)}</button>`).join('')}</nav>`;
   }else if(state.view==='leave'){
     $('#controls').innerHTML=`<p class="leave-message">${t('goodbye')}</p>${button('reenter','reenter','primary')}`;
   }else if(state.result){
@@ -206,6 +209,8 @@ function render(){
     $('.stage').append($('.beads-area'));beadCleanup=mountBeads($('#bead-control'),{step:bead,count:state.bead,reduced:reduced.matches,left:state.beadHand==='left',direction:state.beadDirection});
   }
   $('#more-toggle').hidden=false;$('#more-toggle').setAttribute('aria-label',t('more'));
+  if(familyEnabled)$('#memorial').textContent=state.lang==='vi'?'Bàn thờ gia tiên':'Family altar';
+  $('#leave-more').hidden=!familyEnabled;$('#leave-more').textContent=t('leave');
   $('#wood-prop').hidden=state.view!=='mo'||state.busy;$('#mallet-prop').hidden=state.view!=='mo'||state.busy;
   $('#wood-prop').setAttribute('aria-label',t('wood'));
   if(state.view==='mo'&&renderAssets?.art.mo&&!state.busy)for(const [id,key] of [['wood-art','mo'],['mallet-prop','mo-mallet']]){const c=$('#'+id),im=renderAssets.art[key];c.width=im.width;c.height=im.height;c.getContext('2d').drawImage(im,0,0);}
@@ -331,8 +336,10 @@ $('#close-modal').addEventListener('click',closeModal);
 $('#modal').addEventListener('close',()=>{if(shareURL){URL.revokeObjectURL(shareURL);shareURL=null;}telegramBack(!['entry','home'].includes(state.view));lastFocus?.focus?.();});
 function openMore(){closeModal();$('#more-menu').showModal();telegramBack(true);}
 $('#close-more').onclick=()=>$('#more-menu').close();
+$('#leave-more').onclick=()=>$('#more-menu').close();
 $('#more-menu').addEventListener('close',()=>telegramBack(!['entry','home'].includes(state.view)));
 function memorial(){
+  if(familyEnabled){location.href='/family.html';return;}
   analytics?.view('memorial');$('#modal').addEventListener('close',()=>analytics?.view(state.view),{once:true});
   $('#more-menu').close();
   if(inTelegram()){
@@ -421,6 +428,7 @@ document.addEventListener('click',async e=>{
     case 'bead':break;
     case 'bead-hand':state.beadHand=state.beadHand==='left'?'right':'left';event('hand_switch',{hand:state.beadHand});write('ct-bead-hand',state.beadHand);render();paint();break;
     case 'bead-again':state.result=null;state.bead=0;state.beadRound++;if(beadGuruRule==='turn-back')state.beadDirection*=-1;render();paint();$('#bead-control').focus({preventScroll:true});break;
+    case 'memorial':memorial();break;
     case 'share':event('share_open',{activity:state.result.kind});if(await makeShare(false))await shareFile();break;
     case 'share-file':await shareFile();break;
     case 'download':if(shareBlob||await makeShare(false))download();break;

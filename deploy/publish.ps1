@@ -9,8 +9,16 @@ try {
   if($LASTEXITCODE){throw 'Packaging failed'}
   $release=(git rev-parse --short=12 HEAD).Trim()
   $archive=Join-Path $PSScriptRoot "chuamay-$release.tar.gz"
-  tar -czf $archive --exclude=server/node_modules --exclude=server/*.sqlite* --exclude=server/api.env --exclude=server/*.env -- dist server deploy/activate.sh deploy/backup.sh
+  $tarArgs=@('-czf',$archive,'--exclude=server/node_modules','--exclude=server/*.sqlite*','--exclude=server/api.env','--exclude=server/*.env')
+  if($Environment -eq 'production'){$tarArgs+='--exclude=server/outbox-staging.mjs'}
+  $tarArgs+=@('dist','server','deploy/activate.sh','deploy/backup.sh')
+  & tar @tarArgs
   if($LASTEXITCODE){throw 'Archive failed'}
+  if($Environment -eq 'production'){
+    $entries=& tar -tzf $archive
+    if($LASTEXITCODE){throw 'Archive inspection failed'}
+    if($entries -match '(^|/)(dev-outbox[^/]*|dev/outbox\.html|outbox-staging\.mjs)$'){throw 'Production archive contains staging outbox code'}
+  }
   scp $archive "root@159.223.92.104:/tmp/chuamay-$release.tar.gz"
   if($LASTEXITCODE){throw 'Upload failed'}
   $gate=if($ApprovedProduction){'approved'}else{''}

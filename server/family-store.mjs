@@ -1,0 +1,327 @@
+import { randomUUID } from "node:crypto";
+export function openFamilyStore(db) {
+  db.pragma("foreign_keys = ON");
+  db.exec(`
+CREATE TABLE IF NOT EXISTS users(id TEXT PRIMARY KEY,display_name TEXT NOT NULL DEFAULT '',locale TEXT NOT NULL DEFAULT 'vi',created_at TEXT NOT NULL,deleted_at TEXT,demo INTEGER NOT NULL DEFAULT 1);
+CREATE TABLE IF NOT EXISTS identities(id INTEGER PRIMARY KEY,user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,provider TEXT NOT NULL CHECK(provider IN('email','google','telegram')),subject TEXT NOT NULL,email TEXT,created_at TEXT NOT NULL,demo INTEGER NOT NULL DEFAULT 1,UNIQUE(provider,subject));
+CREATE TABLE IF NOT EXISTS sessions(token_hash TEXT PRIMARY KEY,user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,expires_at INTEGER NOT NULL,ua_summary TEXT NOT NULL,csrf_hash TEXT NOT NULL,created_at TEXT NOT NULL,demo INTEGER NOT NULL DEFAULT 1);
+CREATE TABLE IF NOT EXISTS email_codes(subject TEXT PRIMARY KEY,email TEXT NOT NULL,code_hash TEXT NOT NULL,expires_at INTEGER NOT NULL,attempts INTEGER NOT NULL DEFAULT 0,ip_hash TEXT NOT NULL,created_at TEXT NOT NULL,demo INTEGER NOT NULL DEFAULT 1);
+CREATE TABLE IF NOT EXISTS family_rates(key TEXT PRIMARY KEY,until INTEGER NOT NULL);
+CREATE TABLE IF NOT EXISTS oauth_states(state_hash TEXT PRIMARY KEY,verifier TEXT NOT NULL,expires_at INTEGER NOT NULL,created_at TEXT NOT NULL,demo INTEGER NOT NULL DEFAULT 1);
+CREATE TABLE IF NOT EXISTS tablets(id TEXT PRIMARY KEY,owner_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,honorific TEXT NOT NULL,full_name TEXT NOT NULL,birth_year INTEGER,death_year INTEGER,death_lunar_day INTEGER NOT NULL,death_lunar_month INTEGER NOT NULL,death_lunar_leap INTEGER NOT NULL DEFAULT 0,note TEXT NOT NULL DEFAULT '',created_at TEXT NOT NULL,demo INTEGER NOT NULL DEFAULT 1);
+CREATE TABLE IF NOT EXISTS tablet_members(tablet_id TEXT NOT NULL REFERENCES tablets(id) ON DELETE CASCADE,user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,role TEXT NOT NULL CHECK(role IN('owner','family')),created_at TEXT NOT NULL,demo INTEGER NOT NULL DEFAULT 1,PRIMARY KEY(tablet_id,user_id));
+CREATE TABLE IF NOT EXISTS invites(id TEXT PRIMARY KEY,tablet_id TEXT NOT NULL REFERENCES tablets(id) ON DELETE CASCADE,token_hash TEXT NOT NULL UNIQUE,created_by TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,expires_at INTEGER NOT NULL,revoked_at TEXT,uses INTEGER NOT NULL DEFAULT 0,max_uses INTEGER NOT NULL DEFAULT 20,created_at TEXT NOT NULL,demo INTEGER NOT NULL DEFAULT 1);
+CREATE TABLE IF NOT EXISTS offerings(id TEXT PRIMARY KEY,tablet_id TEXT NOT NULL REFERENCES tablets(id) ON DELETE CASCADE,user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,kind TEXT NOT NULL CHECK(kind IN('incense','flower','fruit','tea')),at TEXT NOT NULL,created_at TEXT NOT NULL,demo INTEGER NOT NULL DEFAULT 1);
+CREATE TABLE IF NOT EXISTS reminder_prefs(user_id TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,email_on INTEGER NOT NULL DEFAULT 0,telegram_on INTEGER NOT NULL DEFAULT 0,telegram_chat_id TEXT,ics_token TEXT,festival_on INTEGER NOT NULL DEFAULT 1,created_at TEXT NOT NULL,demo INTEGER NOT NULL DEFAULT 1);
+CREATE TABLE IF NOT EXISTS deliveries(id TEXT PRIMARY KEY,user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,tablet_id TEXT,kind TEXT NOT NULL,due_date TEXT NOT NULL,channel TEXT NOT NULL,sent_at TEXT,status TEXT NOT NULL,attempts INTEGER NOT NULL DEFAULT 0,created_at TEXT NOT NULL,demo INTEGER NOT NULL DEFAULT 1,UNIQUE(user_id,tablet_id,kind,due_date,channel));`);
+  const now = () => new Date().toISOString(),
+    one = (sql, ...p) => db.prepare(sql).get(...p),
+    all = (sql, ...p) => db.prepare(sql).all(...p),
+    run = (sql, ...p) => db.prepare(sql).run(...p);
+  const userFor = (provider, subject, email = "", display = "") => {
+    const found = one(
+      "SELECT u.* FROM users u JOIN identities i ON i.user_id=u.id WHERE i.provider=? AND i.subject=?",
+      provider,
+      subject,
+    );
+    if (found) return found;
+    const id = randomUUID(),
+      at = now();
+    db.transaction(() => {
+      run("INSERT INTO users VALUES(?,?,?,?,?,1)", id, display, "vi", at, null);
+      run(
+        "INSERT INTO identities(user_id,provider,subject,email,created_at,demo) VALUES(?,?,?,?,?,1)",
+        id,
+        provider,
+        subject,
+        provider === "email" ? email : null,
+        at,
+      );
+      run(
+        "INSERT INTO reminder_prefs(user_id,created_at,demo) VALUES(?,?,1)",
+        id,
+        at,
+      );
+    })();
+    return one("SELECT * FROM users WHERE id=?", id);
+  };
+  const member = (user, id) =>
+    one(
+      "SELECT m.role,t.* FROM tablet_members m JOIN tablets t ON t.id=m.tablet_id WHERE m.user_id=? AND t.id=?",
+      user,
+      id,
+    );
+  return {
+    db,
+    userFor,
+    member,
+    rate(key, until) {
+      const row = one("SELECT until FROM family_rates WHERE key=?", key);
+      if ((row?.until || 0) > Date.now()) return false;
+      run("INSERT OR REPLACE INTO family_rates VALUES(?,?)", key, until);
+      return true;
+    },
+    saveCode(record) {
+      run(
+        "INSERT OR REPLACE INTO email_codes VALUES(?,?,?,?,?,?,?,1)",
+        record.subject,
+        record.email,
+        record.codeHash,
+        record.expires,
+        0,
+        record.ipHash,
+        now(),
+      );
+    },
+    takeCode(subject, codeHash) {
+      const row = one("SELECT * FROM email_codes WHERE subject=?", subject);
+      if (!row || row.expires_at < Date.now() || row.attempts >= 5) return null;
+      if (row.code_hash !== codeHash) {
+        run(
+          "UPDATE email_codes SET attempts=attempts+1 WHERE subject=?",
+          subject,
+        );
+        return null;
+      }
+      run("DELETE FROM email_codes WHERE subject=?", subject);
+      return row;
+    },
+    saveState(hash, verifier, expires) {
+      run(
+        "INSERT OR REPLACE INTO oauth_states VALUES(?,?,?,?,1)",
+        hash,
+        verifier,
+        expires,
+        now(),
+      );
+    },
+    takeState(hash) {
+      const row = one("SELECT * FROM oauth_states WHERE state_hash=?", hash);
+      run("DELETE FROM oauth_states WHERE state_hash=?", hash);
+      return row && row.expires_at >= Date.now() ? row : null;
+    },
+    session(hash, user, expires, ua, csrfHash) {
+      run(
+        "INSERT INTO sessions VALUES(?,?,?,?,?,?,1)",
+        hash,
+        user,
+        expires,
+        ua,
+        csrfHash,
+        now(),
+      );
+    },
+    sessionUser(hash) {
+      return one(
+        "SELECT s.*,u.display_name,u.locale FROM sessions s JOIN users u ON u.id=s.user_id WHERE s.token_hash=? AND s.expires_at>? AND u.deleted_at IS NULL",
+        hash,
+        Date.now(),
+      );
+    },
+    rotateCsrf(tokenHash, csrfHash) {
+      run(
+        "UPDATE sessions SET csrf_hash=? WHERE token_hash=?",
+        csrfHash,
+        tokenHash,
+      );
+    },
+    logout(hash) {
+      run("DELETE FROM sessions WHERE token_hash=?", hash);
+    },
+    listTablets(user) {
+      return all(
+        "SELECT t.*,m.role FROM tablets t JOIN tablet_members m ON m.tablet_id=t.id WHERE m.user_id=? ORDER BY t.created_at",
+        user,
+      );
+    },
+    createTablet(user, v) {
+      if (one("SELECT count(*) n FROM tablets WHERE owner_id=?", user).n >= 10)
+        throw Error("tablet_limit");
+      const id = randomUUID(),
+        at = now();
+      db.transaction(() => {
+        run(
+          "INSERT INTO tablets VALUES(?,?,?,?,?,?,?,?,?,?,?,1)",
+          id,
+          user,
+          v.honorific,
+          v.fullName,
+          v.birthYear,
+          v.deathYear,
+          v.day,
+          v.month,
+          v.leap ? 1 : 0,
+          v.note,
+          at,
+        );
+        run(
+          "INSERT INTO tablet_members VALUES(?,?, 'owner',?,1)",
+          id,
+          user,
+          at,
+        );
+      })();
+      return member(user, id);
+    },
+    updateTablet(user, id, v) {
+      const m = member(user, id);
+      if (!m || m.role !== "owner") return null;
+      run(
+        "UPDATE tablets SET honorific=?,full_name=?,birth_year=?,death_year=?,death_lunar_day=?,death_lunar_month=?,death_lunar_leap=?,note=? WHERE id=?",
+        v.honorific,
+        v.fullName,
+        v.birthYear,
+        v.deathYear,
+        v.day,
+        v.month,
+        v.leap ? 1 : 0,
+        v.note,
+        id,
+      );
+      return member(user, id);
+    },
+    deleteTablet(user, id) {
+      const m = member(user, id);
+      if (!m || m.role !== "owner") return false;
+      run("DELETE FROM tablets WHERE id=?", id);
+      return true;
+    },
+    offer(user, id, kind) {
+      if (!member(user, id)) return null;
+      const at = now();
+      run(
+        "INSERT INTO offerings VALUES(?,?,?,?,?,?,1)",
+        randomUUID(),
+        id,
+        user,
+        kind,
+        at,
+        at,
+      );
+      return one(
+        "SELECT count(DISTINCT user_id) n FROM offerings WHERE tablet_id=? AND at>=date('now','localtime')",
+        id,
+      ).n;
+    },
+    invite(user, id, hash, expires, maxUses) {
+      const m = member(user, id);
+      if (!m || m.role !== "owner") return null;
+      const invite = randomUUID();
+      run(
+        "INSERT INTO invites VALUES(?,?,?,?,?,?,?,?,?,1)",
+        invite,
+        id,
+        hash,
+        user,
+        expires,
+        null,
+        0,
+        maxUses,
+        now(),
+      );
+      return invite;
+    },
+    inviteInfo(hash) {
+      return one(
+        "SELECT i.*,t.honorific,t.full_name,u.display_name inviter FROM invites i JOIN tablets t ON t.id=i.tablet_id JOIN users u ON u.id=i.created_by WHERE i.token_hash=?",
+        hash,
+      );
+    },
+    acceptInvite(user, hash) {
+      const i = this.inviteInfo(hash);
+      if (
+        !i ||
+        i.revoked_at ||
+        i.expires_at < Date.now() ||
+        i.uses >= i.max_uses
+      )
+        return null;
+      db.transaction(() => {
+        run(
+          "INSERT OR IGNORE INTO tablet_members VALUES(?,?,'family',?,1)",
+          i.tablet_id,
+          user,
+          now(),
+        );
+        run("UPDATE invites SET uses=uses+1 WHERE id=?", i.id);
+      })();
+      return member(user, i.tablet_id);
+    },
+    revokeInvite(user, tabletId, inviteId) {
+      const m = member(user, tabletId);
+      if (!m || m.role !== "owner") return false;
+      return (
+        run(
+          "UPDATE invites SET revoked_at=? WHERE id=? AND tablet_id=? AND revoked_at IS NULL",
+          now(),
+          inviteId,
+          tabletId,
+        ).changes === 1
+      );
+    },
+    removeMember(user, tabletId, memberId) {
+      const m = member(user, tabletId);
+      if (!m || m.role !== "owner" || memberId === user) return false;
+      return (
+        run(
+          "DELETE FROM tablet_members WHERE tablet_id=? AND user_id=? AND role='family'",
+          tabletId,
+          memberId,
+        ).changes === 1
+      );
+    },
+    prefs(user) {
+      return one("SELECT * FROM reminder_prefs WHERE user_id=?", user);
+    },
+    setPrefs(user, v) {
+      run(
+        "UPDATE reminder_prefs SET email_on=?,telegram_on=?,telegram_chat_id=COALESCE(?,telegram_chat_id),ics_token=COALESCE(?,ics_token),festival_on=? WHERE user_id=?",
+        v.email ? 1 : 0,
+        v.telegram ? 1 : 0,
+        v.telegramChat,
+        v.icsHash,
+        v.festival ? 1 : 0,
+        user,
+      );
+      return this.prefs(user);
+    },
+    unsubscribeEmail(user) {
+      return (
+        run("UPDATE reminder_prefs SET email_on=0 WHERE user_id=?", user)
+          .changes === 1
+      );
+    },
+    calendarUser(icsHash) {
+      const pref = one(
+        "SELECT * FROM reminder_prefs WHERE ics_token=?",
+        icsHash,
+      );
+      return pref
+        ? { prefs: pref, tablets: this.listTablets(pref.user_id) }
+        : null;
+    },
+    exportUser(user) {
+      return {
+        user: one(
+          "SELECT id,display_name,locale,created_at FROM users WHERE id=?",
+          user,
+        ),
+        tablets: this.listTablets(user),
+        offerings: all(
+          "SELECT tablet_id,kind,at FROM offerings WHERE user_id=?",
+          user,
+        ),
+        reminders: this.prefs(user),
+      };
+    },
+    deleteUser(user) {
+      run("DELETE FROM users WHERE id=?", user);
+    },
+    cleanup() {
+      run("DELETE FROM sessions WHERE expires_at<=?", Date.now());
+      run("DELETE FROM email_codes WHERE expires_at<=?", Date.now());
+      run("DELETE FROM oauth_states WHERE expires_at<=?", Date.now());
+      run("DELETE FROM family_rates WHERE until<=?", Date.now());
+    },
+  };
+}
