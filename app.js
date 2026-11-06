@@ -188,7 +188,7 @@ function render(){
     }void showChoice();
   }else if(state.view==='home'){
     const actions=['incense','bow','sit','mo','beads',familyEnabled?'memorial':'leave'];
-    $('#controls').innerHTML=`<nav class="action-nav">${actions.map(key=>`<button data-action="${key}"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">${actionIcons[key]}</svg>${key==='memorial'?(state.lang==='vi'?'Bàn thờ gia tiên':'Family altar'):t(key)}</button>`).join('')}</nav>`;
+    $('#controls').innerHTML=`<nav class="action-nav">${actions.map(key=>`<button data-action="${key}"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">${actionIcons[key]}</svg>${key==='memorial'?t('familyAltar'):t(key)}</button>`).join('')}</nav>`;
   }else if(state.view==='leave'){
     $('#controls').innerHTML=`<p class="leave-message">${t('goodbye')}</p>${button('reenter','reenter','primary')}`;
   }else if(state.result){
@@ -209,7 +209,7 @@ function render(){
     $('.stage').append($('.beads-area'));beadCleanup=mountBeads($('#bead-control'),{step:bead,count:state.bead,reduced:reduced.matches,left:state.beadHand==='left',direction:state.beadDirection});
   }
   $('#more-toggle').hidden=false;$('#more-toggle').setAttribute('aria-label',t('more'));
-  if(familyEnabled)$('#memorial').textContent=state.lang==='vi'?'Bàn thờ gia tiên':'Family altar';
+  if(familyEnabled)$('#memorial').textContent=t('familyAltar');
   $('#leave-more').hidden=!familyEnabled;$('#leave-more').textContent=t('leave');
   $('#wood-prop').hidden=state.view!=='mo'||state.busy;$('#mallet-prop').hidden=state.view!=='mo'||state.busy;
   $('#wood-prop').setAttribute('aria-label',t('wood'));

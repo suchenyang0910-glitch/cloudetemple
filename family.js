@@ -1,13 +1,14 @@
 import { familyEvent } from "./family-analytics.js";
+import { familyText as t, FAMILY_COPY } from "./family-i18n.js";
 const $ = (s) => document.querySelector(s),
   screen = $("#screen"),
   status = $("#status"),
   demo = new URLSearchParams(location.search).has("demo");
 const periods = {
-    dawn: "Sớm mai",
-    day: "Ban ngày",
-    dusk: "Chiều muộn",
-    night: "Đêm yên",
+    dawn: t("period_dawn"),
+    day: t("period_day"),
+    dusk: t("period_dusk"),
+    night: t("period_night"),
   },
   hour = new Date().getHours(),
   requested = new URLSearchParams(location.search).get("period"),
@@ -22,6 +23,10 @@ const periods = {
             ? "dusk"
             : "night";
 $("#period").textContent = periods[period];
+document.title = t("page_title");
+document.querySelector("h1").textContent = t("altar_title");
+document.querySelector("header>a").setAttribute("aria-label", t("back_temple"));
+$("#account").setAttribute("aria-label", t("account_aria"));
 let csrf = "",
   tablets = [],
   current = null;
@@ -90,7 +95,7 @@ function embedded() {
   );
 }
 function login() {
-  screen.innerHTML = `<section class="login"><h2>Giữ gìn ký ức gia đình</h2><p>Tên và ngày giỗ chỉ những người được mời mới xem được. Bản dịch tiếng Việt đang chờ người bản ngữ duyệt.</p><form id="email-login"><input name="email" type="email" autocomplete="email" maxlength="254" placeholder="Email" required><button class="primary">Gửi mã 6 số</button></form><form id="code-form" hidden><input name="code" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="Mã xác nhận" required><button class="primary">Đăng nhập</button></form>${embedded() ? '<p class="muted">Mở bằng trình duyệt để đăng nhập Google.</p>' : '<a class="google" href="/api/auth/google/start">Đăng nhập bằng Google</a>'}<a href="/?telegram=1" class="muted">Mở trong Telegram</a></section>`;
+  screen.innerHTML = `<section class="login"><h2>${t("login_title")}</h2><p>${t("login_privacy")} ${t("native_pending")}</p><form id="email-login"><input name="email" type="email" autocomplete="email" maxlength="254" placeholder="${t("email_placeholder")}" required><button class="primary">${t("send_code")}</button></form><form id="code-form" hidden><input name="code" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="${t("code_placeholder")}" required><button class="primary">${t("sign_in")}</button></form>${embedded() ? `<p class="muted">${t("open_browser_google")}</p>` : `<a class="google" href="/api/auth/google/start">${t("google_sign_in")}</a>`}<a href="/?telegram=1" class="muted">${t("open_telegram")}</a></section>`;
   const first = $("#email-login"),
     codes = $("#code-form");
   first.onsubmit = async (e) => {
@@ -102,12 +107,10 @@ function login() {
       });
       codes.hidden = false;
       first.querySelector("button").disabled = true;
-      note("Mã có hiệu lực trong 10 phút.");
+      note(t("code_valid"));
     } catch (err) {
       note(
-        err.message === "rate_limit"
-          ? "Vui lòng thử lại sau."
-          : "Không thể gửi mã.",
+        err.message === "rate_limit" ? t("retry_later") : t("send_code_failed"),
       );
     }
   };
@@ -124,13 +127,13 @@ function login() {
       csrf = d.csrf;
       await list();
     } catch {
-      note("Mã không đúng hoặc đã hết hạn.");
+      note(t("code_invalid"));
     }
   };
 }
 async function list() {
   tablets = demo ? demoTablets : (await api("/tablets")).tablets;
-  screen.innerHTML = `<section class="list"><h2>Người thân</h2><p class="muted">Chỉ dùng dữ liệu hư cấu cho tới khi sao lưu được diễn tập.</p><div>${tablets.map((t) => `<button class="card" data-id="${t.id}"><b>${esc(t.honorific)} · ${esc(t.full_name)}</b><small>${t.death_lunar_day}/${t.death_lunar_month} âm lịch</small></button>`).join("") || "<p>Chưa có bài vị.</p>"}</div><button class="primary" id="new">Lập bài vị</button></section>`;
+  screen.innerHTML = `<section class="list"><h2>${t("relatives")}</h2><p class="muted">${t("demo_only")}</p><div>${tablets.map((tablet) => `<button class="card" data-id="${tablet.id}"><b>${esc(tablet.honorific)} · ${esc(tablet.full_name)}</b><small>${tablet.death_lunar_day}/${tablet.death_lunar_month} ${t("lunar_suffix")}</small></button>`).join("") || `<p>${t("no_tablets")}</p>`}</div><button class="primary" id="new">${t("new_tablet")}</button></section>`;
   screen
     .querySelectorAll("[data-id]")
     .forEach((b) => (b.onclick = () => showTablet(b.dataset.id)));
@@ -152,7 +155,7 @@ async function showTablet(id) {
   }
   const shown = tablets.slice(0, 3),
     many = shown.length > 1;
-  screen.innerHTML = `<section class="scene" style="background-image:url(assets/family/altar-${many ? "three-" : ""}${period}.webp)"><div class="plaque-row">${shown.map(plaque).join("")}</div><svg class="smoke hidden" viewBox="0 0 50 110" aria-hidden="true"><g fill="none" stroke="#eee4d6" stroke-width="2.8" opacity=".78"><path d="M25 48c-12-19 12-26 4-47"/><path class="extra" d="M16 52c10-16-11-24-2-41M34 52c-4-12 10-23 3-33"/></g><g stroke="#723e27" stroke-width="2.4"><path d="m16 52 5 57m4-61v61m9-57-5 57"/></g><g class="embers"><circle cx="16" cy="52" r="3"/><circle cx="25" cy="48" r="3"/><circle cx="34" cy="52" r="3"/></g></svg><div class="panel"><p>Giỗ: ${current.death_lunar_day}/${current.death_lunar_month} âm lịch · năm nay ${solar.day}/${solar.month}/${solar.year}</p>${["incense", "flower", "fruit", "tea"].map((k, i) => `<button data-kind="${k}">${["Thắp hương", "Dâng hoa", "Dâng quả", "Dâng trà"][i]}</button>`).join("")}<button class="wide" id="invite">Mời người thân</button><button class="wide" id="back">Về danh sách</button></div></section>`;
+  screen.innerHTML = `<section class="scene" style="background-image:url(assets/family/altar-${many ? "three-" : ""}${period}.webp)"><div class="plaque-row">${shown.map(plaque).join("")}</div><svg class="smoke hidden" viewBox="0 0 50 110" aria-hidden="true"><g fill="none" stroke="#eee4d6" stroke-width="2.8" opacity=".78"><path d="M25 48c-12-19 12-26 4-47"/><path class="extra" d="M16 52c10-16-11-24-2-41M34 52c-4-12 10-23 3-33"/></g><g stroke="#723e27" stroke-width="2.4"><path d="m16 52 5 57m4-61v61m9-57-5 57"/></g><g class="embers"><circle cx="16" cy="52" r="3"/><circle cx="25" cy="48" r="3"/><circle cx="34" cy="52" r="3"/></g></svg><div class="panel"><p>${t("anniversary", { lunar: `${current.death_lunar_day}/${current.death_lunar_month}`, solar: `${solar.day}/${solar.month}/${solar.year}` })}</p>${["incense", "flower", "fruit", "tea"].map((kind) => `<button data-kind="${kind}">${t(kind)}</button>`).join("")}<button class="wide" id="invite">${t("invite_family")}</button><button class="wide" id="back">${t("back_list")}</button></div></section>`;
   screen.querySelectorAll("[data-kind]").forEach(
     (b) =>
       (b.onclick = async () => {
@@ -171,8 +174,8 @@ async function showTablet(id) {
         familyEvent("memorial_offer", b.dataset.kind);
         note(
           b.dataset.kind === "incense"
-            ? `Hôm nay có ${count} người trong gia đình đã thắp hương.`
-            : "Lễ vật đã được đặt lên bàn thờ.",
+            ? t("today_incense", { count })
+            : t("offering_placed"),
         );
       }),
   );
@@ -181,25 +184,28 @@ async function showTablet(id) {
   location.hash = "tablet=" + id;
 }
 function form(edit = null) {
-  const t = edit || {};
-  screen.innerHTML = `<section class="form"><h2>${edit ? "Sửa" : "Lập"} bài vị</h2><form id="tablet-form"><label>Cách xưng hô<select name="honorific"><option>Bà ngoại</option><option>Ông ngoại</option><option>Bà nội</option><option>Ông nội</option><option>Bố</option><option>Mẹ</option><option value="Khác">Khác</option></select></label><label>Họ và tên<input name="fullName" maxlength="100" required value="${esc(t.full_name || "")}"></label><div class="row"><label>Năm sinh<input name="birthYear" inputmode="numeric" value="${t.birth_year || ""}"></label><label>Năm mất<input name="deathYear" inputmode="numeric" value="${t.death_year || ""}"></label></div><div class="row"><label>Ngày âm<input name="day" type="number" min="1" max="30" required value="${t.death_lunar_day || 12}"></label><label>Tháng âm<input name="month" type="number" min="1" max="12" required value="${t.death_lunar_month || 3}"></label></div><label><input name="leap" type="checkbox" ${t.death_lunar_leap ? "checked" : ""}> Tháng nhuận</label><label>Ghi chú<textarea name="note" maxlength="200">${esc(t.note || "")}</textarea></label><button class="primary">Lưu bài vị</button><button type="button" id="cancel">Hủy</button></form></section>`;
+  const tablet = edit || {},
+    honorificOptions = FAMILY_COPY.honorifics
+      .map((value) => `<option>${value}</option>`)
+      .join("");
+  screen.innerHTML = `<section class="form"><h2>${t(edit ? "form_edit" : "form_create")}</h2><form id="tablet-form"><label>${t("honorific")}<select name="honorific">${honorificOptions}</select></label><label>${t("full_name")}<input name="fullName" maxlength="100" required value="${esc(tablet.full_name || "")}"></label><div class="row"><label>${t("birth_year")}<input name="birthYear" inputmode="numeric" value="${tablet.birth_year || ""}"></label><label>${t("death_year")}<input name="deathYear" inputmode="numeric" value="${tablet.death_year || ""}"></label></div><div class="row"><label>${t("lunar_day")}<input name="day" type="number" min="1" max="30" required value="${tablet.death_lunar_day || 12}"></label><label>${t("lunar_month")}<input name="month" type="number" min="1" max="12" required value="${tablet.death_lunar_month || 3}"></label></div><label><input name="leap" type="checkbox" ${tablet.death_lunar_leap ? "checked" : ""}> ${t("leap_month")}</label><label>${t("notes")}<textarea name="note" maxlength="200">${esc(tablet.note || "")}</textarea></label><button class="primary">${t("save_tablet")}</button><button type="button" id="cancel">${t("cancel")}</button></form></section>`;
   const f = $("#tablet-form");
-  for (const value of ["Anh", "Chị", "Em"])
-    f.honorific.add(new Option(value, value), f.honorific.options.length - 1);
-  f.honorific.closest("label").insertAdjacentHTML(
-    "afterend",
-    '<label id="custom-honorific" hidden>Cách xưng hô khác<input name="customHonorific" maxlength="40"></label>',
-  );
+  f.honorific
+    .closest("label")
+    .insertAdjacentHTML(
+      "afterend",
+      `<label id="custom-honorific" hidden>${t("honorific_other")}<input name="customHonorific" maxlength="40"></label>`,
+    );
   const lunarRow = f.day.closest(".row"),
     leapLabel = f.leap.closest("label");
   lunarRow.insertAdjacentHTML(
     "beforebegin",
-    '<label>Loại ngày<select name="dateKind"><option value="lunar">Ngày âm lịch</option><option value="solar">Tôi chỉ biết ngày dương lịch</option></select></label><div class="row" id="solar-date" hidden><label>Ngày<input name="solarDay" type="number" min="1" max="31"></label><label>Tháng<input name="solarMonth" type="number" min="1" max="12"></label><label>Năm<input name="solarYear" type="number" min="1900" max="2100"></label></div><p id="conversion" class="muted" hidden></p>',
+    `<label>${t("date_type")}<select name="dateKind"><option value="lunar">${t("lunar_date")}</option><option value="solar">${t("solar_only")}</option></select></label><div class="row" id="solar-date" hidden><label>${t("day")}<input name="solarDay" type="number" min="1" max="31"></label><label>${t("month")}<input name="solarMonth" type="number" min="1" max="12"></label><label>${t("year")}<input name="solarYear" type="number" min="1900" max="2100"></label></div><p id="conversion" class="muted" hidden></p>`,
   );
   let converted = null;
   const updateHonorific = () => {
     const custom = $("#custom-honorific");
-    custom.hidden = f.honorific.value !== "Khác";
+    custom.hidden = f.honorific.value !== FAMILY_COPY.honorifics.at(-1);
     custom.querySelector("input").required = !custom.hidden;
   };
   const updateDateKind = () => {
@@ -216,16 +222,17 @@ function form(edit = null) {
   };
   f.honorific.onchange = updateHonorific;
   f.dateKind.onchange = updateDateKind;
-  f.honorific.value = t.honorific || "Bà ngoại";
+  f.honorific.value = tablet.honorific || FAMILY_COPY.honorifics[0];
   updateHonorific();
   updateDateKind();
   f.onsubmit = async (e) => {
     e.preventDefault();
     const v = Object.fromEntries(new FormData(f));
-    if (v.honorific === "Khác") v.honorific = v.customHonorific;
+    if (v.honorific === FAMILY_COPY.honorifics.at(-1))
+      v.honorific = v.customHonorific;
     if (v.dateKind === "solar") {
       if (!converted) {
-        if (demo) return note("Chuyển đổi ngày chỉ có trên staging đã đăng nhập.");
+        if (demo) return note(t("conversion_staging"));
         const result = await api("/convert", {
           method: "POST",
           body: JSON.stringify({
@@ -237,7 +244,10 @@ function form(edit = null) {
         });
         converted = result.lunar;
         const message = $("#conversion");
-        message.textContent = `Ngày âm lịch tương ứng: ${converted.day}/${converted.month}${converted.leap ? " (tháng nhuận)" : ""}. Vui lòng kiểm tra rồi bấm Lưu lần nữa.`;
+        message.textContent = t("conversion_result", {
+          date: `${converted.day}/${converted.month}`,
+          leap: converted.leap ? t("leap_suffix") : "",
+        });
         message.hidden = false;
         return;
       }
@@ -273,19 +283,19 @@ async function invite(id) {
       location.origin + "/family.html#invite=demo",
     );
     familyEvent("invite_create");
-    return note("Đã sao chép liên kết thử nghiệm.");
+    return note(t("test_link_copied"));
   }
   const d = await api(`/tablets/${id}/invites`, { method: "POST", body: "{}" });
   familyEvent("invite_create");
   if (navigator.share)
     await navigator.share({
-      title: "Bàn thờ gia tiên",
-      text: `Mời bạn cùng tưởng nhớ ${current.honorific}`,
+      title: t("share_title"),
+      text: t("share_text", { honorific: current.honorific }),
       url: d.url,
     });
   else {
     await navigator.clipboard.writeText(d.url);
-    note("Đã sao chép liên kết.");
+    note(t("link_copied"));
   }
 }
 async function inviteLanding(raw) {
@@ -301,7 +311,7 @@ async function inviteLanding(raw) {
       method: "POST",
       body: JSON.stringify({ token: raw }),
     });
-  screen.innerHTML = `<section class="invite"><h2>${esc(info.invite.inviter || "Người thân")} mời bạn</h2><p>Cùng tưởng nhớ ${esc(info.invite.honorific)} ${esc(info.invite.fullName)}.</p><button class="primary" id="accept">Nhận lời mời</button><button id="login">Đăng nhập trước</button></section>`;
+  screen.innerHTML = `<section class="invite"><h2>${t("invite_heading", { inviter: esc(info.invite.inviter || t("relatives")) })}</h2><p>${t("invite_body", { honorific: esc(info.invite.honorific), name: esc(info.invite.fullName) })}</p><button class="primary" id="accept">${t("accept_invite")}</button><button id="login">${t("login_first")}</button></section>`;
   $("#accept").onclick = async () => {
     if (!demo)
       await api("/invites/accept", {
@@ -314,7 +324,7 @@ async function inviteLanding(raw) {
   $("#login").onclick = login;
 }
 async function account() {
-  screen.innerHTML = `<section class="account"><h2>Tài khoản và quyền riêng tư</h2><p>Dữ liệu chỉ dành cho gia đình được mời. Xóa tài khoản sẽ xóa ngay dữ liệu đang hoạt động; bản sao lưu được loại bỏ trong vòng 30 ngày.</p><label><input id="email-remind" type="checkbox"> Nhắc qua email</label><label><input id="tg-remind" type="checkbox"> Nhắc qua Telegram</label><label><input id="festival" type="checkbox" checked> Nhắc ngày lễ</label><button id="save-reminders">Lưu nhắc nhở</button><button id="calendar">Đăng ký lịch điện thoại</button><button id="export">Xuất toàn bộ dữ liệu</button><button id="delete">Xóa toàn bộ dữ liệu</button><button id="account-back">Quay lại</button><p class="muted">Văn bản tiếng Việt đang chờ người bản ngữ duyệt.</p></section>`;
+  screen.innerHTML = `<section class="account"><h2>${t("account_title")}</h2><p>${t("account_privacy")}</p><label><input id="email-remind" type="checkbox"> ${t("remind_email")}</label><label><input id="tg-remind" type="checkbox"> ${t("remind_telegram")}</label><label><input id="festival" type="checkbox" checked> ${t("remind_festival")}</label><button id="save-reminders">${t("save_reminders")}</button><button id="calendar">${t("subscribe_calendar")}</button><button id="revoke-calendar">${t("revoke_calendar")}</button><button id="export">${t("export_data")}</button><button id="delete">${t("delete_data")}</button><button id="account-back">${t("back")}</button><p class="muted">${t("native_pending")}</p></section>`;
   if (!demo) {
     const reminder = await api("/reminders");
     $("#email-remind").checked = !!reminder.prefs.email_on;
@@ -341,16 +351,27 @@ async function account() {
       ["tg-remind", "telegram"],
     ])
       if ($("#" + id).checked) familyEvent("reminder_channel_set", ch);
-    note("Đã lưu.");
+    note(t("saved"));
   };
   $("#calendar").onclick = async () => {
-    if (demo) return note("Lịch thử nghiệm chưa được tạo.");
+    if (demo) return note(t("demo_calendar"));
     const d = await api("/reminders", {
       method: "PUT",
       body: JSON.stringify({ calendar: true, festival: true }),
     });
     familyEvent("reminder_channel_set", "calendar");
     location.href = d.calendarURL;
+  };
+  $("#revoke-calendar").onclick = async () => {
+    if (demo) return note(t("demo_calendar"));
+    await api("/reminders", {
+      method: "PUT",
+      body: JSON.stringify({
+        calendar: false,
+        festival: $("#festival").checked,
+      }),
+    });
+    note(t("calendar_revoked"));
   };
   $("#export").onclick = () => {
     if (!demo) location.href = "/api/family/account/export";
@@ -380,8 +401,8 @@ async function init() {
       if (authError)
         note(
           authError === "google_unavailable"
-            ? "Đăng nhập Google chưa được bật. Vui lòng dùng email."
-            : "Không thể đăng nhập Google. Hãy dùng tài khoản thử nghiệm hoặc email.",
+            ? t("google_unavailable")
+            : t("google_failed"),
         );
       return;
     }

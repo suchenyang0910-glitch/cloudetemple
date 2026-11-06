@@ -13,7 +13,15 @@ CREATE TABLE IF NOT EXISTS tablet_members(tablet_id TEXT NOT NULL REFERENCES tab
 CREATE TABLE IF NOT EXISTS invites(id TEXT PRIMARY KEY,tablet_id TEXT NOT NULL REFERENCES tablets(id) ON DELETE CASCADE,token_hash TEXT NOT NULL UNIQUE,created_by TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,expires_at INTEGER NOT NULL,revoked_at TEXT,uses INTEGER NOT NULL DEFAULT 0,max_uses INTEGER NOT NULL DEFAULT 20,created_at TEXT NOT NULL,demo INTEGER NOT NULL DEFAULT 1);
 CREATE TABLE IF NOT EXISTS offerings(id TEXT PRIMARY KEY,tablet_id TEXT NOT NULL REFERENCES tablets(id) ON DELETE CASCADE,user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,kind TEXT NOT NULL CHECK(kind IN('incense','flower','fruit','tea')),at TEXT NOT NULL,created_at TEXT NOT NULL,demo INTEGER NOT NULL DEFAULT 1);
 CREATE TABLE IF NOT EXISTS reminder_prefs(user_id TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,email_on INTEGER NOT NULL DEFAULT 0,telegram_on INTEGER NOT NULL DEFAULT 0,telegram_chat_id TEXT,ics_token TEXT,festival_on INTEGER NOT NULL DEFAULT 1,created_at TEXT NOT NULL,demo INTEGER NOT NULL DEFAULT 1);
-CREATE TABLE IF NOT EXISTS deliveries(id TEXT PRIMARY KEY,user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,tablet_id TEXT,kind TEXT NOT NULL,due_date TEXT NOT NULL,channel TEXT NOT NULL,sent_at TEXT,status TEXT NOT NULL,attempts INTEGER NOT NULL DEFAULT 0,created_at TEXT NOT NULL,demo INTEGER NOT NULL DEFAULT 1,UNIQUE(user_id,tablet_id,kind,due_date,channel));`);
+CREATE TABLE IF NOT EXISTS deliveries(id TEXT PRIMARY KEY,user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,tablet_id TEXT,kind TEXT NOT NULL,due_date TEXT NOT NULL,channel TEXT NOT NULL,sent_at TEXT,status TEXT NOT NULL,attempts INTEGER NOT NULL DEFAULT 0,created_at TEXT NOT NULL,dedupe_key TEXT UNIQUE,demo INTEGER NOT NULL DEFAULT 1);`);
+  const deliveryColumns = db.prepare("PRAGMA table_info(deliveries)").all();
+  if (!deliveryColumns.some((column) => column.name === "dedupe_key")) {
+    db.exec("ALTER TABLE deliveries ADD COLUMN dedupe_key TEXT");
+    db.exec("UPDATE deliveries SET dedupe_key=id WHERE dedupe_key IS NULL");
+    db.exec(
+      "CREATE UNIQUE INDEX IF NOT EXISTS deliveries_dedupe_key ON deliveries(dedupe_key)",
+    );
+  }
   const now = () => new Date().toISOString(),
     one = (sql, ...p) => db.prepare(sql).get(...p),
     all = (sql, ...p) => db.prepare(sql).all(...p),
@@ -228,24 +236,27 @@ CREATE TABLE IF NOT EXISTS deliveries(id TEXT PRIMARY KEY,user_id TEXT NOT NULL 
       );
     },
     acceptInvite(user, hash) {
-      const i = this.inviteInfo(hash);
-      if (
-        !i ||
-        i.revoked_at ||
-        i.expires_at < Date.now() ||
-        i.uses >= i.max_uses
-      )
-        return null;
-      db.transaction(() => {
-        run(
-          "INSERT OR IGNORE INTO tablet_members VALUES(?,?,'family',?,1)",
-          i.tablet_id,
-          user,
-          now(),
-        );
-        run("UPDATE invites SET uses=uses+1 WHERE id=?", i.id);
-      })();
-      return member(user, i.tablet_id);
+      return db
+        .transaction(() => {
+          const i = this.inviteInfo(hash);
+          if (!i) return null;
+          const existing = member(user, i.tablet_id);
+          if (existing) return existing;
+          const claimed = run(
+            "UPDATE invites SET uses=uses+1 WHERE id=? AND revoked_at IS NULL AND expires_at>=? AND uses<max_uses",
+            i.id,
+            Date.now(),
+          );
+          if (claimed.changes !== 1) return null;
+          run(
+            "INSERT INTO tablet_members VALUES(?,?,'family',?,1)",
+            i.tablet_id,
+            user,
+            now(),
+          );
+          return member(user, i.tablet_id);
+        })
+        .immediate();
     },
     revokeInvite(user, tabletId, inviteId) {
       const m = member(user, tabletId);
@@ -291,6 +302,12 @@ CREATE TABLE IF NOT EXISTS deliveries(id TEXT PRIMARY KEY,user_id TEXT NOT NULL 
           .changes === 1
       );
     },
+    revokeCalendar(user) {
+      return (
+        run("UPDATE reminder_prefs SET ics_token=NULL WHERE user_id=?", user)
+          .changes === 1
+      );
+    },
     calendarUser(icsHash) {
       const pref = one(
         "SELECT * FROM reminder_prefs WHERE ics_token=?",
@@ -322,6 +339,15 @@ CREATE TABLE IF NOT EXISTS deliveries(id TEXT PRIMARY KEY,user_id TEXT NOT NULL 
       run("DELETE FROM email_codes WHERE expires_at<=?", Date.now());
       run("DELETE FROM oauth_states WHERE expires_at<=?", Date.now());
       run("DELETE FROM family_rates WHERE until<=?", Date.now());
+      if (
+        one(
+          "SELECT 1 ok FROM sqlite_master WHERE type='table' AND name='mail_outbox'",
+        )
+      )
+        run(
+          "DELETE FROM mail_outbox WHERE expires_at IS NULL OR expires_at<=?",
+          Date.now(),
+        );
     },
   };
 }

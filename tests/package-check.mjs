@@ -34,7 +34,7 @@ if(process.argv.includes('--production')){
  assert((await fs.readFile(new URL(`config.${release}.js`,root),'utf8')).includes("'pass-through'"),'production guru rule');
  const app=versioned.find(n=>n.startsWith('app.')&&n.endsWith('.js'));
  assert(app,'production app module');
- assert((await fs.readFile(new URL(app,root),'utf8')).includes("const familyEnabled='0'==='1'"),'production family entry disabled');
+ assert((await fs.readFile(new URL(app,root),'utf8')).match(/const familyEnabled\s*=\s*["']0["']\s*===\s*["']1["']/),'production family entry disabled');
 }
 if(process.argv.includes('--staging')){
  const analytics=versioned.find(n=>n.startsWith('analytics.'));
@@ -46,7 +46,8 @@ if(process.argv.includes('--staging')){
  assert(outboxHTML.includes(`dev-outbox.${release}.js`),'staging outbox references hashed script');
  const familyApp=versioned.find(n=>n.startsWith('family.')&&n.endsWith('.js'));
  assert(familyApp,'staging family app');
- assert((await fs.readFile(new URL(versioned.find(n=>n.startsWith('app.')),root),'utf8')).includes("const familyEnabled='1'==='1'"));
+ assert(versioned.some(n=>n.startsWith('family-i18n.')&&n.endsWith('.js')),'staging family copy dictionary');
+ assert((await fs.readFile(new URL(versioned.find(n=>n.startsWith('app.')),root),'utf8')).match(/const familyEnabled\s*=\s*["']1["']\s*===\s*["']1["']/));
 }
 assert((await fs.readFile(new URL('index.html',root),'utf8')).includes('id="ga-choice"'),'analytics consent rendered');
 const manifest=JSON.parse(await fs.readFile(new URL(`../deploy/package-${release}.json`,root)));

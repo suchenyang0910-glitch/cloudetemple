@@ -29,6 +29,7 @@ async function fixture() {
   await new Promise((r) => server.listen(0, "127.0.0.1", r));
   const base = `http://127.0.0.1:${server.address().port}`;
   return {
+    base,
     store,
     family,
     server,
@@ -77,6 +78,20 @@ test("email code stays in protected outbox and session CRUD enforces CSRF", asyn
       headers: { Cookie: cookie, "X-CSRF-Token": data.csrf },
       body: JSON.stringify({
         honorific: "Bà ngoại",
+        fullName: "Ngày không tồn tại",
+        deathYear: 2026,
+        day: 30,
+        month: 2,
+        note: "",
+      }),
+    });
+    assert.equal(r.status, 400);
+    assert.equal((await r.json()).error, "invalid_date");
+    r = await f.request("/family/tablets", {
+      method: "POST",
+      headers: { Cookie: cookie, "X-CSRF-Token": data.csrf },
+      body: JSON.stringify({
+        honorific: "Bà ngoại",
         fullName: "Nguyễn Thị An",
         day: 12,
         month: 3,
@@ -94,12 +109,47 @@ test("email code stays in protected outbox and session CRUD enforces CSRF", asyn
       body: JSON.stringify({ kind: "incense" }),
     });
     assert.equal((await r.json()).count, 1);
+    for (const payload of [
+      { kind: "solar", day: 30, month: 2, year: 2026 },
+      { kind: "lunar", day: 30, month: 2, year: 2026 },
+    ]) {
+      r = await f.request("/family/convert", {
+        method: "POST",
+        headers: { Cookie: cookie, "X-CSRF-Token": data.csrf },
+        body: JSON.stringify(payload),
+      });
+      assert.equal(r.status, 400);
+      assert.equal((await r.json()).error, "invalid_date");
+    }
+    f.family.db.prepare("UPDATE mail_outbox SET expires_at=0").run();
+    f.family.cleanup();
+    assert.equal(
+      f.family.db.prepare("SELECT count(*) n FROM mail_outbox").get().n,
+      0,
+    );
     r = await f.request("/family/account/export", {
       headers: { Cookie: cookie },
     });
     const exported = await r.json();
     assert.equal(exported.data.tablets.length, 1);
     assert.equal(exported.data.offerings.length, 1);
+    r = await f.request("/family/reminders", {
+      method: "PUT",
+      headers: { Cookie: cookie, "X-CSRF-Token": data.csrf },
+      body: JSON.stringify({ calendar: true, festival: false }),
+    });
+    const calendarURL = (await r.json()).calendarURL,
+      calendarPath =
+        new URL(calendarURL).pathname.replace(/^\/api/, "") +
+        new URL(calendarURL).search;
+    assert.equal((await f.request(calendarPath)).status, 200);
+    r = await f.request("/family/reminders", {
+      method: "PUT",
+      headers: { Cookie: cookie, "X-CSRF-Token": data.csrf },
+      body: JSON.stringify({ calendar: false, festival: false }),
+    });
+    assert.equal(r.status, 200);
+    assert.equal((await f.request(calendarPath)).status, 404);
     r = await f.request("/family/account", {
       method: "DELETE",
       headers: { Cookie: cookie, "X-CSRF-Token": data.csrf },
@@ -145,6 +195,11 @@ test("member privacy, removal, expiry and invite revocation are enforced", () =>
     );
     const inviteId = f.invite(a.id, t.id, "invite", Date.now() + 1000, 1);
     assert(f.acceptInvite(b.id, "invite"));
+    assert.equal(f.acceptInvite(b.id, "invite").role, "family");
+    assert.equal(
+      f.db.prepare("SELECT uses FROM invites WHERE id=?").get(inviteId).uses,
+      1,
+    );
     assert.equal(
       f.acceptInvite(f.userFor("email", "c", "c@example.com").id, "invite"),
       null,
@@ -215,6 +270,38 @@ test("email login is rate limited and ICS is a private three-year feed", async (
     assert.equal((festivalIcs.match(/BEGIN:VEVENT/g) || []).length, 81);
     assert.match(festivalIcs, /SUMMARY:Thanh minh/);
     assert.match(festivalIcs, /SUMMARY:Vu Lan/);
+    assert.equal(f.family.revokeCalendar(owner.id), true);
+    r = await f.request("/family/calendar.ics?token=calendar-token");
+    assert.equal(r.status, 404);
+  } finally {
+    await new Promise((resolve) => f.server.close(resolve));
+    f.store.close();
+  }
+});
+
+test("every family write requires allowed Origin and JSON", async () => {
+  const f = await fixture();
+  try {
+    let r = await fetch(f.base + "/family/auth/email/start", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: "origin@example.com" }),
+    });
+    assert.equal(r.status, 403);
+    r = await fetch(f.base + "/family/auth/email/start", {
+      method: "POST",
+      headers: {
+        Origin: "https://staging.chuamay.org",
+        "Content-Type": "text/plain",
+      },
+      body: JSON.stringify({ email: "origin@example.com" }),
+    });
+    assert.equal(r.status, 415);
+    r = await f.request("/family/auth/email/start", {
+      method: "POST",
+      body: JSON.stringify({ email: "origin@example.com" }),
+    });
+    assert.equal(r.status, 201);
   } finally {
     await new Promise((resolve) => f.server.close(resolve));
     f.store.close();

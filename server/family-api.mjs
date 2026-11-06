@@ -1,4 +1,9 @@
-import { randomBytes, createHash, timingSafeEqual } from "node:crypto";
+import {
+  randomBytes,
+  randomInt,
+  createHash,
+  timingSafeEqual,
+} from "node:crypto";
 import { hash, clientIP, validateInitData } from "./security.mjs";
 import {
   lunarToSolar,
@@ -47,6 +52,16 @@ const validEmail = (v) =>
   typeof v === "string" &&
   v.length <= 254 &&
   /^[^\s@<>]+@[^\s@<>.]+(?:\.[^\s@<>.]+)+$/.test(v);
+const validSolarDate = ({ day, month, year }) => {
+  if (![day, month, year].every(Number.isInteger) || year < 1900 || year > 2100)
+    return false;
+  const date = new Date(Date.UTC(year, month - 1, day));
+  return (
+    date.getUTCFullYear() === year &&
+    date.getUTCMonth() + 1 === month &&
+    date.getUTCDate() === day
+  );
+};
 function tabletInput(v) {
   const honorific = String(v?.honorific || "")
       .normalize("NFC")
@@ -82,6 +97,27 @@ function tabletInput(v) {
       (!Number.isInteger(y) || y < 1000 || y > new Date().getFullYear())
     )
       throw Error("invalid");
+  if (deathYear !== null) {
+    let solar;
+    try {
+      solar = lunarToSolar({
+        day,
+        month,
+        year: deathYear,
+        leap: v?.leap === true,
+      });
+    } catch {
+      throw Error("invalid_date");
+    }
+    const roundTrip = solarToLunar(solar);
+    if (
+      roundTrip.day !== day ||
+      roundTrip.month !== month ||
+      roundTrip.year !== deathYear ||
+      roundTrip.leap !== (v?.leap === true)
+    )
+      throw Error("invalid_date");
+  }
   return {
     honorific,
     fullName,
@@ -106,9 +142,16 @@ export function createFamilyApi(settings, family) {
     `${userId}.${hash(settings.hashSecret, `unsubscribe:${userId}`).slice(0, 32)}`;
   const validUnsubscribe = (raw) => {
     const [userId, signature, extra] = String(raw || "").split(".");
-    if (extra || !/^[0-9a-f-]{36}$/i.test(userId || "") || !/^[0-9a-f]{32}$/i.test(signature || "")) return null;
+    if (
+      extra ||
+      !/^[0-9a-f-]{36}$/i.test(userId || "") ||
+      !/^[0-9a-f]{32}$/i.test(signature || "")
+    )
+      return null;
     const expected = unsubscribeToken(userId).split(".")[1];
-    return timingSafeEqual(Buffer.from(signature), Buffer.from(expected)) ? userId : null;
+    return timingSafeEqual(Buffer.from(signature), Buffer.from(expected))
+      ? userId
+      : null;
   };
   const session = (req) => {
     const raw = cookies(req).ct_session;
@@ -146,6 +189,18 @@ export function createFamilyApi(settings, family) {
     try {
       const user = session(req),
         write = !["GET", "HEAD"].includes(req.method);
+      if (write) {
+        const origin = req.headers.origin;
+        if (!origin || !settings.origins?.has(origin))
+          return json(res, 403, { ok: false, error: "origin" }), true;
+        if (
+          String(req.headers["content-type"] || "")
+            .split(";", 1)[0]
+            .trim()
+            .toLowerCase() !== "application/json"
+        )
+          return json(res, 415, { ok: false, error: "content_type" }), true;
+      }
       if (write && user && !csrf(req, user))
         return json(res, 403, { ok: false, error: "csrf" }), true;
       if (settings.environment === "staging") {
@@ -166,7 +221,7 @@ export function createFamilyApi(settings, family) {
           !family.rate("ip:" + ip, Date.now() + 30000)
         )
           return json(res, 429, { ok: false, error: "rate_limit" }), true;
-        const code = String(Math.floor(100000 + Math.random() * 900000));
+        const code = String(randomInt(100000, 1000000));
         family.saveCode({
           subject,
           email,
@@ -193,12 +248,7 @@ export function createFamilyApi(settings, family) {
         const subject = hash(settings.hashSecret, email),
           record = family.takeCode(subject, hash(settings.hashSecret, code));
         if (!record) return json(res, 401, { ok: false, error: "code" }), true;
-        const account = family.userFor(
-            "email",
-            subject,
-            email,
-            "Người thân",
-          ),
+        const account = family.userFor("email", subject, email, "Người thân"),
           anti = issue(res, account, req);
         return (
           json(res, 200, {
@@ -447,7 +497,9 @@ export function createFamilyApi(settings, family) {
         return true;
       }
       if (route === "/family/reminders/unsubscribe" && req.method === "GET") {
-        const raw = new URL(req.url, "http://localhost").searchParams.get("token"),
+        const raw = new URL(req.url, "http://localhost").searchParams.get(
+            "token",
+          ),
           userId = validUnsubscribe(raw);
         if (!userId || !family.unsubscribeEmail(userId))
           return json(res, 404, { ok: false, error: "unsubscribe" }), true;
@@ -456,7 +508,9 @@ export function createFamilyApi(settings, family) {
           "Cache-Control": "no-store",
           "X-Robots-Tag": "noindex, nofollow",
         });
-        res.end("<!doctype html><meta charset=utf-8><title>Chùa Mây</title><p>Đã tắt nhắc nhở qua email.</p>");
+        res.end(
+          "<!doctype html><meta charset=utf-8><title>Chùa Mây</title><p>Đã tắt nhắc nhở qua email.</p>",
+        );
         return true;
       }
       if (!user) return json(res, 401, { ok: false, error: "auth" }), true;
@@ -482,11 +536,14 @@ export function createFamilyApi(settings, family) {
           memberMatch[1],
           memberMatch[2],
         );
-        return json(
-          res,
-          removed ? 200 : 403,
-          removed ? { ok: true } : { ok: false, error: "owner" },
-        ), true;
+        return (
+          json(
+            res,
+            removed ? 200 : 403,
+            removed ? { ok: true } : { ok: false, error: "owner" },
+          ),
+          true
+        );
       }
       const inviteMatch = route.match(
         /^\/family\/tablets\/([0-9a-f-]{36})\/invites\/([0-9a-f-]{36})$/i,
@@ -497,11 +554,14 @@ export function createFamilyApi(settings, family) {
           inviteMatch[1],
           inviteMatch[2],
         );
-        return json(
-          res,
-          revoked ? 200 : 403,
-          revoked ? { ok: true } : { ok: false, error: "owner" },
-        ), true;
+        return (
+          json(
+            res,
+            revoked ? 200 : 403,
+            revoked ? { ok: true } : { ok: false, error: "owner" },
+          ),
+          true
+        );
       }
       const match = route.match(
         /^\/family\/tablets\/([0-9a-f-]{36})(?:\/(offerings|invites))?$/i,
@@ -611,10 +671,11 @@ export function createFamilyApi(settings, family) {
             telegramChat: null,
             icsHash: raw ? hash(settings.hashSecret, raw) : null,
           });
+        if (v.calendar === false) family.revokeCalendar(user.user_id);
         return (
           json(res, 200, {
             ok: true,
-            prefs,
+            prefs: family.prefs(user.user_id),
             calendarURL: raw
               ? `${settings.familyUrl.replace("/family.html", "")}/api/family/calendar.ics?token=${raw}`
               : null,
@@ -644,19 +705,45 @@ export function createFamilyApi(settings, family) {
         return json(res, 200, { ok: true }), true;
       }
       if (route === "/family/convert" && req.method === "POST") {
-        const v = await body(req);
-        return (
-          json(res, 200, {
-            ok: true,
-            lunar: v.kind === "solar" ? solarToLunar(v) : undefined,
-            solar: v.kind === "lunar" ? lunarToSolar(v) : undefined,
-          }),
-          true
-        );
+        const raw = await body(req),
+          v = {
+            kind: raw.kind,
+            day: Number(raw.day),
+            month: Number(raw.month),
+            year: Number(raw.year),
+            leap: raw.leap === true,
+          };
+        if (v.kind === "solar") {
+          if (!validSolarDate(v)) throw Error("invalid_date");
+          return json(res, 200, { ok: true, lunar: solarToLunar(v) }), true;
+        }
+        if (v.kind === "lunar") {
+          let solar;
+          try {
+            solar = lunarToSolar(v);
+          } catch {
+            throw Error("invalid_date");
+          }
+          const roundTrip = solarToLunar(solar);
+          if (
+            roundTrip.day !== v.day ||
+            roundTrip.month !== v.month ||
+            roundTrip.year !== v.year ||
+            roundTrip.leap !== v.leap
+          )
+            throw Error("invalid_date");
+          return json(res, 200, { ok: true, solar }), true;
+        }
+        throw Error("invalid_date");
       }
       return json(res, 404, { ok: false, error: "route" }), true;
     } catch (error) {
-      const known = ["invalid", "tablet_limit", "body"].includes(error.message)
+      const known = [
+        "invalid",
+        "invalid_date",
+        "tablet_limit",
+        "body",
+      ].includes(error.message)
         ? 400
         : 503;
       return (

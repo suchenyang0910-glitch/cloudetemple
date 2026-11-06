@@ -1,7 +1,12 @@
 import { config, hash } from "./security.mjs";
 import { openStore } from "./store.mjs";
 import { openFamilyStore } from "./family-store.mjs";
-import { anniversary, solarToLunar, isoDate, qingmingDate } from "./lunar-hnd.mjs";
+import {
+  anniversary,
+  solarToLunar,
+  isoDate,
+  qingmingDate,
+} from "./lunar-hnd.mjs";
 import { sendMail } from "./mail.mjs";
 const plus = (date, days) =>
   new Date(date.getFullYear(), date.getMonth(), date.getDate() + days);
@@ -35,28 +40,42 @@ export async function runReminders(
     tablets = db.prepare(
       "SELECT t.* FROM tablets t JOIN tablet_members m ON m.tablet_id=t.id WHERE m.user_id=?",
     ),
-    getDelivery = db.prepare(
-      "SELECT * FROM deliveries WHERE user_id=? AND tablet_id IS ? AND kind=? AND due_date=? AND channel=?",
+    claim = db.prepare(
+      `INSERT INTO deliveries(id,user_id,tablet_id,kind,due_date,channel,sent_at,status,attempts,created_at,dedupe_key,demo)
+       VALUES(?,?,?,?,?,?,NULL,'sending',1,?,?,1)
+       ON CONFLICT(dedupe_key) DO UPDATE SET status='sending',sent_at=NULL,attempts=deliveries.attempts+1,created_at=excluded.created_at
+       WHERE (deliveries.status='failed' AND deliveries.attempts<3)
+          OR (deliveries.status='sending' AND deliveries.attempts<3 AND deliveries.created_at<?)
+       RETURNING id`,
     ),
-    save = db.prepare(
-      `INSERT INTO deliveries(id,user_id,tablet_id,kind,due_date,channel,sent_at,status,attempts,created_at,demo) VALUES(?,?,?,?,?,?,?,?,?,?,1) ON CONFLICT(user_id,tablet_id,kind,due_date,channel) DO UPDATE SET sent_at=excluded.sent_at,status=excluded.status,attempts=deliveries.attempts+1`,
+    finish = db.prepare(
+      "UPDATE deliveries SET sent_at=?,status=? WHERE id=? AND status='sending'",
     );
   let sent = 0,
     failed = 0;
   const unsubscribeURL = (userId) => {
-    const signature = hash(settings.hashSecret, `unsubscribe:${userId}`).slice(0, 32),
+    const signature = hash(settings.hashSecret, `unsubscribe:${userId}`).slice(
+        0,
+        32,
+      ),
       base = settings.familyUrl.replace(/\/family\.html$/, "");
     return `${base}/api/family/reminders/unsubscribe?token=${encodeURIComponent(`${userId}.${signature}`)}`;
   };
   const deliver = async (user, tablet, kind, due, channel, text) => {
-    const old = getDelivery.get(
-      user.id,
-      tablet?.id || null,
-      kind,
-      due,
-      channel,
-    );
-    if (old?.status === "sent" || (old?.attempts || 0) >= 3) return;
+    const now = new Date(),
+      key = [user.id, tablet?.id || "festival", kind, due, channel].join("|"),
+      delivery = claim.get(
+        crypto.randomUUID(),
+        user.id,
+        tablet?.id || null,
+        kind,
+        due,
+        channel,
+        now.toISOString(),
+        key,
+        new Date(now.getTime() - 15 * 60 * 1000).toISOString(),
+      );
+    if (!delivery) return;
     let status = "sent";
     try {
       if (channel === "email") {
@@ -73,17 +92,10 @@ export async function runReminders(
       status = "failed";
       failed++;
     }
-    save.run(
-      crypto.randomUUID(),
-      user.id,
-      tablet?.id || null,
-      kind,
-      due,
-      channel,
+    finish.run(
       status === "sent" ? new Date().toISOString() : null,
       status,
-      (old?.attempts || 0) + 1,
-      new Date().toISOString(),
+      delivery.id,
     );
   };
   for (const user of users) {
@@ -116,7 +128,8 @@ export async function runReminders(
       const target = plus(at, 1),
         l = solarToLunar(solar(target)),
         qingming =
-          isoDate(solar(target)) === isoDate(qingmingDate(target.getFullYear())),
+          isoDate(solar(target)) ===
+          isoDate(qingmingDate(target.getFullYear())),
         name = qingming
           ? "Thanh minh"
           : l.day === 1 && l.month === 1

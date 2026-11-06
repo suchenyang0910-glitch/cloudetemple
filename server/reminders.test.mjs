@@ -51,3 +51,107 @@ test("reminder delivery is idempotent", async () => {
     store.close();
   }
 });
+
+test("concurrent reminder runs atomically claim one delivery", async () => {
+  const store = openStore(":memory:"),
+    family = openFamilyStore(store.db);
+  try {
+    const u = family.userFor("telegram", "tg-user", "", "Người thân"),
+      target = new Date(2027, 3, 18),
+      l = solarToLunar({
+        day: target.getDate(),
+        month: target.getMonth() + 1,
+        year: target.getFullYear(),
+      });
+    family.createTablet(u.id, {
+      honorific: "Bà ngoại",
+      fullName: "Nguyễn An",
+      birthYear: null,
+      deathYear: null,
+      day: l.day,
+      month: l.month,
+      leap: l.leap,
+      note: "",
+    });
+    family.setPrefs(u.id, {
+      email: false,
+      telegram: true,
+      festival: false,
+      telegramChat: "123",
+      icsHash: null,
+    });
+    const settings = {
+        familyUrl: "https://staging.chuamay.org/family.html",
+        lunarLeapRule: "regular-month",
+        telegramEnabled: true,
+        hashSecret: "x".repeat(64),
+      },
+      at = new Date(2027, 3, 11);
+    let sends = 0;
+    const telegram = async () => {
+      sends++;
+      await new Promise((resolve) => setTimeout(resolve, 30));
+    };
+    const results = await Promise.all([
+      runReminders(settings, family, at, telegram),
+      runReminders(settings, family, at, telegram),
+    ]);
+    assert.equal(sends, 1);
+    assert.equal(
+      results.reduce((sum, result) => sum + result.sent, 0),
+      1,
+    );
+    assert.equal(
+      family.db.prepare("SELECT count(*) n FROM deliveries").get().n,
+      1,
+    );
+  } finally {
+    store.close();
+  }
+});
+
+test("failed reminder is retried at most three times", async () => {
+  const store = openStore(":memory:"),
+    family = openFamilyStore(store.db);
+  try {
+    const u = family.userFor("telegram", "tg-fail", "", "Người thân"),
+      target = new Date(2027, 3, 18),
+      l = solarToLunar({ day: 18, month: 4, year: 2027 });
+    family.createTablet(u.id, {
+      honorific: "Bà ngoại",
+      fullName: "Nguyễn An",
+      birthYear: null,
+      deathYear: null,
+      day: l.day,
+      month: l.month,
+      leap: l.leap,
+      note: "",
+    });
+    family.setPrefs(u.id, {
+      email: false,
+      telegram: true,
+      festival: false,
+      telegramChat: "123",
+      icsHash: null,
+    });
+    const settings = {
+      familyUrl: "https://staging.chuamay.org/family.html",
+      lunarLeapRule: "regular-month",
+      telegramEnabled: true,
+      hashSecret: "x".repeat(64),
+    };
+    let attempts = 0;
+    for (let i = 0; i < 4; i++)
+      await runReminders(settings, family, new Date(2027, 3, 11), async () => {
+        attempts++;
+        throw Error("network");
+      });
+    assert.equal(attempts, 3);
+    assert.deepEqual(
+      family.db.prepare("SELECT status,attempts FROM deliveries").get(),
+      { status: "failed", attempts: 3 },
+    );
+  } finally {
+    store.close();
+  }
+});
