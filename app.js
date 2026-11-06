@@ -5,10 +5,12 @@ import {createTempleAudio} from './audio.js';
 import {assetURL,loadImage,placeholder,enableImageDebug} from './resources.js';
 import {copy,reflections} from './i18n.js';
 import {apiURL,initTelegram,inTelegram,initData,telegramBack,telegramAppearance,haptic,telegramShare,telegramStory,telegramStartParam} from './telegram.js';
+import {createReferrals} from './referrals.js';
 
-let analytics,woodStarted;
+let analytics,woodStarted,referrals;
 const familyEnabled='__CT_FAMILY_ENABLED__'==='1';
-const event=(name,params)=>analytics?.event(name,params);
+const referralsEnabled='__CT_REFERRALS_ENABLED__'==='1';
+const event=(name,params)=>{analytics?.event(name,params);if(name==='activity_complete')referrals?.event('activity_complete',params.activity);if(name==='share_channel')referrals?.event('share');};
 function completed(activity,ms,n){event('activity_complete',{activity,duration_bucket:ms<60000?'<1m':ms<180000?'1-3m':ms<=600000?'3-10m':'>10m',count_bucket:n>=108?'108+':n>=54?'54-107':n>=27?'27-53':n>1?'2-26':'1'})}
 const $=s=>document.querySelector(s);
 const reduced=matchMedia('(prefers-reduced-motion: reduce)');
@@ -17,10 +19,10 @@ const images=new Map(),tinted=new Map();
 let beadCleanup=null,pendingView=null,choiceToken=0,choiceFront=0;
 let transitionId=0,drawFrame=0,lastFocus=null,shareBlob=null,shareURL=null;
 const launchParams=new URLSearchParams(location.search),launchSources=new Set(['system','zalo','facebook','messenger','copy','recommend']),launchActivities=new Set(['incense','bow','sit','mo','beads']);
-const launchAttribution={source:launchSources.has(launchParams.get('s'))?launchParams.get('s'):'',activity:launchActivities.has(launchParams.get('a'))?launchParams.get('a'):''};
+const launchAttribution={source:launchSources.has(launchParams.get('s'))?launchParams.get('s'):'',activity:launchActivities.has(launchParams.get('a'))?launchParams.get('a'):'',referral:launchParams.get('r')||''};
 let pendingLaunchActivity=launchAttribution.activity;
 if(launchParams.get('lang')==='en')state.lang='en';
-if(['s','a'].some(k=>launchParams.has(k))){launchParams.delete('s');launchParams.delete('a');history.replaceState(history.state,'',location.pathname+(launchParams.size?'?'+launchParams:'')+location.hash);}
+if(['s','a','r'].some(k=>launchParams.has(k))){for(const key of ['s','a','r'])launchParams.delete(key);history.replaceState(history.state,'',location.pathname+(launchParams.size?'?'+launchParams:'')+location.hash);}
 document.documentElement.classList.add('js-ready');
 const canvas=$('#scene'),ctx=canvas.getContext('2d');
 const t=(key,params={})=>Object.entries(params).reduce((s,[k,v])=>s.replaceAll('{'+k+'}',String(v)),copy[key]?.[state.lang]??key);
@@ -37,6 +39,7 @@ const actionIcons={
 };
 const read=(key,fallback)=>{try{return JSON.parse(localStorage.getItem(key))??fallback;}catch{return fallback;}};
 const write=(key,value)=>{try{localStorage.setItem(key,JSON.stringify(value));}catch{/* Private browsing still permits a complete visit. */}};
+referrals=createReferrals({apiURL,telegramData:initData,startParam:telegramStartParam,landing:launchAttribution,enabled:referralsEnabled});
 
 export function periodNow(date=new Date(),periods=state.layout?.periods??{dawn:"05:00-07:59",day:"08:00-16:59",dusk:"17:00-18:59",night:"19:00-04:59"}){
   const minute=date.getHours()*60+date.getMinutes();
@@ -388,8 +391,8 @@ function download(){
  event('share_channel',{channel:'download'});const url=URL.createObjectURL(shareBlob),a=document.createElement('a');a.href=url;a.download='chua-may.png';a.click();setTimeout(()=>URL.revokeObjectURL(url),30000);
 }
 const shareActivity=()=>state.result?.kind||'share';
-const shareSource=channel=>`s_${channel}_a_${shareActivity()}`.replace(/[^a-z0-9_-]/g,'').slice(0,64);
-const shareLink=channel=>`${location.origin}/?s=${encodeURIComponent(channel)}&a=${encodeURIComponent(shareActivity())}`;
+const shareSource=channel=>referrals.telegram(channel,shareActivity());
+const shareLink=channel=>referrals.link(channel,shareActivity());
 function shareText(){const r=state.result||{},params={n:r.count??0,m:Math.max(1,Math.round((r.elapsed||0)/60000))};return t({incense:'shareIncenseText',bow:'shareBowText',sit:'shareSitText',mo:'shareMoText',beads:'shareBeadsText'}[r.kind]||'recommendText',params);}
 async function copyShare(channel,track=true){try{await navigator.clipboard.writeText(shareLink(channel));if(track)event('share_channel',{channel:'copy'});$('#share-status').textContent=t('linkCopied');return true}catch{$('#share-status').textContent=t('shareError');return false}}
 function sharePanel(){if($('.share-channels'))return;const telegram=inTelegram();$('#modal-body').insertAdjacentHTML('beforeend',`<div class="share-channels">${telegram?button('story','share-story')+button('telegramForward','share-telegram'):button('zalo','share-zalo')+button('facebook','share-facebook')+button('messenger','share-messenger')+button('copyLink','share-copy')}</div>`);}
@@ -411,7 +414,7 @@ document.addEventListener('click',async e=>{
     case 'enter':if(!read('ct-muted',false)&&!audio.enabled)void enableSound(true);await navigate('choose');break;
     case 'change':changeVisitor();break;
     case 'previous':changeVisitor(-1);break;
-    case 'continue':{write('ct-visitor',state.visitor);const target=pendingLaunchActivity||'home';pendingLaunchActivity='';await navigate(target);break;}
+    case 'continue':{write('ct-visitor',state.visitor);referrals.event('enter');const bound=await referrals.enter();if(bound)event('referral_bound',bound);const target=pendingLaunchActivity||'home';pendingLaunchActivity='';await navigate(target);break;}
     case 'incense':case 'bow':case 'sit':case 'beads':case 'mo':case 'home':await navigate(action);break;
     case 'leave':audio.strike('bell',.5);await navigate('leave');break;
     case 'reenter':await navigate('entry');break;
@@ -436,10 +439,12 @@ document.addEventListener('click',async e=>{
     case 'share-facebook':event('share_channel',{channel:'facebook'});open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareLink('facebook'))}`,'_blank','noopener');break;
     case 'share-messenger':if(await copyShare('messenger',false)){event('share_channel',{channel:'messenger'});open(`fb-messenger://share?link=${encodeURIComponent(shareLink('messenger'))}`,'_self');}break;
     case 'share-zalo':if(await copyShare('zalo',false)){event('share_channel',{channel:'zalo'});open('zalo://','_self');}break;
-    case 'share-telegram':if(telegramShare(shareText(),shareSource('tg_forward')))event('share_channel',{channel:'telegram_forward'});break;
-    case 'share-story':if(telegramStory(shareText(),shareSource('tg_story')))event('share_channel',{channel:'telegram_story'});else $('#share-status').textContent=t('shareError');break;
+    case 'share-telegram':if(telegramShare(shareText(),shareSource('telegram_forward')))event('share_channel',{channel:'telegram_forward'});break;
+    case 'share-story':if(telegramStory(shareText(),shareSource('telegram_story')))event('share_channel',{channel:'telegram_story'});else $('#share-status').textContent=t('shareError');break;
     case 'recommend':$('#more-menu').close();openModal('recommend',`<p>${escapeHTML(t('recommendText'))}</p><div class="row">${button('shareAction','share-recommend','primary')}${button('copyLink','share-copy')}</div><p id="share-status" role="status"></p>`);break;
-    case 'share-recommend':if(inTelegram())telegramShare(t('recommendText'),'s_tg_forward_a_recommend');else if(navigator.share)try{await navigator.share({title:t('brand'),text:t('recommendText'),url:shareLink('recommend')});}catch{}else await copyShare('recommend');break;
+    case 'referral-stats':{$('#more-menu').close();openModal('referralTitle',`<p id="referral-result" role="status">${escapeHTML(t('loading'))}</p><div class="row">${button('referralDelete','referral-delete','text-button')}</div>`);try{const data=await referrals.mine();$('#referral-result').textContent=t('referralSummary',{direct:data.direct,second:data.second});}catch{$('#referral-result').textContent=t('unavailable');}break;}
+    case 'referral-delete':try{await referrals.clear();$('#referral-result').textContent=t('referralDeleted');b.remove();}catch{$('#referral-result').textContent=t('unavailable');}break;
+    case 'share-recommend':if(inTelegram())telegramShare(t('recommendText'),referrals.telegram('telegram_forward','recommend'));else if(navigator.share)try{await navigator.share({title:t('brand'),text:t('recommendText'),url:shareLink('recommend')});}catch{}else await copyShare('recommend');break;
   }
 });
 const continuous=e=>e.target.closest?.('#bead-control,#wood-prop,[data-action="bow-once"]');
@@ -474,6 +479,7 @@ async function init(){
   if(['staging.chuamay.org','h5.chuamay.org','miniapp.chuamay.org'].includes(location.hostname))void import('./analytics.js').then(({setupAnalytics})=>{
     analytics=setupAnalytics(inTelegram,{...launchAttribution,startParam:telegramStartParam()});window.addEventListener('ct-image-failure',e=>event('image_load_failed',e.detail));
   }).catch(()=>{/* A statistics module failure must not interrupt the visit. */});
+  window.addEventListener('ct-analytics-choice',()=>void referrals.sync());void referrals.sync();
   try{const response=await fetch(assetURL('processed-v1/layout-v1.json'),{credentials:'omit'});if(!response.ok)throw new Error('layout');state.layout=await response.json();const saved=read('ct-visitor',null);state.visitor=state.layout.v1_scope.visitors.includes(saved)?saved:state.layout.v1_scope.visitors[Math.floor(Math.random()*6)];state.period=periodNow();resolveLayout();if(!transitionId)await navigate('entry');}
   catch{finishBoot();$('#loading').hidden=true;$('#notice').textContent=t('loadError');$('#controls').innerHTML=button('retry','reload');$('#controls').onclick=e=>{if(e.target.dataset.action==='reload')location.reload();};$('#app').setAttribute('aria-busy','false');}
 }
