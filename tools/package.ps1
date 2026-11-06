@@ -21,17 +21,17 @@ New-Item -ItemType Directory -Path $imageOutput -Force | Out-Null
 Copy-Item -LiteralPath (Join-Path $projectRoot 'assets/processed-v1/layout-v1.json') -Destination (Join-Path $outputRoot 'assets/processed-v1/layout-v1.json') -Force
 Get-ChildItem -LiteralPath (Join-Path $projectRoot 'assets/processed-v1/img') -Filter 'scene-vn-*.webp' | Copy-Item -Destination $imageOutput -Force
 foreach ($id in @('short-light','curly-dark','curly-medium','bun-light','bun-dark','ponytail-medium')) {
-  foreach ($pose in @('bow-1','bow-2','bow-3','sit','beads','choose-v1')) { Copy-Item -LiteralPath (Join-Path $projectRoot "assets/processed-v1/img/visitor-$id-$pose.webp") -Destination $imageOutput -Force }
+  foreach ($pose in @('bow-1','bow-2','bow-3','sit','beads','choose-v1','mo-1-v1','mo-2-v1','mo-3-v1')) { Copy-Item -LiteralPath (Join-Path $projectRoot "assets/processed-v1/img/visitor-$id-$pose.webp") -Destination $imageOutput -Force }
 }
 Write-Output 'Static files packaged in dist. Deploy with Wrangler from project root to include functions/.'
 
 $audioOutput = Join-Path $outputRoot 'assets/audio'
 New-Item -ItemType Directory -Path $audioOutput -Force | Out-Null
-foreach ($sound in @('bell-v2','keisu-v2','mo','bead-v1','ambient-courtyard','ambient-rain')) {
+foreach ($sound in @('bell-v2','keisu-v2','mo','bead-v1','ambient-courtyard','ambient-rain','breath-4-6','breath-4-4','breath-5-7')) {
   foreach ($ext in @('mp3','m4a')) { Copy-Item -LiteralPath (Join-Path $projectRoot "assets/audio/$sound.$ext") -Destination $audioOutput }
 }
 foreach ($name in @('LICENSES.md','measurements.json','measurements-v2.json')) { Copy-Item -LiteralPath (Join-Path $projectRoot "assets/audio/$name") -Destination $audioOutput }
-foreach ($name in @('mo.webp','mo-mallet.webp','bead-wood-v2.webp','bead-spacer-v2.webp','bead-guru-v2.webp','share-qr.png')) { Copy-Item -LiteralPath (Join-Path $projectRoot "assets/processed-v1/img/$name") -Destination $imageOutput -Force }
+foreach ($name in @('bead-wood-v2.webp','bead-spacer-v2.webp','bead-guru-v2.webp','share-qr.png')) { Copy-Item -LiteralPath (Join-Path $projectRoot "assets/processed-v1/img/$name") -Destination $imageOutput -Force }
 Copy-Item -LiteralPath (Join-Path $projectRoot 'assets/processed-v1/mobile') -Destination (Join-Path $outputRoot 'assets/processed-v1') -Recurse -Force
 Copy-Item -LiteralPath (Join-Path $projectRoot 'assets/fonts') -Destination (Join-Path $outputRoot 'assets') -Recurse
 Copy-Item -LiteralPath (Join-Path $projectRoot 'assets/share') -Destination (Join-Path $outputRoot 'assets') -Recurse

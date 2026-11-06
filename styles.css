@@ -95,13 +95,11 @@ body:is([data-period=night],[data-period=dusk]) .controls button[aria-pressed=tr
 .controls{z-index:5}.stage::before{filter:none;opacity:1;inset:0;background-size:cover}
 .legal-links{flex-direction:column;align-items:stretch;gap:0;text-align:left}.legal-links a{justify-content:flex-start;padding:7px 0}
 #more-menu .utilities{justify-content:flex-start}#more-menu .utilities label{flex:1}
-#wood-prop{position:absolute;z-index:2;border:0;padding:0;background:transparent!important;touch-action:manipulation;isolation:isolate}
-#wood-prop::before{content:"";position:absolute;left:5%;right:5%;height:5%;bottom:0;background:#211b181a;border-radius:50%;filter:blur(3px);z-index:-1}
-#wood-art{display:block;width:100%;height:100%;transform-origin:50% 90%}
-#mallet-prop{position:absolute;z-index:3;pointer-events:none;transform-origin:95% 95%}
-.wood-ripple{position:absolute;inset:20% 0;border:1px solid #b7a17d;border-radius:50%;pointer-events:none}
+#wood-prop{position:absolute;z-index:4;border:0;padding:0;background:transparent!important;touch-action:manipulation;color:transparent}
 body[data-view=mo] .controls{min-height:25%;display:flex;align-items:center;justify-content:center}body[data-view=mo] .controls .stack{width:100%;gap:10px}#daily-wood{font-size:15px;letter-spacing:0}#wood-message{font-size:12px;min-height:18px}
-@media(prefers-reduced-motion:reduce){.wood-ripple{display:none}}
+body[data-view=sit] .stage-note[data-breath]{bottom:34%;color:#fffaf1;background:#241d1478;border:0;text-shadow:0 1px 4px #241d14;font-size:13px;letter-spacing:.4px}
+.breath-controls{display:flex;align-items:center;justify-content:center;gap:6px}.breath-controls>button{flex:1}.breath-controls .choice-row{flex:1}.breath-controls .choice-row button{padding-inline:5px}
+@media(max-height:600px){body[data-view=sit] .controls .stack{gap:3px}.breath-controls button,.ambient-options button{min-height:44px;padding-block:6px}}
 /* Round 3: one shared panel and three button levels. */
 button,select,input[type=email],.controls button,.controls .text-button,.corner-button{min-height:48px}
 button{white-space:nowrap}button:active{transform:scale(.98)}

@@ -47,3 +47,8 @@ Verified from public Freesound source pages on 2026-11-05. Sources are public HQ
 
 ## bell-v2.* / keisu-v2.*
 Same authors, source recordings and licenses as bell / keisu above. Derived from the retained lossless edits: 140 Hz high-pass, broad +3 dB EQ at 1.8 kHz, static gain targeting -17 LUFS, mono 44.1 kHz, 64 kbps MP3/AAC. Original decay retained; no dynamic gain pumping. Measurements: measurements-v2.json. Physical iPhone loudness/timbre review remains pending.
+
+## breath-4-6.* / breath-4-4.* / breath-5-7.*
+- Source: generated locally from filtered pink noise; no external recording.
+- Changes: separate inhale and exhale envelopes, band-pass filtering, fades and loudness normalization near -30 LUFS.
+- Durations: 10 seconds (4/6), 8 seconds (4/4), and 12 seconds (5/7); mono 24 kHz MP3/AAC.

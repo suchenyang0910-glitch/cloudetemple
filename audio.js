@@ -2,7 +2,7 @@
 import {assetURL} from './resources.js';
 export const soundFile=name=>({bell:'bell-v2',keisu:'keisu-v2'}[name]??name);
 export function createTempleAudio({onChange=()=>{},onError=()=>{},volume=()=>.8}={}){
- const a={enabled:false,loading:false,context:null,master:null,ambientKind:'none',background:null,buffers:new Map(),requests:new Map(),voices:new Set(),slots:Array(6).fill(0),lastPlayed:0,epoch:0,controller:null,observe:()=>{},native:new Map(),ambientVersion:0,fading:new Set(),backgroundLevel:null,
+ const a={enabled:false,loading:false,context:null,master:null,ambientKind:'none',background:null,buffers:new Map(),requests:new Map(),voices:new Set(),slots:Array(6).fill(0),lastPlayed:0,epoch:0,controller:null,observe:()=>{},native:new Map(),ambientVersion:0,breathVersion:0,fading:new Set(),backgroundLevel:null,breathSource:null,breathLevel:null,
   async enable(){
    if(this.enabled)return !this.loading;
    const epoch=++this.epoch;this.enabled=true;this.loading=true;this.controller=new AbortController();onChange();
@@ -34,7 +34,7 @@ export function createTempleAudio({onChange=()=>{},onError=()=>{},volume=()=>.8}
    this.requests.set(name,request);return request;
   },
   volume(){const value=this.enabled?Math.max(0,Math.min(1,volume())):0;if(this.master)this.master.gain.value=value;for(const el of this.native.values())el.volume=Math.min(1,value*(el.soundGain??1));},
-  mute(){this.epoch++;this.enabled=false;this.loading=false;this.controller?.abort();this.requests.clear();this.volume();this.stopBackground();for(const source of this.fading){try{source.stop();}catch{}}this.fading.clear();for(const el of this.native.values())el.pause();for(const source of this.voices){try{source.stop();}catch{}}this.voices.clear();this.slots.fill(0);onChange();},
+  mute(){this.epoch++;this.enabled=false;this.loading=false;this.controller?.abort();this.requests.clear();this.volume();this.stopBackground();this.stopBreathing();for(const source of this.fading){try{source.stop();}catch{}}this.fading.clear();for(const el of this.native.values())el.pause();for(const source of this.voices){try{source.stop();}catch{}}this.voices.clear();this.slots.fill(0);onChange();},
   playNative(name,gain=1){
    if(!this.enabled||document.hidden)return false;const el=this.native.get(name);if(!el)return false;
    // Emergency fallback reuses one element per sound; rapid overlaps still use Web Audio.
@@ -65,6 +65,19 @@ export function createTempleAudio({onChange=()=>{},onError=()=>{},volume=()=>.8}
     const source=this.context.createBufferSource(),level=this.context.createGain();source.buffer=buffer;source.loop=true;source.loopEnd=Math.min(60,buffer.duration);source.connect(level);level.connect(this.master);
     level.gain.setValueAtTime(fade?0:gain,this.context.currentTime);if(fade)level.gain.linearRampToValueAtTime(gain,this.context.currentTime+fade);
     source.onended=()=>{source.disconnect();level.disconnect();this.fading.delete(source);};source.start();this.background=source;this.backgroundLevel=level;this.lastPlayed=Date.now();
+   }catch(e){if(e.name!=='AbortError'&&this.enabled)onError();}
+  },
+  stopBreathing(fade=0){
+   this.breathVersion++;const source=this.breathSource,level=this.breathLevel;this.breathSource=null;this.breathLevel=null;if(!source)return;
+   if(fade&&this.enabled&&level){const now=this.context.currentTime;level.gain.cancelScheduledValues(now);level.gain.setValueAtTime(level.gain.value,now);level.gain.linearRampToValueAtTime(0,now+fade);this.fading.add(source);source.stop(now+fade);}
+   else {try{source.stop();}catch{}source.disconnect();level?.disconnect();}
+  },
+  async breathing(pattern='4-6',gain=.5,fade=0){
+   this.stopBreathing(fade);const epoch=this.epoch,version=this.breathVersion;if(!this.enabled||document.hidden)return;
+   try{const buffer=await this.load(`breath-${pattern}`);if(!this.enabled||this.epoch!==epoch||this.breathVersion!==version||document.hidden)return;
+    const source=this.context.createBufferSource(),level=this.context.createGain();source.buffer=buffer;source.loop=true;source.loopEnd=buffer.duration;source.connect(level);level.connect(this.master);
+    level.gain.setValueAtTime(fade?0:gain,this.context.currentTime);if(fade)level.gain.linearRampToValueAtTime(gain,this.context.currentTime+fade);
+    source.onended=()=>{source.disconnect();level.disconnect();this.fading.delete(source);};source.start();this.breathSource=source;this.breathLevel=level;this.lastPlayed=Date.now();
    }catch(e){if(e.name!=='AbortError'&&this.enabled)onError();}
   },
   async wake(){if(this.enabled&&this.context&&this.context.state!=='running'){try{await this.context.resume();}catch(e){this.observe({event:'resume',error:e.name+': '+e.message});onError();}}}
