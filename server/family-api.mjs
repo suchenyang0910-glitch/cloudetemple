@@ -13,6 +13,11 @@ import {
   qingmingDate,
 } from "./lunar-hnd.mjs";
 import { sendMail } from "./mail.mjs";
+import {
+  escapeFamilyHTML,
+  familyServerLanguage,
+  familyServerText,
+} from "./family-i18n.mjs";
 const json = (res, status, data, headers = {}) => {
   res.writeHead(status, {
     "Content-Type": "application/json; charset=utf-8",
@@ -97,6 +102,8 @@ function tabletInput(v) {
       (!Number.isInteger(y) || y < 1000 || y > new Date().getFullYear())
     )
       throw Error("invalid");
+  if (deathYear === null && (day === 30 || v?.leap === true))
+    throw Error("death_year_required");
   if (deathYear !== null) {
     let solar;
     try {
@@ -187,7 +194,8 @@ export function createFamilyApi(settings, family) {
     if (!(route.startsWith("/family/") || route.startsWith("/auth/google/")))
       return false;
     try {
-      const user = session(req),
+      const language = familyServerLanguage(req),
+        user = session(req),
         write = !["GET", "HEAD"].includes(req.method);
       if (write) {
         const origin = req.headers.origin;
@@ -231,9 +239,9 @@ export function createFamilyApi(settings, family) {
         });
         await sendMail(settings, family, {
           to: email,
-          subject: "Mã đăng nhập Chùa Mây",
-          text: `Mã đăng nhập của bạn: ${code}\nMã có hiệu lực trong 10 phút.`,
-          html: `<p>Mã đăng nhập của bạn: <strong>${code}</strong></p><p>Mã có hiệu lực trong 10 phút.</p>`,
+          subject: familyServerText("otp_subject", {}, language),
+          text: familyServerText("otp_text", { code }, language),
+          html: familyServerText("otp_html", { code }, language),
         });
         return json(res, 201, { ok: true }), true;
       }
@@ -248,7 +256,12 @@ export function createFamilyApi(settings, family) {
         const subject = hash(settings.hashSecret, email),
           record = family.takeCode(subject, hash(settings.hashSecret, code));
         if (!record) return json(res, 401, { ok: false, error: "code" }), true;
-        const account = family.userFor("email", subject, email, "Người thân"),
+        const account = family.userFor(
+            "email",
+            subject,
+            email,
+            familyServerText("relative_default", {}, language),
+          ),
           anti = issue(res, account, req);
         return (
           json(res, 200, {
@@ -444,7 +457,7 @@ export function createFamilyApi(settings, family) {
               "BEGIN:VEVENT",
               `UID:${tablet.id}-${y}@chuamay.org`,
               `DTSTART;VALUE=DATE:${date}`,
-              `SUMMARY:${String("Giỗ " + tablet.honorific).replace(/[\\;,\n]/g, " ")}`,
+              `SUMMARY:${familyServerText("calendar_anniversary", { honorific: tablet.honorific }).replace(/[\\;,\n]/g, " ")}`,
               "END:VEVENT",
             );
           }
@@ -455,24 +468,28 @@ export function createFamilyApi(settings, family) {
               festivals.push({
                 date: lunarToSolar({ day: 1, month, year: y }),
                 key: `newmoon-${month}`,
-                title: month === 1 ? "Tết" : "Mùng một",
+                title: familyServerText(
+                  month === 1 ? "festival_tet" : "festival_new_moon",
+                ),
               });
               festivals.push({
                 date: lunarToSolar({ day: 15, month, year: y }),
                 key: `fullmoon-${month}`,
-                title: month === 7 ? "Vu Lan" : "Ngày rằm",
+                title: familyServerText(
+                  month === 7 ? "festival_vu_lan" : "festival_full_moon",
+                ),
               });
             }
             festivals.push(
               {
                 date: lunarToSolar({ day: 23, month: 12, year: y }),
                 key: "ong-cong-ong-tao",
-                title: "Ông Công Ông Táo",
+                title: familyServerText("festival_kitchen_gods"),
               },
               {
                 date: qingmingDate(y),
                 key: "thanh-minh",
-                title: "Thanh minh",
+                title: familyServerText("festival_qingming"),
               },
             );
             for (const festival of festivals) {
@@ -509,7 +526,7 @@ export function createFamilyApi(settings, family) {
           "X-Robots-Tag": "noindex, nofollow",
         });
         res.end(
-          "<!doctype html><meta charset=utf-8><title>Chùa Mây</title><p>Đã tắt nhắc nhở qua email.</p>",
+          `<!doctype html><meta charset=utf-8><title>${escapeFamilyHTML(familyServerText("unsubscribe_title", {}, language))}</title><p>${escapeFamilyHTML(familyServerText("unsubscribe_done", {}, language))}</p>`,
         );
         return true;
       }
@@ -741,6 +758,7 @@ export function createFamilyApi(settings, family) {
       const known = [
         "invalid",
         "invalid_date",
+        "death_year_required",
         "tablet_limit",
         "body",
       ].includes(error.message)
@@ -750,6 +768,15 @@ export function createFamilyApi(settings, family) {
         json(res, known, {
           ok: false,
           error: known === 400 ? error.message : "unavailable",
+          ...(error.message === "death_year_required"
+            ? {
+                message: familyServerText(
+                  "death_year_required",
+                  {},
+                  familyServerLanguage(req),
+                ),
+              }
+            : {}),
         }),
         true
       );

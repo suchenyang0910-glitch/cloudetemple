@@ -5,6 +5,7 @@ import { openFamilyStore } from "./family-store.mjs";
 import { runReminders } from "./reminders.mjs";
 import { solarToLunar } from "./lunar-hnd.mjs";
 import { listOutbox } from "./outbox-staging.mjs";
+import { familyServerText } from "./family-i18n.mjs";
 test("reminder delivery is idempotent", async () => {
   const store = openStore(":memory:"),
     family = openFamilyStore(store.db);
@@ -45,7 +46,19 @@ test("reminder delivery is idempotent", async () => {
     assert.equal((await runReminders(settings, family, at)).sent, 0);
     const outbox = listOutbox(family.db);
     assert.equal(outbox.length, 1);
-    assert.match(outbox[0].text_body, /Tắt nhắc nhở:/);
+    assert.equal(outbox[0].subject, familyServerText("reminder_subject"));
+    assert.match(
+      outbox[0].text_body,
+      new RegExp(`${familyServerText("reminder_unsubscribe")}:`),
+    );
+    assert.ok(
+      outbox[0].text_body.includes(
+        familyServerText("anniversary_reminder", {
+          days: 7,
+          honorific: "Bà ngoại",
+        }),
+      ),
+    );
     assert.doesNotMatch(outbox[0].text_body, /demo@example\.com/);
   } finally {
     store.close();

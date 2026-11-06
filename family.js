@@ -73,7 +73,7 @@ async function api(path, options = {}) {
       },
     }),
     data = await r.json();
-  if (!r.ok) throw Error(data.error || "unavailable");
+  if (!r.ok) throw Error(data.message || data.error || "unavailable");
   return data;
 }
 function note(text) {
@@ -259,10 +259,15 @@ function form(edit = null) {
     for (const k of ["birthYear", "deathYear", "day", "month"])
       v[k] = v[k] ? Number(v[k]) : null;
     if (!demo) {
-      const d = await api(edit ? `/tablets/${edit.id}` : "/tablets", {
-        method: edit ? "PATCH" : "POST",
-        body: JSON.stringify(v),
-      });
+      try {
+        await api(edit ? `/tablets/${edit.id}` : "/tablets", {
+          method: edit ? "PATCH" : "POST",
+          body: JSON.stringify(v),
+        });
+      } catch (error) {
+        note(error.message);
+        return;
+      }
       if (!edit) familyEvent("memorial_create");
     } else if (!edit)
       demoTablets.push({

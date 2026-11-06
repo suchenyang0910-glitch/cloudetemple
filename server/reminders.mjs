@@ -8,6 +8,7 @@ import {
   qingmingDate,
 } from "./lunar-hnd.mjs";
 import { sendMail } from "./mail.mjs";
+import { escapeFamilyHTML, familyServerText } from "./family-i18n.mjs";
 const plus = (date, days) =>
   new Date(date.getFullYear(), date.getMonth(), date.getDate() + days);
 const solar = (d) => ({
@@ -82,9 +83,9 @@ export async function runReminders(
         const unsubscribe = unsubscribeURL(user.id);
         await sendMail(settings, family, {
           to: user.email,
-          subject: "Nhắc ngày tưởng nhớ · Chùa Mây",
-          text: `${text}\n\nMở Chùa Mây: ${settings.familyUrl}\nTắt nhắc nhở: ${unsubscribe}`,
-          html: `<p>${text}</p><p><a href="${settings.familyUrl}">Mở Chùa Mây</a></p><p><a href="${unsubscribe}">Tắt nhắc nhở qua email</a></p>`,
+          subject: familyServerText("reminder_subject"),
+          text: `${text}\n\n${familyServerText("reminder_open")}: ${settings.familyUrl}\n${familyServerText("reminder_unsubscribe")}: ${unsubscribe}`,
+          html: `<p>${escapeFamilyHTML(text)}</p><p><a href="${settings.familyUrl}">${escapeFamilyHTML(familyServerText("reminder_open"))}</a></p><p><a href="${unsubscribe}">${escapeFamilyHTML(familyServerText("reminder_unsubscribe_email"))}</a></p>`,
         });
       } else await telegram(user.telegram_chat_id, text);
       sent++;
@@ -119,7 +120,10 @@ export async function runReminders(
           settings.lunarLeapRule,
         );
         if (isoDate(a) !== due) continue;
-        const text = `Còn ${days} ngày tới giỗ ${tablet.honorific}. Mời bạn trở lại thắp một nén hương.`;
+        const text = familyServerText("anniversary_reminder", {
+          days,
+          honorific: tablet.honorific,
+        });
         for (const ch of channels)
           await deliver(user, tablet, `anniversary_${days}`, due, ch, text);
       }
@@ -131,21 +135,21 @@ export async function runReminders(
           isoDate(solar(target)) ===
           isoDate(qingmingDate(target.getFullYear())),
         name = qingming
-          ? "Thanh minh"
+          ? familyServerText("festival_qingming")
           : l.day === 1 && l.month === 1
-            ? "Tết"
+            ? familyServerText("festival_tet")
             : l.day === 15 && l.month === 7
-              ? "Vu Lan"
+              ? familyServerText("festival_vu_lan")
               : l.day === 23 && l.month === 12
-                ? "Ông Công Ông Táo"
+                ? familyServerText("festival_kitchen_gods")
                 : l.day === 1
-                  ? "Mùng một"
+                  ? familyServerText("festival_new_moon")
                   : l.day === 15
-                    ? "Ngày rằm"
+                    ? familyServerText("festival_full_moon")
                     : null;
       if (name) {
         const due = isoDate(solar(target)),
-          text = `Ngày mai là ${name}. Mời bạn trở lại thắp một nén hương.`;
+          text = familyServerText("festival_reminder", { festival: name });
         for (const ch of channels)
           await deliver(user, null, "festival", due, ch, text);
       }

@@ -6,6 +6,7 @@ import { createFamilyApi } from "./family-api.mjs";
 import { createServer } from "./app.mjs";
 import { listOutbox } from "./outbox-staging.mjs";
 import { hash } from "./security.mjs";
+import { familyServerText } from "./family-i18n.mjs";
 const settings = {
   telegramEnabled: false,
   origins: new Set(["https://staging.chuamay.org"]),
@@ -45,6 +46,14 @@ async function fixture() {
   };
 }
 test("email code stays in protected outbox and session CRUD enforces CSRF", async () => {
+  assert.throws(
+    () => familyServerText("otp_text"),
+    /family_copy_param/,
+  );
+  assert.throws(
+    () => familyServerText("otp_subject", { code: "123456" }),
+    /family_copy_param/,
+  );
   const f = await fixture();
   try {
     let r = await f.request("/family/auth/email/start", {
@@ -54,6 +63,8 @@ test("email code stays in protected outbox and session CRUD enforces CSRF", asyn
     assert.equal(r.status, 201);
     const message = listOutbox(f.family.db)[0],
       code = message.text_body.match(/\b\d{6}\b/)[0];
+    assert.equal(message.subject, familyServerText("otp_subject"));
+    assert.equal(message.text_body, familyServerText("otp_text", { code }));
     r = await f.request("/family/auth/email/verify", {
       method: "POST",
       body: JSON.stringify({ email: "demo@example.com", code }),
@@ -87,6 +98,45 @@ test("email code stays in protected outbox and session CRUD enforces CSRF", asyn
     });
     assert.equal(r.status, 400);
     assert.equal((await r.json()).error, "invalid_date");
+    r = await f.request("/family/tablets", {
+      method: "POST",
+      headers: {
+        Cookie: cookie,
+        "X-CSRF-Token": data.csrf,
+        "Accept-Language": "en",
+      },
+      body: JSON.stringify({
+        honorific: "Bà ngoại",
+        fullName: "Needs a year",
+        day: 30,
+        month: 2,
+        note: "",
+      }),
+    });
+    assert.equal(r.status, 400);
+    assert.deepEqual(await r.json(), {
+      ok: false,
+      error: "death_year_required",
+      message: familyServerText("death_year_required", {}, "en"),
+    });
+    r = await f.request("/family/tablets", {
+      method: "POST",
+      headers: { Cookie: cookie, "X-CSRF-Token": data.csrf },
+      body: JSON.stringify({
+        honorific: "Bà ngoại",
+        fullName: "Cần năm mất",
+        day: 29,
+        month: 2,
+        leap: true,
+        note: "",
+      }),
+    });
+    assert.equal(r.status, 400);
+    assert.deepEqual(await r.json(), {
+      ok: false,
+      error: "death_year_required",
+      message: familyServerText("death_year_required"),
+    });
     r = await f.request("/family/tablets", {
       method: "POST",
       headers: { Cookie: cookie, "X-CSRF-Token": data.csrf },
@@ -257,6 +307,12 @@ test("email login is rate limited and ICS is a private three-year feed", async (
     assert.match(ics, /^BEGIN:VCALENDAR\r\nVERSION:2.0/);
     assert.equal((ics.match(/BEGIN:VEVENT/g) || []).length, 3);
     assert.equal((ics.match(/DTSTART;VALUE=DATE:\d{8}/g) || []).length, 3);
+    assert.match(
+      ics,
+      new RegExp(
+        `SUMMARY:${familyServerText("calendar_anniversary", { honorific: "Bà ngoại" })}`,
+      ),
+    );
     assert.match(ics, /\r\nEND:VCALENDAR$/);
     f.family.setPrefs(owner.id, {
       email: false,
@@ -270,9 +326,22 @@ test("email login is rate limited and ICS is a private three-year feed", async (
     assert.equal((festivalIcs.match(/BEGIN:VEVENT/g) || []).length, 81);
     assert.match(festivalIcs, /SUMMARY:Thanh minh/);
     assert.match(festivalIcs, /SUMMARY:Vu Lan/);
+    assert.match(
+      festivalIcs,
+      new RegExp(`SUMMARY:${familyServerText("festival_qingming")}`),
+    );
     assert.equal(f.family.revokeCalendar(owner.id), true);
     r = await f.request("/family/calendar.ics?token=calendar-token");
     assert.equal(r.status, 404);
+    const unsubscribe = `${owner.id}.${hash(
+      settings.hashSecret,
+      `unsubscribe:${owner.id}`,
+    ).slice(0, 32)}`;
+    r = await f.request(
+      `/family/reminders/unsubscribe?token=${encodeURIComponent(unsubscribe)}`,
+    );
+    assert.equal(r.status, 200);
+    assert.ok((await r.text()).includes(familyServerText("unsubscribe_done")));
   } finally {
     await new Promise((resolve) => f.server.close(resolve));
     f.store.close();
