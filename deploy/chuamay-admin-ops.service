@@ -4,7 +4,7 @@ After=chuamay-api@staging.service
 
 [Service]
 Type=oneshot
-ExecStart=/opt/chuamay/staging/current/deploy/admin-ops-status.sh staging
+ExecStart=/bin/bash /opt/chuamay/staging/current/deploy/admin-ops-status.sh staging
 NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=strict
