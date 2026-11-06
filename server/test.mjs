@@ -39,3 +39,16 @@ test('initData validates signature, rejects tamper old future and duplicates',()
 test('webhook requires secret; commands and delete use verified sender',async t=>{const f=await fixture(t);const update={update_id:1,message:{from:{id:123,language_code:'vi'},chat:{id:123,type:'private'},text:'/start'}};assert.equal((await f.post(update,{},'/telegram/webhook')).status,401);const headers={'X-Telegram-Bot-Api-Secret-Token':settings.webhookSecret};assert.equal((await f.post(update,headers,'/telegram/webhook')).status,200);assert.equal(f.sent[0].body.reply_markup.inline_keyboard[0][0].web_app.url,settings.mini);await f.post(update,headers,'/telegram/webhook');assert.equal(f.sent.length,1);f.store.remind({id:'123',language:'vi'},new Date().toISOString());assert.equal((await f.post({update_id:2,callback_query:{id:'cb',from:{id:123},data:'delete-data'}},headers,'/telegram/webhook')).status,200);assert.equal(f.store.db.prepare('SELECT count(*) n FROM reminders').get().n,0);});
 test('reminder requires consent and signed initData, stores only three fields',async t=>{const f=await fixture(t);assert.equal((await f.post({...valid(),initData:'fake'},{},'/telegram/remind')).status,401);assert.equal((await f.post({...valid(),initData:signed()},{},'/telegram/remind')).status,201);assert.deepEqual(Object.keys(f.store.db.prepare('SELECT * FROM reminders').get()).sort(),['consentAt','language','user_id']);});
 test('forwarded IP trusted only behind Cloudflare peer',()=>{const req={socket:{remoteAddress:'192.0.2.1'},headers:{'cf-connecting-ip':'198.51.100.4'}};assert.equal(clientIP(req,false),'192.0.2.1');req.socket.remoteAddress='173.245.48.1';assert.equal(clientIP(req,false),'198.51.100.4');req.socket.remoteAddress='127.0.0.1';req.headers['x-chuamay-peer']='192.0.2.1';assert.equal(clientIP(req,true),'192.0.2.1');});
+test('disabled Telegram needs only HASH_SECRET and leaves registration available',async t=>{
+ const env={TELEGRAM_ENABLED:'0',HASH_SECRET:settings.hashSecret,ALLOWED_ORIGINS:'https://h5.chuamay.org'};
+ assert.throws(()=>config({...env,HASH_SECRET:''}),/HASH_SECRET/);
+ assert.throws(()=>config({...env,TELEGRAM_ENABLED:'off'}),/TELEGRAM_ENABLED/);
+ const f=await fixture(t,config(env));
+ const health=await fetch(f.base+'/healthz');
+ assert.equal(health.status,200);assert.deepEqual(await health.json(),{ok:true,telegram:'disabled'});
+ for(const route of ['/telegram/remind','/telegram/webhook']){
+   const response=await f.post({}, {}, route);assert.equal(response.status,503);
+   assert.equal((await response.json()).error,'telegram_disabled');
+ }
+ assert.equal(f.sent.length,0);assert.equal((await f.post(valid())).status,201);
+});
