@@ -3,10 +3,10 @@ Description=Cloud Temple private access log receiver
 After=local-fs.target
 
 [Service]
-RuntimeDirectory=chuamay-web-log
+UMask=0077
 LogsDirectory=chuamay-web
 LogsDirectoryMode=0700
-ExecStart=/usr/sbin/rsyslogd -n -i /run/chuamay-web-log/pid -f /etc/chuamay/web-rsyslog.conf
+ExecStart=/usr/bin/python3 -I /opt/chuamay/nginx-production/image-log-receiver.py
 Restart=on-failure
 NoNewPrivileges=true
 PrivateTmp=true

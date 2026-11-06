@@ -7,7 +7,4 @@
     ifempty
     compress
     create 0600 root root
-    postrotate
-        /bin/systemctl kill -s HUP chuamay-web-log.service
-    endscript
 }

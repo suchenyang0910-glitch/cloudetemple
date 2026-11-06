@@ -11,7 +11,7 @@ rm -f "$sites/00-image-log.conf"
 docker exec chuamay-production-nginx nginx -t
 docker exec chuamay-production-nginx nginx -s reload
 systemctl disable --now chuamay-web-log.service >/dev/null 2>&1 || true
-rm -f /etc/systemd/system/chuamay-web-log.service /etc/chuamay/web-rsyslog.conf
+rm -f /etc/systemd/system/chuamay-web-log.service /opt/chuamay/nginx-production/image-log-receiver.py
 # Keep the expiry policy for any logs already collected.
 if test -f /etc/logrotate.d/chuamay-web; then sed -i '/postrotate/,/endscript/d' /etc/logrotate.d/chuamay-web; fi
 systemctl daemon-reload

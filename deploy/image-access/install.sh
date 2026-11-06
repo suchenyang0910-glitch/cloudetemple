@@ -9,7 +9,7 @@ old=$(readlink -f "$root/current")
 test "$old" = "$root/releases/22a76741d1d7"
 target=$root/releases/$id
 bk=$root/backups/img-$id
-for path in "$target" "$bk" "$sites/00-image-log.conf" /etc/chuamay/web-rsyslog.conf /etc/systemd/system/chuamay-web-log.service /etc/logrotate.d/chuamay-web; do test ! -e "$path"; done
+for path in "$target" "$bk" "$sites/00-image-log.conf" /opt/chuamay/nginx-production/image-log-receiver.py /etc/systemd/system/chuamay-web-log.service /etc/logrotate.d/chuamay-web; do test ! -e "$path"; done
 curl -fsS http://127.0.0.1:8790/healthz
 mkdir -m 700 "$bk"
 echo "$old" > "$bk/previous"
@@ -24,9 +24,9 @@ r=pathlib.Path(sys.argv[1]);m=json.load(open('manifest.json'))
 assert sorted(str(p.relative_to(r)) for p in r.rglob('*') if p.is_file())==sorted(f['path'] for f in m['files'])
 for f in m['files']:assert hashlib.sha256((r/f['path']).read_bytes()).hexdigest()==f['sha256']
 PY
-rsyslogd -N1 -f rsyslog.conf
+python3 -m py_compile receiver.py
 trap 'bash "$bk/rollback.sh"; exit 1' ERR
-install -m 644 rsyslog.conf /etc/chuamay/web-rsyslog.conf
+install -m 644 receiver.py /opt/chuamay/nginx-production/image-log-receiver.py
 install -m 644 chuamay-web-log.service /etc/systemd/system/
 install -m 644 logrotate /etc/logrotate.d/chuamay-web
 systemctl daemon-reload
