@@ -1,0 +1,60 @@
+[
+  {
+    "name": "iphone15-chromium-proxy",
+    "viewport": {
+      "width": 393,
+      "height": 659
+    },
+    "cpu": 2,
+    "ua": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148",
+    "network": "4 Mbps down / 1 Mbps up / 80 ms RTT",
+    "readyMs": 4946.774899999999,
+    "metrics": {
+      "fps": 56.502775574940564,
+      "low": 50.57516858329738,
+      "triangles": 5868,
+      "calls": 153,
+      "bytes": 2168786,
+      "memory": 12010615
+    },
+    "state": {
+      "style": "soft",
+      "action": "stand",
+      "position": {
+        "x": 0,
+        "z": 10.5
+      },
+      "zone": null,
+      "locals": 2
+    }
+  },
+  {
+    "name": "mid-android-4x-cpu",
+    "viewport": {
+      "width": 360,
+      "height": 740
+    },
+    "cpu": 4,
+    "ua": "Mozilla/5.0 (Linux; Android 13; Redmi Note 11) AppleWebKit/537.36 Chrome/126 Mobile Safari/537.36",
+    "network": "4 Mbps down / 1 Mbps up / 80 ms RTT",
+    "readyMs": 5139.171400000001,
+    "metrics": {
+      "fps": 56.5307944064266,
+      "low": 48.534072901877686,
+      "triangles": 5820,
+      "calls": 149,
+      "bytes": 2168786,
+      "memory": 10824995
+    },
+    "state": {
+      "style": "soft",
+      "action": "stand",
+      "position": {
+        "x": 0,
+        "z": 10.5
+      },
+      "zone": null,
+      "locals": 2
+    }
+  }
+]
