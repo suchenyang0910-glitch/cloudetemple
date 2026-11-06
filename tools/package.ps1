@@ -36,6 +36,8 @@ if($Environment -eq 'staging'){
   Copy-Item -LiteralPath (Join-Path $projectRoot 'audio-debug.js') -Destination $debugOutput -Force
   $index=Join-Path $outputRoot 'index.html'
   $html=[IO.File]::ReadAllText($index).Replace('</body>','<script type="module" src="audio-debug.js"></script></body>')
+  $banner=[IO.File]::ReadAllText((Join-Path $projectRoot 'analytics-choice.html'))
+  $html=$html.Replace('</main>',$banner+'</main>')
   [IO.File]::WriteAllText($index,$html,[Text.UTF8Encoding]::new($false))
 }
 & node (Join-Path $PSScriptRoot 'version-assets.mjs')

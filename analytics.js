@@ -10,10 +10,10 @@ const fields={
 export function setupAnalytics(platform){
  let choice='',frame,send,current=document.body.dataset.view||'entry';
  try{choice=localStorage.getItem(key)}catch{}
- const banner=document.createElement('aside'),prefs=document.createElement('button');
- banner.id='ga-choice';banner.innerHTML='<span></span><div><button type="button"></button><button type="button"></button></div>';
+ const banner=document.querySelector('#ga-choice'),prefs=document.createElement('button');
+
  prefs.type='button';prefs.className='text-button';document.querySelector('#more-menu footer').prepend(prefs);
- document.querySelector('#app').append(banner);
+
  function labels(){const en=document.documentElement.lang==='en';
   banner.firstChild.textContent=en?'Cloud Temple uses anonymous statistics to improve your experience.':'Chùa Mây dùng thống kê ẩn danh để cải thiện trải nghiệm.';
   banner.querySelectorAll('button').forEach((b,i)=>b.textContent=(en?['Agree','Decline']:['Đồng ý','Không'])[i]);
@@ -40,7 +40,7 @@ export function setupAnalytics(platform){
  function choose(allow){choice=allow?'yes':'no';try{localStorage.setItem(key,choice)}catch{}
   banner.hidden=true;if(allow){start();return}
   if(send){window['ga-disable-'+id]=true;send('consent','update',{analytics_storage:'denied'});send=null}
-  for(const cookie of document.cookie.split(';')){const n=cookie.split('=')[0].trim();if(/^_ga(?:$|_)/.test(n))document.cookie=n+'=; Max-Age=0; Path=/; Secure; Domain='+location.hostname}
+  for(const cookie of document.cookie.split(';')){const n=cookie.split('=')[0].trim();if(['_ga','_ga_0EF24Y0Q9M'].includes(n))for(const domain of ['', '; Domain='+location.hostname,'; Domain=chuamay.org'])document.cookie=n+'=; Max-Age=0; Path=/; Secure'+domain}
  }
  const [yes,no]=banner.querySelectorAll('button');yes.onclick=()=>choose(true);no.onclick=()=>choose(false);
  banner.hidden=['yes','no'].includes(choice);position();if(choice==='yes')start();
