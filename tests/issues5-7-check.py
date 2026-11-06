@@ -32,7 +32,8 @@ try:
   browser=p.chromium.launch(args=['--host-resolver-rules=MAP staging.chuamay.org 127.0.0.1'])
   for width,height in [(375,548),(393,659)]:
    page=browser.new_page(viewport={'width':width,'height':height})
-   page.add_init_script("""localStorage.setItem('ct-muted','true');localStorage.setItem('ct-analytics','no');
+   page.emulate_media(reduced_motion='reduce')
+   page.add_init_script("""Math.random=()=>.25;localStorage.setItem('ct-muted','true');localStorage.setItem('ct-analytics','no');
      navigator.canShare=()=>true;navigator.share=async d=>window.shareData={text:d.text,url:d.url,files:d.files?.length||0};""")
    page.goto(base+'/?s=zalo&a=beads')
    page.wait_for_function("document.querySelector('#app').getAttribute('aria-busy')==='false'")
