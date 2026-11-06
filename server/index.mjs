@@ -25,7 +25,7 @@ let familyCleanup, familyStore;
 const familyHandler =
   settings.familyEnabled
     ? (() => {
-        familyStore = openFamilyStore(store.db);
+        familyStore = openFamilyStore(store.db, { demo: false });
         familyStore.cleanup();
         familyCleanup = setInterval(() => familyStore.cleanup(), 60000);
         familyCleanup.unref();

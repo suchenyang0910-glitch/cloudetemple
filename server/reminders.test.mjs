@@ -8,7 +8,7 @@ import { listOutbox } from "./outbox-staging.mjs";
 import { familyServerText } from "./family-i18n.mjs";
 test("reminder delivery is idempotent", async () => {
   const store = openStore(":memory:"),
-    family = openFamilyStore(store.db);
+    family = openFamilyStore(store.db, { demo: false });
   try {
     const u = family.userFor("email", "mail", "demo@example.com"),
       target = new Date(2027, 3, 18),
@@ -60,6 +60,10 @@ test("reminder delivery is idempotent", async () => {
       ),
     );
     assert.doesNotMatch(outbox[0].text_body, /demo@example\.com/);
+    assert.equal(
+      family.db.prepare("SELECT demo FROM deliveries").get().demo,
+      0,
+    );
   } finally {
     store.close();
   }

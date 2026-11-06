@@ -35,7 +35,7 @@ export async function runReminders(
   const db = family.db,
     users = db
       .prepare(
-        `SELECT DISTINCT u.id,p.email_on,p.telegram_on,p.telegram_chat_id,p.festival_on,i.email FROM users u JOIN tablet_members m ON m.user_id=u.id JOIN reminder_prefs p ON p.user_id=u.id LEFT JOIN identities i ON i.user_id=u.id AND i.provider='email' WHERE u.deleted_at IS NULL`,
+        `SELECT DISTINCT u.id,u.demo,p.email_on,p.telegram_on,p.telegram_chat_id,p.festival_on,i.email FROM users u JOIN tablet_members m ON m.user_id=u.id JOIN reminder_prefs p ON p.user_id=u.id LEFT JOIN identities i ON i.user_id=u.id AND i.provider='email' WHERE u.deleted_at IS NULL`,
       )
       .all(),
     tablets = db.prepare(
@@ -43,7 +43,7 @@ export async function runReminders(
     ),
     claim = db.prepare(
       `INSERT INTO deliveries(id,user_id,tablet_id,kind,due_date,channel,sent_at,status,attempts,created_at,dedupe_key,demo)
-       VALUES(?,?,?,?,?,?,NULL,'sending',1,?,?,1)
+       VALUES(?,?,?,?,?,?,NULL,'sending',1,?,?,?)
        ON CONFLICT(dedupe_key) DO UPDATE SET status='sending',sent_at=NULL,attempts=deliveries.attempts+1,created_at=excluded.created_at
        WHERE (deliveries.status='failed' AND deliveries.attempts<3)
           OR (deliveries.status='sending' AND deliveries.attempts<3 AND deliveries.created_at<?)
@@ -74,6 +74,7 @@ export async function runReminders(
         channel,
         now.toISOString(),
         key,
+        user.demo ? 1 : 0,
         new Date(now.getTime() - 15 * 60 * 1000).toISOString(),
       );
     if (!delivery) return;
@@ -160,7 +161,7 @@ export async function runReminders(
 if (import.meta.url === `file://${process.argv[1]?.replaceAll("\\", "/")}`) {
   const settings = config(process.env),
     store = openStore(settings.db),
-    family = openFamilyStore(store.db);
+    family = openFamilyStore(store.db, { demo: false });
   try {
     const result = await runReminders(settings, family);
     console.log(JSON.stringify(result));
