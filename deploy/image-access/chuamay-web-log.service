@@ -1,0 +1,16 @@
+[Unit]
+Description=Cloud Temple private access log receiver
+After=local-fs.target
+
+[Service]
+RuntimeDirectory=chuamay-web-log
+LogsDirectory=chuamay-web
+LogsDirectoryMode=0700
+ExecStart=/usr/sbin/rsyslogd -n -i /run/chuamay-web-log/pid -f /etc/chuamay/web-rsyslog.conf
+Restart=on-failure
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ReadWritePaths=/opt/chuamay/nginx-production/sites
+[Install]
+WantedBy=multi-user.target

@@ -1,7 +1,7 @@
 import {bowFrame} from './bow.js';
 import {mountBeads} from './beads.js';
 import {createTempleAudio} from './audio.js';
-import {assetURL,loadImage,placeholder} from './resources.js';
+import {assetURL,loadImage,placeholder,enableImageDebug} from './resources.js';
 import {copy,reflections} from './i18n.js';
 import {apiURL,initTelegram,inTelegram,initData,telegramBack,telegramAppearance,haptic,telegramShare} from './telegram.js';
 
@@ -43,7 +43,10 @@ export function placement(layout,id,pose){
   return {x:s.x-a.cushionBottomCenter[0]*scale,y:s.bottom-a.cushionBottomCenter[1]*scale,w:600*scale,h:900*scale};
 }
 function image(name){
-  if(!images.has(name))images.set(name,loadImage(name,t('imageUnavailable')));
+  if(!images.has(name)){
+    const pending=loadImage(name,t('imageUnavailable'));images.set(name,pending);
+    pending.then(im=>{if(im.placeholder&&images.get(name)===pending)images.delete(name);});
+  }
   return images.get(name);
 }
 function sceneName(view=state.view){return ['incense','bow'].includes(view)?'hall-side':['sit','beads','choose'].includes(view)?'courtyard':'hall-front';}
@@ -52,8 +55,8 @@ function poses(view){return view==='bow'?['bow-1','bow-2','bow-3']:view==='incen
 async function prepare(view,period){
   const visitor=state.visitor;
   const scene=await image(sceneFile(view,period));
-  const art={};
-  if(view==='beads')await Promise.all(['wood','spacer','guru'].map(kind=>image(`bead-${kind}-v2.webp`)));
+  const art={};let missing=!!scene.placeholder;
+  if(view==='beads')missing=(await Promise.all(['wood','spacer','guru'].map(kind=>image(`bead-${kind}-v2.webp`)))).some(im=>im.placeholder)||missing;
   for(const pose of (view==='mo'?['mo','mo-mallet']:poses(view))){
     const name=view==='mo'?`${pose}.webp`:`visitor-${visitor}-${pose}.webp`,key=name+period;
     if(!tinted.has(key)){
@@ -61,11 +64,11 @@ async function prepare(view,period){
       const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(im,0,0);
       const data=x.getImageData(0,0,c.width,c.height),tone=state.layout.toneRGB[period];
       for(let i=0;i<data.data.length;i+=4){for(let j=0;j<3;j++)data.data[i+j]*=tone[j]*(view==='mo'&&period==='night'?.9:1);}
-      x.putImageData(data,0,0);if(!im.placeholder)tinted.set(key,c);else {art[pose]=c;continue;}
+      x.putImageData(data,0,0);if(!im.placeholder)tinted.set(key,c);else {missing=true;art[pose]=c;continue;}
     }
     art[pose]=tinted.get(key);
   }
-  return {scene,art,view};
+  return {scene,art,view,missing};
 }
 let renderAssets=null;
 function paint(now=performance.now()){
@@ -123,7 +126,7 @@ async function navigate(view,{keepResult=false}={}){
   for(const e of [$('.scene-heading'),$('#controls')])e.animate([{opacity:.5},{opacity:1}],{duration:reduced.matches?150:220,delay:reduced.matches?0:80});
   if(old){const a=old.animate([{opacity:1},{opacity:0}],{duration});a.onfinish=()=>old.remove();}
   $('.stage').classList.add('scene-ready');
-  if(assets.scene.placeholder){$('#notice').textContent=t('imageUnavailable');$('#controls').insertAdjacentHTML('beforeend',button('retry','retry'));}
+  if(assets.missing){$('#notice').textContent=t('imageUnavailable');$('#controls').insertAdjacentHTML('beforeend',button('retry','retry'));}
   if(['home','choose'].includes(view))prefetch(view);
   if(view==='beads'&&audio.enabled)void audio.load('bead-v1').catch(()=>{});
  }catch{if(token===transitionId){$('#notice').textContent=t('loadError');$('#controls').insertAdjacentHTML('beforeend',button('retry','retry'));canvas.style.opacity='1';}}
@@ -133,11 +136,10 @@ async function showChoice(){
  const token=++choiceToken,visitor=state.visitor,im=await image(`visitor-${visitor}-choose-v1.webp`);
  if(token!==choiceToken||state.view!=='choose')return;if(im.placeholder){$('#notice').textContent=t('imageUnavailable');if(!$('[data-action=retry-choice]'))$('#controls').insertAdjacentHTML('beforeend',button('retry','retry-choice'));return;}
  const nodes=[...document.querySelectorAll('.choice-image')],slot=nodes[1-choiceFront],old=nodes[choiceFront];if(!slot)return;
- const next=new Image();next.className='choice-image';next.alt=t('choose');next.src=assetURL(`processed-v1/img/visitor-${visitor}-choose-v1.webp`);
- try{await next.decode();}catch{if(token===choiceToken)$('#notice').textContent=t('imageUnavailable');return;}
+ const next=im;if(next===old)return;next.className='choice-image';next.alt=t('choose');
  if(token!==choiceToken||state.view!=='choose')return;
  // Decode off-DOM; keep the last good image fully opaque underneath each transition.
- old.style.transition='none';old.style.opacity=old.naturalWidth?'1':'0';old.style.zIndex='1';next.style.opacity='0';next.style.zIndex='2';slot.replaceWith(next);
+ old.style.transition='none';old.style.opacity=old.naturalWidth?'1':'0';old.style.zIndex='1';next.style.opacity='0';next.style.zIndex='2';if(slot!==next)slot.replaceWith(next);
  next.getBoundingClientRect();next.style.opacity='1';choiceFront=1-choiceFront;
  setTimeout(()=>{if(token===choiceToken)old.style.opacity='0';},200);
  document.querySelectorAll('.choice-dots i').forEach((e,i)=>e.classList.toggle('selected',state.layout.v1_scope.visitors[i]===visitor));
@@ -417,6 +419,7 @@ let resolveLayout;const layoutReady=new Promise(resolve=>resolveLayout=resolve);
 async function init(){
   state.period=periodNow();document.body.dataset.period=state.period;$('#eyebrow').textContent=t(state.period);$('#subtitle').textContent=t('tagline');updateSoundUI();
   await initTelegram(()=>{if($('#more-menu').open)$('#more-menu').close();else if($('#modal').open)closeModal();else navigate(state.view==='choose'?'entry':'home');},openMore);
+  enableImageDebug(inTelegram());
   try{const response=await fetch(assetURL('processed-v1/layout-v1.json'),{credentials:'omit'});if(!response.ok)throw new Error('layout');state.layout=await response.json();const saved=read('ct-visitor',null);state.visitor=state.layout.v1_scope.visitors.includes(saved)?saved:state.layout.v1_scope.visitors[Math.floor(Math.random()*6)];state.period=periodNow();resolveLayout();if(!transitionId)await navigate('entry');}
   catch{$('#loading').hidden=true;$('#notice').textContent=t('loadError');$('#controls').innerHTML=button('retry','reload');$('#controls').onclick=e=>{if(e.target.dataset.action==='reload')location.reload();};$('#app').setAttribute('aria-busy','false');}
 }
