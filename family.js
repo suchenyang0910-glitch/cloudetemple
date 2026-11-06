@@ -4,6 +4,7 @@ const $ = (s) => document.querySelector(s),
   screen = $("#screen"),
   status = $("#status"),
   demo = new URLSearchParams(location.search).has("demo");
+const inviteKey = "ct-family-invite";
 const periods = {
     dawn: t("period_dawn"),
     day: t("period_day"),
@@ -94,10 +95,44 @@ function embedded() {
     navigator.userAgent,
   );
 }
+function rememberInvite(raw) {
+  if (!/^[A-Za-z0-9_-]{1,200}$/.test(String(raw || ""))) return "";
+  try {
+    sessionStorage.setItem(inviteKey, raw);
+  } catch {}
+  return raw;
+}
+function pendingInvite() {
+  try {
+    return sessionStorage.getItem(inviteKey) || "";
+  } catch {
+    return "";
+  }
+}
+function clearInvite() {
+  try {
+    sessionStorage.removeItem(inviteKey);
+  } catch {}
+}
+function captureInvite() {
+  const match = location.hash.match(/^#invite=([^&]+)$/);
+  if (match) {
+    let raw = "";
+    try {
+      raw = decodeURIComponent(match[1]);
+    } catch {}
+    rememberInvite(raw);
+    history.replaceState(history.state, "", location.pathname + location.search);
+  }
+  return pendingInvite();
+}
 function login() {
-  screen.innerHTML = `<section class="login"><h2>${t("login_title")}</h2><p>${t("login_privacy")} ${t("native_pending")}</p><form id="email-login"><input name="email" type="email" autocomplete="email" maxlength="254" placeholder="${t("email_placeholder")}" required><button class="primary">${t("send_code")}</button></form><form id="code-form" hidden><input name="code" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="${t("code_placeholder")}" required><button class="primary">${t("sign_in")}</button></form>${embedded() ? `<p class="muted">${t("open_browser_google")}</p>` : `<a class="google" href="/api/auth/google/start">${t("google_sign_in")}</a>`}<a href="/?telegram=1" class="muted">${t("open_telegram")}</a></section>`;
+  const invite = pendingInvite();
+  screen.innerHTML = `<section class="login"><h2>${t("login_title")}</h2>${invite ? `<p>${t("invite_after_login")}</p>` : ""}<p>${t("login_privacy")} ${t("native_pending")}</p><form id="email-login"><input name="email" type="email" autocomplete="email" maxlength="254" placeholder="${t("email_placeholder")}" required><button class="primary">${t("send_code")}</button></form><form id="code-form" hidden><input name="code" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="${t("code_placeholder")}" required><button class="primary">${t("sign_in")}</button></form>${embedded() ? `<p class="muted">${t("open_browser_google")}</p>` : `<a class="google" href="/api/auth/google/start">${t("google_sign_in")}</a>`}<a href="/?telegram=1" class="muted">${t("open_telegram")}</a></section>`;
   const first = $("#email-login"),
     codes = $("#code-form");
+  const google = $(".google");
+  if (google) google.onclick = () => rememberInvite(invite);
   first.onsubmit = async (e) => {
     e.preventDefault();
     try {
@@ -125,7 +160,9 @@ function login() {
         }),
       });
       csrf = d.csrf;
-      await list();
+      const savedInvite = pendingInvite();
+      if (savedInvite) await inviteLanding(savedInvite, true);
+      else await list();
     } catch {
       note(t("code_invalid"));
     }
@@ -303,7 +340,7 @@ async function invite(id) {
     note(t("link_copied"));
   }
 }
-async function inviteLanding(raw) {
+async function inviteLanding(raw, authenticated = false) {
   let info = {
     invite: {
       inviter: "Nguyễn An",
@@ -316,17 +353,27 @@ async function inviteLanding(raw) {
       method: "POST",
       body: JSON.stringify({ token: raw }),
     });
-  screen.innerHTML = `<section class="invite"><h2>${t("invite_heading", { inviter: esc(info.invite.inviter || t("relatives")) })}</h2><p>${t("invite_body", { honorific: esc(info.invite.honorific), name: esc(info.invite.fullName) })}</p><button class="primary" id="accept">${t("accept_invite")}</button><button id="login">${t("login_first")}</button></section>`;
-  $("#accept").onclick = async () => {
-    if (!demo)
-      await api("/invites/accept", {
-        method: "POST",
-        body: JSON.stringify({ token: raw }),
-      });
-    familyEvent("invite_accept");
-    await list();
+  screen.innerHTML = `<section class="invite"><h2>${t("invite_heading", { inviter: esc(info.invite.inviter || t("relatives")) })}</h2><p>${t("invite_body", { honorific: esc(info.invite.honorific), name: esc(info.invite.fullName) })}</p>${authenticated || demo ? `<button class="primary" id="accept">${t("accept_invite")}</button>` : `<p class="muted">${t("login_to_accept")}</p><button class="primary" id="login">${t("login_first")}</button>`}</section>`;
+  const accept = $("#accept"), loginButton = $("#login");
+  if (accept) accept.onclick = async () => {
+    try {
+      if (!demo)
+        await api("/invites/accept", {
+          method: "POST",
+          body: JSON.stringify({ token: raw }),
+        });
+      familyEvent("invite_accept");
+      clearInvite();
+      await list();
+    } catch (error) {
+      if (error.message === "unauthorized") {
+        csrf = "";
+        await inviteLanding(raw, false);
+        note(t("invite_session_expired"));
+      } else note(t("invite_accept_failed"));
+    }
   };
-  $("#login").onclick = login;
+  if (loginButton) loginButton.onclick = login;
 }
 async function account() {
   screen.innerHTML = `<section class="account"><h2>${t("account_title")}</h2><p>${t("account_privacy")}</p><label><input id="email-remind" type="checkbox"> ${t("remind_email")}</label><label><input id="tg-remind" type="checkbox"> ${t("remind_telegram")}</label><label><input id="festival" type="checkbox" checked> ${t("remind_festival")}</label><button id="save-reminders">${t("save_reminders")}</button><button id="calendar">${t("subscribe_calendar")}</button><button id="revoke-calendar">${t("revoke_calendar")}</button><button id="export">${t("export_data")}</button><button id="delete">${t("delete_data")}</button><button id="account-back">${t("back")}</button><p class="muted">${t("native_pending")}</p></section>`;
@@ -391,16 +438,16 @@ $("#account").onclick = account;
 async function init() {
   try {
     const authError = new URLSearchParams(location.search).get("auth");
-    const invite = location.hash.match(/^#invite=(.+)$/)?.[1];
+    const invite = captureInvite();
     if (demo) {
       csrf = "demo";
       tablets = demoTablets;
-      if (invite) return inviteLanding(invite);
+      if (invite) return inviteLanding(invite, true);
       return list();
     }
     const s = await api("/session");
     csrf = s.csrf || "";
-    if (invite) return inviteLanding(invite);
+    if (invite) return inviteLanding(invite, !!s.authenticated);
     if (!s.authenticated) {
       login();
       if (authError)

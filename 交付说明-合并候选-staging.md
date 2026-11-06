@@ -21,6 +21,7 @@
 - 服务端测试：26/26 通过，覆盖 waitlist、CORS、Telegram 禁用模式、家族登录/会话/成员权限/邀请、农历校验、提醒原子领取与重试。
 - A 自包含浏览器回归通过：375×548、393×659；活动深链、分享卡、Zalo/Messenger 复制前置、Telegram 长按保存、静态指南、第二圈念珠回转均通过。
 - B UI 浏览器回归通过：375×548、393×659；四时段供桌、供奉、建立牌位、账户、邀请页共 16 张截图，无页面脚本错误、无滚动或按钮越界。
+- 邀请登录续接回归通过：未登录邀请不会调用受保护的接受接口；邮箱 OTP 登录后恢复邀请并由用户显式接受，接受后成员牌位可见；Google 跳转/回跳保留邀请；401 会回到登录引导并显示自然错误。
 - `tests/beads-motion.mjs` 通过：慢拖、限速追赶、松手阈值、反向不计数、边缘手势、点击和 1.4/1.6 颗吸附规则。
 - staging 发布包断言通过：family/outbox 和 family-i18n 存在且哈希化，analytics 带 debug 标记，念珠规则为 turn-back。
 - production 发布包断言通过：无 family/outbox、无 audio-debug/debug_mode，family 入口关闭，念珠规则为 pass-through。
@@ -31,6 +32,7 @@
 
 - A 主站 GA 只接受固定 activity、分享渠道、时长/次数区间等枚举；来源和活动深链均经过白名单，查询参数在读取后移除。
 - B 家族 GA 只接受 `memorial_create`、`memorial_offer`、`invite_create`、`invite_accept`、`reminder_channel_set`，供奉和提醒渠道必须在固定枚举内；没有发送姓名、邮箱、日期、牌位文字、邀请 token 或 Telegram ID 的调用路径。
+- 邀请 token 从 URL hash 读取后立即移除，只暂存在当前标签页的 `sessionStorage`；不写入 query、GA、日志或 `localStorage`，成功接受后删除。
 - production 打包不复制 family HTML/CSS/JS/i18n/analytics、family 素材或 dev outbox；staging 才复制并哈希这些文件。
 - staging 和 production 的开关由打包时替换，不依赖浏览器或运行时查询参数。
 - 隐私页同时披露首版匿名统计字段、家族 pilot 数据、技术日志和撤回方式。

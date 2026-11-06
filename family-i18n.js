@@ -67,6 +67,10 @@ export const FAMILY_COPY = Object.freeze({
   invite_body: "Cùng tưởng nhớ {honorific} {name}.",
   accept_invite: "Nhận lời mời",
   login_first: "Đăng nhập trước",
+  invite_after_login: "Sau khi đăng nhập, bạn sẽ quay lại lời mời này để xác nhận.",
+  login_to_accept: "Đăng nhập để xem và nhận lời mời bằng tài khoản của bạn.",
+  invite_session_expired: "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại để nhận lời mời.",
+  invite_accept_failed: "Chưa thể nhận lời mời. Vui lòng thử lại.",
   account_title: "Tài khoản và quyền riêng tư",
   account_privacy:
     "Dữ liệu chỉ dành cho gia đình được mời. Xóa tài khoản sẽ xóa ngay dữ liệu đang hoạt động; bản sao lưu được loại bỏ trong vòng 30 ngày.",
