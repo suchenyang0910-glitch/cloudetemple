@@ -18,6 +18,7 @@ CREATE INDEX IF NOT EXISTS admin_audit_at ON admin_audit(at);`);
   const one = (sql, ...args) => db.prepare(sql).get(...args), all = (sql, ...args) => db.prepare(sql).all(...args), run = (sql, ...args) => db.prepare(sql).run(...args);
   const day = (time = Date.now()) => new Date(time).toISOString().slice(0, 10);
   const table = (name) => !!one("SELECT 1 ok FROM sqlite_master WHERE type='table' AND name=?", name);
+  // shortcut: active sessions are process-local; use a shared registry before running multiple API workers.
   const active = new Map();
   const expirePresence = (at) => { for (const [id, seen] of active) if (seen < at - PRESENCE_TTL) active.delete(id); };
 
