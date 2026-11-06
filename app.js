@@ -375,6 +375,7 @@ function showShareModal(){openModal('shareTitle',`<img class="share-preview" src
 function download(){
  if(!shareBlob)return;
  if(inTelegram()){
+  if(!$('#modal').open)showShareModal();
   $('#share-status').textContent=t('longPressSave');return;
  }
  event('share_channel',{channel:'download'});const url=URL.createObjectURL(shareBlob),a=document.createElement('a');a.href=url;a.download='chua-may.png';a.click();setTimeout(()=>URL.revokeObjectURL(url),30000);

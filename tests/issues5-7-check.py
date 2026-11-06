@@ -2,6 +2,7 @@ from functools import partial
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from threading import Thread
+from tempfile import TemporaryDirectory
 from urllib.request import urlopen
 import subprocess
 import time
@@ -9,8 +10,8 @@ import time
 from playwright.sync_api import sync_playwright
 
 root=Path(__file__).resolve().parents[1]
-out=root/'screenshots'/'issues5-7'
-out.mkdir(parents=True,exist_ok=True)
+shots=TemporaryDirectory(prefix='chuamay-issues5-7-')
+out=Path(shots.name)
 subprocess.run(['pwsh','-NoProfile','-File',str(root/'tools'/'package.ps1'),'-Environment','staging'],cwd=root,check=True)
 
 class QuietHandler(SimpleHTTPRequestHandler):
@@ -93,9 +94,10 @@ try:
   page.evaluate("for(let i=0;i<108;i++)document.querySelector('#wood-prop').click()")
   page.wait_for_function("!!document.querySelector('[data-action=download]')")
   page.locator('[data-action=download]').click();page.wait_for_function("document.querySelector('#share-status').textContent.includes('Nhấn giữ')")
-  assert page.evaluate("!('telegramDownload' in window)")
+  assert page.locator('#modal').evaluate('e=>e.open') and page.locator('.share-preview').is_visible()
+  assert page.locator('.share-preview').get_attribute('src').startswith('blob:') and page.evaluate("!('telegramDownload' in window)")
   page.close();browser.close()
 finally:
- server.shutdown();server.server_close();thread.join(timeout=2)
+ server.shutdown();server.server_close();thread.join(timeout=2);shots.cleanup()
 
 print({'passed':True,'sizes':['375x548','393x659'],'staticPages':6})
