@@ -30,13 +30,12 @@ with sync_playwright() as pw:
  p.screenshot(path=str(out/'right-27.png'));checks.append('slow / fast / reverse / horizontal / edge / tap / 27 passed')
  while count(p)<107:p.locator('#bead-control').press('Enter');p.wait_for_timeout(100)
  p.screenshot(path=str(out/'right-107.png'));p.locator('#bead-control').press('Enter');p.wait_for_timeout(220)
- assert count(p)==108 and not p.locator('[data-action=bead-again]').count();p.screenshot(path=str(out/'right-108-guru.png'))
- p.locator('#bead-control').press('Enter');p.wait_for_timeout(250);assert p.locator('[data-action=bead-again]').is_visible();p.screenshot(path=str(out/'completed.png'))
- cues=p.evaluate('cues');assert len([x for x in cues if x[0]=='bead-v1'])==109;assert len([x for x in cues if x[0]=='keisu' and x[1]==.25])==3;assert len([x for x in cues if x[0]=='bell'])==1;checks.append('109 bead cues, 3 spacer cues, 1 completion bell; playback-call test only')
- click(p,'bead-again');assert count(p)==0 and 'Vòng 2' in p.locator('#heading').inner_text();click(p,'bead-hand');p.screenshot(path=str(out/'left-round2.png'))
+ assert p.locator('[data-action=bead-again]').is_visible();p.screenshot(path=str(out/'completed.png'))
+ cues=p.evaluate('cues');assert len([x for x in cues if x[0]=='bead-v1'])==108;assert len([x for x in cues if x[0]=='keisu' and x[1]==.25])==3;assert len([x for x in cues if x[0]=='bell'])==1;checks.append('108 bead cues, 3 spacer cues, 1 completion bell; playback-call test only')
+ click(p,'bead-again');assert count(p)==0 and 'Vòng 2' in p.locator('#heading').inner_text() and p.locator('.strand-bead.guru').count()==1;click(p,'bead-hand');p.screenshot(path=str(out/'left-round2.png'))
  assert p.evaluate("localStorage.getItem('ct-bead-hand')")=='"left"'
  p.evaluate('sampling=false');times=p.evaluate('ft');checks.append({'desktop393FrameMs':{'median':statistics.median(times),'p95':sorted(times)[int(len(times)*.95)]},'note':'desktop Chromium, not physical iPhone FPS'})
- video=p.video;c.close();video.save_as(str(out/'gestures-393.webm'));checks.append('108 then guru completes; next round starts at zero; left hand persists')
+ video=p.video;c.close();video.save_as(str(out/'gestures-393.webm'));checks.append('guru arrives at 108 and completes; next round starts reversed at zero; left hand persists')
  for engine in [b,pw.webkit.launch()]:
   for w,h in [(375,548),(393,659),(375,667),(390,844),(393,852),(430,932)]:
    c,p=setup(engine,w,h)

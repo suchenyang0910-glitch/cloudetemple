@@ -26,7 +26,7 @@ export function beadArc(width,height,offset,left=false){
  return {x:left?width-x:x,y,angle:(left?-1:1)*-angle*180/Math.PI};
 }
 
-export function mountBeads(el,{step,count=0,reduced=false,left=false}){
+export function mountBeads(el,{step,count=0,reduced=false,left=false,direction=1}){
  const guide=el.querySelector('.bead-guide'),chevrons=el.querySelector('.bead-chevrons');
  let guideTimer=0,demoTimer=0;
  const remember=()=>{try{localStorage.setItem('ct-bead-guide','true');}catch{}};
@@ -42,9 +42,10 @@ export function mountBeads(el,{step,count=0,reduced=false,left=false}){
  const draw=position=>{
   const base=Math.floor(position/model.pitch),fraction=position/model.pitch-base;
   nodes.forEach((node,i)=>{
-   const offset=(i-7+fraction)*model.pitch,number=base+8-i;
+   const offset=direction*(i-7+fraction)*model.pitch,number=base+8-i;
    const {x,y,angle}=beadArc(width,height,offset,left),near=Math.max(0,1-Math.abs(offset)/model.pitch);
-   node.className='strand-bead'+(number===109?' guru':[27,54,81].includes(number)?' spacer':'');
+   const physical=direction===1?number:110-number;
+   node.className='strand-bead'+(physical===109?' guru':[27,54,81].includes(number)?' spacer':'');
    node.dataset.number=number;
    node.style.transform=`translate(${x}px,${y}px) translate(-50%,-50%) rotate(${angle}deg) scale(${1+near*.07})`;
    const half=(model.pitch-6)*.76;

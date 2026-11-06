@@ -43,10 +43,10 @@ with sync_playwright() as pw:
  for n in range(26):p.locator('#bead-control').press('Enter');p.wait_for_timeout(100)
  assert p.locator('.strand-bead.spacer[data-number="27"]').count()==1
  p.screenshot(path=str(out/'spacer.png'))
- for n in range(82):p.locator('#bead-control').press('Enter');p.wait_for_timeout(100)
+ for n in range(81):p.locator('#bead-control').press('Enter');p.wait_for_timeout(100)
  p.wait_for_timeout(200);assert p.locator('.strand-bead.guru[data-number="109"]').count()==1;p.screenshot(path=str(out/'guru.png'))
  p.locator('#bead-control').press('Enter');p.wait_for_timeout(400);assert p.locator('[data-action=bead-again]').is_visible()
- click('bead-again');assert 'Vòng 2' in p.locator('#heading').inner_text()
+ click('bead-again');assert 'Vòng 2' in p.locator('#heading').inner_text() and p.locator('.strand-bead.guru').count()==1
  p.locator('[data-action=more]').click();p.locator('#language').select_option('en');p.locator('#close-more').click()
  assert p.locator('[data-action=bead-hand]').inner_text()=='Switch hand';assert 'Currently using right hand' in p.locator('[data-action=bead-hand]').get_attribute('aria-label')
  assert not p.evaluate('document.documentElement.scrollWidth>innerWidth||document.documentElement.scrollHeight>innerHeight')

@@ -11,7 +11,8 @@ if (Test-Path -LiteralPath $outputRoot) {
   Move-Item -LiteralPath $resolvedOutput -Destination (Join-Path $archiveRoot 'dist')
 }
 New-Item -ItemType Directory -Path $outputRoot -Force | Out-Null
-foreach ($name in @('index.html','styles.css','app.js','i18n.js','telegram.js','audio.js','resources.js','beads.js','bow.js','gioi-thieu.html','quyen-rieng-tu.html','dieu-khoan.html','_headers','_routes.json')) { Copy-Item -LiteralPath (Join-Path $projectRoot $name) -Destination (Join-Path $outputRoot $name) -Force }
+foreach ($name in @('index.html','styles.css','app.js','config.js','i18n.js','telegram.js','audio.js','resources.js','beads.js','bow.js','gioi-thieu.html','quyen-rieng-tu.html','dieu-khoan.html','_headers','_routes.json')) { Copy-Item -LiteralPath (Join-Path $projectRoot $name) -Destination (Join-Path $outputRoot $name) -Force }
+Copy-Item -Path (Join-Path $projectRoot 'static/*') -Destination $outputRoot -Recurse -Force
 $imageOutput = Join-Path $outputRoot 'assets/processed-v1/img'
 New-Item -ItemType Directory -Path $imageOutput -Force | Out-Null
 Copy-Item -LiteralPath (Join-Path $projectRoot 'assets/processed-v1/layout-v1.json') -Destination (Join-Path $outputRoot 'assets/processed-v1/layout-v1.json') -Force
@@ -27,9 +28,10 @@ foreach ($sound in @('bell-v2','keisu-v2','mo','bead-v1','ambient-courtyard','am
   foreach ($ext in @('mp3','m4a')) { Copy-Item -LiteralPath (Join-Path $projectRoot "assets/audio/$sound.$ext") -Destination $audioOutput }
 }
 foreach ($name in @('LICENSES.md','measurements.json','measurements-v2.json')) { Copy-Item -LiteralPath (Join-Path $projectRoot "assets/audio/$name") -Destination $audioOutput }
-foreach ($name in @('mo.webp','mo-mallet.webp','bead-wood-v2.webp','bead-spacer-v2.webp','bead-guru-v2.webp')) { Copy-Item -LiteralPath (Join-Path $projectRoot "assets/processed-v1/img/$name") -Destination $imageOutput -Force }
+foreach ($name in @('mo.webp','mo-mallet.webp','bead-wood-v2.webp','bead-spacer-v2.webp','bead-guru-v2.webp','share-qr.png')) { Copy-Item -LiteralPath (Join-Path $projectRoot "assets/processed-v1/img/$name") -Destination $imageOutput -Force }
 Copy-Item -LiteralPath (Join-Path $projectRoot 'assets/processed-v1/mobile') -Destination (Join-Path $outputRoot 'assets/processed-v1') -Recurse -Force
 Copy-Item -LiteralPath (Join-Path $projectRoot 'assets/fonts') -Destination (Join-Path $outputRoot 'assets') -Recurse
+Copy-Item -LiteralPath (Join-Path $projectRoot 'assets/share') -Destination (Join-Path $outputRoot 'assets') -Recurse
 $debugOutput=Join-Path $outputRoot 'audio-debug.js'
 Copy-Item -LiteralPath (Join-Path $projectRoot 'analytics.js') -Destination $outputRoot
 $index=Join-Path $outputRoot 'index.html'
@@ -47,6 +49,9 @@ if($Environment -eq 'staging'){
   if($source.Contains('debug_mode')){throw 'Production analytics still contains debug_mode'}
   [IO.File]::WriteAllText($analytics,$source,[Text.UTF8Encoding]::new($false))
 }
+$config=Join-Path $outputRoot 'config.js'
+$configSource=[IO.File]::ReadAllText($config).Replace('__CT_BEAD_GURU_RULE__',$(if($Environment -eq 'staging'){'turn-back'}else{'pass-through'}))
+[IO.File]::WriteAllText($config,$configSource,[Text.UTF8Encoding]::new($false))
 & node (Join-Path $PSScriptRoot 'version-assets.mjs')
 if($LASTEXITCODE){throw 'Versioning failed'}
 & node (Join-Path $projectRoot 'tests/package-check.mjs') "--$Environment"

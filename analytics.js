@@ -5,10 +5,10 @@ const views='entry choose home incense bow sit mo beads leave memorial'.split(' 
 const activities='incense bow sit mo beads'.split(' ');
 const fields={
  activity_start:{activity:activities},activity_complete:{activity:activities,duration_bucket:['<1m','1-3m','3-10m','>10m'],count_bucket:['1','2-26','27-53','54-107','108+']},
- share_open:{activity:activities},share_channel:{channel:['download','system','telegram_forward']},sound_toggle:{state:['on','off']},hand_switch:{hand:['left','right']},
+ share_open:{activity:activities},share_channel:{channel:['download','system','copy','zalo','facebook','messenger','telegram_forward','telegram_story']},sound_toggle:{state:['on','off']},hand_switch:{hand:['left','right']},
  waitlist_submit:{result:['invalid','rate_limit','success','error']},image_load_failed:{asset_group:['scene','visitor','prop'],path_kind:['fetch-blob','native-img','failed']}
 };
-export function setupAnalytics(platform){
+export function setupAnalytics(platform,attribution={}){
  let choice='',frame,send,current=document.body.dataset.view||'entry';
  try{choice=localStorage.getItem(key)}catch{}
  const banner=document.querySelector('#ga-choice'),prefs=document.createElement('button');
@@ -29,11 +29,11 @@ export function setupAnalytics(platform){
  function view(v){if(!views.includes(v))return;current=v;if(send){send('set',{page_title:v});send('event','page_view',{page_title:v,...debug})}}
  function start(){
   if(send)return;
-  const params=new URLSearchParams(location.search);history.replaceState(history.state,'',locationSafe);window['ga-disable-'+id]=false;
+  window['ga-disable-'+id]=false;
   const w=window;w.dataLayer??=[];send=function(){w.dataLayer.push(arguments)};w.gtag=send;
   send('consent','default',{analytics_storage:'denied',ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied'});
   send('consent','update',{analytics_storage:'granted'});
-  const source=[params.get('s'),params.get('startapp')].find(s=>['telegram','zalo','facebook','messenger','share'].includes(s));
+  const raw=attribution.startParam||attribution.source||'',source=raw.startsWith('s_tg_')?'telegram':['zalo','facebook','messenger','system','copy','recommend'].includes(raw)?raw:'';
   send('set',{page_location:locationSafe,page_referrer:locationSafe,page_title:current});
   send('js',new Date());send('config',id,{...debug,send_page_view:false,page_location:locationSafe,page_referrer:locationSafe,allow_google_signals:false,allow_ad_personalization_signals:false,cookie_domain:location.hostname,user_properties:{platform:platform()?'telegram':'web'},...(source?{campaign_source:source,campaign_medium:'referral'}:{})});
   const script=w.document.createElement('script');script.async=true;script.referrerPolicy='no-referrer';script.src='https://www.googletagmanager.com/gtag/js?id='+id;if(!frame){frame=script;w.document.head.append(script)}view(current);

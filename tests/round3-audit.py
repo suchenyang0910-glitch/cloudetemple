@@ -24,11 +24,11 @@ with sync_playwright() as pw:
    click('sit');shot('sit-choice');p.locator('[data-minutes="1"]').click();click('sit-start');shot('sit-running');click('pause');shot('sit-paused');click('pause');p.clock.fast_forward(61000);shot('sit-done');click('home')
    click('mo');shot('mo-ready');click('wood');shot('mo-tapping');click('wood-auto');p.clock.run_for(2000);shot('mo-auto');click('wood-auto');p.evaluate("for(let i=0;i<108;i++)document.querySelector('#wood-prop').click()");shot('mo-108');click('home')
    click('beads');shot('beads-0');click('bead');p.clock.run_for(300);shot('beads-1')
-   for target in ([27,107,108] if phase=='before' else [27,107,108,109]):
+   for target in ([27,107,108] if phase=='before' else [27,107,108]):
     current=int(p.locator('#bead-count' if p.locator('#bead-count').count() else '#bead-control').inner_text().split('/')[0].strip()) if p.locator('#bead-control').count() else target
     for i in range(current,target):
      p.locator('[data-action=bead]').evaluate('(e)=>e.click()');p.clock.run_for(200 if phase=='after' else 1)
-    shot('beads-'+str(target) if target<(108 if phase=='before' else 109) else 'completed')
+    shot('beads-'+str(target) if target<108 else 'completed')
    click('share');p.locator('.share-preview').wait_for();p.locator('.share-preview').evaluate('(e)=>e.decode()');shot('share');p.locator('#close-modal').click();click('home');click('more');shot('more');p.locator('#memorial').click();shot('registration');p.locator('#waitlist-form button').click();shot('registration-invalid');p.locator('#close-modal').click();click('leave');shot('leave')
    for slug,name in [('gioi-thieu','about'),('quyen-rieng-tu','privacy'),('dieu-khoan','terms')]:
     p.goto(base+'/'+slug+'.html');shot(name,False)

@@ -2,11 +2,18 @@ import fs from 'node:fs/promises';
 import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
 const root=new URL('../dist/',import.meta.url),{release}=JSON.parse(await fs.readFile(new URL('release.json',root)));
+const home=await fs.readFile(new URL('index.html',root),'utf8');assert(home.includes('property="og:image"')&&home.includes('class="home-content"')&&home.includes('application/ld+json'),'home metadata and prerendered copy');
 const files=await fs.readdir(root),pattern=new RegExp(`\\.${release}\\.(js|css)$`),versioned=files.filter(n=>pattern.test(n));
 assert(files.filter(n=>/\.(js|css)$/.test(n)).every(n=>pattern.test(n)),'only current hashed JS/CSS');
-assert.deepEqual(await fs.readdir(new URL('assets/',root)),['releases']);
+assert.deepEqual(await fs.readdir(new URL('assets/',root)),['releases','share']);
 assert.deepEqual(await fs.readdir(new URL('assets/releases/',root)),[release]);
 for(const kind of ['wood','spacer','guru'])await fs.access(new URL(`assets/releases/${release}/processed-v1/img/bead-${kind}-v2.webp`,root));
+await fs.access(new URL(`assets/releases/${release}/processed-v1/img/share-qr.png`,root));
+for(const name of ['og-share-vi.webp','og-share-en.webp']){const file=new URL(`assets/share/${name}`,root);assert((await fs.stat(file)).size<=200000,name+' max 200KB')}
+for(const route of ['huong-dan/thap-huong','huong-dan/le-phat','huong-dan/lan-chuoi','huong-dan/go-mo','huong-dan/ngoi-yen','cau-hoi-thuong-gap'])for(const prefix of ['','en/']){const html=await fs.readFile(new URL(prefix+route+'/index.html',root),'utf8');assert(html.includes('name="robots" content="noindex,follow"'),prefix+route+' noindex');assert(!html.includes('待核'),prefix+route+' hides review markers');assert(html.includes('application/ld+json'),prefix+route+' structured data')}
+for(const name of ['sitemap.xml','robots.txt','llms.txt'])await fs.access(new URL(name,root));
+const sitemap=await fs.readFile(new URL('sitemap.xml',root),'utf8');assert(sitemap.includes('xmlns:xhtml=')&&sitemap.includes('hreflang="en"'),'sitemap hreflang');
+const robots=await fs.readFile(new URL('robots.txt',root),'utf8');for(const bot of ['GPTBot','ClaudeBot','PerplexityBot','Google-Extended'])assert(robots.includes('User-agent: '+bot),bot+' allowed');
 for(const name of files.filter(n=>n.endsWith('.html'))){const text=await fs.readFile(new URL(name,root),'utf8');for(const match of text.matchAll(/(?:src|href)=["']([^"']+\.(?:js|css))["']/g)){if(match[1].startsWith('http'))continue;assert(pattern.test(match[1]),name+': '+match[1]);await fs.access(new URL(match[1].replace(/^\//,''),root));}}
 for(const name of versioned.filter(n=>n.endsWith('.js'))){const text=await fs.readFile(new URL(name,root),'utf8');for(const match of text.matchAll(/(?:from\s+|import\s*)['"]\.\/([^'"]+\.js)['"]/g)){assert(pattern.test(match[1]),name+': '+match[1]);await fs.access(new URL(match[1].replace(/^\//,''),root));}}
 const css=await fs.readFile(new URL(`styles.${release}.css`,root),'utf8');
@@ -22,11 +29,13 @@ if(process.argv.includes('--production')){
  const analytics=versioned.find(n=>n.startsWith('analytics.'));
  assert(analytics,'production analytics module');
  assert((await fs.readFile(new URL(analytics,root),'utf8')).includes('const debug={}'),'production analytics has no debug fields');
+ assert((await fs.readFile(new URL(`config.${release}.js`,root),'utf8')).includes("'pass-through'"),'production guru rule');
 }
 if(process.argv.includes('--staging')){
  const analytics=versioned.find(n=>n.startsWith('analytics.'));
  assert(analytics,'staging analytics module');
  assert((await fs.readFile(new URL(analytics,root),'utf8')).includes('debug_mode:true'),'staging debug_mode');
+ assert((await fs.readFile(new URL(`config.${release}.js`,root),'utf8')).includes("'turn-back'"),'staging guru rule');
 }
 assert((await fs.readFile(new URL('index.html',root),'utf8')).includes('id="ga-choice"'),'analytics consent rendered');
 const manifest=JSON.parse(await fs.readFile(new URL(`../deploy/package-${release}.json`,root)));

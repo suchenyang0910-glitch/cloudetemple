@@ -137,7 +137,7 @@ body[data-view=choose] .controls .primary{width:100%}
 .incense-stick{height:64px;width:5px;background:#b4a591;margin:0 auto;position:relative;border-radius:3px;overflow:visible}
 .incense-stick>span{display:block;position:absolute;inset:0;background:#79523a;transform-origin:bottom;border-radius:2px}
 .incense-stick>span::before{content:'';position:absolute;top:0;left:0;width:5px;height:4px;background:#e7a26a;border-radius:50%}
-.share-preview{max-height:calc(90dvh - 235px);width:100%;object-fit:contain;margin-bottom:8px}
+.share-preview{max-height:calc(90dvh - 235px);width:100%;object-fit:contain;margin-bottom:8px}.share-channels{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.home-content{max-width:760px;margin:24px auto;padding:24px;line-height:1.8;background:var(--paper)}.home-content h2,.home-content h3,.home-content p,.home-content li{margin:10px 0}
 .modal-inner{padding:16px}.modal-inner h2{margin-bottom:12px}.close{margin-bottom:8px}
 .beads-area{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:hidden;--bead-size:56px;--bead-touch-top:100px;z-index:2;clip-path:inset(100px 0 0)}
 .bead-control{position:absolute;inset:0;width:100%;height:100%;padding:0!important;border:0!important;border-radius:0;background:transparent!important;color:var(--ink)!important;touch-action:none;clip-path:inset(var(--bead-touch-top) 0 0 50%);pointer-events:auto;overflow:hidden}

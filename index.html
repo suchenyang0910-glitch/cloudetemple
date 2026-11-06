@@ -5,15 +5,23 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#eee8dc">
   <meta name="description" content="Chùa Mây — Một khoảng lặng cho hôm nay.">
+  <link rel="canonical" href="https://h5.chuamay.org/">
+  <link rel="alternate" hreflang="vi" href="https://h5.chuamay.org/">
+  <link rel="alternate" hreflang="en" href="https://h5.chuamay.org/en/">
+  <link rel="alternate" hreflang="x-default" href="https://h5.chuamay.org/">
+  <meta property="og:title" content="Chùa Mây · Một khoảng lặng cho hôm nay"><meta property="og:description" content="Thắp hương, lễ Phật, ngồi yên, gõ mõ và lần chuỗi trong một ngôi chùa vẽ tay."><meta property="og:image" content="https://h5.chuamay.org/assets/share/og-share-vi.webp"><meta property="og:url" content="https://h5.chuamay.org/"><meta property="og:locale" content="vi_VN"><meta property="og:site_name" content="Chùa Mây"><meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="Chùa Mây · Một khoảng lặng cho hôm nay"><meta name="twitter:description" content="Một khoảng lặng trên điện thoại, không cần tài khoản."><meta name="twitter:image" content="https://h5.chuamay.org/assets/share/og-share-vi.webp">
   <title>Chùa Mây · Cloud Temple</title>
   <link rel="icon" href="data:,">
   <link rel="preload" href="assets/fonts/be-vietnam-pro-v12-400-vietnamese.woff2" as="font" type="font/woff2" crossorigin>
   <style>
+    .js-ready .home-content{display:none}
     #boot{position:fixed;inset:0;z-index:99;display:grid;place-items:center;background:#eee8dc;color:#453a2f;transition:opacity .28s;pointer-events:none}#boot.ready{opacity:0}#boot div{text-align:center}#boot strong{display:block;font:500 25px/1.4 Georgia,serif;letter-spacing:.03em}#boot p{margin:14px 0 0;font:14px/1.5 system-ui,sans-serif}#boot svg{width:84px;height:76px;overflow:visible}#boot path{fill:none;stroke:#766352;stroke-width:2;stroke-linecap:round;animation:boot-smoke 2.4s ease-in-out infinite}@keyframes boot-smoke{0%,100%{opacity:.28;transform:translateY(5px)}50%{opacity:.75;transform:translateY(-5px)}}@media(prefers-reduced-motion:reduce){#boot path{animation:none}#boot{transition:none}}
   </style>
   <script>
     (()=>{const d=new Date(),m=d.getHours()*60+d.getMinutes(),p=m>=300&&m<480?'dawn':m>=480&&m<1020?'day':m>=1020&&m<1140?'dusk':'night',r='__CT_RELEASE__',w=innerWidth<=720?Math.min(720,Math.ceil(innerWidth*(devicePixelRatio||1))):941,l=document.createElement('link');l.rel='preload';l.as='image';l.fetchPriority='high';l.crossOrigin='anonymous';l.href=`assets/${r.startsWith('__')?'':`releases/${r}/`}processed-v1/${w<=720?'mobile':'img'}/scene-vn-hall-front-${p}.webp`;document.head.append(l)})();
   </script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebSite","name":"Chùa Mây","alternateName":"Cloud Temple","url":"https://h5.chuamay.org/","inLanguage":["vi","en"]},{"@type":"WebApplication","name":"Chùa Mây","url":"https://h5.chuamay.org/","applicationCategory":"LifestyleApplication","operatingSystem":"Any","isAccessibleForFree":true,"inLanguage":["vi","en"],"offers":{"@type":"Offer","price":"0","priceCurrency":"VND"}},{"@type":"Organization","name":"Chùa Mây","url":"https://h5.chuamay.org/"}]}</script>
   <link rel="stylesheet" href="styles.css">
   <script type="module" src="app.js"></script>
   <!-- Cloudflare Web Analytics token: REPLACE_WITH_CLOUDFLARE_TOKEN.
@@ -48,7 +56,8 @@
       </div>
     </header>
     <div id="sound-controls" hidden><label for="volume" data-i18n="volume"></label><input id="volume" type="range" min="0" max="100" value="80"></div>
-    <footer><span data-i18n="privacy"></span><button id="memorial" class="text-button" data-i18n="memorial"></button><nav class="legal-links"><a href="/gioi-thieu">Giới thiệu / About</a><a href="/quyen-rieng-tu">Quyền riêng tư / Privacy</a><a href="/dieu-khoan">Điều khoản / Terms</a></nav></footer></div></dialog>
+    <footer><span data-i18n="privacy"></span><button type="button" class="text-button" data-action="recommend" data-i18n="recommend"></button><button id="memorial" class="text-button" data-i18n="memorial"></button><nav class="legal-links"><a href="/gioi-thieu">Giới thiệu / About</a><a href="/quyen-rieng-tu">Quyền riêng tư / Privacy</a><a href="/dieu-khoan">Điều khoản / Terms</a></nav></footer></div></dialog>
+  <section class="home-content" lang="vi"><h2>Chùa Mây · một khoảng lặng trên điện thoại</h2><p>Chùa Mây là một ngôi chùa vẽ tay để bạn dành vài phút thắp hương, lễ Phật, ngồi yên, gõ mõ hoặc lần chuỗi. Không cần tài khoản, không có quảng cáo, bảng xếp hạng hay mạng xã hội.</p><h3>Những khoảng lặng bạn có thể chọn</h3><ul><li>Thắp ba nén hương trong một phút.</li><li>Lễ Phật chậm rãi theo hơi thở.</li><li>Ngồi yên với tiếng núi rừng hoặc mưa.</li><li>Gõ mõ từng nhịp hoặc tự động chậm.</li><li>Lần một vòng chuỗi 108 hạt.</li></ul><p><a href="/cau-hoi-thuong-gap">Câu hỏi thường gặp</a> · <a href="/huong-dan/thap-huong">Hướng dẫn thắp hương</a> · <a href="/huong-dan/le-phat">Hướng dẫn lễ Phật</a> · <a href="/huong-dan/lan-chuoi">Hướng dẫn lần chuỗi</a></p></section>
   <noscript>JavaScript is needed to enter Cloud Temple.</noscript>
 </body>
 </html>

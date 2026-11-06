@@ -1,4 +1,5 @@
 export const apiURL=path=>['h5.chuamay.org','miniapp.chuamay.org'].includes(location.hostname)?'https://api.chuamay.org'+path:'/api'+path;
+export const MINI_APP_URL='https://t.me/ChuaMayBot/chamy';
 let app=null,back=null;
 export async function initTelegram(onBack,onSettings){
   if(location.hostname!=='miniapp.chuamay.org'&&!(location.hostname==='staging.chuamay.org'&&new URLSearchParams(location.search).get('telegram')==='1'))return;
@@ -18,9 +19,18 @@ export async function initTelegram(onBack,onSettings){
 }
 export const inTelegram=()=>!!app;
 export const initData=()=>app?.initData||'';
+export const telegramStartParam=()=>/^[a-z0-9_-]{1,64}$/.test(app?.initDataUnsafe?.start_param||'')?app.initDataUnsafe.start_param:'';
 export function telegramBack(show){if(app)app.BackButton[show?'show':'hide']();}
 export function haptic(kind){if(!app)return false;try{app.HapticFeedback?.impactOccurred(kind);}catch{}return true;}
-export function telegramShare(text){if(!app)return false;app.openTelegramLink('https://t.me/share/url?url='+encodeURIComponent(location.origin)+'&text='+encodeURIComponent(text));return true;}
+export function telegramShare(text,source='s_tg_forward'){
+ if(!app)return false;
+ const url=MINI_APP_URL+'?startapp='+encodeURIComponent(source);
+ app.openTelegramLink('https://t.me/share/url?url='+encodeURIComponent(url)+'&text='+encodeURIComponent(text));return true;
+}
+export function telegramStory(text,source='s_tg_story'){
+ if(!app?.shareToStory)return false;
+ app.shareToStory(location.origin+'/assets/share/og-share-vi.webp',{text,widget_link:{url:MINI_APP_URL+'?startapp='+encodeURIComponent(source),name:'Chùa Mây'}});return true;
+}
 
 export function telegramAppearance(period,running){
   if(!app)return;
