@@ -66,6 +66,16 @@ def background(c):
     c.setFillColor(PAPER)
     c.rect(0, 0, PAGE[0], PAGE[1], fill=1, stroke=0)
 
+def paper_wash(c, width, height, alpha=.68):
+    c.saveState()
+    c.setFillColor(PAPER)
+    c.setFillAlpha(alpha)
+    c.rect(0, 0, width, height, fill=1, stroke=0)
+    for index in range(10):
+        c.setFillAlpha(alpha * ((10 - index) / 10) ** 2)
+        c.rect(width + index * 2.7 * mm, 0, 2.9 * mm, height, fill=1, stroke=0)
+    c.restoreState()
+
 def incense_icon(c, x, y):
     c.saveState()
     c.setStrokeColor(ACCENT)
@@ -84,44 +94,43 @@ def incense_icon(c, x, y):
 def cover(c, model, asset):
     w, h = PAGE
     c.drawImage(ImageReader(asset), 0, 0, width=w, height=h, preserveAspectRatio=False, mask="auto")
-    c.saveState()
-    c.setFillColor(Color(.96, .93, .86, alpha=.86))
-    c.roundRect(11 * mm, 16 * mm, 103 * mm, h - 32 * mm, 3 * mm, fill=1, stroke=0)
-    c.restoreState()
-    center = 62.5 * mm
+    paper_wash(c, 82 * mm, h, .67)
+    center = 49 * mm
     text(c, model["familyName"], center, h * .64, 22, INK, "center", True)
     text(c, "LỊCH NGÀY GIỖ", center, h * .51, 11, ACCENT, "center", True)
     text(c, model["yearName"], center, h * .42, 11, INK, "center")
     text(c, model["year"], center, h * .31, 22, INK, "center", True)
-    text(c, model["note"], center, 21 * mm, 6, MUTED, "center")
+    text(c, model["note"], 8 * mm, 8 * mm, 6, MUTED)
     c.showPage()
 
 def month_page(c, model, month, asset):
     background(c)
     w, h = PAGE
-    side_w = 42 * mm
-    c.drawImage(ImageReader(asset), w - side_w, 0, width=side_w, height=h, preserveAspectRatio=False, mask="auto")
+    image_h = 52 * mm
+    image_y = h - image_h
+    c.drawImage(ImageReader(asset), 0, image_y, width=w, height=image_h, preserveAspectRatio=False, mask="auto")
+    paper_wash(c, 72 * mm, image_h, .61)
     c.saveState()
-    c.setFillColor(Color(.96, .93, .86, alpha=.16))
-    c.rect(w - side_w, 0, side_w, h, fill=1, stroke=0)
+    c.setFillColor(Color(.96, .93, .86, alpha=.69))
+    c.roundRect(w - 62 * mm, h - 17 * mm, 54 * mm, 9.5 * mm, 2 * mm, fill=1, stroke=0)
     c.restoreState()
-    left, right, top, bottom = 8 * mm, side_w + 4 * mm, 30 * mm, 9 * mm
+    left, right, bottom = 8 * mm, 8 * mm, 7 * mm
     month_word = month["name"].removeprefix("Tháng ")
-    text(c, "Tháng", left, h - 10 * mm, 16, INK)
+    text(c, "Tháng", left, h - 12 * mm, 16, INK)
     month_x = left + pdfmetrics.stringWidth("Tháng ", FONT, 16)
-    text(c, month_word, month_x, h - 10 * mm, 16, INK)
+    text(c, month_word, month_x, h - 12 * mm, 16, INK)
     year_x = month_x + pdfmetrics.stringWidth(month_word + " ", FONT, 16)
-    text(c, model["year"], year_x, h - 10 * mm, 16, INK)
-    text(c, model["yearName"], left, h - 17 * mm, 8.5, ACCENT, bold=True)
-    text(c, model["familyName"], w - right, h - 10 * mm, 7.5, MUTED, "right")
-    grid_top = h - top
+    text(c, model["year"], year_x, h - 12 * mm, 16, INK)
+    text(c, model["yearName"], left, h - 19 * mm, 8.5, ACCENT, bold=True)
+    text(c, model["familyName"], w - 35 * mm, h - 12.7 * mm, 7.5, MUTED, "center")
+    grid_top = h - 58 * mm
     grid_h = grid_top - bottom
     rows = len(month["cells"]) // 7
     col_w, row_h = (w - left - right) / 7, grid_h / rows
     for col, day in enumerate(WEEKDAYS):
         text(c, day, left + col_w * (col + .5), grid_top + 2.7 * mm, 7.5, ACCENT if col == 6 else MUTED, "center", col == 6)
     for index, cell in enumerate(month["cells"]):
-        if not cell or not any(event.startswith("Giỗ ") for event in cell["events"]):
+        if not cell or not any(event["kind"] == "memorial" for event in cell["events"]):
             continue
         row, col = divmod(index, 7)
         x, y = left + col * col_w, grid_top - row * row_h
@@ -138,22 +147,23 @@ def month_page(c, model, month, asset):
         if not cell: continue
         row, col = divmod(index, 7)
         x, y = left + col * col_w, grid_top - row * row_h
-        text(c, cell["solarDay"], x + 1.5 * mm, y - 4.8 * mm, 9.5, ACCENT if col == 6 else INK, bold=col == 6)
-        text(c, cell["lunar"], x + col_w - 1.3 * mm, y - 4.6 * mm, 8.1, MUTED, "right")
-        event_y = y - 9.3 * mm
-        if any(event.startswith("Giỗ ") for event in cell["events"]):
+        text(c, cell["solarDay"], x + 1.5 * mm, y - 4.2 * mm, 9.5, ACCENT if col == 6 else INK, bold=col == 6)
+        text(c, cell["lunar"], x + col_w - 1.3 * mm, y - 4.0 * mm, 8.1, MUTED, "right")
+        event_y = y - 7.6 * mm
+        if any(event["kind"] == "memorial" for event in cell["events"]):
             incense_icon(c, x + col_w - 5.3 * mm, y - row_h + 2.1 * mm)
         for event in cell["events"]:
-            memorial = event.startswith("Giỗ ")
+            label = event["label"]
+            memorial = event["kind"] == "memorial"
             size = 8.6 if memorial else 8.0
             if memorial:
-                for line in wrap(event, col_w - 2.8 * mm, size):
+                for line in wrap(label, col_w - 2.8 * mm, size):
                     text(c, line, x + 1.4 * mm, event_y, size, ACCENT, bold=True)
-                    event_y -= 3.2 * mm
+                    event_y -= 2.8 * mm
             else:
-                for line in wrap(event, col_w - 2.8 * mm, size):
+                for line in wrap(label, col_w - 2.8 * mm, size):
                     text(c, line, x + 1.4 * mm, event_y, size, MUTED)
-                    event_y -= 3.2 * mm
+                    event_y -= 2.8 * mm
     text(c, model["note"], left, 3.4 * mm, 5.2, MUTED)
     text(c, month["number"], w - right, 4.5 * mm, 5, MUTED, "right")
     c.showPage()
@@ -171,8 +181,7 @@ def main():
     c.setSubject("Lịch gia đình tạo riêng trên máy chủ Chùa Mây")
     cover(c, model, assets / "cover.jpg")
     for month in model["months"]:
-        season = ("spring", "summer", "autumn", "winter")[(month["number"] - 1) // 3]
-        month_page(c, model, month, assets / f"{season}.jpg")
+        month_page(c, model, month, assets / f'month-{month["number"]:02d}.jpg')
     c.save()
     sys.stdout.buffer.write(stream.getvalue())
 

@@ -19,10 +19,14 @@ test("2027 family calendar has 12 complete Gregorian grids and Vietnamese lunar 
 });
 
 test("calendar model contains honorific memorial labels but excludes tablet names", () => {
-  const serialized = JSON.stringify(buildFamilyCalendarModel({ familyName: "Gia đình họ Nguyễn", tablets, year: 2027 }));
+  const model = buildFamilyCalendarModel({ familyName: "Gia đình họ Nguyễn", tablets, year: 2027 }),
+    events = model.months.flatMap((month) => month.cells.filter(Boolean).flatMap((cell) => cell.events)),
+    serialized = JSON.stringify(model);
   assert.match(serialized, /Giỗ Bà ngoại/);
   assert.match(serialized, /Giỗ Ông nội/);
   assert.match(serialized, /Giỗ Bác cả/);
+  assert.equal(events.find((event) => event.label === "Giỗ Bà ngoại")?.kind, "memorial");
+  assert.equal(events.find((event) => event.label === "Giỗ Tổ Hùng Vương")?.kind, "festival");
   for (const tablet of tablets) assert.doesNotMatch(serialized, new RegExp(tablet.full_name));
 });
 

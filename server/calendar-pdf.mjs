@@ -37,7 +37,7 @@ export function buildFamilyCalendarModel({ familyName, tablets, year = 2027, lea
     }, year, leapRule), key = isoDate(date), honorific = String(tablet.honorific || "").normalize("NFC").trim();
     if (!honorific || honorific.length > 40) continue;
     const labels = memorials.get(key) || [];
-    labels.push(`Giỗ ${honorific}`);
+    labels.push({ label: `Giỗ ${honorific}`, kind: "memorial" });
     memorials.set(key, labels);
   }
   const months = [];
@@ -49,10 +49,10 @@ export function buildFamilyCalendarModel({ familyName, tablets, year = 2027, lea
     for (let day = 1; day <= days; day++) {
       const lunar = solarToLunar({ day, month, year }), key = `${lunar.day}-${lunar.month}`,
         dateKey = isoDate({ day, month, year }), events = [...(memorials.get(dateKey) || [])];
-      if (dateKey === qingming) events.push("Tết Thanh Minh");
-      if (FESTIVALS.has(key)) events.push(FESTIVALS.get(key));
-      else if (lunar.day === 1) events.push("Mùng 1");
-      else if (lunar.day === 15) events.push("Ngày Rằm");
+      if (dateKey === qingming) events.push({ label: "Tết Thanh Minh", kind: "festival" });
+      if (FESTIVALS.has(key)) events.push({ label: FESTIVALS.get(key), kind: "festival" });
+      else if (lunar.day === 1) events.push({ label: "Mùng 1", kind: "observance" });
+      else if (lunar.day === 15) events.push({ label: "Ngày Rằm", kind: "observance" });
       cells.push({
         solarDay: day,
         lunar: `${lunar.day}/${lunar.month}${lunar.leap ? " nhuận" : ""}`,
@@ -69,7 +69,7 @@ export function createFamilyCalendarPdf(input, options = {}) {
   const model = buildFamilyCalendarModel(input),
     script = fileURLToPath(new URL("./calendar-pdf.py", import.meta.url)),
     font = options.fontPath || fileURLToPath(new URL("../assets/fonts/BeVietnamPro-Regular.ttf", import.meta.url)),
-    assets = options.assetsDir || fileURLToPath(new URL("./calendar-assets", import.meta.url)),
+    assets = options.assetsDir || fileURLToPath(new URL("./calendar-assets-v3", import.meta.url)),
     python = options.python || process.env.CALENDAR_PYTHON || "python3";
   return new Promise((resolve, reject) => {
     const child = spawn(python, ["-I", script, font, assets], { windowsHide: true, stdio: ["pipe", "pipe", "pipe"] });
