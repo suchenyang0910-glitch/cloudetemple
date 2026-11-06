@@ -1,4 +1,5 @@
 import { spawn } from "node:child_process";
+import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { anniversary, isoDate, qingmingDate, solarToLunar } from "./lunar-hnd.mjs";
 
@@ -86,9 +87,11 @@ export function buildFamilyCalendarModel({ familyName, tablets, year = 2027, lea
 }
 
 export function createFamilyCalendarPdf(input, options = {}) {
-  const model = buildFamilyCalendarModel(input),
+  const sourceFont = fileURLToPath(new URL("../assets/fonts/BeVietnamPro-Regular.ttf", import.meta.url)),
+    packagedFont = fileURLToPath(new URL("../dist/assets/fonts/BeVietnamPro-Regular.ttf", import.meta.url)),
+    model = buildFamilyCalendarModel(input),
     script = fileURLToPath(new URL("./calendar-pdf.py", import.meta.url)),
-    font = options.fontPath || fileURLToPath(new URL("../assets/fonts/BeVietnamPro-Regular.ttf", import.meta.url)),
+    font = options.fontPath || (existsSync(packagedFont) ? packagedFont : sourceFont),
     assets = options.assetsDir || fileURLToPath(new URL("./calendar-assets-v3", import.meta.url)),
     python = options.python || process.env.CALENDAR_PYTHON || "python3";
   return new Promise((resolve, reject) => {
