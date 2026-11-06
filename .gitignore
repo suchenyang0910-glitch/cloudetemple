@@ -10,6 +10,8 @@
 *.pem
 *.key
 node_modules/
+__pycache__/
+*.pyc
 dist/
 _archive/
 .venv-assets/
