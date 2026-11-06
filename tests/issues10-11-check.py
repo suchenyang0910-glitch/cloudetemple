@@ -60,7 +60,7 @@ with sync_playwright() as pw:
         settled("home")
         click("mo")
         settled("mo")
-        module_url = page.locator('script[src*="app."]').get_attribute("src") or "/app.js"
+        module_url = page.locator('script[type="module"][src^="app."]').get_attribute("src") or "/app.js"
         resource_url = module_url.replace("app.", "resources.")
         image_status = page.evaluate("async src=>Object.fromEntries((await import(new URL(src,location.href))).imageStatus)", resource_url)
         assert image_status["scene-vn-hall-side-day.webp"]["path"] in ("fetch-blob", "native-img"), image_status
