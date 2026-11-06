@@ -5,7 +5,7 @@ export async function sendMail(settings,family,message){
   if(settings.mailProvider==='outbox'){const {putOutbox}=await import('./outbox-staging.mjs');putOutbox(family.db,message);return;}
   if(settings.mailProvider==='resend'){
     if(!settings.resendKey)throw Error('mail_not_configured');
-    const r=await fetch('https://api.resend.com/emails',{method:'POST',headers:{Authorization:`Bearer ${settings.resendKey}`,'Content-Type':'application/json'},body:JSON.stringify({from:settings.mailFrom,to:[message.to],subject:message.subject,text:message.text,html:message.html})});
+    const r=await fetch('https://api.resend.com/emails',{method:'POST',headers:{Authorization:`Bearer ${settings.resendKey}`,'Content-Type':'application/json',Accept:'application/json','User-Agent':'ChuaMay/1.0'},body:JSON.stringify({from:settings.mailFrom,to:[message.to],subject:message.subject,text:message.text,html:message.html})});
     if(!r.ok)throw Error('mail_unavailable');return;
   }
   if(settings.mailProvider==='ses'){
