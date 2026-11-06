@@ -15,6 +15,7 @@ test("2027 family calendar has 12 complete Gregorian grids and Vietnamese lunar 
   assert.ok(model.months.every((month) => month.cells.length % 7 === 0));
   assert.equal(model.months[0].cells.find(Boolean).solarDay, 1);
   assert.match(model.months[0].cells.find(Boolean).lunar, /^\d+\/\d+/);
+  assert.equal(model.yearName, "Năm Đinh Mùi");
 });
 
 test("calendar model contains honorific memorial labels but excludes tablet names", () => {

@@ -62,16 +62,17 @@ export function buildFamilyCalendarModel({ familyName, tablets, year = 2027, lea
     while (cells.length % 7) cells.push(null);
     months.push({ number: month, name: MONTHS[month - 1], cells });
   }
-  return { year, familyName: title, months, note: "Bản mẫu · Nội dung tiếng Việt chờ người bản ngữ duyệt" };
+  return { year, yearName: "Năm Đinh Mùi", familyName: title, months, note: "Bản mẫu · Nội dung tiếng Việt chờ người bản ngữ duyệt" };
 }
 
 export function createFamilyCalendarPdf(input, options = {}) {
   const model = buildFamilyCalendarModel(input),
     script = fileURLToPath(new URL("./calendar-pdf.py", import.meta.url)),
     font = options.fontPath || fileURLToPath(new URL("../assets/fonts/BeVietnamPro-Regular.ttf", import.meta.url)),
+    assets = options.assetsDir || fileURLToPath(new URL("./calendar-assets", import.meta.url)),
     python = options.python || process.env.CALENDAR_PYTHON || "python3";
   return new Promise((resolve, reject) => {
-    const child = spawn(python, ["-I", script, font], { windowsHide: true, stdio: ["pipe", "pipe", "pipe"] });
+    const child = spawn(python, ["-I", script, font, assets], { windowsHide: true, stdio: ["pipe", "pipe", "pipe"] });
     const out = [], err = [];
     let size = 0, settled = false;
     const timer = setTimeout(() => child.kill(), options.timeoutMs || 15000);

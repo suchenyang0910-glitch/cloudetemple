@@ -1,8 +1,10 @@
 import io
 import json
 import sys
+from pathlib import Path
 from reportlab.lib.colors import Color, HexColor
 from reportlab.lib.pagesizes import A5, landscape
+from reportlab.lib.utils import ImageReader
 from reportlab.lib.units import mm
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
@@ -15,63 +17,116 @@ MUTED = HexColor("#796b60")
 PAPER = HexColor("#f4efe4")
 ACCENT = HexColor("#8a4938")
 LINE = HexColor("#cbbfaf")
+MEMORIAL_BG = HexColor("#f1dfcf")
 WEEKDAYS = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"]
 
-def text(c, value, x, y, size, color=INK, align="left"):
+def text(c, value, x, y, size, color=INK, align="left", bold=False):
+    value = str(value)
+    if bold:
+        width = pdfmetrics.stringWidth(value, FONT, size)
+        origin = {"left": x, "center": x - width / 2, "right": x - width}[align]
+        c.saveState()
+        c.setFillColor(color)
+        c.setStrokeColor(color)
+        c.setLineWidth(.28)
+        line = c.beginText(origin, y)
+        line.setFont(FONT, size)
+        line.setTextRenderMode(2)
+        line.textLine(value)
+        c.drawText(line)
+        c.restoreState()
+        return
     c.setFont(FONT, size)
     c.setFillColor(color)
     fn = {"left": c.drawString, "center": c.drawCentredString, "right": c.drawRightString}[align]
-    fn(x, y, str(value))
+    fn(x, y, value)
 
-def fit(value, limit):
+def fit(value, limit, size):
     value = str(value)
-    if pdfmetrics.stringWidth(value, FONT, 5.2) <= limit:
+    if pdfmetrics.stringWidth(value, FONT, size) <= limit:
         return value
-    while value and pdfmetrics.stringWidth(value + "…", FONT, 5.2) > limit:
+    while value and pdfmetrics.stringWidth(value + "…", FONT, size) > limit:
         value = value[:-1]
     return value.rstrip() + "…"
+
+def wrap(value, limit, size, max_lines=2):
+    words = str(value).split()
+    lines = []
+    for word in words:
+        candidate = f'{lines[-1]} {word}' if lines else word
+        if lines and pdfmetrics.stringWidth(candidate, FONT, size) <= limit:
+            lines[-1] = candidate
+        elif len(lines) < max_lines:
+            lines.append(word)
+        else:
+            lines[-1] = fit(f'{lines[-1]} {word}', limit, size)
+    return lines
 
 def background(c):
     c.setFillColor(PAPER)
     c.rect(0, 0, PAGE[0], PAGE[1], fill=1, stroke=0)
 
-def cover(c, model):
-    background(c)
-    w, h = PAGE
+def incense_icon(c, x, y):
     c.saveState()
-    c.setFillColor(Color(.22, .25, .21, alpha=.10))
-    c.circle(w * .78, h * .65, 35 * mm, fill=1, stroke=0)
-    c.setFillColor(Color(.20, .22, .19, alpha=.18))
-    p = c.beginPath(); p.moveTo(0, 22 * mm); p.curveTo(45 * mm, 58 * mm, 80 * mm, 20 * mm, 122 * mm, 48 * mm); p.lineTo(w, 0); p.lineTo(0, 0); p.close()
-    c.drawPath(p, fill=1, stroke=0)
-    c.setStrokeColor(Color(.29, .24, .20, alpha=.48)); c.setLineWidth(1.2)
-    c.line(19 * mm, h - 20 * mm, 58 * mm, h - 35 * mm)
-    for dx, dy in ((0,0),(9,-3),(18,-6),(27,-10)):
-        c.circle((20+dx) * mm, (h/mm-20+dy) * mm, 1.8 * mm, fill=0, stroke=1)
+    c.setStrokeColor(ACCENT)
+    c.setFillColor(ACCENT)
+    c.setLineWidth(.55)
+    c.ellipse(x, y, x + 3.8 * mm, y + 1.35 * mm, fill=1, stroke=0)
+    c.line(x + .6 * mm, y + .7 * mm, x + 1.1 * mm, y - .8 * mm)
+    c.line(x + 3.2 * mm, y + .7 * mm, x + 2.7 * mm, y - .8 * mm)
+    c.line(x + 1.9 * mm, y + 1.1 * mm, x + 1.9 * mm, y + 3.1 * mm)
+    smoke = c.beginPath()
+    smoke.moveTo(x + 1.9 * mm, y + 3.1 * mm)
+    smoke.curveTo(x + 1.2 * mm, y + 3.8 * mm, x + 2.7 * mm, y + 4.4 * mm, x + 1.9 * mm, y + 5.2 * mm)
+    c.drawPath(smoke, fill=0, stroke=1)
     c.restoreState()
-    text(c, model["familyName"], w / 2, h * .58, 24, INK, "center")
-    text(c, "LỊCH NGÀY GIỖ", w / 2, h * .46, 11, ACCENT, "center")
-    text(c, model["year"], w / 2, h * .34, 22, INK, "center")
-    text(c, model["note"], w / 2, 10 * mm, 5.8, MUTED, "center")
+
+def cover(c, model, asset):
+    w, h = PAGE
+    c.drawImage(ImageReader(asset), 0, 0, width=w, height=h, preserveAspectRatio=False, mask="auto")
+    c.saveState()
+    c.setFillColor(Color(.96, .93, .86, alpha=.86))
+    c.roundRect(11 * mm, 16 * mm, 103 * mm, h - 32 * mm, 3 * mm, fill=1, stroke=0)
+    c.restoreState()
+    center = 62.5 * mm
+    text(c, model["familyName"], center, h * .64, 22, INK, "center", True)
+    text(c, "LỊCH NGÀY GIỖ", center, h * .51, 11, ACCENT, "center", True)
+    text(c, model["yearName"], center, h * .42, 11, INK, "center")
+    text(c, model["year"], center, h * .31, 22, INK, "center", True)
+    text(c, model["note"], center, 21 * mm, 6, MUTED, "center")
     c.showPage()
 
-def month_page(c, model, month):
+def month_page(c, model, month, asset):
     background(c)
     w, h = PAGE
-    left, right, top, bottom = 10 * mm, 10 * mm, 20 * mm, 11 * mm
+    side_w = 42 * mm
+    c.drawImage(ImageReader(asset), w - side_w, 0, width=side_w, height=h, preserveAspectRatio=False, mask="auto")
+    c.saveState()
+    c.setFillColor(Color(.96, .93, .86, alpha=.16))
+    c.rect(w - side_w, 0, side_w, h, fill=1, stroke=0)
+    c.restoreState()
+    left, right, top, bottom = 8 * mm, side_w + 4 * mm, 30 * mm, 9 * mm
     month_word = month["name"].removeprefix("Tháng ")
-    text(c, "Tháng", left, h - 11 * mm, 16, INK)
+    text(c, "Tháng", left, h - 10 * mm, 16, INK)
     month_x = left + pdfmetrics.stringWidth("Tháng ", FONT, 16)
-    text(c, month_word, month_x, h - 11 * mm, 16, INK)
+    text(c, month_word, month_x, h - 10 * mm, 16, INK)
     year_x = month_x + pdfmetrics.stringWidth(month_word + " ", FONT, 16)
-    text(c, model["year"], year_x, h - 11 * mm, 16, INK)
-    text(c, model["familyName"], w - right, h - 10.5 * mm, 7, MUTED, "right")
-    grid_top = h - top - 7 * mm
+    text(c, model["year"], year_x, h - 10 * mm, 16, INK)
+    text(c, model["yearName"], left, h - 17 * mm, 8.5, ACCENT, bold=True)
+    text(c, model["familyName"], w - right, h - 10 * mm, 7.5, MUTED, "right")
+    grid_top = h - top
     grid_h = grid_top - bottom
     rows = len(month["cells"]) // 7
     col_w, row_h = (w - left - right) / 7, grid_h / rows
     for col, day in enumerate(WEEKDAYS):
-        text(c, day, left + col_w * (col + .5), grid_top + 2.6 * mm, 6.2, ACCENT if col == 6 else MUTED, "center")
+        text(c, day, left + col_w * (col + .5), grid_top + 2.7 * mm, 7.5, ACCENT if col == 6 else MUTED, "center", col == 6)
+    for index, cell in enumerate(month["cells"]):
+        if not cell or not any(event.startswith("Giỗ ") for event in cell["events"]):
+            continue
+        row, col = divmod(index, 7)
+        x, y = left + col * col_w, grid_top - row * row_h
+        c.setFillColor(MEMORIAL_BG)
+        c.rect(x, y - row_h, col_w, row_h, fill=1, stroke=0)
     c.setStrokeColor(LINE); c.setLineWidth(.45)
     for row in range(rows + 1):
         y = grid_top - row * row_h
@@ -83,30 +138,41 @@ def month_page(c, model, month):
         if not cell: continue
         row, col = divmod(index, 7)
         x, y = left + col * col_w, grid_top - row * row_h
-        text(c, cell["solarDay"], x + 1.8 * mm, y - 4.7 * mm, 8, ACCENT if col == 6 else INK)
-        text(c, cell["lunar"], x + col_w - 1.5 * mm, y - 4.2 * mm, 5.1, MUTED, "right")
-        event_y = y - 8.2 * mm
+        text(c, cell["solarDay"], x + 1.5 * mm, y - 4.8 * mm, 9.5, ACCENT if col == 6 else INK, bold=col == 6)
+        text(c, cell["lunar"], x + col_w - 1.3 * mm, y - 4.6 * mm, 8.1, MUTED, "right")
+        event_y = y - 9.3 * mm
+        if any(event.startswith("Giỗ ") for event in cell["events"]):
+            incense_icon(c, x + col_w - 5.3 * mm, y - row_h + 2.1 * mm)
         for event in cell["events"]:
-            color = ACCENT if event.startswith("Giỗ ") else MUTED
-            text(c, fit(event, col_w - 3 * mm), x + 1.6 * mm, event_y, 5.2, color)
-            event_y -= 3.2 * mm
-    text(c, model["note"], left, 4.5 * mm, 4.8, MUTED)
+            memorial = event.startswith("Giỗ ")
+            size = 8.6 if memorial else 8.0
+            if memorial:
+                for line in wrap(event, col_w - 2.8 * mm, size):
+                    text(c, line, x + 1.4 * mm, event_y, size, ACCENT, bold=True)
+                    event_y -= 3.2 * mm
+            else:
+                for line in wrap(event, col_w - 2.8 * mm, size):
+                    text(c, line, x + 1.4 * mm, event_y, size, MUTED)
+                    event_y -= 3.2 * mm
+    text(c, model["note"], left, 3.4 * mm, 5.2, MUTED)
     text(c, month["number"], w - right, 4.5 * mm, 5, MUTED, "right")
     c.showPage()
 
 def main():
-    if len(sys.argv) != 2:
-        raise SystemExit("font path required")
+    if len(sys.argv) != 3:
+        raise SystemExit("font and calendar asset paths required")
     pdfmetrics.registerFont(TTFont(FONT, sys.argv[1]))
+    assets = Path(sys.argv[2]).resolve()
     model = json.loads(sys.stdin.buffer.read().decode("utf-8"))
     stream = io.BytesIO()
     c = canvas.Canvas(stream, pagesize=PAGE, pageCompression=1)
     c.setTitle(f'{model["familyName"]} · Lịch ngày giỗ {model["year"]}')
     c.setAuthor("Chùa Mây")
     c.setSubject("Lịch gia đình tạo riêng trên máy chủ Chùa Mây")
-    cover(c, model)
+    cover(c, model, assets / "cover.jpg")
     for month in model["months"]:
-        month_page(c, model, month)
+        season = ("spring", "summer", "autumn", "winter")[(month["number"] - 1) // 3]
+        month_page(c, model, month, assets / f"{season}.jpg")
     c.save()
     sys.stdout.buffer.write(stream.getvalue())
 
