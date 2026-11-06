@@ -1,7 +1,7 @@
 from pathlib import Path
 from playwright.sync_api import sync_playwright
 
-OUT=Path(r'E:\cloudtemple-worktrees\v2-family-staging\screenshots\family-v2')
+OUT=Path(__file__).resolve().parents[1]/'screenshots'/'family-v2'
 OUT.mkdir(parents=True,exist_ok=True)
 BASE='http://127.0.0.1:8788/family.html?demo=1'
 results=[]
