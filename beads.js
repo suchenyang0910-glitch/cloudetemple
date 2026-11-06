@@ -27,7 +27,12 @@ export function beadArc(width,height,offset,left=false){
 }
 
 export function mountBeads(el,{step,count=0,reduced=false,left=false}){
- const track=el.querySelector('.bead-track'),nodes=[...track.children],model=new BeadMotion(step);
+ const guide=el.querySelector('.bead-guide'),chevrons=el.querySelector('.bead-chevrons');
+ let guideTimer=0,demoTimer=0;
+ const remember=()=>{try{localStorage.setItem('ct-bead-guide','true');}catch{}};
+ const learned=()=>{try{return localStorage.getItem('ct-bead-guide')==='true';}catch{return false;}};
+ const hideGuide=save=>{clearTimeout(guideTimer);clearInterval(demoTimer);guide.classList.remove('visible');if(save)remember();};
+ const track=el.querySelector('.bead-track'),nodes=[...track.children],model=new BeadMotion(n=>{hideGuide(true);step(n);});
  const area=el.parentElement;
  for(const kind of ['wood','spacer','guru'])area.style.setProperty(`--bead-${kind}`,`url("${assetURL(`processed-v1/img/bead-${kind}-v2.webp`)}")`);
  let width=area.clientWidth,height=area.clientHeight;
@@ -46,22 +51,26 @@ export function mountBeads(el,{step,count=0,reduced=false,left=false}){
    node.style.opacity=String(Math.max(0,Math.min(1,(y-half-100)/35,(height+20-y)/45,(Math.min(x,width-x)-half-10)/8)));
   });
  };
- const resize=new ResizeObserver(()=>{width=area.clientWidth;height=area.clientHeight;const size=model.pitch-6;area.style.setProperty('--bead-size',size+'px');area.style.setProperty('--bead-touch-top',Math.max(100,document.querySelector('.scene-heading').getBoundingClientRect().bottom-area.getBoundingClientRect().top+8)+'px');const p=beadArc(width,height,0,left);el.querySelector('.thumb-point').style.cssText=`left:${p.x}px;top:${p.y}px`;const r=width*1.8;el.querySelector('.bead-thread').style.cssText=`width:${r*2}px;height:${r*2}px;left:${(left?-width*1.58:width*2.58)-r}px;top:${height*.65-r*Math.sin(.2)-r}px`;draw(model.position);});resize.observe(area);resize.observe(document.querySelector('.scene-heading'));
+ const resize=new ResizeObserver(()=>{width=area.clientWidth;height=area.clientHeight;const size=model.pitch-6;area.style.setProperty('--bead-size',size+'px');area.style.setProperty('--bead-touch-top',Math.max(100,document.querySelector('.scene-heading').getBoundingClientRect().bottom-area.getBoundingClientRect().top+8)+'px');const p=beadArc(width,height,0,left),hintX=p.x+(left?54:-54);el.querySelector('.thumb-point').style.cssText=`left:${p.x}px;top:${p.y}px`;guide.style.cssText=`left:${hintX}px;top:${p.y}px`;chevrons.style.cssText=`left:${p.x}px;top:${p.y+76}px`;const r=width*1.8;el.querySelector('.bead-thread').style.cssText=`width:${r*2}px;height:${r*2}px;left:${(left?-width*1.58:width*2.58)-r}px;top:${height*.65-r*Math.sin(.2)-r}px`;draw(model.position);});resize.observe(area);resize.observe(document.querySelector('.scene-heading'));
  const frame=now=>{
   if(disposed)return;
   if(model.active&&!reduced){model.frame(now);draw(model.position);}
-  else if(animationStart){const p=Math.min(1,(now-animationStart)/180);draw(from+(to-from)*(1+1.6*(p-1)**3+.6*(p-1)**2));if(p===1)animationStart=0;}
+  else if(animationStart){const p=Math.min(1,(now-animationStart)/animationDuration);draw(from+(to-from)*(1+1.6*(p-1)**3+.6*(p-1)**2));if(p===1)animationStart=0;}
   if(model.active||animationStart)raf=requestAnimationFrame(frame);
  };
- const settle=(start,end)=>{cancelAnimationFrame(raf);from=start;to=end;if(reduced){draw(end);return;}animationStart=performance.now();raf=requestAnimationFrame(frame);};
- el.addEventListener('pointerdown',e=>{if(e.clientX<20||e.clientX>innerWidth-20||e.button!==0)return;el.focus({preventScroll:true});down={x:e.clientX,y:e.clientY};model.begin(e.clientX,e.clientY,innerWidth);el.setPointerCapture(e.pointerId);cancelAnimationFrame(raf);raf=requestAnimationFrame(frame);});
- el.addEventListener('pointermove',e=>model.move(e.clientX,e.clientY));
- const release=e=>{if(!down)return;const previous=model.position,tapped=model.end(performance.now(),!reduced);if(tapped||(reduced&&e.clientY-down.y>25&&Math.abs(e.clientX-down.x)<Math.abs(e.clientY-down.y)))model.tap(performance.now());down=null;settle(previous,model.position);};
+ let animationDuration=180;
+ const settle=(start,end,duration=180)=>{cancelAnimationFrame(raf);from=start;to=end;animationDuration=duration;if(reduced){draw(end);return;}animationStart=performance.now();raf=requestAnimationFrame(frame);};
+ const demo=()=>{if(!down)settle(-model.pitch*.5,0,1400);};
+ const showGuide=(ms=0)=>{clearTimeout(guideTimer);clearInterval(demoTimer);guide.classList.add('visible');demo();if(!reduced)demoTimer=setInterval(demo,2000);if(ms)guideTimer=setTimeout(()=>hideGuide(false),ms);};
+ const block=e=>e.preventDefault();el.addEventListener('touchstart',block,{passive:false});el.addEventListener('contextmenu',block);el.addEventListener('selectstart',block);
+ el.addEventListener('pointerdown',e=>{if(e.clientX<20||e.clientX>innerWidth-20||e.button!==0)return;e.preventDefault();getSelection()?.removeAllRanges();clearTimeout(guideTimer);clearInterval(demoTimer);el.focus({preventScroll:true});down={x:e.clientX,y:e.clientY};model.begin(e.clientX,e.clientY,innerWidth);el.setPointerCapture(e.pointerId);cancelAnimationFrame(raf);raf=requestAnimationFrame(frame);});
+ el.addEventListener('pointermove',e=>{if(down)e.preventDefault();model.move(e.clientX,e.clientY);});
+ const release=e=>{if(!down)return;e.preventDefault();const dx=e.clientX-down.x,dy=e.clientY-down.y,invalid=Math.abs(dx)>Math.abs(dy)||dy<0,previous=model.position,tapped=model.end(performance.now(),!reduced);if(tapped||(reduced&&dy>25&&Math.abs(dx)<Math.abs(dy)))model.tap(performance.now());down=null;settle(previous,model.position);if(invalid)showGuide(1500);};
  el.addEventListener('pointerup',release);
  el.addEventListener('pointercancel',()=>{if(!down)return;down=null;const previous=model.position;model.end(performance.now(),false);settle(previous,model.position);});
  el.addEventListener('click',e=>{e.stopPropagation();if(e.detail===0){const previous=model.position;model.tap(performance.now());settle(previous,model.position);}});
  el.addEventListener('keydown',e=>{if(['Enter',' '].includes(e.key)){e.preventDefault();const previous=model.position;model.tap(performance.now());settle(previous,model.position);}});
  draw(model.position);
- if(!reduced&&count===0)settle(-model.pitch,0);
- return ()=>{disposed=true;resize.disconnect();cancelAnimationFrame(raf);};
+ if(!learned())showGuide();else if(count===0)guideTimer=setTimeout(()=>showGuide(1500),5000);
+ return ()=>{disposed=true;resize.disconnect();cancelAnimationFrame(raf);clearTimeout(guideTimer);clearInterval(demoTimer);};
 }
