@@ -1,0 +1,30 @@
+[
+  {
+    "size": [
+      375,
+      548
+    ],
+    "rapidWood": 5,
+    "autoWood": 2,
+    "breathPatterns": [
+      "4-6",
+      "4-4",
+      "5-7"
+    ],
+    "noOverflow": true
+  },
+  {
+    "size": [
+      393,
+      659
+    ],
+    "rapidWood": 5,
+    "autoWood": 2,
+    "breathPatterns": [
+      "4-6",
+      "4-4",
+      "5-7"
+    ],
+    "noOverflow": true
+  }
+]
