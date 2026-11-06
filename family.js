@@ -368,7 +368,7 @@ async function inviteLanding(raw, authenticated = false) {
     } catch (error) {
       if (error.message === "unauthorized") {
         csrf = "";
-        await inviteLanding(raw, false);
+        login();
         note(t("invite_session_expired"));
       } else note(t("invite_accept_failed"));
     }

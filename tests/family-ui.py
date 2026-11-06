@@ -66,7 +66,7 @@ with sync_playwright() as p:
     assert page.evaluate("sessionStorage.getItem('ct-family-invite')")=='google-token'
     state['authenticated']=True;page.goto(live+'?flow=callback')
     page.locator('#accept').wait_for();assert page.get_by_text('Nguyễn An mời bạn').is_visible()
-    state['force401']=True;page.locator('#accept').click();page.locator('#login').wait_for()
+    state['force401']=True;page.locator('#accept').click();page.locator('#email-login').wait_for()
     assert 'hết hạn' in page.locator('#status').inner_text() and not errors,errors
     page.close()
     browser.close()
