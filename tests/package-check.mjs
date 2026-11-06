@@ -16,7 +16,15 @@ for(const url of fontURLs){assert(url.includes(`/releases/${release}/fonts/`));a
 assert((await fs.readFile(new URL(`assets/releases/${release}/fonts/OFL-v1.txt`,root),'utf8')).includes('SIL OPEN FONT LICENSE'));
 const mobile=JSON.parse(await fs.readFile(new URL(`assets/releases/${release}/processed-v1/mobile/measurements.json`,root)));
 assert.equal(mobile.length,12);assert(mobile.every(x=>x.mobile<=120000&&x.width===720));
-if(process.argv.includes('--production'))assert(!files.some(n=>/^audio-debug(\.|$)/.test(n)));
+if(process.argv.includes('--production')){
+ assert(!files.some(n=>/^audio-debug(\.|$)/.test(n)));
+ for(const name of files){const item=new URL(name,root);if((await fs.stat(item)).isFile())assert(!(await fs.readFile(item)).includes(Buffer.from('debug_mode')),name+' contains debug_mode');}
+}
+if(process.argv.includes('--staging')){
+ const analytics=versioned.find(n=>n.startsWith('analytics.'));
+ assert(analytics,'staging analytics module');
+ assert((await fs.readFile(new URL(analytics,root),'utf8')).includes('debug_mode:true'),'staging debug_mode');
+}
 const manifest=JSON.parse(await fs.readFile(new URL(`../deploy/package-${release}.json`,root)));
 let bytes=0;for(const item of manifest.files){const data=await fs.readFile(new URL(item.path,root));assert.equal(data.length,item.bytes);assert.equal(createHash('sha256').update(data).digest('hex'),item.sha256);bytes+=data.length;}
 assert.equal(bytes,manifest.totalBytes);assert.equal(manifest.fileCount,manifest.files.length);

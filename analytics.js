@@ -1,5 +1,6 @@
 // Stage-only. Capture attribution and initialize Telegram before cleaning the launch URL.
 const id='G-0EF24Y0Q9M', key='ct-analytics';
+const debug={debug_mode:true};
 const views='entry choose home incense bow sit mo beads leave memorial'.split(' ');
 const activities='incense bow sit mo beads'.split(' ');
 const fields={
@@ -25,7 +26,7 @@ export function setupAnalytics(platform){
  new ResizeObserver(position).observe(controls);window.addEventListener('resize',position);
  prefs.onclick=()=>{document.querySelector('#more-menu').close();banner.hidden=false;position();banner.querySelector('button').focus()};
  const locationSafe=location.origin+'/';
- function view(v){if(!views.includes(v))return;current=v;if(send){send('set',{page_title:v});send('event','page_view',{page_title:v})}}
+ function view(v){if(!views.includes(v))return;current=v;if(send){send('set',{page_title:v});send('event','page_view',{page_title:v,...debug})}}
  function start(){
   if(send)return;
   const params=new URLSearchParams(location.search);history.replaceState(history.state,'',locationSafe);window['ga-disable-'+id]=false;
@@ -34,7 +35,7 @@ export function setupAnalytics(platform){
   send('consent','update',{analytics_storage:'granted'});
   const source=[params.get('s'),params.get('startapp')].find(s=>['telegram','zalo','facebook','messenger','share'].includes(s));
   send('set',{page_location:locationSafe,page_referrer:locationSafe,page_title:current});
-  send('js',new Date());send('config',id,{send_page_view:false,debug_mode:true,page_location:locationSafe,page_referrer:locationSafe,allow_google_signals:false,allow_ad_personalization_signals:false,cookie_domain:location.hostname,user_properties:{platform:platform()?'telegram':'web'},...(source?{campaign_source:source,campaign_medium:'referral'}:{})});
+  send('js',new Date());send('config',id,{...debug,send_page_view:false,page_location:locationSafe,page_referrer:locationSafe,allow_google_signals:false,allow_ad_personalization_signals:false,cookie_domain:location.hostname,user_properties:{platform:platform()?'telegram':'web'},...(source?{campaign_source:source,campaign_medium:'referral'}:{})});
   const script=w.document.createElement('script');script.async=true;script.referrerPolicy='no-referrer';script.src='https://www.googletagmanager.com/gtag/js?id='+id;if(!frame){frame=script;w.document.head.append(script)}view(current);
  }
  function choose(allow){choice=allow?'yes':'no';try{localStorage.setItem(key,choice)}catch{}
@@ -45,5 +46,5 @@ export function setupAnalytics(platform){
  const [yes,no]=banner.querySelectorAll('button');yes.onclick=()=>choose(true);no.onclick=()=>choose(false);
  banner.hidden=['yes','no'].includes(choice);position();if(choice==='yes')start();
  return {view,event(name,p){const rule=fields[name];if(!send||!rule)return;
-  const clean={};for(const [k,values] of Object.entries(rule)){if(!values.includes(p[k]))return;clean[k]=p[k]}send('event',name,clean)}};
+  const clean={};for(const [k,values] of Object.entries(rule)){if(!values.includes(p[k]))return;clean[k]=p[k]}send('event',name,{...clean,...debug})}};
 }

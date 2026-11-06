@@ -42,3 +42,5 @@ if($Environment -eq 'staging'){
 }
 & node (Join-Path $PSScriptRoot 'version-assets.mjs')
 if($LASTEXITCODE){throw 'Versioning failed'}
+& node (Join-Path $projectRoot 'tests/package-check.mjs') "--$Environment"
+if($LASTEXITCODE){throw 'Package assertions failed'}
