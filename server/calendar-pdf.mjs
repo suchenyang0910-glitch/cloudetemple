@@ -17,6 +17,13 @@ const FESTIVALS = new Map([
   ["23-12", "Ông Công Ông Táo"],
 ]);
 
+const SOLAR_FESTIVALS = new Map([
+  ["1-1", "Tết Dương lịch"],
+  ["30-4", "Ngày Giải phóng miền Nam"],
+  ["1-5", "Ngày Quốc tế Lao động"],
+  ["2-9", "Quốc khánh"],
+]);
+
 export function normalizeCalendarFamilyName(value) {
   const name = String(value || "").normalize("NFC").trim().replace(/\s+/g, " ");
   if (name.length < 3 || name.length > 80 || /[<>\u0000-\u001f\u007f]/u.test(name))
@@ -45,14 +52,19 @@ export function buildFamilyCalendarModel({ familyName, tablets, year = 2027, lea
     const first = new Date(Date.UTC(year, month - 1, 1)),
       days = new Date(Date.UTC(year, month, 0)).getUTCDate(),
       leading = (first.getUTCDay() + 6) % 7,
-      cells = Array.from({ length: leading }, () => null);
+      cells = Array.from({ length: leading }, () => null),
+      monthMemorials = [];
     for (let day = 1; day <= days; day++) {
       const lunar = solarToLunar({ day, month, year }), key = `${lunar.day}-${lunar.month}`,
         dateKey = isoDate({ day, month, year }), events = [...(memorials.get(dateKey) || [])];
       if (dateKey === qingming) events.push({ label: "Tết Thanh Minh", kind: "festival" });
+      if (SOLAR_FESTIVALS.has(`${day}-${month}`))
+        events.push({ label: SOLAR_FESTIVALS.get(`${day}-${month}`), kind: "festival" });
       if (FESTIVALS.has(key)) events.push({ label: FESTIVALS.get(key), kind: "festival" });
       else if (lunar.day === 1) events.push({ label: "Mùng 1", kind: "observance" });
       else if (lunar.day === 15) events.push({ label: "Ngày Rằm", kind: "observance" });
+      for (const event of events)
+        if (event.kind === "memorial") monthMemorials.push({ solarDay: day, lunar: `${lunar.day}/${lunar.month}`, label: event.label });
       cells.push({
         solarDay: day,
         lunar: `${lunar.day}/${lunar.month}${lunar.leap ? " nhuận" : ""}`,
@@ -60,9 +72,17 @@ export function buildFamilyCalendarModel({ familyName, tablets, year = 2027, lea
       });
     }
     while (cells.length % 7) cells.push(null);
-    months.push({ number: month, name: MONTHS[month - 1], cells });
+    months.push({ number: month, name: MONTHS[month - 1], cells, memorials: monthMemorials });
   }
-  return { year, yearName: "Năm Đinh Mùi", familyName: title, months, note: "Bản mẫu · Nội dung tiếng Việt chờ người bản ngữ duyệt" };
+  return {
+    year,
+    yearName: "Năm Đinh Mùi",
+    familyName: title,
+    brand: "CHÙA MÂY · CLOUD TEMPLE",
+    blessing: "Gìn giữ ký ức gia đình qua từng mùa.",
+    months,
+    note: "Bản mẫu · Nội dung tiếng Việt chờ người bản ngữ duyệt",
+  };
 }
 
 export function createFamilyCalendarPdf(input, options = {}) {

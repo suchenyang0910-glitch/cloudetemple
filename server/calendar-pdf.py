@@ -91,15 +91,32 @@ def incense_icon(c, x, y):
     c.drawPath(smoke, fill=0, stroke=1)
     c.restoreState()
 
+def brand_mark(c, x, y):
+    c.saveState()
+    c.setStrokeColor(ACCENT)
+    c.setLineWidth(.8)
+    cloud = c.beginPath()
+    cloud.moveTo(x, y)
+    cloud.curveTo(x + 1.5 * mm, y + 2.8 * mm, x + 4.3 * mm, y + 2.6 * mm, x + 5.2 * mm, y + .7 * mm)
+    cloud.curveTo(x + 7.1 * mm, y + 2.2 * mm, x + 10.1 * mm, y + 1.2 * mm, x + 10.8 * mm, y - .8 * mm)
+    cloud.curveTo(x + 8.4 * mm, y - 1.5 * mm, x + 2.3 * mm, y - 1.5 * mm, x, y)
+    c.drawPath(cloud, fill=0, stroke=1)
+    c.restoreState()
+
 def cover(c, model, asset):
     w, h = PAGE
     c.drawImage(ImageReader(asset), 0, 0, width=w, height=h, preserveAspectRatio=False, mask="auto")
     paper_wash(c, 82 * mm, h, .67)
     center = 49 * mm
-    text(c, model["familyName"], center, h * .64, 22, INK, "center", True)
-    text(c, "LỊCH NGÀY GIỖ", center, h * .51, 11, ACCENT, "center", True)
-    text(c, model["yearName"], center, h * .42, 11, INK, "center")
-    text(c, model["year"], center, h * .31, 22, INK, "center", True)
+    brand_mark(c, 13 * mm, h - 17 * mm)
+    text(c, model["brand"], 27 * mm, h - 18.2 * mm, 7.4, ACCENT, bold=True)
+    family_size = 22
+    while pdfmetrics.stringWidth(model["familyName"], FONT, family_size) > 73 * mm and family_size > 12:
+        family_size -= .5
+    text(c, model["familyName"], center, h * .66, family_size, INK, "center", True)
+    text(c, f'Lịch ngày giỗ {model["year"]}', center, h * .50, 15, ACCENT, "center", True)
+    text(c, model["yearName"], center, h * .40, 10.5, INK, "center")
+    text(c, model["blessing"], center, h * .26, 8.2, MUTED, "center")
     text(c, model["note"], 8 * mm, 8 * mm, 6, MUTED)
     c.showPage()
 
@@ -114,7 +131,7 @@ def month_page(c, model, month, asset):
     c.setFillColor(Color(.96, .93, .86, alpha=.69))
     c.roundRect(w - 62 * mm, h - 17 * mm, 54 * mm, 9.5 * mm, 2 * mm, fill=1, stroke=0)
     c.restoreState()
-    left, right, bottom = 8 * mm, 8 * mm, 7 * mm
+    left, right, grid_bottom = 8 * mm, 8 * mm, 24 * mm
     month_word = month["name"].removeprefix("Tháng ")
     text(c, "Tháng", left, h - 12 * mm, 16, INK)
     month_x = left + pdfmetrics.stringWidth("Tháng ", FONT, 16)
@@ -124,7 +141,7 @@ def month_page(c, model, month, asset):
     text(c, model["yearName"], left, h - 19 * mm, 8.5, ACCENT, bold=True)
     text(c, model["familyName"], w - 35 * mm, h - 12.7 * mm, 7.5, MUTED, "center")
     grid_top = h - 58 * mm
-    grid_h = grid_top - bottom
+    grid_h = grid_top - grid_bottom
     rows = len(month["cells"]) // 7
     col_w, row_h = (w - left - right) / 7, grid_h / rows
     for col, day in enumerate(WEEKDAYS):
@@ -142,7 +159,7 @@ def month_page(c, model, month, asset):
         c.line(left, y, w - right, y)
     for col in range(8):
         x = left + col * col_w
-        c.line(x, grid_top, x, bottom)
+        c.line(x, grid_top, x, grid_bottom)
     for index, cell in enumerate(month["cells"]):
         if not cell: continue
         row, col = divmod(index, 7)
@@ -155,7 +172,7 @@ def month_page(c, model, month, asset):
         for event in cell["events"]:
             label = event["label"]
             memorial = event["kind"] == "memorial"
-            size = 8.6 if memorial else 8.0
+            size = 8.6 if memorial else 7.2
             if memorial:
                 for line in wrap(label, col_w - 2.8 * mm, size):
                     text(c, line, x + 1.4 * mm, event_y, size, ACCENT, bold=True)
@@ -163,7 +180,19 @@ def month_page(c, model, month, asset):
             else:
                 for line in wrap(label, col_w - 2.8 * mm, size):
                     text(c, line, x + 1.4 * mm, event_y, size, MUTED)
-                    event_y -= 2.8 * mm
+                    event_y -= 2.5 * mm
+    text(c, "Ngày giỗ trong tháng", left, 18.2 * mm, 8.2, ACCENT, bold=True)
+    memorials = month.get("memorials", [])
+    if memorials:
+        # shortcut: the compact A5 footer shows six entries; larger families need a second summary page.
+        for index, memorial in enumerate(memorials[:6]):
+            col, row = index % 3, index // 3
+            label = f'{memorial["solarDay"]}/{month["number"]} · {memorial["label"]}'
+            text(c, fit(label, 58 * mm, 8), left + col * 64 * mm, (13.2 - row * 4.2) * mm, 8, INK)
+        if len(memorials) > 6:
+            text(c, f'+ {len(memorials) - 6} ngày khác', w - right, 5.8 * mm, 7.2, MUTED, "right")
+    else:
+        text(c, "Không có ngày giỗ", left, 13.2 * mm, 8, MUTED)
     text(c, model["note"], left, 3.4 * mm, 5.2, MUTED)
     text(c, month["number"], w - right, 4.5 * mm, 5, MUTED, "right")
     c.showPage()
@@ -175,7 +204,7 @@ def main():
     assets = Path(sys.argv[2]).resolve()
     model = json.loads(sys.stdin.buffer.read().decode("utf-8"))
     stream = io.BytesIO()
-    c = canvas.Canvas(stream, pagesize=PAGE, pageCompression=1)
+    c = canvas.Canvas(stream, pagesize=PAGE, pageCompression=1, initialFontName=FONT)
     c.setTitle(f'{model["familyName"]} · Lịch ngày giỗ {model["year"]}')
     c.setAuthor("Chùa Mây")
     c.setSubject("Lịch gia đình tạo riêng trên máy chủ Chùa Mây")

@@ -27,7 +27,25 @@ test("calendar model contains honorific memorial labels but excludes tablet name
   assert.match(serialized, /Giỗ Bác cả/);
   assert.equal(events.find((event) => event.label === "Giỗ Bà ngoại")?.kind, "memorial");
   assert.equal(events.find((event) => event.label === "Giỗ Tổ Hùng Vương")?.kind, "festival");
+  assert.deepEqual(model.months[3].memorials, [{ solarDay: 18, lunar: "12/3", label: "Giỗ Bà ngoại" }]);
+  assert.equal(model.brand, "CHÙA MÂY · CLOUD TEMPLE");
+  assert.match(model.blessing, /Gìn giữ ký ức gia đình/);
   for (const tablet of tablets) assert.doesNotMatch(serialized, new RegExp(tablet.full_name));
+});
+
+test("national holidays are separate gray festival events", () => {
+  const model = buildFamilyCalendarModel({ familyName: "Gia đình họ Nguyễn", tablets, year: 2027 });
+  for (const [month, day, label] of [
+    [1, 1, "Tết Dương lịch"],
+    [4, 16, "Giỗ Tổ Hùng Vương"],
+    [4, 30, "Ngày Giải phóng miền Nam"],
+    [5, 1, "Ngày Quốc tế Lao động"],
+    [9, 2, "Quốc khánh"],
+  ]) {
+    const cell = model.months[month - 1].cells.find((entry) => entry?.solarDay === day),
+      event = cell.events.find((entry) => entry.label === label);
+    assert.equal(event?.kind, "festival", `${day}/${month} ${label}`);
+  }
 });
 
 test("calendar inputs are bounded and 2027-only for the review candidate", () => {
