@@ -52,7 +52,7 @@ try:
     assert dims['scrollW']<=dims['w'] and dims['scrollH']<=dims['h'],(activity,dims)
     go('home')
    go('beads');page.locator('#bead-control').wait_for();page.screenshot(path=out/f'{width}x{height}-beads-round1.png')
-   for _ in range(108):page.locator('#bead-control').press('Enter');page.wait_for_timeout(95)
+   for _ in range(108):page.locator('#bead-control').press('Enter');page.wait_for_timeout(110)
    assert page.locator('[data-action=bead-again]').is_visible()
    assert page.locator('[data-action=share]').inner_text()=='Chia sẻ' and page.locator('[data-action=download]').inner_text()=='Tải ảnh'
    page.locator('[data-action=share]').click();page.wait_for_function("window.shareData?.files===1")
