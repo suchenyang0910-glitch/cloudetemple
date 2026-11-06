@@ -31,14 +31,21 @@ foreach ($name in @('mo.webp','mo-mallet.webp','bead-wood-v2.webp','bead-spacer-
 Copy-Item -LiteralPath (Join-Path $projectRoot 'assets/processed-v1/mobile') -Destination (Join-Path $outputRoot 'assets/processed-v1') -Recurse -Force
 Copy-Item -LiteralPath (Join-Path $projectRoot 'assets/fonts') -Destination (Join-Path $outputRoot 'assets') -Recurse
 $debugOutput=Join-Path $outputRoot 'audio-debug.js'
+Copy-Item -LiteralPath (Join-Path $projectRoot 'analytics.js') -Destination $outputRoot
+$index=Join-Path $outputRoot 'index.html'
+$html=[IO.File]::ReadAllText($index)
+$banner=[IO.File]::ReadAllText((Join-Path $projectRoot 'analytics-choice.html'))
+$html=$html.Replace('</main>',$banner+'</main>')
+[IO.File]::WriteAllText($index,$html,[Text.UTF8Encoding]::new($false))
 if($Environment -eq 'staging'){
-  Copy-Item -LiteralPath (Join-Path $projectRoot 'analytics.js') -Destination $outputRoot
   Copy-Item -LiteralPath (Join-Path $projectRoot 'audio-debug.js') -Destination $debugOutput -Force
-  $index=Join-Path $outputRoot 'index.html'
   $html=[IO.File]::ReadAllText($index).Replace('</body>','<script type="module" src="audio-debug.js"></script></body>')
-  $banner=[IO.File]::ReadAllText((Join-Path $projectRoot 'analytics-choice.html'))
-  $html=$html.Replace('</main>',$banner+'</main>')
   [IO.File]::WriteAllText($index,$html,[Text.UTF8Encoding]::new($false))
+}else{
+  $analytics=Join-Path $outputRoot 'analytics.js'
+  $source=[IO.File]::ReadAllText($analytics).Replace('const debug={debug_mode:true};','const debug={};')
+  if($source.Contains('debug_mode')){throw 'Production analytics still contains debug_mode'}
+  [IO.File]::WriteAllText($analytics,$source,[Text.UTF8Encoding]::new($false))
 }
 & node (Join-Path $PSScriptRoot 'version-assets.mjs')
 if($LASTEXITCODE){throw 'Versioning failed'}

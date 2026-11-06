@@ -2,7 +2,8 @@ import fs from 'node:fs/promises';
 const destination=process.argv[2];if(!destination)throw Error('Output directory required');await fs.mkdir(destination,{recursive:true});
 const csp="default-src 'self'; script-src 'self' https://static.cloudflareinsights.com SCRIPT; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src 'self' https://cloudflareinsights.com https://api.chuamay.org; media-src 'self' blob:; object-src 'none'; base-uri 'self'; frame-ancestors FRAME; form-action 'self'";
 for(const [host,port,env,mini,api] of [['h5',8800,'production',false,false],['miniapp',8801,'production',true,false],['api',8802,'production',false,true],['staging',8803,'staging',true,false]]){
-  const policy=host==='staging'?csp.replace(' SCRIPT',' https://www.googletagmanager.com SCRIPT').replace("img-src 'self'","img-src https://*.google-analytics.com https://www.googletagmanager.com 'self'").replace("connect-src 'self'","connect-src https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com 'self'"):csp;
+  const analytics=!api&&['h5','miniapp','staging'].includes(host);
+  const policy=analytics?csp.replace(' SCRIPT',' https://www.googletagmanager.com SCRIPT').replace("img-src 'self'","img-src https://*.google-analytics.com https://www.googletagmanager.com 'self'").replace("connect-src 'self'","connect-src https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com 'self'"):csp;
   const headers=`add_header X-Content-Type-Options nosniff always;
   add_header Referrer-Policy strict-origin-when-cross-origin always;
   add_header Permissions-Policy "camera=(), microphone=(), geolocation=()" always;
