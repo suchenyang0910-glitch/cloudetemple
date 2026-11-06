@@ -1,0 +1,49 @@
+// Stage-only UI. The tag runs in an empty document, away from links, forms and launch parameters.
+const id='G-0EF24Y0Q9M', key='ct-analytics';
+const views='entry choose home incense bow sit mo beads leave memorial'.split(' ');
+const activities='incense bow sit mo beads'.split(' ');
+const fields={
+ activity_start:{activity:activities},activity_complete:{activity:activities,duration_bucket:['<1m','1-3m','3-10m','>10m'],count_bucket:['1','2-26','27-53','54-107','108+']},
+ share_open:{activity:activities},share_channel:{channel:['download','system','telegram_forward']},sound_toggle:{state:['on','off']},hand_switch:{hand:['left','right']},
+ waitlist_submit:{result:['invalid','rate_limit','success','error']},image_load_failed:{asset_group:['scene','visitor','prop'],path_kind:['fetch-blob','native-img','failed']}
+};
+export function setupAnalytics(platform){
+ let choice='',frame,send,current=document.body.dataset.view||'entry';
+ try{choice=localStorage.getItem(key)}catch{}
+ const banner=document.createElement('aside'),prefs=document.createElement('button');
+ banner.id='ga-choice';banner.innerHTML='<span></span><div><button type="button"></button><button type="button"></button></div>';
+ prefs.type='button';prefs.className='text-button';document.querySelector('#more-menu footer').prepend(prefs);
+ document.querySelector('#app').append(banner);
+ function labels(){const en=document.documentElement.lang==='en';
+  banner.firstChild.textContent=en?'Cloud Temple uses anonymous statistics to improve your experience.':'Chùa Mây dùng thống kê ẩn danh để cải thiện trải nghiệm.';
+  banner.querySelectorAll('button').forEach((b,i)=>b.textContent=(en?['Agree','Decline']:['Đồng ý','Không'])[i]);
+  prefs.textContent=en?'Analytics preferences':'Tùy chọn thống kê';
+ }
+ labels();new MutationObserver(labels).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
+ const controls=document.querySelector('#controls');
+ function position(){banner.style.bottom=(innerHeight-controls.getBoundingClientRect().top+5)+'px'}
+ new ResizeObserver(position).observe(controls);window.addEventListener('resize',position);
+ prefs.onclick=()=>{document.querySelector('#more-menu').close();banner.hidden=false;position();banner.querySelector('button').focus()};
+ const locationSafe=location.origin+'/';
+ function view(v){if(!views.includes(v))return;current=v;if(send){send('set',{page_title:v});send('event','page_view',{page_title:v})}}
+ function start(){
+  if(frame)return;
+  frame=document.createElement('iframe');frame.hidden=true;frame.title='Analytics';frame.referrerPolicy='no-referrer';document.body.append(frame);
+  const w=frame.contentWindow;w.dataLayer=[];send=function(){w.dataLayer.push(arguments)};w.gtag=send;
+  send('consent','default',{analytics_storage:'denied',ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied'});
+  send('consent','update',{analytics_storage:'granted'});
+  const params=new URLSearchParams(location.search),source=[params.get('s'),params.get('startapp')].find(s=>['telegram','zalo','facebook','messenger','share'].includes(s));
+  send('set',{page_location:locationSafe,page_referrer:'',page_title:current});
+  send('js',new Date());send('config',id,{send_page_view:false,debug_mode:true,page_location:locationSafe,page_referrer:'',allow_google_signals:false,allow_ad_personalization_signals:false,cookie_domain:location.hostname,user_properties:{platform:platform()?'telegram':'web'},...(source?{campaign_source:source,campaign_medium:'referral'}:{})});
+  const script=w.document.createElement('script');script.async=true;script.referrerPolicy='no-referrer';script.src='https://www.googletagmanager.com/gtag/js?id='+id;w.document.head.append(script);view(current);
+ }
+ function choose(allow){choice=allow?'yes':'no';try{localStorage.setItem(key,choice)}catch{}
+  banner.hidden=true;if(allow){start();return}
+  if(frame){frame.contentWindow['ga-disable-'+id]=true;send('consent','update',{analytics_storage:'denied'});frame.remove();frame=null;send=null}
+  for(const cookie of document.cookie.split(';')){const n=cookie.split('=')[0].trim();if(/^_ga(?:$|_)/.test(n))document.cookie=n+'=; Max-Age=0; Path=/; Secure; Domain='+location.hostname}
+ }
+ const [yes,no]=banner.querySelectorAll('button');yes.onclick=()=>choose(true);no.onclick=()=>choose(false);
+ banner.hidden=['yes','no'].includes(choice);position();if(choice==='yes')start();
+ return {view,event(name,p){const rule=fields[name];if(!send||!rule)return;
+  const clean={};for(const [k,values] of Object.entries(rule)){if(!values.includes(p[k]))return;clean[k]=p[k]}send('event',name,clean)}};
+}

@@ -174,3 +174,5 @@ body[data-view=beads] .scene-heading{z-index:3}
 
 #img-debug{position:fixed;z-index:80;top:30%;left:4px;max-width:calc(100vw - 12px);color:#faf4e7;background:#393229;border-radius:8px;padding:4px 8px;font:12px/1.4 system-ui}
 #img-debug summary{cursor:pointer}#img-debug pre{max-height:24vh;max-width:84vw;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;user-select:text}
+
+#ga-choice{position:fixed;z-index:9;left:50%;transform:translateX(-50%);width:min(94%,410px);padding:9px 12px;border-radius:12px;background:#382e26;color:#fff3de;display:flex;align-items:center;gap:8px;font-size:12px}#ga-choice[hidden]{display:none}#ga-choice div{display:flex;gap:4px}#ga-choice button{min-height:44px;min-width:48px;padding:4px;color:#fff3de;background:#614d3c}

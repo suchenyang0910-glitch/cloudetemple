@@ -5,6 +5,9 @@ import {assetURL,loadImage,placeholder,enableImageDebug} from './resources.js';
 import {copy,reflections} from './i18n.js';
 import {apiURL,initTelegram,inTelegram,initData,telegramBack,telegramAppearance,haptic,telegramShare} from './telegram.js';
 
+let analytics,woodStarted;
+const event=(name,params)=>analytics?.event(name,params);
+function completed(activity,ms,n){event('activity_complete',{activity,duration_bucket:ms<60000?'<1m':ms<180000?'1-3m':ms<=600000?'3-10m':'>10m',count_bucket:n>=108?'108+':n>=54?'54-107':n>=27?'27-53':n>1?'2-26':'1'})}
 const $=s=>document.querySelector(s);
 const reduced=matchMedia('(prefers-reduced-motion: reduce)');
 const state={view:'entry',lang:'vi',visitor:null,period:'day',layout:null,busy:false,activity:null,result:null,bowTarget:3,sitMinutes:3,wood:0,bead:0,beadRound:1,beadHand:'right'};
@@ -114,7 +117,7 @@ async function navigate(view,{keepResult=false}={}){
  const token=++transitionId;pendingView=view;stopActivity();state.busy=true;
  const old=renderAssets?canvas.cloneNode():null;
  if(old){old.id='scene-old';old.className='scene-surface';old.setAttribute('aria-hidden','true');old.style.cssText=`width:${canvas.getBoundingClientRect().width}px;top:${canvas.offsetTop}px`;old.getContext('2d').drawImage(canvas,0,0);canvas.before(old);}
- state.view=view;state.period=periodNow();if(!keepResult)state.result=null;
+ if(state.view!==view)analytics?.view(view);state.view=view;state.period=periodNow();if(!keepResult)state.result=null;
  if(view==='mo')woodSession=0;if(view==='beads'){state.bead=0;state.beadRound=1;}if(view==='sit')state.wood=0;
  render();$('#app').setAttribute('aria-busy','true');canvas.style.opacity='0';
  const timer=setTimeout(()=>{if(token===transitionId){$('#loading').hidden=false;$('#loading').textContent=t('loading');}},400);
@@ -241,6 +244,7 @@ function complete(kind,elapsed=0){
   if(state.result)return;
   const old=state.activity;
   state.result={kind,elapsed,count:kind==='bow'?old?.count:kind==='beads'?108:1,reflection:Math.floor(Math.random()*reflections.length)};
+  completed(kind,elapsed,state.result.count);
   const stored=read('ct-totals',{}),count=Number.isFinite(stored?.count)&&stored.count>=0?stored.count:0,seconds=Number.isFinite(stored?.seconds)&&stored.seconds>=0?stored.seconds:0;
   write('ct-totals',{count:count+1,seconds:seconds+Math.round(elapsed/1000)});
   stopActivity();audio.strike('bell',kind==='bow'?.8:1);if(['incense','bow'].includes(kind))feedback('medium');render();paint();$('.scene-heading').animate([{opacity:.65},{opacity:1}],{duration:reduced.matches?150:200});
@@ -264,13 +268,13 @@ function advanceBow(now){
 }
 function bowOnce(now=performance.now()){
  if(state.result||state.activity?.bowStart!=null||state.activity?.count>=state.bowTarget)return;
- state.activity??={kind:'bow',count:0,auto:false,bowStart:null,started:now};
+ if(!state.activity)event('activity_start',{activity:'bow'});state.activity??={kind:'bow',count:0,auto:false,bowStart:null,started:now};
  Object.assign(state.activity,{bowStart:now,struck:false,counted:false});syncBowControls();animation();
 }
 
 function bead(){
   if(state.result||state.bead>=109)return;
-  state.activity??={kind:'beads',started:Date.now()};state.bead++;
+  if(!state.activity)event('activity_start',{activity:'beads'});state.activity??={kind:'beads',started:Date.now()};state.bead++;
   const marker=[27,54,81].includes(state.bead);
   feedback(state.bead===109?'heavy':marker?'medium':'light');
   if(!audio.strike('bead-v1',1,.97+Math.random()*.06))audio.strike('wood',.35,1.6);
@@ -300,7 +304,7 @@ function stopWoodAuto(){if(woodAuto){clearInterval(woodAuto);woodAuto=null;}}
 function tapWood(){
  const count=dailyWood()+1;write('ct-wood',{day:localDay(),count});audio.strike('wood');
  if(state.view==='mo'){
-  woodSession++;$('#daily-wood').textContent=t('dailyWood',{count});if(woodSession===108){$('#wood-message').textContent=t('wood108');audio.strike('bell',.5);}bounce($('#daily-wood'));
+  if(!woodSession){woodStarted=performance.now();event('activity_start',{activity:'mo'})}woodSession++;$('#daily-wood').textContent=t('dailyWood',{count});if(woodSession===108){completed('mo',performance.now()-woodStarted,108);$('#wood-message').textContent=t('wood108');audio.strike('bell',.5);}bounce($('#daily-wood'));
   if(!haptic('light'))try{navigator.vibrate?.(10);}catch{}
   if(!reduced.matches){
    const mallet=$('#mallet-prop');mallet.getAnimations().forEach(a=>a.cancel());mallet.animate([{transform:'translate(0,0) rotate(0deg)'},{transform:'translate(-24px,25px) rotate(-12deg)',offset:.5},{transform:'translate(0,0) rotate(0deg)'}],{duration:140});
@@ -318,6 +322,7 @@ function openMore(){closeModal();$('#more-menu').showModal();telegramBack(true);
 $('#close-more').onclick=()=>$('#more-menu').close();
 $('#more-menu').addEventListener('close',()=>telegramBack(!['entry','home'].includes(state.view)));
 function memorial(){
+  analytics?.view('memorial');$('#modal').addEventListener('close',()=>analytics?.view(state.view),{once:true});
   $('#more-menu').close();
   if(inTelegram()){
     openModal('remind',`<p>${t('remindInfo')}</p><form id="remind-form"><label class="consent"><input type="checkbox" required><span>${t('remindConsent')}</span></label><button class="primary">${t('remind')}</button><p role="status" id="remind-status"></p></form>`);
@@ -330,13 +335,13 @@ function memorial(){
 async function submitWaitlist(e){
   e.preventDefault();const form=e.currentTarget,email=form.email.value.trim(),consent=$('#consent').checked,status=$('#form-status'),submit=form.querySelector('button');
   if(submit.disabled)return;
-  if(!form.email.validity.valid||!email||!consent){status.textContent=t('invalid');(!form.email.validity.valid||!email?form.email:$('#consent')).focus();return;}
+  if(!form.email.validity.valid||!email||!consent){event('waitlist_submit',{result:'invalid'});status.textContent=t('invalid');(!form.email.validity.valid||!email?form.email:$('#consent')).focus();return;}
   submit.disabled=true;submit.textContent=t('sending');status.textContent='';
   try{
     const response=await fetch(apiURL('/waitlist'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,language:state.lang,consent:true,consentAt:new Date().toISOString()}),signal:AbortSignal.timeout(12000)});
-    if(!response.ok){status.textContent=t(response.status===429?'rateLimit':'unavailable');return;}
-    const data=await response.json();if(data.ok!==true)throw new Error('invalid response');form.replaceChildren(Object.assign(document.createElement('p'),{textContent:t('registered')}));
-  }catch{status.textContent=t('unavailable');}
+    if(!response.ok){event('waitlist_submit',{result:response.status===429?'rate_limit':'error'});status.textContent=t(response.status===429?'rateLimit':'unavailable');return;}
+    const data=await response.json();if(data.ok!==true)throw new Error('invalid response');event('waitlist_submit',{result:'success'});form.replaceChildren(Object.assign(document.createElement('p'),{textContent:t('registered')}));
+  }catch{event('waitlist_submit',{result:'error'});status.textContent=t('unavailable');}
   finally{submit.disabled=false;submit.textContent=t('register');}
 }
 function wrap(c,text,x,y,width,lineHeight){let line='';for(const word of text.split(' ')){const next=line?line+' '+word:word;if(c.measureText(next).width>width&&line){c.fillText(line,x,y);line=word;y+=lineHeight;}else line=next;}if(line)c.fillText(line,x,y);return y+lineHeight;}
@@ -352,14 +357,14 @@ async function makeShare(){
     x.font='500 28px "Be Vietnam Pro", sans-serif';x.fillText(t('brand'),360,1160);
     x.font='18px "Be Vietnam Pro", sans-serif';x.fillText(t('tagline'),360,1201);x.font='15px sans-serif';x.fillText(location.origin,360,1250);
     shareBlob=await new Promise(resolve=>c.toBlob(resolve,'image/png'));if(!shareBlob)throw new Error('png');shareURL=URL.createObjectURL(shareBlob);
-    openModal('shareTitle',`<img class="share-preview" src="${shareURL}" alt="${escapeHTML(t('shareTitle'))}"><div class="row">${button('shareAction','share-file','primary')}${button('download','download')}</div><p id="share-status" role="status"></p>`);
+    event('share_open',{activity:state.result.kind});openModal('shareTitle',`<img class="share-preview" src="${shareURL}" alt="${escapeHTML(t('shareTitle'))}"><div class="row">${button('shareAction','share-file','primary')}${button('download','download')}</div><p id="share-status" role="status"></p>`);
   }catch{$('#notice').textContent=t('shareError');}
 }
-function download(){if(!shareBlob)return;const url=URL.createObjectURL(shareBlob),a=document.createElement('a');a.href=url;a.download='chua-may.png';a.click();setTimeout(()=>URL.revokeObjectURL(url),30000);}
+function download(){if(!shareBlob)return;event('share_channel',{channel:'download'});const url=URL.createObjectURL(shareBlob),a=document.createElement('a');a.href=url;a.download='chua-may.png';a.click();setTimeout(()=>URL.revokeObjectURL(url),30000);}
 async function shareFile(){
-  if(telegramShare(t('tagline')))return;
+  if(telegramShare(t('tagline'))){event('share_channel',{channel:'telegram_forward'});return}
   const file=new File([shareBlob],'chua-may.png',{type:'image/png'});
-  if(navigator.canShare?.({files:[file]})&&navigator.share){try{await navigator.share({files:[file],title:t('brand')});}catch(e){if(e.name!=='AbortError')$('#share-status').textContent=t('shareError');}}
+  if(navigator.canShare?.({files:[file]})&&navigator.share){try{await navigator.share({files:[file],title:t('brand')});event('share_channel',{channel:'system'});}catch(e){if(e.name!=='AbortError')$('#share-status').textContent=t('shareError');}}
   else download();
 }
 
@@ -380,16 +385,16 @@ document.addEventListener('click',async e=>{
     case 'reenter':await navigate('entry');break;
     case 'retry-choice':images.delete(`visitor-${state.visitor}-choose-v1.webp`);b.remove();void showChoice();break;
     case 'retry':images.clear();tinted.clear();await navigate(state.view);break;
-    case 'light':if(!state.activity){state.activity={kind:'incense',running:true,startedMonotonic:performance.now(),started:Date.now()};audio.strike('keisu',.6);feedback('soft');void audio.ambient('forest',.6,2);render();}break;
+    case 'light':if(!state.activity){event('activity_start',{activity:'incense'});state.activity={kind:'incense',running:true,startedMonotonic:performance.now(),started:Date.now()};audio.strike('keisu',.6);feedback('soft');void audio.ambient('forest',.6,2);render();}break;
     case 'bow-once':bowOnce();break;
     case 'auto':if(!state.activity){bowOnce();state.activity.auto=true;}else{state.activity.auto=!state.activity.auto;if(state.activity.auto&&state.activity.bowStart==null)bowOnce();}syncBowControls();break;
-    case 'sit-start':state.activity={kind:'sit',running:true,deadline:Date.now()+state.sitMinutes*60000,left:state.sitMinutes*60000,total:state.sitMinutes*60000};audio.ambient(audio.ambientKind);render();animation();break;
+    case 'sit-start':event('activity_start',{activity:'sit'});state.activity={kind:'sit',running:true,deadline:Date.now()+state.sitMinutes*60000,left:state.sitMinutes*60000,total:state.sitMinutes*60000};audio.ambient(audio.ambientKind);render();animation();break;
     case 'pause':{const a=state.activity;if(!a)break;if(a.running){a.left=remaining(a);a.running=false;const kind=audio.ambientKind;audio.ambient('none');audio.ambientKind=kind;}else{a.deadline=Date.now()+a.left;a.running=true;audio.ambient(audio.ambientKind);}render();animation();break;}
     case 'finish':if(state.activity)complete('sit',state.activity.total-remaining(state.activity));break;
     case 'wood':tapWood();break;
     case 'wood-auto':if(woodAuto)stopWoodAuto();else if(!document.hidden)woodAuto=setInterval(tapWood,1000);render();break;
     case 'bead':break;
-    case 'bead-hand':state.beadHand=state.beadHand==='left'?'right':'left';write('ct-bead-hand',state.beadHand);render();paint();break;
+    case 'bead-hand':state.beadHand=state.beadHand==='left'?'right':'left';event('hand_switch',{hand:state.beadHand});write('ct-bead-hand',state.beadHand);render();paint();break;
     case 'bead-again':state.result=null;state.bead=0;state.beadRound++;render();paint();$('#bead-control').focus({preventScroll:true});break;
     case 'share':await makeShare();break;
     case 'share-file':await shareFile();break;
@@ -398,7 +403,7 @@ document.addEventListener('click',async e=>{
 });
 $('#memorial').addEventListener('click',memorial);
 $('#language').addEventListener('change',e=>{state.lang=e.target.value;closeModal();render();});
-$('#sound-toggle').addEventListener('click',()=>{if(audio.enabled){write('ct-muted',true);audio.mute();}else{write('ct-muted',false);void enableSound();}});
+$('#sound-toggle').addEventListener('click',()=>{event('sound_toggle',{state:audio.enabled?'off':'on'});if(audio.enabled){write('ct-muted',true);audio.mute();}else{write('ct-muted',false);void enableSound();}});
 const savedVolume=read('ct-volume',80);$('#volume').value=typeof savedVolume==='number'&&Number.isFinite(savedVolume)&&savedVolume>=0&&savedVolume<=100?savedVolume:80;
 state.beadHand=read('ct-bead-hand','right')==='left'?'left':'right';
 $('#volume').addEventListener('input',()=>{write('ct-volume',Number($('#volume').value));audio.volume();});
@@ -419,6 +424,7 @@ let resolveLayout;const layoutReady=new Promise(resolve=>resolveLayout=resolve);
 async function init(){
   state.period=periodNow();document.body.dataset.period=state.period;$('#eyebrow').textContent=t(state.period);$('#subtitle').textContent=t('tagline');updateSoundUI();
   await initTelegram(()=>{if($('#more-menu').open)$('#more-menu').close();else if($('#modal').open)closeModal();else navigate(state.view==='choose'?'entry':'home');},openMore);
+  if(location.hostname==='staging.chuamay.org'){const {setupAnalytics}=await import('./analytics.js');analytics=setupAnalytics(inTelegram);window.addEventListener('ct-image-failure',e=>event('image_load_failed',e.detail));}
   enableImageDebug(inTelegram());
   try{const response=await fetch(assetURL('processed-v1/layout-v1.json'),{credentials:'omit'});if(!response.ok)throw new Error('layout');state.layout=await response.json();const saved=read('ct-visitor',null);state.visitor=state.layout.v1_scope.visitors.includes(saved)?saved:state.layout.v1_scope.visitors[Math.floor(Math.random()*6)];state.period=periodNow();resolveLayout();if(!transitionId)await navigate('entry');}
   catch{$('#loading').hidden=true;$('#notice').textContent=t('loadError');$('#controls').innerHTML=button('retry','reload');$('#controls').onclick=e=>{if(e.target.dataset.action==='reload')location.reload();};$('#app').setAttribute('aria-busy','false');}

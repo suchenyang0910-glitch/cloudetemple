@@ -38,7 +38,8 @@ export async function loadImage(name,message){
   step('ok',{path:'fetch-blob'});return im;
  }catch(e){step(row.state+'-error',{error:e.name+(controller.signal.aborted?' (8s timeout)':'')});}
  finally{clearTimeout(timer);if(objectURL)URL.revokeObjectURL(objectURL);}
- const im=new Image();row.attempt=2;
+ const failure=path_kind=>window.dispatchEvent(new CustomEvent('ct-image-failure',{detail:{asset_group:name.startsWith('scene-')?'scene':name.startsWith('visitor-')?'visitor':'prop',path_kind}}));
+ failure('fetch-blob');const im=new Image();row.attempt=2;
  try{
   step('native-load');
   await new Promise((resolve,reject)=>{
@@ -46,6 +47,6 @@ export async function loadImage(name,message){
    timer=setTimeout(()=>reject(Error('native-timeout-15s')),15000);im.src=url;
   });
   step('ok',{path:'native-img'});return im;
- }catch(e){im.removeAttribute('src');step('placeholder',{nativeError:e.message,path:'failed'});return placeholder(name,message);}
+ }catch(e){im.removeAttribute('src');step('placeholder',{nativeError:e.message,path:'failed'});failure('native-img');failure('failed');return placeholder(name,message);}
  finally{clearTimeout(timer);im.onload=im.onerror=null;}
 }

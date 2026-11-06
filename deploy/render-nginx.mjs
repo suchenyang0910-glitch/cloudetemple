@@ -2,12 +2,13 @@ import fs from 'node:fs/promises';
 const destination=process.argv[2];if(!destination)throw Error('Output directory required');await fs.mkdir(destination,{recursive:true});
 const csp="default-src 'self'; script-src 'self' https://static.cloudflareinsights.com SCRIPT; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src 'self' https://cloudflareinsights.com https://api.chuamay.org; media-src 'self' blob:; object-src 'none'; base-uri 'self'; frame-ancestors FRAME; form-action 'self'";
 for(const [host,port,env,mini,api] of [['h5',8800,'production',false,false],['miniapp',8801,'production',true,false],['api',8802,'production',false,true],['staging',8803,'staging',true,false]]){
+  const policy=host==='staging'?csp.replace(' SCRIPT',' https://www.googletagmanager.com SCRIPT').replace("img-src 'self'","img-src https://*.google-analytics.com https://www.googletagmanager.com 'self'").replace("connect-src 'self'","connect-src https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com 'self'"):csp;
   const headers=`add_header X-Content-Type-Options nosniff always;
   add_header Referrer-Policy strict-origin-when-cross-origin always;
   add_header Permissions-Policy "camera=(), microphone=(), geolocation=()" always;
   add_header Strict-Transport-Security "max-age=31536000" always;
   ${host==='miniapp'?'add_header X-Robots-Tag noindex always;':'add_header X-Frame-Options DENY always;'}
-  add_header Content-Security-Policy "${csp.replace('SCRIPT',mini?'https://telegram.org':'').replace('FRAME',host==='miniapp'?'https://web.telegram.org':"'none'")}" always;`;
+  add_header Content-Security-Policy "${policy.replace('SCRIPT',mini?'https://telegram.org':'').replace('FRAME',host==='miniapp'?'https://web.telegram.org':"'none'")}" always;`;
   const proxy=`proxy_pass http://127.0.0.1:${env==='staging'?8791:8790};
       proxy_set_header X-Chuamay-Peer $http_x_chuamay_peer;
       proxy_set_header CF-Connecting-IP $http_cf_connecting_ip;`;

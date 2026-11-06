@@ -32,6 +32,7 @@ Copy-Item -LiteralPath (Join-Path $projectRoot 'assets/processed-v1/mobile') -De
 Copy-Item -LiteralPath (Join-Path $projectRoot 'assets/fonts') -Destination (Join-Path $outputRoot 'assets') -Recurse
 $debugOutput=Join-Path $outputRoot 'audio-debug.js'
 if($Environment -eq 'staging'){
+  Copy-Item -LiteralPath (Join-Path $projectRoot 'analytics.js') -Destination $outputRoot
   Copy-Item -LiteralPath (Join-Path $projectRoot 'audio-debug.js') -Destination $debugOutput -Force
   $index=Join-Path $outputRoot 'index.html'
   $html=[IO.File]::ReadAllText($index).Replace('</body>','<script type="module" src="audio-debug.js"></script></body>')
