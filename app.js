@@ -4,7 +4,7 @@ import {beadGuruRule} from './config.js';
 import {createTempleAudio} from './audio.js';
 import {assetURL,loadImage,placeholder,enableImageDebug} from './resources.js';
 import {copy,reflections} from './i18n.js';
-import {apiURL,initTelegram,inTelegram,initData,telegramBack,telegramAppearance,haptic,telegramShare,telegramStory,telegramDownload,telegramStartParam} from './telegram.js';
+import {apiURL,initTelegram,inTelegram,initData,telegramBack,telegramAppearance,haptic,telegramShare,telegramStory,telegramStartParam} from './telegram.js';
 
 let analytics,woodStarted;
 const event=(name,params)=>analytics?.event(name,params);
@@ -375,8 +375,7 @@ function showShareModal(){openModal('shareTitle',`<img class="share-preview" src
 function download(){
  if(!shareBlob)return;
  if(inTelegram()){
-  const attempted=telegramDownload(shareURL,'chua-may.png',ok=>{if(ok)event('share_channel',{channel:'download'});else $('#share-status').textContent=t('longPressSave');});
-  if(!attempted)$('#share-status').textContent=t('longPressSave');return;
+  $('#share-status').textContent=t('longPressSave');return;
  }
  event('share_channel',{channel:'download'});const url=URL.createObjectURL(shareBlob),a=document.createElement('a');a.href=url;a.download='chua-may.png';a.click();setTimeout(()=>URL.revokeObjectURL(url),30000);
 }

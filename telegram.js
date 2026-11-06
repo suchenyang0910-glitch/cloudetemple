@@ -31,11 +31,6 @@ export function telegramStory(text,source='s_tg_story'){
  if(!app?.shareToStory)return false;
  app.shareToStory(location.origin+'/assets/share/og-share-vi.webp',{text,widget_link:{url:MINI_APP_URL+'?startapp='+encodeURIComponent(source),name:'Chùa Mây'}});return true;
 }
-export function telegramDownload(url,fileName,onDone){
- if(!app?.downloadFile)return false;
- try{app.downloadFile({url,file_name:fileName},ok=>onDone?.(!!ok));return true;}catch{return false;}
-}
-
 export function telegramAppearance(period,running){
   if(!app)return;
   const color={dawn:'#eee8dc',day:'#eee8dc',dusk:'#705b49',night:'#282a27'}[period];
