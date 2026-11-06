@@ -1,4 +1,4 @@
-// Stage-only UI. The tag runs in an empty document, away from links, forms and launch parameters.
+// Stage-only. Capture attribution and initialize Telegram before cleaning the launch URL.
 const id='G-0EF24Y0Q9M', key='ct-analytics';
 const views='entry choose home incense bow sit mo beads leave memorial'.split(' ');
 const activities='incense bow sit mo beads'.split(' ');
@@ -27,19 +27,19 @@ export function setupAnalytics(platform){
  const locationSafe=location.origin+'/';
  function view(v){if(!views.includes(v))return;current=v;if(send){send('set',{page_title:v});send('event','page_view',{page_title:v})}}
  function start(){
-  if(frame)return;
-  frame=document.createElement('iframe');frame.hidden=true;frame.title='Analytics';frame.referrerPolicy='no-referrer';document.body.append(frame);
-  const w=frame.contentWindow;w.dataLayer=[];send=function(){w.dataLayer.push(arguments)};w.gtag=send;
+  if(send)return;
+  const params=new URLSearchParams(location.search);history.replaceState(history.state,'',locationSafe);window['ga-disable-'+id]=false;
+  const w=window;w.dataLayer??=[];send=function(){w.dataLayer.push(arguments)};w.gtag=send;
   send('consent','default',{analytics_storage:'denied',ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied'});
   send('consent','update',{analytics_storage:'granted'});
-  const params=new URLSearchParams(location.search),source=[params.get('s'),params.get('startapp')].find(s=>['telegram','zalo','facebook','messenger','share'].includes(s));
-  send('set',{page_location:locationSafe,page_referrer:'',page_title:current});
-  send('js',new Date());send('config',id,{send_page_view:false,debug_mode:true,page_location:locationSafe,page_referrer:'',allow_google_signals:false,allow_ad_personalization_signals:false,cookie_domain:location.hostname,user_properties:{platform:platform()?'telegram':'web'},...(source?{campaign_source:source,campaign_medium:'referral'}:{})});
-  const script=w.document.createElement('script');script.async=true;script.referrerPolicy='no-referrer';script.src='https://www.googletagmanager.com/gtag/js?id='+id;w.document.head.append(script);view(current);
+  const source=[params.get('s'),params.get('startapp')].find(s=>['telegram','zalo','facebook','messenger','share'].includes(s));
+  send('set',{page_location:locationSafe,page_referrer:locationSafe,page_title:current});
+  send('js',new Date());send('config',id,{send_page_view:false,debug_mode:true,page_location:locationSafe,page_referrer:locationSafe,allow_google_signals:false,allow_ad_personalization_signals:false,cookie_domain:location.hostname,user_properties:{platform:platform()?'telegram':'web'},...(source?{campaign_source:source,campaign_medium:'referral'}:{})});
+  const script=w.document.createElement('script');script.async=true;script.referrerPolicy='no-referrer';script.src='https://www.googletagmanager.com/gtag/js?id='+id;if(!frame){frame=script;w.document.head.append(script)}view(current);
  }
  function choose(allow){choice=allow?'yes':'no';try{localStorage.setItem(key,choice)}catch{}
   banner.hidden=true;if(allow){start();return}
-  if(frame){frame.contentWindow['ga-disable-'+id]=true;send('consent','update',{analytics_storage:'denied'});frame.remove();frame=null;send=null}
+  if(send){window['ga-disable-'+id]=true;send('consent','update',{analytics_storage:'denied'});send=null}
   for(const cookie of document.cookie.split(';')){const n=cookie.split('=')[0].trim();if(/^_ga(?:$|_)/.test(n))document.cookie=n+'=; Max-Age=0; Path=/; Secure; Domain='+location.hostname}
  }
  const [yes,no]=banner.querySelectorAll('button');yes.onclick=()=>choose(true);no.onclick=()=>choose(false);
