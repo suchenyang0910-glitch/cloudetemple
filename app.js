@@ -10,6 +10,7 @@ import {createReferrals} from './referrals.js';
 let analytics,woodStarted,referrals;
 const familyEnabled='__CT_FAMILY_ENABLED__'==='1';
 const referralsEnabled='__CT_REFERRALS_ENABLED__'==='1';
+const presenceEnabled='__CT_PRESENCE_ENABLED__'==='1';
 const event=(name,params)=>{analytics?.event(name,params);if(name==='activity_complete')referrals?.event('activity_complete',params.activity);if(name==='share_channel')referrals?.event('share');};
 function completed(activity,ms,n){event('activity_complete',{activity,duration_bucket:ms<60000?'<1m':ms<180000?'1-3m':ms<=600000?'3-10m':'>10m',count_bucket:n>=108?'108+':n>=54?'54-107':n>=27?'27-53':n>1?'2-26':'1'})}
 const $=s=>document.querySelector(s);
@@ -40,6 +41,10 @@ const actionIcons={
 const read=(key,fallback)=>{try{return JSON.parse(localStorage.getItem(key))??fallback;}catch{return fallback;}};
 const write=(key,value)=>{try{localStorage.setItem(key,JSON.stringify(value));}catch{/* Private browsing still permits a complete visit. */}};
 referrals=createReferrals({apiURL,telegramData:initData,startParam:telegramStartParam,landing:launchAttribution,enabled:referralsEnabled});
+const presenceId=presenceEnabled&&crypto.randomUUID?.();
+let presenceTimer;
+const heartbeat=()=>{if(!presenceId||document.hidden)return;void fetch(apiURL('/presence/heartbeat'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:presenceId}),signal:AbortSignal.timeout(8000)}).catch(()=>{});};
+const startPresence=()=>{if(!presenceId||presenceTimer)return;heartbeat();presenceTimer=setInterval(heartbeat,30000);};
 
 export function periodNow(date=new Date(),periods=state.layout?.periods??{dawn:"05:00-07:59",day:"08:00-16:59",dusk:"17:00-18:59",night:"19:00-04:59"}){
   const minute=date.getHours()*60+date.getMinutes();
@@ -461,7 +466,7 @@ $('#volume').addEventListener('input',()=>{write('ct-volume',Number($('#volume')
 $('#controls').addEventListener('pointerdown',e=>{const action=e.target.closest('[data-action]')?.dataset.action;if(action==='enter')void image(`visitor-${state.visitor}-sit.webp`);else if(['incense','bow','sit','beads','mo'].includes(action))void image(sceneFile(action,periodNow()));});
 document.addEventListener('click',()=>{void audio.wake();},true);
 reduced.addEventListener('change',()=>{animation();fx();if(state.view==='beads')render();});
-document.addEventListener('visibilitychange',async()=>{if(document.hidden){stopWoodAuto();audio.stopBackground();cancelAnimationFrame(drawFrame);if(state.view==='mo')render();}else{await audio.wake();tick();animation();if(state.view==='sit'&&state.activity?.running)audio.ambient(audio.ambientKind);if(state.view==='incense'&&state.activity?.running)audio.ambient('forest',.6,2);if(state.view==='beads')void audio.load('bead-v1').catch(()=>{});}});
+document.addEventListener('visibilitychange',async()=>{if(document.hidden){stopWoodAuto();audio.stopBackground();cancelAnimationFrame(drawFrame);if(state.view==='mo')render();}else{heartbeat();await audio.wake();tick();animation();if(state.view==='sit'&&state.activity?.running)audio.ambient(audio.ambientKind);if(state.view==='incense'&&state.activity?.running)audio.ambient('forest',.6,2);if(state.view==='beads')void audio.load('bead-v1').catch(()=>{});}});
 let periodUpdating=false;
 async function tick(){
   if(!state.layout||state.busy)return;
@@ -473,6 +478,7 @@ async function tick(){
 setInterval(tick,200);
 let resolveLayout;const layoutReady=new Promise(resolve=>resolveLayout=resolve);
 async function init(){
+  startPresence();
   state.period=periodNow();document.documentElement.lang=state.lang;$('#language').value=state.lang;document.body.dataset.period=state.period;$('#eyebrow').textContent=t(state.period);$('#subtitle').textContent=t('tagline');updateSoundUI();
   await initTelegram(()=>{if($('#more-menu').open)$('#more-menu').close();else if($('#modal').open)closeModal();else navigate(state.view==='choose'?'entry':'home');},openMore);
   enableImageDebug(inTelegram());

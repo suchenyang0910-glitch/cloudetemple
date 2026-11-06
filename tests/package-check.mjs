@@ -39,6 +39,7 @@ if(process.argv.includes('--production')){
  assert(app,'production app module');
  assert((await fs.readFile(new URL(app,root),'utf8')).match(/const familyEnabled\s*=\s*["']0["']\s*===\s*["']1["']/),'production family entry disabled');
  assert((await fs.readFile(new URL(app,root),'utf8')).match(/const referralsEnabled\s*=\s*["']0["']\s*===\s*["']1["']/),'production referrals disabled');
+ assert((await fs.readFile(new URL(app,root),'utf8')).match(/const presenceEnabled\s*=\s*["']0["']\s*===\s*["']1["']/),'production presence disabled');
 }
 if(process.argv.includes('--staging')){
  const analytics=versioned.find(n=>n.startsWith('analytics.'));
@@ -53,6 +54,8 @@ if(process.argv.includes('--staging')){
  assert(versioned.some(n=>n.startsWith('family-i18n.')&&n.endsWith('.js')),'staging family copy dictionary');
  assert((await fs.readFile(new URL(versioned.find(n=>n.startsWith('app.')),root),'utf8')).match(/const familyEnabled\s*=\s*["']1["']\s*===\s*["']1["']/));
  assert((await fs.readFile(new URL(versioned.find(n=>n.startsWith('app.')),root),'utf8')).match(/const referralsEnabled\s*=\s*["']1["']\s*===\s*["']1["']/));
+ assert((await fs.readFile(new URL(versioned.find(n=>n.startsWith('app.')),root),'utf8')).match(/const presenceEnabled\s*=\s*["']1["']\s*===\s*["']1["']/));
+ for(const name of ['admin.html','admin.css','presence.css','admin.js'])await fs.access(new URL(name.replace(/\.(css|js)$/,`.${release}.$1`),root));
  for(const prefix of ['admin.'])for(const ext of ['js','css'])assert(versioned.some(n=>n.startsWith(prefix)&&n.endsWith('.'+ext)),'staging admin '+ext);
  const admin=await fs.readFile(new URL('admin.html',root),'utf8');assert(admin.includes('noindex,nofollow')&&admin.includes(`admin.${release}.js`)&&admin.includes(`admin.${release}.css`),'admin is private and versioned');
 }

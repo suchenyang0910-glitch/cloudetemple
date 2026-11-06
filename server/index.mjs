@@ -16,6 +16,11 @@ try {
 const store = openStore(settings.db);
 const metrics = openMetricsStore(store.db);
 metrics.cleanup();
+let presenceSample;
+if (settings.presenceEnabled) {
+  presenceSample = setInterval(() => metrics.samplePresence(), 30000);
+  presenceSample.unref();
+}
 let familyCleanup, familyStore;
 const familyHandler =
   settings.familyEnabled
@@ -39,6 +44,7 @@ server.listen(settings.port, "127.0.0.1", () =>
 process.on("SIGTERM", () =>
   server.close(() => {
     if (familyCleanup) clearInterval(familyCleanup);
+    if (presenceSample) clearInterval(presenceSample);
     store.close();
     process.exit(0);
   }),

@@ -26,6 +26,15 @@ export function createMetricsApi(settings, store, access, family = null) {
         return json(res, 200, { data: { ...store.summary(), operations, features: { family: settings.familyEnabled, beadGuruRule: settings.beadGuruRule, guideNoindex: true, mailProvider: settings.mailProvider, telegram: settings.telegramEnabled } } }), true;
       } catch { return json(res, 403, { error: "forbidden" }), true; }
     }
+    if (route === "/presence/heartbeat") {
+      if (!settings.presenceEnabled) return json(res, 404, { error: "route" }), true;
+      if (req.method !== "POST") { res.setHeader("Allow", "POST"); return json(res, 405, { error: "method" }), true; }
+      if (!req.headers.origin && req.headers["sec-fetch-site"] !== "same-origin") return json(res, 403, { error: "forbidden" }), true;
+      if (!/^application\/json(?:\s*;|$)/i.test(req.headers["content-type"] || "")) return json(res, 415, { error: "content_type" }), true;
+      let value; try { value = await body(req); } catch { return json(res, 400, { error: "invalid" }), true; }
+      if (Object.keys(value).length !== 1 || !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value.id || "")) return json(res, 400, { error: "invalid" }), true;
+      return json(res, store.heartbeat(value.id) ? 204 : 503), true;
+    }
     if (!["/events", "/referrals/identity", "/referrals/bind", "/referrals/me", "/referrals/merge"].includes(route)) return false;
     if (!settings.referralsEnabled) return json(res, 404, { error: "route" }), true;
     if (!/^application\/json(?:\s*;|$)/i.test(req.headers["content-type"] || "")) return json(res, 415, { error: "content_type" }), true;

@@ -13,7 +13,7 @@ const now = 1800000000000, DAY = 86400000, team = "safe-team.cloudflareaccess.co
 const { privateKey, publicKey } = generateKeyPairSync("rsa", { modulusLength: 2048 }), jwk = { ...publicKey.export({ format: "jwk" }), kid: "key-1", alg: "RS256", use: "sig" };
 const encode = (value) => Buffer.from(JSON.stringify(value)).toString("base64url");
 const jwt = (patch = {}) => { const header = encode({ alg: "RS256", kid: "key-1", typ: "JWT" }), payload = encode({ iss: `https://${team}`, aud: [audience], email, type: "app", nbf: now / 1000 - 10, exp: now / 1000 + 300, ...patch }), data = `${header}.${payload}`; return `${data}.${sign("RSA-SHA256", Buffer.from(data), privateKey).toString("base64url")}`; };
-const settings = { adminEnabled: true, referralsEnabled: true, accessTeamDomain: team, accessAud: audience, adminEmails: new Set([email]), hashSecret: "x".repeat(64), origins: new Set(), familyEnabled: true, beadGuruRule: "turn-back", mailProvider: "outbox", telegramEnabled: false, adminOpsPath: "missing-admin-ops.json", trustLocal: false };
+const settings = { adminEnabled: true, referralsEnabled: true, presenceEnabled: true, accessTeamDomain: team, accessAud: audience, adminEmails: new Set([email]), hashSecret: "x".repeat(64), origins: new Set(), familyEnabled: true, beadGuruRule: "turn-back", mailProvider: "outbox", telegramEnabled: false, adminOpsPath: "missing-admin-ops.json", trustLocal: false };
 const fetchKeys = async () => new Response(JSON.stringify({ keys: [jwk] }), { status: 200, headers: { "Content-Type": "application/json" } });
 
 test("Access JWT requires signature, iss, aud, time, app type and allowlisted email", async () => {
@@ -56,13 +56,44 @@ test("reminder return rate counts only incense within three days and suppresses 
   } finally { database.close(); }
 });
 
+test("presence keeps temporary ids only in memory and stores five-minute numeric aggregates", () => {
+  const database = openStore(":memory:"), store = openMetricsStore(database.db), at = Date.now();
+  try {
+    for (let i = 0; i < 4; i++) assert.equal(store.heartbeat(`temporary-${i}`, at), true);
+    assert.equal(store.samplePresence(at), 4);
+    assert.equal(store.summary().presence.hours[0].status, "insufficient");
+    assert.equal(store.heartbeat("temporary-4", at + 1000), true);
+    assert.equal(store.heartbeat("temporary-4", at + 2000), true);
+    assert.equal(store.samplePresence(at + 2000), 5);
+    assert.deepEqual(store.summary().presence.hours[0], { key: new Date(at).toISOString().slice(0, 13) + ":00:00.000Z", peak: 5, average: 4.5, samples: 2 });
+    assert.deepEqual(database.db.prepare("PRAGMA table_info(presence_5m)").all().map(({ name, type }) => ({ name, type })), [
+      { name: "bucket", type: "TEXT" }, { name: "peak", type: "INTEGER" }, { name: "total", type: "INTEGER" }, { name: "samples", type: "INTEGER" },
+    ]);
+    assert(!JSON.stringify(database.db.prepare("SELECT * FROM presence_5m").all()).includes("temporary"));
+    assert.equal(store.samplePresence(at + 78001), 0);
+  } finally { database.close(); }
+});
+
+test("presence heartbeat accepts one UUID field from a browser and rejects unsafe input", async (t) => {
+  const database = openStore(":memory:"), metrics = openMetricsStore(database.db), server = createServer(settings, database, async () => {}, createMetricsApi(settings, metrics, { validate: async () => email }));
+  await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve)); t.after(async () => { await new Promise((resolve) => server.close(resolve)); database.close(); });
+  const base = `http://127.0.0.1:${server.address().port}/presence/heartbeat`, request = (body, headers = {}) => fetch(base, { method: "POST", headers: { "Content-Type": "application/json", ...headers }, body: JSON.stringify(body) });
+  const id = "00000000-0000-4000-8000-000000000001";
+  assert.equal((await request({ id })).status, 403);
+  assert.equal((await request({ id: "bad" }, { "Sec-Fetch-Site": "same-origin" })).status, 400);
+  assert.equal((await request({ id, account: "forbidden" }, { "Sec-Fetch-Site": "same-origin" })).status, 400);
+  assert.equal((await request({ id }, { "Sec-Fetch-Site": "same-origin" })).status, 204);
+  assert.equal((await request({ id }, { "Sec-Fetch-Site": "same-origin" })).status, 204);
+  assert.equal(metrics.samplePresence(), 1);
+});
+
 test("admin endpoint is read-only, writes audit and returns only allowlisted aggregate fields", async (t) => {
   const database = openStore(":memory:"), metrics = openMetricsStore(database.db), access = createAccessVerifier(settings, fetchKeys, () => now), server = createServer(settings, database, async () => {}, createMetricsApi(settings, metrics, access));
   await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve)); t.after(async () => { await new Promise((resolve) => server.close(resolve)); database.close(); });
   const base = `http://127.0.0.1:${server.address().port}`, request = (token, method = "GET") => fetch(`${base}/admin/summary`, { method, headers: token ? { "Cf-Access-Jwt-Assertion": token } : {} });
   assert.equal((await request("")).status, 403); assert.equal((await request(jwt({ aud: ["wrong"] }))).status, 403); assert.equal((await request(jwt(), "POST")).status, 403);
   metrics.error("api_5xx"); const response = await request(jwt()); assert.equal(response.status, 200); const data = await response.json();
-  const allowed = new Set(["ok","data","overview","counters","day","metric","dimension","value","referrals","identities","bindings","k","channels","activities","tree","status","nodes","edges","id","from","to","key","subjects","family","tablets","members","invites","accepted","averageMembers","inviteAcceptance","reminderReturn","deliveries","operations","release","api","backupAt","backupCheck","certificateExpires","diskFreeBytes","errors","category","count","at","features","beadGuruRule","guideNoindex","mailProvider","telegram"]);
+  const allowed = new Set(["ok","data","overview","counters","day","metric","dimension","value","presence","hours","peak","average","samples","referrals","identities","bindings","k","channels","activities","tree","status","nodes","edges","id","from","to","key","subjects","family","tablets","members","invites","accepted","averageMembers","inviteAcceptance","reminderReturn","deliveries","operations","release","api","backupAt","backupCheck","certificateExpires","diskFreeBytes","errors","category","count","at","features","beadGuruRule","guideNoindex","mailProvider","telegram"]);
   const walk = (value) => { if (Array.isArray(value)) return value.forEach(walk); if (value && typeof value === "object") for (const [key, item] of Object.entries(value)) { assert(allowed.has(key), `unexpected admin field ${key}`); walk(item); } }; walk(data);
   const serialized = JSON.stringify(data); for (const forbidden of ["full_name","email","death_","token","referral_code","query","body","raw"]) assert(!serialized.toLowerCase().includes(forbidden));
   assert.equal(data.data.operations.errors[0].category, "api_5xx"); assert.equal(data.data.operations.errors[0].count, 1);
@@ -87,8 +118,10 @@ test("declined referral records only a click; daily binding cap and account merg
 test("admin and referral switches default off in production and fail closed", () => {
   const base = { TELEGRAM_ENABLED: "0", HASH_SECRET: "x".repeat(64), CHUAMAY_ENV: "production" };
   assert.equal(config(base).adminEnabled, false); assert.equal(config(base).referralsEnabled, false);
+  assert.equal(config(base).presenceEnabled, false);
   assert.throws(() => config({ ...base, ADMIN_ENABLED: "1" }), /staging-only/);
   assert.throws(() => config({ ...base, CHUAMAY_ENV: "staging", ADMIN_ENABLED: "1" }), /admin access/);
   const staged = config({ ...base, CHUAMAY_ENV: "staging", ADMIN_ENABLED: "1", CF_ACCESS_TEAM_DOMAIN: team, CF_ACCESS_AUD: audience, ADMIN_EMAILS: email });
-  assert.equal(staged.adminEmails.size, 1); assert.equal(staged.referralsEnabled, true);
+  assert.equal(staged.adminEmails.size, 1); assert.equal(staged.referralsEnabled, true); assert.equal(staged.presenceEnabled, true);
+  assert.throws(() => config({ ...base, PRESENCE_ENABLED: "yes" }), /PRESENCE_ENABLED/);
 });
