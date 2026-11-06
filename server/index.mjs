@@ -13,7 +13,7 @@ try {
 const store = openStore(settings.db);
 let familyCleanup;
 const familyHandler =
-  settings.environment === "staging"
+  settings.familyEnabled
     ? (() => {
         const family = openFamilyStore(store.db);
         family.cleanup();

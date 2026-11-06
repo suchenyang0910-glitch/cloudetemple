@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
 const root=new URL('../dist/',import.meta.url),{release}=JSON.parse(await fs.readFile(new URL('release.json',root)));
 const home=await fs.readFile(new URL('index.html',root),'utf8');assert(home.includes('property="og:image"')&&home.includes('class="home-content"')&&home.includes('application/ld+json'),'home metadata and prerendered copy');
+const about=await fs.readFile(new URL('gioi-thieu.html',root),'utf8');assert(about.includes('Hồ Ngọc Đức công bố')&&about.includes('calrules.html'),'lunar algorithm attribution');
 const files=await fs.readdir(root),pattern=new RegExp(`\\.${release}\\.(js|css)$`),versioned=files.filter(n=>pattern.test(n));
 const analyticsName=versioned.find(n=>n.startsWith('analytics.')),analyticsText=await fs.readFile(new URL(analyticsName,root),'utf8');assert(analyticsText.includes('campaign_content')&&analyticsText.includes("endsWith('_a_'+name)"),'anonymous activity attribution allowlist');
 assert(files.filter(n=>/\.(js|css)$/.test(n)).every(n=>pattern.test(n)),'only current hashed JS/CSS');
@@ -27,6 +28,8 @@ assert.equal(mobile.length,12);assert(mobile.every(x=>x.mobile<=120000&&x.width=
 if(process.argv.includes('--production')){
  assert(!files.some(n=>/^audio-debug(\.|$)/.test(n)));
  assert(!files.some(n=>/^(family|dev-outbox)(\.|$)/.test(n)),'production excludes family pilot and outbox');
+ await assert.rejects(fs.access(new URL('family.html',root)),'production family page is unreachable');
+ await assert.rejects(fs.access(new URL(`assets/releases/${release}/family`,root)),'production family assets are absent');
  for(const name of files){const item=new URL(name,root);if((await fs.stat(item)).isFile())assert(!(await fs.readFile(item)).includes(Buffer.from('debug_mode')),name+' contains debug_mode');}
  const analytics=versioned.find(n=>n.startsWith('analytics.'));
  assert(analytics,'production analytics module');
