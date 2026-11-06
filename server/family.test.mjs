@@ -18,14 +18,14 @@ const settings = {
   lunarLeapRule: "regular-month",
   trustLocal: false,
 };
-async function fixture() {
+async function fixture(dependencies) {
   const store = openStore(":memory:"),
     family = openFamilyStore(store.db),
     server = createServer(
       settings,
       store,
       async () => {},
-      createFamilyApi(settings, family),
+      createFamilyApi(settings, family, dependencies),
     );
   await new Promise((r) => server.listen(0, "127.0.0.1", r));
   const base = `http://127.0.0.1:${server.address().port}`;
@@ -371,6 +371,51 @@ test("every family write requires allowed Origin and JSON", async () => {
       body: JSON.stringify({ email: "origin@example.com" }),
     });
     assert.equal(r.status, 201);
+  } finally {
+    await new Promise((resolve) => f.server.close(resolve));
+    f.store.close();
+  }
+});
+
+test("authenticated calendar PDF is private, bounded and generated without a third-party call", async () => {
+  let received;
+  const f = await fixture({
+    calendarPdf: async (input) => {
+      received = input;
+      return Buffer.from("%PDF-1.7\nreview\n");
+    },
+  });
+  try {
+    let r = await f.request("/family/auth/email/start", {
+      method: "POST",
+      body: JSON.stringify({ email: "calendar@example.com" }),
+    });
+    assert.equal(r.status, 201);
+    const code = listOutbox(f.family.db)[0].text_body.match(/\b\d{6}\b/)[0];
+    r = await f.request("/family/auth/email/verify", {
+      method: "POST",
+      body: JSON.stringify({ email: "calendar@example.com", code }),
+    });
+    const session = await r.json(), cookie = r.headers.get("set-cookie").split(";", 1)[0];
+    r = await f.request("/family/tablets", {
+      method: "POST",
+      headers: { Cookie: cookie, "X-CSRF-Token": session.csrf },
+      body: JSON.stringify({ honorific: "Bà ngoại", fullName: "Tên riêng", deathYear: 2015, day: 12, month: 3 }),
+    });
+    assert.equal(r.status, 201);
+    r = await f.request("/family/calendar.pdf", {
+      method: "POST",
+      headers: { Cookie: cookie, "X-CSRF-Token": session.csrf },
+      body: JSON.stringify({ familyName: "Gia đình họ Nguyễn", year: 2027 }),
+    });
+    assert.equal(r.status, 200);
+    assert.equal(r.headers.get("content-type"), "application/pdf");
+    assert.equal(r.headers.get("cache-control"), "private, no-store");
+    assert.match(r.headers.get("content-disposition"), /lich-ngay-gio-2027\.pdf/);
+    assert.equal(Buffer.from(await r.arrayBuffer()).subarray(0, 5).toString(), "%PDF-");
+    assert.equal(received.familyName, "Gia đình họ Nguyễn");
+    assert.equal(received.year, 2027);
+    assert.equal(received.tablets.length, 1);
   } finally {
     await new Promise((resolve) => f.server.close(resolve));
     f.store.close();

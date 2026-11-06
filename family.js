@@ -376,7 +376,7 @@ async function inviteLanding(raw, authenticated = false) {
   if (loginButton) loginButton.onclick = login;
 }
 async function account() {
-  screen.innerHTML = `<section class="account"><h2>${t("account_title")}</h2><p>${t("account_privacy")}</p><label><input id="email-remind" type="checkbox"> ${t("remind_email")}</label><label><input id="tg-remind" type="checkbox"> ${t("remind_telegram")}</label><label><input id="festival" type="checkbox" checked> ${t("remind_festival")}</label><button id="save-reminders">${t("save_reminders")}</button><button id="calendar">${t("subscribe_calendar")}</button><button id="revoke-calendar">${t("revoke_calendar")}</button><button id="export">${t("export_data")}</button><button id="delete">${t("delete_data")}</button><button id="account-back">${t("back")}</button><p class="muted">${t("native_pending")}</p></section>`;
+  screen.innerHTML = `<section class="account"><h2>${t("account_title")}</h2><p>${t("account_privacy")}</p><label><input id="email-remind" type="checkbox"> ${t("remind_email")}</label><label><input id="tg-remind" type="checkbox"> ${t("remind_telegram")}</label><label><input id="festival" type="checkbox" checked> ${t("remind_festival")}</label><button id="save-reminders">${t("save_reminders")}</button><button id="calendar">${t("subscribe_calendar")}</button><input id="calendar-family-name" type="text" maxlength="80" placeholder="${t("family_name_placeholder")}" autocomplete="organization"><button id="download-calendar">${t("download_calendar")}</button><button id="revoke-calendar">${t("revoke_calendar")}</button><button id="export">${t("export_data")}</button><button id="delete">${t("delete_data")}</button><button id="account-back">${t("back")}</button><p class="muted">${t("native_pending")}</p></section>`;
   if (!demo) {
     const reminder = await api("/reminders");
     $("#email-remind").checked = !!reminder.prefs.email_on;
@@ -413,6 +413,30 @@ async function account() {
     });
     familyEvent("reminder_channel_set", "calendar");
     location.href = d.calendarURL;
+  };
+  $("#download-calendar").onclick = async () => {
+    if (demo) return note(t("demo_calendar"));
+    const button = $("#download-calendar");
+    button.disabled = true;
+    try {
+      const response = await fetch("/api/family/calendar.pdf", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json", "X-CSRF-Token": csrf },
+        body: JSON.stringify({ year: 2027, familyName: $("#calendar-family-name").value }),
+      });
+      if (!response.ok || response.headers.get("content-type") !== "application/pdf") throw Error("calendar");
+      const href = URL.createObjectURL(await response.blob()), link = document.createElement("a");
+      link.href = href;
+      link.download = "lich-ngay-gio-2027.pdf";
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(href), 1000);
+      note(t("calendar_downloaded"));
+    } catch {
+      note(t("calendar_failed"));
+    } finally {
+      button.disabled = false;
+    }
   };
   $("#revoke-calendar").onclick = async () => {
     if (demo) return note(t("demo_calendar"));
