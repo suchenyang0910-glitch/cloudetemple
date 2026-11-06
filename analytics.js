@@ -9,7 +9,8 @@ const fields={
  waitlist_submit:{result:['invalid','rate_limit','success','error']},image_load_failed:{asset_group:['scene','visitor','prop'],path_kind:['fetch-blob','native-img','failed']}
 };
 export function setupAnalytics(platform,attribution={}){
- let choice='',frame,send,current=document.body.dataset.view||'entry';
+ const startActivity=activities.find(name=>attribution.startParam?.endsWith('_a_'+name))||'';
+ let choice='',frame,send,current=document.body.dataset.view||'entry',landingActivity=activities.includes(attribution.activity)?attribution.activity:startActivity;
  try{choice=localStorage.getItem(key)}catch{}
  const banner=document.querySelector('#ga-choice'),prefs=document.createElement('button');
 
@@ -26,7 +27,7 @@ export function setupAnalytics(platform,attribution={}){
  new ResizeObserver(position).observe(controls);window.addEventListener('resize',position);
  prefs.onclick=()=>{document.querySelector('#more-menu').close();banner.hidden=false;position();banner.querySelector('button').focus()};
  const locationSafe=location.origin+'/';
- function view(v){if(!views.includes(v))return;current=v;if(send){send('set',{page_title:v});send('event','page_view',{page_title:v,...debug})}}
+ function view(v){if(!views.includes(v))return;current=v;if(send){send('set',{page_title:v});send('event','page_view',{page_title:v,...(landingActivity?{campaign_content:landingActivity}:{}),...debug});landingActivity='';}}
  function start(){
   if(send)return;
   window['ga-disable-'+id]=false;

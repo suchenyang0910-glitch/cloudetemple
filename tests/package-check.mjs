@@ -4,13 +4,14 @@ import {createHash} from 'node:crypto';
 const root=new URL('../dist/',import.meta.url),{release}=JSON.parse(await fs.readFile(new URL('release.json',root)));
 const home=await fs.readFile(new URL('index.html',root),'utf8');assert(home.includes('property="og:image"')&&home.includes('class="home-content"')&&home.includes('application/ld+json'),'home metadata and prerendered copy');
 const files=await fs.readdir(root),pattern=new RegExp(`\\.${release}\\.(js|css)$`),versioned=files.filter(n=>pattern.test(n));
+const analyticsName=versioned.find(n=>n.startsWith('analytics.')),analyticsText=await fs.readFile(new URL(analyticsName,root),'utf8');assert(analyticsText.includes('campaign_content')&&analyticsText.includes("endsWith('_a_'+name)"),'anonymous activity attribution allowlist');
 assert(files.filter(n=>/\.(js|css)$/.test(n)).every(n=>pattern.test(n)),'only current hashed JS/CSS');
 assert.deepEqual(await fs.readdir(new URL('assets/',root)),['releases','share']);
 assert.deepEqual(await fs.readdir(new URL('assets/releases/',root)),[release]);
 for(const kind of ['wood','spacer','guru'])await fs.access(new URL(`assets/releases/${release}/processed-v1/img/bead-${kind}-v2.webp`,root));
 await fs.access(new URL(`assets/releases/${release}/processed-v1/img/share-qr.png`,root));
 for(const name of ['og-share-vi.webp','og-share-en.webp']){const file=new URL(`assets/share/${name}`,root);assert((await fs.stat(file)).size<=200000,name+' max 200KB')}
-for(const route of ['huong-dan/thap-huong','huong-dan/le-phat','huong-dan/lan-chuoi','huong-dan/go-mo','huong-dan/ngoi-yen','cau-hoi-thuong-gap'])for(const prefix of ['','en/']){const html=await fs.readFile(new URL(prefix+route+'/index.html',root),'utf8');assert(html.includes('name="robots" content="noindex,follow"'),prefix+route+' noindex');assert(!html.includes('待核'),prefix+route+' hides review markers');assert(html.includes('application/ld+json'),prefix+route+' structured data')}
+for(const route of ['huong-dan/thap-huong','huong-dan/le-phat','huong-dan/lan-chuoi','huong-dan/go-mo','huong-dan/ngoi-yen','cau-hoi-thuong-gap'])for(const prefix of ['','en/']){const html=await fs.readFile(new URL(prefix+route+'/index.html',root),'utf8');assert(html.includes('name="robots" content="noindex,follow"'),prefix+route+' noindex');assert(!html.includes('待核'),prefix+route+' hides review markers');assert(!/<p>[htap]<\/p>/.test(html),prefix+route+' no orphan marker');assert(html.includes('application/ld+json'),prefix+route+' structured data')}
 for(const name of ['sitemap.xml','robots.txt','llms.txt'])await fs.access(new URL(name,root));
 const sitemap=await fs.readFile(new URL('sitemap.xml',root),'utf8');assert(sitemap.includes('xmlns:xhtml=')&&sitemap.includes('hreflang="en"'),'sitemap hreflang');
 const robots=await fs.readFile(new URL('robots.txt',root),'utf8');for(const bot of ['GPTBot','ClaudeBot','PerplexityBot','Google-Extended'])assert(robots.includes('User-agent: '+bot),bot+' allowed');

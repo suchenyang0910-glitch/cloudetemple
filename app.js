@@ -4,7 +4,7 @@ import {beadGuruRule} from './config.js';
 import {createTempleAudio} from './audio.js';
 import {assetURL,loadImage,placeholder,enableImageDebug} from './resources.js';
 import {copy,reflections} from './i18n.js';
-import {apiURL,initTelegram,inTelegram,initData,telegramBack,telegramAppearance,haptic,telegramShare,telegramStory,telegramStartParam} from './telegram.js';
+import {apiURL,initTelegram,inTelegram,initData,telegramBack,telegramAppearance,haptic,telegramShare,telegramStory,telegramDownload,telegramStartParam} from './telegram.js';
 
 let analytics,woodStarted;
 const event=(name,params)=>analytics?.event(name,params);
@@ -15,7 +15,9 @@ const state={view:'entry',lang:'vi',visitor:null,period:'day',layout:null,busy:f
 const images=new Map(),tinted=new Map();
 let beadCleanup=null,pendingView=null,choiceToken=0,choiceFront=0;
 let transitionId=0,drawFrame=0,lastFocus=null,shareBlob=null,shareURL=null;
-const launchParams=new URLSearchParams(location.search),launchAttribution={source:launchParams.get('s')||'',activity:launchParams.get('a')||''};
+const launchParams=new URLSearchParams(location.search),launchSources=new Set(['system','zalo','facebook','messenger','copy','recommend']),launchActivities=new Set(['incense','bow','sit','mo','beads']);
+const launchAttribution={source:launchSources.has(launchParams.get('s'))?launchParams.get('s'):'',activity:launchActivities.has(launchParams.get('a'))?launchParams.get('a'):''};
+let pendingLaunchActivity=launchAttribution.activity;
 if(launchParams.get('lang')==='en')state.lang='en';
 if(['s','a'].some(k=>launchParams.has(k))){launchParams.delete('s');launchParams.delete('a');history.replaceState(history.state,'',location.pathname+(launchParams.size?'?'+launchParams:'')+location.hash);}
 document.documentElement.classList.add('js-ready');
@@ -187,7 +189,7 @@ function render(){
   }else if(state.view==='leave'){
     $('#controls').innerHTML=`<p class="leave-message">${t('goodbye')}</p>${button('reenter','reenter','primary')}`;
   }else if(state.result){
-    $('#controls').innerHTML=`<div class="completion"><p>${reflections[state.result.reflection][state.lang]}</p>${state.result.kind==='beads'?button('beadAgain','bead-again','primary'):''}<div class="row">${button('share','share',state.result.kind==='beads'?'text-button':'primary')}${button('back','home')}</div></div>`;
+    $('#controls').innerHTML=`<div class="completion"><p>${reflections[state.result.reflection][state.lang]}</p>${state.result.kind==='beads'?button('beadAgain','bead-again','primary'):''}<div class="row">${button('shareAction','share','primary')}${button('download','download')}</div><p id="share-status" role="status"></p>${button('back','home','back-button')}</div>`;
     $('#subtitle').textContent=t('completed');
   }else if(state.view==='incense'){
     $('#controls').innerHTML=`<div class="stack"><div id="incense-status" class="section-label"></div><div class="incense-stick" aria-hidden="true"><span id="incense-progress"></span></div><div class="row">${button('light','light','primary',state.activity?'disabled':'')}${button('back','home')}</div></div>`;
@@ -250,6 +252,7 @@ function updateCounters(){
 function complete(kind,elapsed=0,countOverride){
   if(state.result)return;
   const old=state.activity;
+  if(shareURL)URL.revokeObjectURL(shareURL);shareURL=null;shareBlob=null;
   state.result={kind,elapsed,count:countOverride??(kind==='bow'?old?.count:kind==='beads'?108:1),reflection:Math.floor(Math.random()*reflections.length)};
   completed(kind,elapsed,state.result.count);
   const stored=read('ct-totals',{}),count=Number.isFinite(stored?.count)&&stored.count>=0?stored.count:0,seconds=Number.isFinite(stored?.seconds)&&stored.seconds>=0?stored.seconds:0;
@@ -353,8 +356,8 @@ async function submitWaitlist(e){
   finally{submit.disabled=false;submit.textContent=t('register');}
 }
 function wrap(c,text,x,y,width,lineHeight){let line='';for(const word of text.split(' ')){const next=line?line+' '+word:word;if(c.measureText(next).width>width&&line){c.fillText(line,x,y);line=word;y+=lineHeight;}else line=next;}if(line)c.fillText(line,x,y);return y+lineHeight;}
-async function makeShare(){
-  if(!state.result)return;
+async function makeShare(show=true){
+  if(!state.result)return false;
   try{
     await document.fonts.ready;
     paint();const c=document.createElement('canvas');c.width=720;c.height=1280;const x=c.getContext('2d');
@@ -365,21 +368,29 @@ async function makeShare(){
     x.font='500 28px "Be Vietnam Pro", sans-serif';x.fillText(t('brand'),360,1145);
     x.font='18px "Be Vietnam Pro", sans-serif';x.fillText(t('tagline'),360,1184);x.font='15px sans-serif';x.fillText('h5.chuamay.org',360,1225);
     shareBlob=await new Promise(resolve=>c.toBlob(resolve,'image/png'));if(!shareBlob)throw new Error('png');shareURL=URL.createObjectURL(shareBlob);
-    event('share_open',{activity:state.result.kind});openModal('shareTitle',`<img class="share-preview" src="${shareURL}" alt="${escapeHTML(t('shareTitle'))}" draggable="false"><div class="row">${button('shareAction','share-file','primary')}${button('download','download')}</div><p id="share-status" role="status"></p>`);
-  }catch{$('#notice').textContent=t('shareError');}
+    if(show)showShareModal();return true;
+  }catch{$('#notice').textContent=t('shareError');return false;}
 }
-function download(){if(!shareBlob)return;event('share_channel',{channel:'download'});const url=URL.createObjectURL(shareBlob),a=document.createElement('a');a.href=url;a.download='chua-may.png';a.click();setTimeout(()=>URL.revokeObjectURL(url),30000);}
+function showShareModal(){openModal('shareTitle',`<img class="share-preview" src="${shareURL}" alt="${escapeHTML(t('shareTitle'))}"><div class="row">${button('shareAction','share-file','primary')}${button('download','download')}</div><p id="share-status" role="status"></p>`);}
+function download(){
+ if(!shareBlob)return;
+ if(inTelegram()){
+  const attempted=telegramDownload(shareURL,'chua-may.png',ok=>{if(ok)event('share_channel',{channel:'download'});else $('#share-status').textContent=t('longPressSave');});
+  if(!attempted)$('#share-status').textContent=t('longPressSave');return;
+ }
+ event('share_channel',{channel:'download'});const url=URL.createObjectURL(shareBlob),a=document.createElement('a');a.href=url;a.download='chua-may.png';a.click();setTimeout(()=>URL.revokeObjectURL(url),30000);
+}
 const shareActivity=()=>state.result?.kind||'share';
 const shareSource=channel=>`s_${channel}_a_${shareActivity()}`.replace(/[^a-z0-9_-]/g,'').slice(0,64);
 const shareLink=channel=>`${location.origin}/?s=${encodeURIComponent(channel)}&a=${encodeURIComponent(shareActivity())}`;
 function shareText(){const r=state.result||{},params={n:r.count??0,m:Math.max(1,Math.round((r.elapsed||0)/60000))};return t({incense:'shareIncenseText',bow:'shareBowText',sit:'shareSitText',mo:'shareMoText',beads:'shareBeadsText'}[r.kind]||'recommendText',params);}
-async function copyShare(channel){try{await navigator.clipboard.writeText(shareLink(channel));event('share_channel',{channel:'copy'});$('#share-status').textContent=t('linkCopied');return true}catch{$('#share-status').textContent=t('shareError');return false}}
+async function copyShare(channel,track=true){try{await navigator.clipboard.writeText(shareLink(channel));if(track)event('share_channel',{channel:'copy'});$('#share-status').textContent=t('linkCopied');return true}catch{$('#share-status').textContent=t('shareError');return false}}
 function sharePanel(){if($('.share-channels'))return;const telegram=inTelegram();$('#modal-body').insertAdjacentHTML('beforeend',`<div class="share-channels">${telegram?button('story','share-story')+button('telegramForward','share-telegram'):button('zalo','share-zalo')+button('facebook','share-facebook')+button('messenger','share-messenger')+button('copyLink','share-copy')}</div>`);}
 async function shareFile(){
-  const text=shareText();if(inTelegram()){sharePanel();return}
+  const text=shareText();if(inTelegram()){showShareModal();sharePanel();return}
   const file=new File([shareBlob],'chua-may.png',{type:'image/png'});
   if(navigator.share){try{const data=navigator.canShare?.({files:[file]})?{files:[file],text,url:shareLink('system'),title:t('brand')}:{text,url:shareLink('system'),title:t('brand')};await navigator.share(data);event('share_channel',{channel:'system'});return}catch(e){if(e.name==='AbortError')return;}}
-  sharePanel();
+  showShareModal();sharePanel();
 }
 
 document.addEventListener('click',async e=>{
@@ -393,7 +404,7 @@ document.addEventListener('click',async e=>{
     case 'enter':if(!read('ct-muted',false)&&!audio.enabled)void enableSound(true);await navigate('choose');break;
     case 'change':changeVisitor();break;
     case 'previous':changeVisitor(-1);break;
-    case 'continue':write('ct-visitor',state.visitor);await navigate('home');break;
+    case 'continue':{write('ct-visitor',state.visitor);const target=pendingLaunchActivity||'home';pendingLaunchActivity='';await navigate(target);break;}
     case 'incense':case 'bow':case 'sit':case 'beads':case 'mo':case 'home':await navigate(action);break;
     case 'leave':audio.strike('bell',.5);await navigate('leave');break;
     case 'reenter':await navigate('entry');break;
@@ -410,13 +421,13 @@ document.addEventListener('click',async e=>{
     case 'bead':break;
     case 'bead-hand':state.beadHand=state.beadHand==='left'?'right':'left';event('hand_switch',{hand:state.beadHand});write('ct-bead-hand',state.beadHand);render();paint();break;
     case 'bead-again':state.result=null;state.bead=0;state.beadRound++;if(beadGuruRule==='turn-back')state.beadDirection*=-1;render();paint();$('#bead-control').focus({preventScroll:true});break;
-    case 'share':await makeShare();break;
+    case 'share':event('share_open',{activity:state.result.kind});if(await makeShare(false))await shareFile();break;
     case 'share-file':await shareFile();break;
-    case 'download':download();break;
+    case 'download':if(shareBlob||await makeShare(false))download();break;
     case 'share-copy':await copyShare('copy');break;
     case 'share-facebook':event('share_channel',{channel:'facebook'});open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareLink('facebook'))}`,'_blank','noopener');break;
-    case 'share-messenger':await copyShare('messenger');event('share_channel',{channel:'messenger'});location.href=`fb-messenger://share?link=${encodeURIComponent(shareLink('messenger'))}`;break;
-    case 'share-zalo':await copyShare('zalo');event('share_channel',{channel:'zalo'});location.href='zalo://';break;
+    case 'share-messenger':if(await copyShare('messenger',false)){event('share_channel',{channel:'messenger'});open(`fb-messenger://share?link=${encodeURIComponent(shareLink('messenger'))}`,'_self');}break;
+    case 'share-zalo':if(await copyShare('zalo',false)){event('share_channel',{channel:'zalo'});open('zalo://','_self');}break;
     case 'share-telegram':if(telegramShare(shareText(),shareSource('tg_forward')))event('share_channel',{channel:'telegram_forward'});break;
     case 'share-story':if(telegramStory(shareText(),shareSource('tg_story')))event('share_channel',{channel:'telegram_story'});else $('#share-status').textContent=t('shareError');break;
     case 'recommend':$('#more-menu').close();openModal('recommend',`<p>${escapeHTML(t('recommendText'))}</p><div class="row">${button('shareAction','share-recommend','primary')}${button('copyLink','share-copy')}</div><p id="share-status" role="status"></p>`);break;
