@@ -1,0 +1,14 @@
+[
+  {
+    "host": "h5.chuamay.org",
+    "foldedByDefault": true,
+    "entryHittable": true,
+    "firstImage": "fetch-blob"
+  },
+  {
+    "host": "miniapp.chuamay.org",
+    "foldedByDefault": true,
+    "entryHittable": true,
+    "firstImage": "fetch-blob"
+  }
+]
