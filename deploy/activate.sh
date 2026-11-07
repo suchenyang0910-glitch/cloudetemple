@@ -11,6 +11,7 @@ test -f "$target/server/index.mjs"
 test -r "/etc/chuamay/$environment.env"
 test "$(stat -Lc %a "/etc/chuamay/$environment.env")" = 600
 test "$(stat -Lc %U "/etc/chuamay/$environment.env")" = chuamay
+bash "$target/deploy/check-secret-permissions.sh"
 port=8791; [[ "$environment" == production ]] && port=8790
 old=$(readlink -f "$root/current" || true)
 rollback() {

@@ -11,7 +11,7 @@ try {
   $archive=Join-Path $PSScriptRoot "chuamay-$release.tar.gz"
   $tarArgs=@('-czf',$archive,'--exclude=server/node_modules','--exclude=server/*.sqlite*','--exclude=server/api.env','--exclude=server/*.env')
   if($Environment -eq 'production'){$tarArgs+='--exclude=server/outbox-staging.mjs'}
-  $tarArgs+=@('dist','server','deploy/activate.sh','deploy/backup.sh')
+  $tarArgs+=@('dist','server','deploy/activate.sh','deploy/check-secret-permissions.sh','deploy/backup.sh')
   & tar @tarArgs
   if($LASTEXITCODE){throw 'Archive failed'}
   if($Environment -eq 'production'){
