@@ -188,3 +188,192 @@ body[data-view=morning] .controls{display:flex;flex-direction:column;align-items
 .morning-stack .primary{min-width:160px}
 .morning-skip-step{font-size:15px;min-height:44px;padding:8px 16px;color:var(--ink);opacity:.6;background:transparent;border:none;cursor:pointer;width:100%;text-align:center}
 @media(prefers-reduced-motion:reduce){.morning-bell-hint{transition:none}}
+
+/* ===== Tết 2027 Festival Layer ===== */
+#festival-layer{position:absolute;inset:0;pointer-events:none;z-index:1;overflow:hidden;display:none}
+body[data-festival]:not([data-festival=""])#festival-layer{display:block}
+/* family.html has no #festival-layer element, so no extra rule needed */
+.fes-l,.fes-fl,.fes-moon,.fes-p,.fes-g{position:absolute;display:none}
+/* lantern: SVG via bg-image; thread via ::before */
+.fes-l{width:6%;aspect-ratio:22/38;background:url(assets/festival/lantern.svg)no-repeat center/contain;opacity:.88;animation:lantern-sway 12s ease-in-out infinite;transform-origin:top center}
+.fes-l::before{content:"";position:absolute;left:50%;bottom:100%;transform:translateX(-50%);width:1px;height:clamp(5px,1.5%,10px);background:rgba(90,58,15,.4)}
+.fes-l.l2{animation-delay:1.5s}.fes-l.l3{animation-delay:3s}.fes-l.l4{animation-delay:4.5s}
+.fes-l.l5{animation-delay:2s}.fes-l.l6{animation-delay:3.5s}.fes-l.l7{animation-delay:1s}.fes-l.l8{animation-delay:2.5s}
+/* flowers: same type both sides, controlled by data-flower */
+.fes-fl{width:17%;background:url(assets/festival/flower-mai.svg)no-repeat top center/contain}
+body[data-flower="hoa-dao"] .fes-fl{background-image:url(assets/festival/flower-dao.svg)}
+.fes-fl[data-side="l"]{left:0;top:40%;transform-origin:bottom left;animation:branch-sway 15s ease-in-out infinite}
+.fes-fl[data-side="r"]{right:0;top:40%;transform-origin:bottom right;animation:branch-sway 15s ease-in-out 5s infinite}
+/* moon */
+.fes-moon{width:10%;aspect-ratio:1;background:url(assets/festival/moon.svg)no-repeat center/contain;right:5%;top:5%;opacity:.88}
+/* petals */
+.fes-p{width:clamp(7px,2%,10px);aspect-ratio:12/14;background:url(assets/festival/petal-mai.svg)no-repeat center/contain;opacity:.65}
+body[data-flower="hoa-dao"] .fes-p{background-image:url(assets/festival/petal-dao.svg)}
+/* gold */
+.fes-g{width:4px;height:4px;border-radius:50%;background:#c8964a;opacity:0}
+
+/* --- ong-tao (3 lanterns) --- */
+body[data-festival="ong-tao"][data-view="home"] .fes-l.l1,
+body[data-festival="ong-tao"][data-view="home"] .fes-l.l2,
+body[data-festival="ong-tao"][data-view="home"] .fes-l.l3{display:block}
+body[data-festival="ong-tao"][data-view="home"] .fes-l.l1{left:5%;top:18%}
+body[data-festival="ong-tao"][data-view="home"] .fes-l.l2{right:13%;top:16%}
+body[data-festival="ong-tao"][data-view="home"] .fes-l.l3{right:10%;top:25%}
+body[data-festival="ong-tao"][data-view="home"] .fes-l{animation-duration:14s}
+
+/* --- tat-nien (6 lanterns + flowers) --- */
+body[data-festival="tat-nien"][data-view="home"] .fes-l.l1,
+body[data-festival="tat-nien"][data-view="home"] .fes-l.l2,
+body[data-festival="tat-nien"][data-view="home"] .fes-l.l3,
+body[data-festival="tat-nien"][data-view="home"] .fes-l.l4,
+body[data-festival="tat-nien"][data-view="home"] .fes-l.l5,
+body[data-festival="tat-nien"][data-view="home"] .fes-l.l6,
+body[data-festival="tat-nien"][data-view="home"] .fes-fl{display:block}
+body[data-festival="tat-nien"][data-view="home"] .fes-l.l1{left:3%;top:16%}
+body[data-festival="tat-nien"][data-view="home"] .fes-l.l2{left:6%;top:26%}
+body[data-festival="tat-nien"][data-view="home"] .fes-l.l3{left:2%;top:36%}
+body[data-festival="tat-nien"][data-view="home"] .fes-l.l4{right:12%;top:15%}
+body[data-festival="tat-nien"][data-view="home"] .fes-l.l5{right:9%;top:24%}
+body[data-festival="tat-nien"][data-view="home"] .fes-l.l6{right:13%;top:33%}
+body[data-festival="tat-nien"][data-view="home"] .fes-fl[data-side="l"]{top:38%}
+body[data-festival="tat-nien"][data-view="home"] .fes-fl[data-side="r"]{top:38%}
+/* hall-side: 3 right-side lanterns + right flower only */
+body[data-festival="tat-nien"][data-view="incense"] .fes-l.l4,
+body[data-festival="tat-nien"][data-view="incense"] .fes-l.l5,
+body[data-festival="tat-nien"][data-view="incense"] .fes-l.l6,
+body[data-festival="tat-nien"][data-view="incense"] .fes-fl[data-side="r"],
+body[data-festival="tat-nien"][data-view="bow"] .fes-l.l4,
+body[data-festival="tat-nien"][data-view="bow"] .fes-l.l5,
+body[data-festival="tat-nien"][data-view="bow"] .fes-l.l6,
+body[data-festival="tat-nien"][data-view="bow"] .fes-fl[data-side="r"]{display:block}
+body[data-festival="tat-nien"][data-view="incense"] .fes-l.l4,
+body[data-festival="tat-nien"][data-view="bow"] .fes-l.l4{right:16%;top:18%}
+body[data-festival="tat-nien"][data-view="incense"] .fes-l.l5,
+body[data-festival="tat-nien"][data-view="bow"] .fes-l.l5{right:12%;top:28%}
+body[data-festival="tat-nien"][data-view="incense"] .fes-l.l6,
+body[data-festival="tat-nien"][data-view="bow"] .fes-l.l6{right:15%;top:38%}
+body[data-festival="tat-nien"][data-view="incense"] .fes-fl[data-side="r"],
+body[data-festival="tat-nien"][data-view="bow"] .fes-fl[data-side="r"]{top:42%}
+
+/* --- mung1 (8 lanterns + flowers + 5 gold dots) --- */
+body[data-festival="mung1"][data-view="home"] .fes-l,
+body[data-festival="mung1"][data-view="home"] .fes-fl,
+body[data-festival="mung1"][data-view="home"] .fes-g{display:block}
+body[data-festival="mung1"][data-view="home"] .fes-l{animation-duration:11s}
+body[data-festival="mung1"][data-view="home"] .fes-l.l1{left:2%;top:14%}
+body[data-festival="mung1"][data-view="home"] .fes-l.l2{left:5%;top:22%}
+body[data-festival="mung1"][data-view="home"] .fes-l.l3{left:2%;top:31%}
+body[data-festival="mung1"][data-view="home"] .fes-l.l4{left:6%;top:40%}
+body[data-festival="mung1"][data-view="home"] .fes-l.l5{right:12%;top:14%}
+body[data-festival="mung1"][data-view="home"] .fes-l.l6{right:9%;top:22%}
+body[data-festival="mung1"][data-view="home"] .fes-l.l7{right:12%;top:31%}
+body[data-festival="mung1"][data-view="home"] .fes-l.l8{right:9%;top:40%}
+body[data-festival="mung1"][data-view="home"] .fes-fl[data-side="l"]{top:35%}
+body[data-festival="mung1"][data-view="home"] .fes-fl[data-side="r"]{top:35%}
+body[data-festival="mung1"][data-view="home"] .fes-g.g1{left:15%;top:12%;animation:gold-twinkle 5s 0s infinite}
+body[data-festival="mung1"][data-view="home"] .fes-g.g2{left:35%;top:18%;animation:gold-twinkle 6s 1s infinite}
+body[data-festival="mung1"][data-view="home"] .fes-g.g3{right:30%;top:15%;animation:gold-twinkle 4s 2s infinite}
+body[data-festival="mung1"][data-view="home"] .fes-g.g4{right:20%;top:22%;animation:gold-twinkle 7s .5s infinite}
+body[data-festival="mung1"][data-view="home"] .fes-g.g5{left:28%;top:8%;animation:gold-twinkle 5s 1.5s infinite}
+body[data-festival="mung1"][data-view="incense"] .fes-l.l5,
+body[data-festival="mung1"][data-view="incense"] .fes-l.l6,
+body[data-festival="mung1"][data-view="incense"] .fes-l.l7,
+body[data-festival="mung1"][data-view="incense"] .fes-l.l8,
+body[data-festival="mung1"][data-view="incense"] .fes-fl[data-side="r"],
+body[data-festival="mung1"][data-view="bow"] .fes-l.l5,
+body[data-festival="mung1"][data-view="bow"] .fes-l.l6,
+body[data-festival="mung1"][data-view="bow"] .fes-l.l7,
+body[data-festival="mung1"][data-view="bow"] .fes-l.l8,
+body[data-festival="mung1"][data-view="bow"] .fes-fl[data-side="r"]{display:block}
+body[data-festival="mung1"][data-view="incense"] .fes-l.l5,
+body[data-festival="mung1"][data-view="bow"] .fes-l.l5{right:12%;top:14%}
+body[data-festival="mung1"][data-view="incense"] .fes-l.l6,
+body[data-festival="mung1"][data-view="bow"] .fes-l.l6{right:9%;top:22%}
+body[data-festival="mung1"][data-view="incense"] .fes-l.l7,
+body[data-festival="mung1"][data-view="bow"] .fes-l.l7{right:12%;top:31%}
+body[data-festival="mung1"][data-view="incense"] .fes-l.l8,
+body[data-festival="mung1"][data-view="bow"] .fes-l.l8{right:9%;top:40%}
+body[data-festival="mung1"][data-view="incense"] .fes-fl[data-side="r"],
+body[data-festival="mung1"][data-view="bow"] .fes-fl[data-side="r"]{top:36%}
+
+/* --- mung2 (7 lanterns = l1-l4 + l6-l8; flowers) --- */
+body[data-festival="mung2"][data-view="home"] .fes-l.l1,
+body[data-festival="mung2"][data-view="home"] .fes-l.l2,
+body[data-festival="mung2"][data-view="home"] .fes-l.l3,
+body[data-festival="mung2"][data-view="home"] .fes-l.l4,
+body[data-festival="mung2"][data-view="home"] .fes-l.l6,
+body[data-festival="mung2"][data-view="home"] .fes-l.l7,
+body[data-festival="mung2"][data-view="home"] .fes-l.l8,
+body[data-festival="mung2"][data-view="home"] .fes-fl{display:block}
+body[data-festival="mung2"][data-view="home"] .fes-l.l1{left:2%;top:14%}
+body[data-festival="mung2"][data-view="home"] .fes-l.l2{left:5%;top:22%}
+body[data-festival="mung2"][data-view="home"] .fes-l.l3{left:2%;top:31%}
+body[data-festival="mung2"][data-view="home"] .fes-l.l4{left:6%;top:40%}
+body[data-festival="mung2"][data-view="home"] .fes-l.l6{right:9%;top:22%}
+body[data-festival="mung2"][data-view="home"] .fes-l.l7{right:12%;top:31%}
+body[data-festival="mung2"][data-view="home"] .fes-l.l8{right:9%;top:40%}
+body[data-festival="mung2"][data-view="home"] .fes-fl[data-side="l"]{top:38%}
+body[data-festival="mung2"][data-view="home"] .fes-fl[data-side="r"]{top:38%}
+
+/* --- mung3 (4 lower lanterns + fewer flowers + 6 falling petals) --- */
+body[data-festival="mung3"][data-view="home"] .fes-l.l3,
+body[data-festival="mung3"][data-view="home"] .fes-l.l4,
+body[data-festival="mung3"][data-view="home"] .fes-l.l7,
+body[data-festival="mung3"][data-view="home"] .fes-l.l8,
+body[data-festival="mung3"][data-view="home"] .fes-fl,
+body[data-festival="mung3"][data-view="home"] .fes-p{display:block}
+body[data-festival="mung3"][data-view="home"] .fes-l{opacity:.72;animation-duration:16s}
+body[data-festival="mung3"][data-view="home"] .fes-fl{opacity:.7}
+body[data-festival="mung3"][data-view="home"] .fes-l.l3{left:5%;top:33%}
+body[data-festival="mung3"][data-view="home"] .fes-l.l4{left:3%;top:43%}
+body[data-festival="mung3"][data-view="home"] .fes-l.l7{right:12%;top:32%}
+body[data-festival="mung3"][data-view="home"] .fes-l.l8{right:10%;top:42%}
+body[data-festival="mung3"][data-view="home"] .fes-fl[data-side="l"]{top:42%}
+body[data-festival="mung3"][data-view="home"] .fes-fl[data-side="r"]{top:42%}
+body[data-festival="mung3"][data-view="home"] .fes-p.p1{left:20%;top:-2%;animation:petal-fall 16s 0s linear infinite}
+body[data-festival="mung3"][data-view="home"] .fes-p.p2{left:40%;top:-2%;animation:petal-fall 18s 2s linear infinite}
+body[data-festival="mung3"][data-view="home"] .fes-p.p3{left:60%;top:-2%;animation:petal-fall 15s 4s linear infinite}
+body[data-festival="mung3"][data-view="home"] .fes-p.p4{left:75%;top:-2%;animation:petal-fall 20s 1s linear infinite}
+body[data-festival="mung3"][data-view="home"] .fes-p.p5{left:30%;top:-2%;animation:petal-fall 17s 3s linear infinite}
+body[data-festival="mung3"][data-view="home"] .fes-p.p6{left:55%;top:-2%;animation:petal-fall 19s .5s linear infinite}
+
+/* --- ram (5 lanterns + sparse flowers + moon on courtyard dusk/night) --- */
+body[data-festival="ram"][data-view="home"] .fes-l.l1,
+body[data-festival="ram"][data-view="home"] .fes-l.l2,
+body[data-festival="ram"][data-view="home"] .fes-l.l4,
+body[data-festival="ram"][data-view="home"] .fes-l.l5,
+body[data-festival="ram"][data-view="home"] .fes-l.l6,
+body[data-festival="ram"][data-view="home"] .fes-fl{display:block}
+body[data-festival="ram"][data-view="home"] .fes-l{animation-duration:15s}
+body[data-festival="ram"][data-view="home"] .fes-l.l1{left:4%;top:21%}
+body[data-festival="ram"][data-view="home"] .fes-l.l2{left:2%;top:34%}
+body[data-festival="ram"][data-view="home"] .fes-l.l4{right:14%;top:19%}
+body[data-festival="ram"][data-view="home"] .fes-l.l5{right:11%;top:28%}
+body[data-festival="ram"][data-view="home"] .fes-l.l6{right:13%;top:37%}
+body[data-festival="ram"][data-view="home"] .fes-fl{opacity:.7}
+body[data-festival="ram"][data-view="home"] .fes-fl[data-side="l"]{top:44%}
+body[data-festival="ram"][data-view="home"] .fes-fl[data-side="r"]{top:44%}
+/* moon: courtyard + dusk or night only (never behind Buddha) */
+body[data-festival="ram"][data-period="dusk"][data-view="sit"] .fes-moon,
+body[data-festival="ram"][data-period="night"][data-view="sit"] .fes-moon,
+body[data-festival="ram"][data-period="dusk"][data-view="mo"] .fes-moon,
+body[data-festival="ram"][data-period="night"][data-view="mo"] .fes-moon,
+body[data-festival="ram"][data-period="dusk"][data-view="beads"] .fes-moon,
+body[data-festival="ram"][data-period="night"][data-view="beads"] .fes-moon{display:block;animation:moon-glow 10s ease-in-out infinite}
+
+/* --- hall-side: left flower + moon always suppressed --- */
+body[data-festival][data-view="incense"] .fes-fl[data-side="l"],
+body[data-festival][data-view="bow"] .fes-fl[data-side="l"],
+body[data-festival][data-view="incense"] .fes-moon,
+body[data-festival][data-view="bow"] .fes-moon{display:none!important}
+/* --- courtyard: no flowers --- */
+body[data-festival][data-view="sit"] .fes-fl,
+body[data-festival][data-view="mo"] .fes-fl,
+body[data-festival][data-view="beads"] .fes-fl{display:none!important}
+
+/* --- Keyframes --- */
+@keyframes lantern-sway{0%,100%{transform:rotate(-3.5deg)}50%{transform:rotate(3.5deg)}}
+@keyframes branch-sway{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(2deg)}}
+@keyframes petal-fall{0%{transform:translateY(0) translateX(0);opacity:.65}80%{opacity:.35}100%{transform:translateY(75vh) translateX(5%);opacity:0}}
+@keyframes gold-twinkle{0%,100%{opacity:.1}50%{opacity:.6}}
+@keyframes moon-glow{0%,100%{opacity:.7}50%{opacity:.88}}
