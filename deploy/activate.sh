@@ -22,7 +22,7 @@ rollback() {
 trap rollback ERR
 cd "$target/server"
 docker run --rm --memory 768m --cpus .5 --pids-limit 128 -e npm_config_jobs=1 -v "$target/server:/app" -w /app node:22.22.1-bookworm@sha256:f90672bf4c76dfc077d17be4c115b1ae7731d2e8558b457d86bca42aeb193866 npm ci --omit=dev --no-audit --no-fund
-PATH=/opt/chuamay/runtime/bin:$PATH /opt/chuamay/runtime/bin/node --test test.mjs
+PATH=/opt/chuamay/runtime/bin:$PATH /opt/chuamay/runtime/bin/npm test
 ln -s "$target" "$root/next-link"; mv -Tf "$root/next-link" "$root/current"
 systemctl restart "chuamay-api@$environment"
 healthy=false

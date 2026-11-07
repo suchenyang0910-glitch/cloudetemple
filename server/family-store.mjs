@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
-export function openFamilyStore(db) {
+export function openFamilyStore(db, { demo = true } = {}) {
+  const demoFlag = demo ? 1 : 0;
   db.pragma("foreign_keys = ON");
   db.exec(`
 CREATE TABLE IF NOT EXISTS users(id TEXT PRIMARY KEY,display_name TEXT NOT NULL DEFAULT '',locale TEXT NOT NULL DEFAULT 'vi',created_at TEXT NOT NULL,deleted_at TEXT,demo INTEGER NOT NULL DEFAULT 1);
@@ -36,19 +37,29 @@ CREATE TABLE IF NOT EXISTS deliveries(id TEXT PRIMARY KEY,user_id TEXT NOT NULL 
     const id = randomUUID(),
       at = now();
     db.transaction(() => {
-      run("INSERT INTO users VALUES(?,?,?,?,?,1)", id, display, "vi", at, null);
       run(
-        "INSERT INTO identities(user_id,provider,subject,email,created_at,demo) VALUES(?,?,?,?,?,1)",
+        "INSERT INTO users VALUES(?,?,?,?,?,?)",
+        id,
+        display,
+        "vi",
+        at,
+        null,
+        demoFlag,
+      );
+      run(
+        "INSERT INTO identities(user_id,provider,subject,email,created_at,demo) VALUES(?,?,?,?,?,?)",
         id,
         provider,
         subject,
         provider === "email" ? email : null,
         at,
+        demoFlag,
       );
       run(
-        "INSERT INTO reminder_prefs(user_id,created_at,demo) VALUES(?,?,1)",
+        "INSERT INTO reminder_prefs(user_id,created_at,demo) VALUES(?,?,?)",
         id,
         at,
+        demoFlag,
       );
     })();
     return one("SELECT * FROM users WHERE id=?", id);
@@ -71,7 +82,7 @@ CREATE TABLE IF NOT EXISTS deliveries(id TEXT PRIMARY KEY,user_id TEXT NOT NULL 
     },
     saveCode(record) {
       run(
-        "INSERT OR REPLACE INTO email_codes VALUES(?,?,?,?,?,?,?,1)",
+        "INSERT OR REPLACE INTO email_codes VALUES(?,?,?,?,?,?,?,?)",
         record.subject,
         record.email,
         record.codeHash,
@@ -79,6 +90,7 @@ CREATE TABLE IF NOT EXISTS deliveries(id TEXT PRIMARY KEY,user_id TEXT NOT NULL 
         0,
         record.ipHash,
         now(),
+        demoFlag,
       );
     },
     takeCode(subject, codeHash) {
@@ -96,11 +108,12 @@ CREATE TABLE IF NOT EXISTS deliveries(id TEXT PRIMARY KEY,user_id TEXT NOT NULL 
     },
     saveState(hash, verifier, expires) {
       run(
-        "INSERT OR REPLACE INTO oauth_states VALUES(?,?,?,?,1)",
+        "INSERT OR REPLACE INTO oauth_states VALUES(?,?,?,?,?)",
         hash,
         verifier,
         expires,
         now(),
+        demoFlag,
       );
     },
     takeState(hash) {
@@ -110,13 +123,14 @@ CREATE TABLE IF NOT EXISTS deliveries(id TEXT PRIMARY KEY,user_id TEXT NOT NULL 
     },
     session(hash, user, expires, ua, csrfHash) {
       run(
-        "INSERT INTO sessions VALUES(?,?,?,?,?,?,1)",
+        "INSERT INTO sessions VALUES(?,?,?,?,?,?,?)",
         hash,
         user,
         expires,
         ua,
         csrfHash,
         now(),
+        demoFlag,
       );
     },
     sessionUser(hash) {
@@ -149,7 +163,7 @@ CREATE TABLE IF NOT EXISTS deliveries(id TEXT PRIMARY KEY,user_id TEXT NOT NULL 
         at = now();
       db.transaction(() => {
         run(
-          "INSERT INTO tablets VALUES(?,?,?,?,?,?,?,?,?,?,?,1)",
+          "INSERT INTO tablets VALUES(?,?,?,?,?,?,?,?,?,?,?,?)",
           id,
           user,
           v.honorific,
@@ -161,12 +175,14 @@ CREATE TABLE IF NOT EXISTS deliveries(id TEXT PRIMARY KEY,user_id TEXT NOT NULL 
           v.leap ? 1 : 0,
           v.note,
           at,
+          demoFlag,
         );
         run(
-          "INSERT INTO tablet_members VALUES(?,?, 'owner',?,1)",
+          "INSERT INTO tablet_members VALUES(?,?, 'owner',?,?)",
           id,
           user,
           at,
+          demoFlag,
         );
       })();
       return member(user, id);
@@ -198,13 +214,14 @@ CREATE TABLE IF NOT EXISTS deliveries(id TEXT PRIMARY KEY,user_id TEXT NOT NULL 
       if (!member(user, id)) return null;
       const at = now();
       run(
-        "INSERT INTO offerings VALUES(?,?,?,?,?,?,1)",
+        "INSERT INTO offerings VALUES(?,?,?,?,?,?,?)",
         randomUUID(),
         id,
         user,
         kind,
         at,
         at,
+        demoFlag,
       );
       return one(
         "SELECT count(DISTINCT user_id) n FROM offerings WHERE tablet_id=? AND at>=date('now','localtime')",
@@ -216,7 +233,7 @@ CREATE TABLE IF NOT EXISTS deliveries(id TEXT PRIMARY KEY,user_id TEXT NOT NULL 
       if (!m || m.role !== "owner") return null;
       const invite = randomUUID();
       run(
-        "INSERT INTO invites VALUES(?,?,?,?,?,?,?,?,?,1)",
+        "INSERT INTO invites VALUES(?,?,?,?,?,?,?,?,?,?)",
         invite,
         id,
         hash,
@@ -226,6 +243,7 @@ CREATE TABLE IF NOT EXISTS deliveries(id TEXT PRIMARY KEY,user_id TEXT NOT NULL 
         0,
         maxUses,
         now(),
+        demoFlag,
       );
       return invite;
     },
@@ -249,10 +267,11 @@ CREATE TABLE IF NOT EXISTS deliveries(id TEXT PRIMARY KEY,user_id TEXT NOT NULL 
           );
           if (claimed.changes !== 1) return null;
           run(
-            "INSERT INTO tablet_members VALUES(?,?,'family',?,1)",
+            "INSERT INTO tablet_members VALUES(?,?,'family',?,?)",
             i.tablet_id,
             user,
             now(),
+            demoFlag,
           );
           return member(user, i.tablet_id);
         })

@@ -6,7 +6,7 @@ const activities='incense bow sit mo beads'.split(' ');
 const fields={
  activity_start:{activity:activities},activity_complete:{activity:activities,duration_bucket:['<1m','1-3m','3-10m','>10m'],count_bucket:['1','2-26','27-53','54-107','108+']},
  share_open:{activity:activities},share_channel:{channel:['download','system','copy','zalo','facebook','messenger','telegram_forward','telegram_story']},sound_toggle:{state:['on','off']},hand_switch:{hand:['left','right']},
- waitlist_submit:{result:['invalid','rate_limit','success','error']},image_load_failed:{asset_group:['scene','visitor','prop'],path_kind:['fetch-blob','native-img','failed']}
+ waitlist_submit:{result:['invalid','rate_limit','success','error']},image_load_failed:{asset_group:['scene','visitor','prop'],path_kind:['fetch-blob','native-img','failed']},referral_bound:{channel:['system','copy','zalo','facebook','messenger','telegram_forward','telegram_story','recommend'],activity:['incense','bow','sit','mo','beads','recommend']}
 };
 export function setupAnalytics(platform,attribution={}){
  const startActivity=activities.find(name=>attribution.startParam?.endsWith('_a_'+name))||'';
@@ -17,7 +17,7 @@ export function setupAnalytics(platform,attribution={}){
  prefs.type='button';prefs.className='text-button';document.querySelector('#more-menu footer').prepend(prefs);
 
  function labels(){const en=document.documentElement.lang==='en';
-  banner.firstChild.textContent=en?'Cloud Temple uses anonymous statistics to improve your experience.':'Chùa Mây dùng thống kê ẩn danh để cải thiện trải nghiệm.';
+  banner.firstChild.textContent=en?'Cloud Temple uses anonymous statistics and records referrals to improve your experience.':'Chùa Mây dùng thống kê ẩn danh và ghi nhận lời giới thiệu để cải thiện trải nghiệm.';
   banner.querySelectorAll('button').forEach((b,i)=>b.textContent=(en?['Agree','Decline']:['Đồng ý','Không'])[i]);
   prefs.textContent=en?'Analytics preferences':'Tùy chọn thống kê';
  }
@@ -40,6 +40,7 @@ export function setupAnalytics(platform,attribution={}){
   const script=w.document.createElement('script');script.async=true;script.referrerPolicy='no-referrer';script.src='https://www.googletagmanager.com/gtag/js?id='+id;if(!frame){frame=script;w.document.head.append(script)}view(current);
  }
  function choose(allow){choice=allow?'yes':'no';try{localStorage.setItem(key,choice)}catch{}
+  window.dispatchEvent(new CustomEvent('ct-analytics-choice',{detail:{allowed:allow}}));
   banner.hidden=true;if(allow){start();return}
   if(send){window['ga-disable-'+id]=true;send('consent','update',{analytics_storage:'denied'});send=null}
   for(const cookie of document.cookie.split(';')){const n=cookie.split('=')[0].trim();if(['_ga','_ga_0EF24Y0Q9M'].includes(n))for(const domain of ['', '; Domain='+location.hostname,'; Domain=chuamay.org'])document.cookie=n+'=; Max-Age=0; Path=/; Secure'+domain}

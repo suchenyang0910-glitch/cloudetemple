@@ -1,0 +1,13 @@
+{
+  "profile": "product-admin",
+  "sourceRoots": ["admin-ui"],
+  "locale": "zh-CN",
+  "canonicalMap": "UX-CONTRACT.md",
+  "requiredCapabilities": ["Scrollbar"],
+  "ownership": {},
+  "requiredCommands": [],
+  "commands": {},
+  "evidence": {
+    "failurePaths": "server/admin.test.mjs"
+  }
+}

@@ -1,0 +1,14 @@
+.trend .peak {
+  fill: none;
+  stroke: var(--wood);
+  stroke-width: 3;
+}
+
+.trend .average {
+  fill: none;
+  stroke: var(--moss);
+  stroke-width: 3;
+}
+
+.legend i.peak { background: var(--wood); }
+.legend i.average { background: var(--moss); }

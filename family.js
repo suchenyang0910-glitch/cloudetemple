@@ -458,6 +458,10 @@ async function init() {
         );
       return;
     }
+    try {
+      const anonymousId = localStorage.getItem("ct-referral-id") || "";
+      if (/^[0-9a-f-]{36}$/i.test(anonymousId)) await fetch("/api/referrals/merge", { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json", "X-CSRF-Token": csrf }, body: JSON.stringify({ anonymousId }) });
+    } catch {}
     await list();
   } catch {
     login();

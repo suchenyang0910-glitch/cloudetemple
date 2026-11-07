@@ -45,6 +45,59 @@ async function fixture() {
       }),
   };
 }
+test("live staging mode keeps real records separate from demo fixtures", () => {
+  const store = openStore(":memory:"),
+    family = openFamilyStore(store.db, { demo: false });
+  try {
+    family.saveCode({
+      subject: "subject",
+      email: "pilot@example.invalid",
+      codeHash: "code",
+      expires: Date.now() + 60_000,
+      ipHash: "ip",
+    });
+    family.saveState("state", "verifier", Date.now() + 60_000);
+    const user = family.userFor(
+      "email",
+      "subject",
+      "pilot@example.invalid",
+      "Pilot",
+    );
+    family.session("session", user.id, Date.now() + 60_000, "test", "csrf");
+    const tablet = family.createTablet(user.id, {
+      honorific: "Bà ngoại",
+      fullName: "Nguyễn Thị An",
+      birthYear: null,
+      deathYear: 2026,
+      day: 12,
+      month: 3,
+      leap: false,
+      note: "",
+    });
+    family.offer(user.id, tablet.id, "incense");
+    family.invite(user.id, tablet.id, "invite", Date.now() + 60_000, 1);
+    for (const table of [
+      "users",
+      "identities",
+      "sessions",
+      "email_codes",
+      "oauth_states",
+      "tablets",
+      "tablet_members",
+      "invites",
+      "offerings",
+      "reminder_prefs",
+    ]) {
+      assert.deepEqual(
+        store.db.prepare(`SELECT DISTINCT demo FROM ${table}`).all(),
+        [{ demo: 0 }],
+        table,
+      );
+    }
+  } finally {
+    store.close();
+  }
+});
 test("email code stays in protected outbox and session CRUD enforces CSRF", async () => {
   assert.throws(
     () => familyServerText("otp_text"),
