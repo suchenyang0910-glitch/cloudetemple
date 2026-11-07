@@ -26,10 +26,7 @@ button:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
 .scene-title p, .scene-title h1 { margin: 0; }
 .scene-title p { color: var(--muted); font-size: 8px; letter-spacing: .2em; }
 .scene-title h1 { margin-top: 5px; font-size: clamp(17px, 4.4vw, 22px); font-weight: 500; letter-spacing: -.02em; }
-
-.style-switch { position: absolute; top: max(88px, calc(env(safe-area-inset-top) + 74px)); left: 50%; translate: -50% 0; display: flex; padding: 3px; border: 1px solid var(--line); border-radius: 999px; background: rgb(238 232 220 / .72); backdrop-filter: blur(7px); }
-.style-switch button { min-height: 36px; padding: 7px 14px; border: 0; border-radius: 999px; background: transparent; font-size: 11px; }
-.style-switch button[aria-pressed="true"] { color: #fffaf1; background: var(--wood); }
+.engaged .scene-title { opacity: 0; pointer-events: none; transition: opacity .7s ease; }
 
 .context-actions { position: absolute; z-index: 2; left: 14px; right: 14px; bottom: max(18px, env(safe-area-inset-bottom)); padding: 12px; border: 1px solid var(--line); background: var(--paper-glass); box-shadow: 0 12px 36px rgb(40 32 22 / .2); backdrop-filter: blur(9px); }
 .context-actions p { margin: 0 0 9px; text-align: center; color: var(--muted); font-size: 11px; }
@@ -46,6 +43,7 @@ button:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
 .metrics dl div { display: flex; justify-content: space-between; gap: 12px; padding: 4px 0; border-bottom: 1px solid rgb(90 78 62 / .12); font-size: 11px; }
 .metrics dd { margin: 0; font-variant-numeric: tabular-nums; }
 .metrics p { margin: 10px 0 0; color: var(--muted); font-size: 9px; line-height: 1.5; }
+.metrics button { width: 100%; margin-top: 10px; border: 1px solid var(--wood); border-radius: 4px; color: #fffaf1; background: var(--wood); font-size: 11px; }
 
 .status { position: absolute; inset: 0; display: grid; place-items: center; background: #ded8cb; color: var(--muted); font-size: 12px; transition: opacity .4s ease; }
 .status.ready { opacity: 0; pointer-events: none; }
@@ -54,13 +52,9 @@ button:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
 .fallback h2 { font-size: 20px; }
 .fallback p { color: var(--muted); line-height: 1.7; }
 
-body[data-style="ink"] .paper-grain { opacity: .28; }
-body[data-style="ink"] .scene-title, body[data-style="ink"] .style-switch, body[data-style="ink"] .walk-hint, body[data-style="ink"] .context-actions { border-color: rgb(44 43 39 / .45); }
-
 @media (max-height: 580px) {
   .scene-title { top: max(8px, env(safe-area-inset-top)); padding-block: 7px 8px; }
   .scene-title p { display: none; }
-  .style-switch { top: max(58px, calc(env(safe-area-inset-top) + 50px)); }
   .walk-hint { display: none; }
 }
 
@@ -69,5 +63,5 @@ body[data-style="ink"] .scene-title, body[data-style="ink"] .style-switch, body[
 }
 
 @media (forced-colors: active) {
-  .scene-title, .style-switch, .walk-hint, .context-actions, .metrics, .metrics-toggle { border: 1px solid CanvasText; background: Canvas; }
+  .scene-title, .walk-hint, .context-actions, .metrics, .metrics-toggle { border: 1px solid CanvasText; background: Canvas; }
 }

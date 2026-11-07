@@ -1,102 +1,109 @@
 import * as THREE from './vendor/three.module.min.js';
 
-const skin = 0xb98262;
 
-function limb(material, radius, length) {
-  const mesh = new THREE.Mesh(new THREE.CapsuleGeometry(radius, length, 4, 7), material);
-  mesh.position.y = -(length / 2 + radius);
-  return mesh;
+const loader = new THREE.TextureLoader();
+const FRAME_NAMES = [
+  'stand-front', 'stand-side', 'stand-back', 'walk-side-1', 'walk-side-2',
+  'walk-back-1', 'walk-back-2', 'palms', 'bow-1', 'bow-2', 'bow-3', 'sit'
+];
+const FRAMES = Object.fromEntries(FRAME_NAMES.map(name => {
+  const texture = loader.load(`assets/visitor/${name}.webp`);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.minFilter = THREE.LinearMipmapLinearFilter;
+  texture.magFilter = THREE.LinearFilter;
+  return [name, texture];
+}));
+
+function shadowTexture() {
+  const canvas = document.createElement('canvas');
+  canvas.width = 128; canvas.height = 64;
+  const context = canvas.getContext('2d');
+  const gradient = context.createRadialGradient(64, 32, 2, 64, 32, 58);
+  gradient.addColorStop(0, 'rgba(45,35,25,.34)');
+  gradient.addColorStop(.62, 'rgba(45,35,25,.15)');
+  gradient.addColorStop(1, 'rgba(45,35,25,0)');
+  context.fillStyle = gradient;
+  context.fillRect(0, 0, 128, 64);
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  return texture;
 }
 
-export function createVisitor({ ghost = false, hair = 'short' } = {}) {
+const SHADOW = shadowTexture();
+
+function setFrame(visitor, name, flip = false) {
+  const rig = visitor.userData.rig;
+  if (rig.frame !== name) {
+    rig.sprite.material.map = FRAMES[name];
+    rig.sprite.material.needsUpdate = true;
+    rig.frame = name;
+  }
+  rig.sprite.scale.x = (flip ? -1 : 1) * rig.size;
+}
+
+export function createVisitor({ ghost = false } = {}) {
   const group = new THREE.Group();
-  const opacity = ghost ? .34 : 1;
-  const shirt = new THREE.MeshToonMaterial({ color: 0xe9e4d8, transparent: ghost, opacity });
-  const trousers = new THREE.MeshToonMaterial({ color: 0x4d4035, transparent: ghost, opacity });
-  const skinMat = new THREE.MeshToonMaterial({ color: skin, transparent: ghost, opacity });
-  const hairMat = new THREE.MeshToonMaterial({ color: 0x282622, transparent: ghost, opacity });
+  const opacity = ghost ? .3 : 1;
+  const material = new THREE.SpriteMaterial({
+    map: FRAMES['stand-back'], transparent: true, opacity, alphaTest: .025,
+    depthWrite: false, toneMapped: false
+  });
+  const sprite = new THREE.Sprite(material);
+  const size = ghost ? 2.6 : 2.85;
+  sprite.scale.set(size, size, 1);
+  sprite.position.y = size * .5 - .02;
+  sprite.renderOrder = 3;
+  group.add(sprite);
 
-  const body = new THREE.Group();
-  body.position.y = 1.1;
-  group.add(body);
-  const torso = new THREE.Mesh(new THREE.CylinderGeometry(.34, .42, .98, 8), shirt);
-  torso.position.y = 1.02;
-  body.add(torso);
-
-  const head = new THREE.Mesh(new THREE.SphereGeometry(.31, 12, 9), skinMat);
-  head.scale.set(.88, 1.08, .9);
-  head.position.set(0, 1.77, 0);
-  body.add(head);
-  const cap = new THREE.Mesh(new THREE.SphereGeometry(.318, 12, 8, 0, Math.PI * 2, 0, Math.PI * .58), hairMat);
-  cap.position.set(0, 1.82, -.015);
-  cap.rotation.x = -.05;
-  body.add(cap);
-  if (hair === 'bun') {
-    const bun = new THREE.Mesh(new THREE.SphereGeometry(.14, 9, 7), hairMat);
-    bun.position.set(0, 1.92, -.23);
-    body.add(bun);
-  }
-
-  const armPivots = [];
-  for (const side of [-1, 1]) {
-    const pivot = new THREE.Group();
-    pivot.position.set(side * .39, 1.39, 0);
-    const arm = limb(shirt, .1, .56);
-    pivot.add(arm);
-    body.add(pivot);
-    armPivots.push(pivot);
-  }
-
-  const legPivots = [];
-  for (const side of [-1, 1]) {
-    const pivot = new THREE.Group();
-    pivot.position.set(side * .2, .68, 0);
-    const leg = limb(trousers, .13, .64);
-    pivot.add(leg);
-    body.add(pivot);
-    legPivots.push(pivot);
-  }
-
-  group.userData.rig = { body, torso, head, arms: armPivots, legs: legPivots, state: 'stand' };
-  group.scale.setScalar(ghost ? .94 : 1);
+  const shadow = new THREE.Mesh(
+    new THREE.PlaneGeometry(1.42, .72),
+    new THREE.MeshBasicMaterial({ map: SHADOW, transparent: true, depthWrite: false, opacity: ghost ? .12 : .48 })
+  );
+  shadow.rotation.x = -Math.PI / 2;
+  shadow.position.y = .012;
+  shadow.renderOrder = 2;
+  group.add(shadow);
+  group.userData.rig = { sprite, shadow, size, frame: 'stand-back', view: 'back', flip: false, state: 'stand' };
   return group;
+}
+
+export function setVisitorView(visitor, camera) {
+  const rig = visitor.userData.rig;
+  const forward = new THREE.Vector3(Math.sin(visitor.rotation.y), 0, Math.cos(visitor.rotation.y));
+  const toCamera = camera.position.clone().sub(visitor.position).setY(0).normalize();
+  const facing = forward.dot(toCamera);
+  if (facing < -.58) rig.view = 'back';
+  else if (facing > .58) rig.view = 'front';
+  else rig.view = 'side';
+  rig.flip = forward.x * toCamera.z - forward.z * toCamera.x < 0;
 }
 
 export function poseVisitor(visitor, state, phase = 0, reduced = false) {
   const rig = visitor.userData.rig;
   rig.state = state;
-  const ease = reduced ? 1 : .5 - Math.cos(Math.min(1, phase) * Math.PI) / 2;
-  rig.body.position.set(0, 1.1, 0);
-  rig.body.rotation.set(0, 0, 0);
-  rig.arms[0].rotation.set(0, 0, 0);
-  rig.arms[1].rotation.set(0, 0, 0);
-  rig.legs[0].rotation.set(0, 0, 0);
-  rig.legs[1].rotation.set(0, 0, 0);
+  rig.sprite.position.y = rig.size * .5 - .02;
+  rig.shadow.scale.set(1, 1, 1);
 
   if (state === 'walk') {
-    const swing = Math.sin(phase * Math.PI * 2) * .56;
-    rig.arms[0].rotation.x = swing;
-    rig.arms[1].rotation.x = -swing;
-    rig.legs[0].rotation.x = -swing;
-    rig.legs[1].rotation.x = swing;
-    rig.body.position.y += Math.abs(Math.sin(phase * Math.PI * 2)) * .035;
-  } else if (state === 'sit') {
-    rig.body.position.y = .53;
-    rig.legs[0].rotation.x = -1.23;
-    rig.legs[1].rotation.x = -1.23;
-    rig.legs[0].rotation.z = -.58;
-    rig.legs[1].rotation.z = .58;
-    rig.arms[0].rotation.x = -.56;
-    rig.arms[1].rotation.x = -.56;
-  } else if (state === 'palms') {
-    rig.arms[0].rotation.set(-.46, 0, .84);
-    rig.arms[1].rotation.set(-.46, 0, -.84);
-  } else if (state === 'bow') {
-    rig.body.position.y = .72 - ease * .22;
-    rig.body.rotation.x = -ease * 1.16;
-    rig.arms[0].rotation.set(-1.34, 0, -.42);
-    rig.arms[1].rotation.set(-1.34, 0, .42);
-    rig.legs[0].rotation.x = -1.25;
-    rig.legs[1].rotation.x = -1.25;
+    const step = reduced ? 1 : Math.floor(phase * 5.5) % 2 + 1;
+    if (rig.view === 'back') setFrame(visitor, `walk-back-${step}`);
+    else if (rig.view === 'side') setFrame(visitor, `walk-side-${step}`, rig.flip);
+    else setFrame(visitor, 'stand-front');
+    if (!reduced) rig.sprite.position.y += Math.abs(Math.sin(phase * Math.PI * 5.5)) * .035;
+    return;
   }
+  if (state === 'sit') { setFrame(visitor, 'sit'); rig.shadow.scale.set(1.18, 1.18, 1); return; }
+  if (state === 'palms' || state === 'incense') { setFrame(visitor, 'palms', rig.flip); return; }
+  if (state === 'bow') {
+    const cycle = reduced ? 3.2 : phase % 3.6;
+    if (cycle < .55) setFrame(visitor, 'palms', rig.flip);
+    else if (cycle < 1.15) setFrame(visitor, 'bow-1', rig.flip);
+    else if (cycle < 1.75) setFrame(visitor, 'bow-2', rig.flip);
+    else if (cycle < 2.45) setFrame(visitor, 'bow-3', rig.flip);
+    else if (cycle < 3.05) setFrame(visitor, 'bow-2', rig.flip);
+    else setFrame(visitor, 'bow-1', rig.flip);
+    return;
+  }
+  const name = rig.view === 'back' ? 'stand-back' : rig.view === 'side' ? 'stand-side' : 'stand-front';
+  setFrame(visitor, name, rig.view === 'side' && rig.flip);
 }

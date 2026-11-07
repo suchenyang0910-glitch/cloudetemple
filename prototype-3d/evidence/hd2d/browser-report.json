@@ -1,0 +1,54 @@
+[
+  {
+    "viewport": {
+      "width": 375,
+      "height": 548
+    },
+    "initial": {
+      "elapsedMs": 3261,
+      "fps": 59.99400059994001,
+      "low": 51.88585112690228,
+      "triangles": 6502,
+      "calls": 134,
+      "bytes": 4883388,
+      "memory": 10270579
+    },
+    "afterWalk": {
+      "style": "hd2d",
+      "action": "stand",
+      "position": {
+        "x": 1.711496561620786e-15,
+        "z": -3.475430000000005
+      },
+      "zone": "incense",
+      "locals": 2
+    },
+    "externalRequests": 0
+  },
+  {
+    "viewport": {
+      "width": 393,
+      "height": 659
+    },
+    "initial": {
+      "elapsedMs": 3111,
+      "fps": 60.00983767830792,
+      "low": 55.156111494139665,
+      "triangles": 6360,
+      "calls": 131,
+      "bytes": 4883388,
+      "memory": 12165839
+    },
+    "afterWalk": {
+      "style": "hd2d",
+      "action": "stand",
+      "position": {
+        "x": 1.711443901808421e-15,
+        "z": -3.475000000000018
+      },
+      "zone": "incense",
+      "locals": 2
+    },
+    "externalRequests": 0
+  }
+]

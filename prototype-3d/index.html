@@ -4,25 +4,20 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
   <meta name="theme-color" content="#d9d3c6">
-  <meta name="description" content="Bản thử nghiệm kỹ thuật không gian 3D Chùa Mây">
-  <title>Thử nghiệm không gian 3D | Chùa Mây</title>
+  <meta name="description" content="Bản thử nghiệm không gian tranh thủy mặc chuyển động của Chùa Mây">
+  <title>Thử nghiệm HD-2D | Chùa Mây</title>
   <link rel="icon" href="data:,">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <main id="app" aria-label="Bản thử nghiệm đi dạo trong Chùa Mây">
-    <canvas id="scene" aria-label="Sân chùa và chánh điện ba chiều"></canvas>
+    <canvas id="scene" aria-label="Sân chùa và chánh điện trong không gian tranh thủy mặc"></canvas>
     <div class="paper-grain" aria-hidden="true"></div>
 
     <header class="scene-title">
-      <p>CHÙA MÂY · THỬ NGHIỆM 3D</p>
-      <h1>Đi chậm giữa sân chùa</h1>
+      <p>CHÙA MÂY · THỬ NGHIỆM HD-2D</p>
+      <h1>Một bức thủy mặc có thể bước vào</h1>
     </header>
-
-    <nav class="style-switch" aria-label="So sánh phong cách">
-      <button type="button" data-style="soft" aria-pressed="true" disabled>Lụa mờ</button>
-      <button type="button" data-style="ink" aria-pressed="false" disabled>Mực nét</button>
-    </nav>
 
     <section id="context-actions" class="context-actions" aria-label="Hoạt động gần đây" hidden>
       <p id="context-label"></p>
@@ -51,6 +46,7 @@
         <div><dt>Tài nguyên đầu</dt><dd id="metric-bytes">—</dd></div>
       </dl>
       <p>Đây là số đo kỹ thuật cục bộ, không gửi đi đâu.</p>
+      <button id="metrics-export" type="button" disabled>Xuất JSON</button>
     </aside>
 
     <div id="status" class="status" role="status">Đang mở sân chùa…</div>

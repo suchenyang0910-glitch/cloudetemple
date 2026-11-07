@@ -4,8 +4,8 @@ import { dirname, extname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const allowed = new Set(['.html', '.css', '.js']);
-const excluded = new Set(['node_modules', 'tools', 'tests', 'evidence']);
+const allowed = new Set(['.html', '.css', '.js', '.webp']);
+const excluded = new Set(['node_modules', 'tools', 'tests', 'evidence', 'reference-pack', 'source']);
 const rows = [];
 async function walk(folder) {
   for (const name of await readdir(folder)) {

@@ -2,6 +2,7 @@ import { firstLoadBytes } from './logic.js';
 
 export function createMetrics(renderer) {
   const samples = [];
+  const history = [];
   let last = performance.now();
   let frames = 0;
   let fps = 0;
@@ -27,8 +28,11 @@ export function createMetrics(renderer) {
       if (performance.memory) output.memory.textContent = `${(performance.memory.usedJSHeapSize / 1048576).toFixed(1)} MB`;
       const bytes = firstLoadBytes(performance.getEntriesByType('resource'));
       output.bytes.textContent = `${(bytes / 1048576).toFixed(2)} MB`;
-      window.__CHUAMAY_METRICS__ = { fps, low, triangles: stats.triangles, calls: stats.calls, bytes, memory: performance.memory?.usedJSHeapSize || null };
+      const current = { elapsedMs: Math.round(now), fps, low, triangles: stats.triangles, calls: stats.calls, bytes, memory: performance.memory?.usedJSHeapSize || null };
+      history.push(current);
+      if (history.length > 180) history.shift();
+      window.__CHUAMAY_METRICS__ = current;
     }
   }
-  return { tick, snapshot: () => window.__CHUAMAY_METRICS__ || null };
+  return { tick, snapshot: () => ({ generatedAt: new Date().toISOString(), samples: history }) };
 }

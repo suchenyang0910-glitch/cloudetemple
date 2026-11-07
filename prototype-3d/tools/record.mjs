@@ -15,20 +15,20 @@ const browser = await chromium.launch({ channel: 'chrome', headless: true });
 
 try {
   const page = await browser.newPage({ viewport: { width: 393, height: 659 } });
-  await page.goto(`http://127.0.0.1:${port}/?style=soft&locals=1`, { waitUntil: 'networkidle' });
+  await page.goto(`http://127.0.0.1:${port}/?locals=1`, { waitUntil: 'networkidle' });
   await page.waitForFunction(() => window.__CHUAMAY_READY__ === true);
   const started = Date.now();
   for (let frame = 0; frame < 150; frame += 1) {
     if (frame === 8) await page.keyboard.down('ArrowUp');
     if (frame === 39) await page.keyboard.up('ArrowUp');
-    if (frame === 48) await page.getByRole('button', { name: 'Mực nét' }).click();
-    if (frame === 82) await page.keyboard.press('p');
-    if (frame === 106) await page.keyboard.press('b');
+    if (frame === 48) await page.keyboard.press('p');
+    if (frame === 82) await page.keyboard.press('b');
+    if (frame === 120) await page.keyboard.press('c');
     await page.screenshot({ path: join(frames, `frame-${String(frame).padStart(3, '0')}.png`) });
     const due = started + (frame + 1) * 200;
     if (Date.now() < due) await page.waitForTimeout(due - Date.now());
   }
-  const output = resolve(evidence, 'walk-30s.mp4');
+  const output = resolve(evidence, 'walk-hd2d-30s.mp4');
   const encoded = spawnSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-y', '-framerate', '5', '-i', join(frames, 'frame-%03d.png'), '-vf', 'pad=ceil(iw/2)*2:ceil(ih/2)*2', '-c:v', 'libx264', '-crf', '23', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', output], { stdio: 'inherit' });
   if (encoded.status !== 0) throw new Error(`ffmpeg failed with ${encoded.status}`);
   console.log(output);

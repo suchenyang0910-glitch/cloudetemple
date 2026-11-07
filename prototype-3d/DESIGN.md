@@ -1,38 +1,36 @@
-# Chùa Mây 3D prototype design context
+# Chùa Mây HD-2D design context
 
-## Subject and job
+## 主题与任务
 
-An internal, mobile-first technical prototype for a Vietnamese online temple. Its single job is to test whether a continuous 3D courtyard and hall can still feel like the existing quiet ink-and-watercolour product.
+这是越南线上寺院的移动端技术小样。单一任务是验证：用 2D 水墨原画承担质感、用 3D 只承担空间后，连续院子与大殿能否像一幅可进入的水墨画，而不是卡通 3D 游戏。
 
-## Visual system
+## 视觉系统
 
-- **Rice paper** `#e9e2d4`: atmospheric base and interface glass.
-- **Mist** `#cbd0c6`: distance, fog and quiet transitions.
-- **Old timber** `#604b38`: hall structure and primary interface controls.
-- **Ink** `#2f302c`: outlines, silhouette and text.
-- **Incense ember** `#bb7044`: the only warm accent.
-- **Moss** `#66705c`: trees and low landscape.
+- 米纸 `#e8e0d1`：界面底衬与后处理纤维。
+- 雾灰 `#c7ccc2`：远景与空气透视。
+- 旧木 `#71583f`：柱、梁、供桌和主按钮。
+- 墨色 `#3d3933`：仅用于物体外轮廓和无细节剪影。
+- 暖铜 `#786650`：香炉和灯盏。
+- 苔绿 `#66705c`：树木与院子远景。
 
-Type uses the device sans stack so the prototype adds no font payload. Vietnamese text stays short and functional.
+页面只用系统字体，不增加字体请求。没有风格切换：整个小样只保留低饱和暖色、原画贴图、外轮廓墨线、纸纹、雾气与留白。
 
-## Layout and signature
+## 构图
 
-The canvas owns the whole viewport. A small rice-paper title plaque sits above the scene; context actions sit above the safe-area inset. The memorable element is the scene itself changing between two renderings of the same geometry:
+- 镜头比第一轮更高、略偏侧；人物保持在下方三分之一。
+- 大殿的屋檐、供桌与剪影同时进入画面。
+- 上香和礼拜使用侧后方镜头，人物始终面向佛像位置且不遮挡剪影。
+- 人物是始终朝向镜头的平面精灵；方向由正、侧、背帧表达，脚下使用柔和椭圆影子连接地面。
 
-1. **Lụa mờ** — low-contrast outlines, pale wash and dense warm mist.
-2. **Mực nét** — stronger irregular ink edges, drier paper grain and cooler shadows.
+## 3D 的职责
 
-The comparison controls are quiet utility controls, not a dashboard. No gradients, neon, game HUD, score, leaderboard or decorative icons.
+- 院子与大殿保持一个连续坐标空间。
+- 地板、柱网、梁、屋顶内侧、背墙与窗景使用低面数结构和原画裁切贴图。
+- 香炉、灯盏、柱础使用旋转体；供桌和托木雕花使用透明贴图；蒲团使用扁圆柱和编织贴图。
+- 供桌、佛座和墙体使用盒体碰撞；活动时人物自动转向佛像位置。
 
-## Interaction contract
+## 动效边界
 
-- Tap walkable ground to move; drag and hold to steer and keep walking.
-- Keyboard arrows/WASD mirror movement. `C` sits or stands; `P` joins palms; `B` bows.
-- Pinch changes camera distance. All drag operations have button/keyboard alternatives.
-- Nearby actions use real buttons with visible focus.
-- Reduced-motion disables camera push, ambient sway and long interpolation.
-- Simulated visitors are enabled only by `?locals=1` for internal performance checks.
-
-## Runtime mapping
-
-Normative colors are CSS custom properties in `styles.css` and matching style presets in `scene.js`. All scene objects derive from those presets; there is no second theme store.
+- 走路使用侧面/背面两帧循环；站立、坐禅、合掌和越南 lạy 使用已审核或同人物补帧。
+- 礼拜顺序为额前合掌 → 跪下 → 前倾 → 额头近地 → 起身；没有双臂上举。
+- 减少动效模式停用上下浮动和镜头缓动，保留必要状态切换。

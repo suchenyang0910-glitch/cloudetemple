@@ -1,6 +1,6 @@
 import * as THREE from './vendor/three.module.min.js';
 import { createTempleWorld } from './scene.js';
-import { poseVisitor } from './character.js';
+import { poseVisitor, setVisitorView } from './character.js';
 import { canOccupy, nearestZone } from './logic.js';
 import { createMetrics } from './metrics.js';
 
@@ -12,7 +12,6 @@ const contextLabel = document.querySelector('#context-label');
 const hint = document.querySelector('#walk-hint');
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const params = new URLSearchParams(location.search);
-let styleName = params.get('style') === 'ink' ? 'ink' : 'soft';
 let world;
 let metrics;
 let target = null;
@@ -30,13 +29,13 @@ const point = new THREE.Vector3();
 
 function boot() {
   try {
-    world = createTempleWorld(canvas, styleName);
+    world = createTempleWorld(canvas);
     world.locals.forEach(local => { local.visible = params.get('locals') === '1'; });
     metrics = createMetrics(world.renderer);
     resize();
     addEventListener('resize', resize, { passive: true });
     bindControls();
-    document.body.dataset.style = styleName;
+    document.body.dataset.style = 'hd2d';
     status.classList.add('ready');
     window.__CHUAMAY_READY__ = true;
     requestAnimationFrame(frame);
@@ -65,13 +64,20 @@ function bindControls() {
   canvas.addEventListener('pointerup', onPointerUp);
   canvas.addEventListener('pointercancel', onPointerUp);
   canvas.addEventListener('wheel', event => { cameraDistance = THREE.MathUtils.clamp(cameraDistance + Math.sign(event.deltaY) * .55, 5.2, 10.5); }, { passive: true });
-  document.querySelectorAll('[data-style]').forEach(button => button.addEventListener('click', () => switchStyle(button.dataset.style)));
   document.querySelectorAll('[data-action]').forEach(button => button.addEventListener('click', () => performContextAction(button.dataset.action)));
   const metricsButton = document.querySelector('#metrics-toggle');
   metricsButton.addEventListener('click', () => {
     const panel = document.querySelector('#metrics');
     panel.hidden = !panel.hidden;
     metricsButton.setAttribute('aria-expanded', String(!panel.hidden));
+  });
+  document.querySelector('#metrics-export').addEventListener('click', () => {
+    const blob = new Blob([`${JSON.stringify(metrics.snapshot(), null, 2)}\n`], { type: 'application/json' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `chuamay-hd2d-metrics-${new Date().toISOString().replaceAll(':', '-')}.json`;
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(link.href), 0);
   });
   document.querySelectorAll('button').forEach(button => { button.disabled = false; });
 }
@@ -132,23 +138,9 @@ function faceBuddha() {
 }
 
 function performContextAction(next) {
+  document.body.classList.add('engaged');
   setAction(next === 'incense' ? 'palms' : next);
-  if (!reduced) cameraDistance = Math.max(5.4, cameraDistance - 1.35);
-}
-
-function switchStyle(next) {
-  if (next === styleName) return;
-  const position = world.visitor.position.clone();
-  const rotation = world.visitor.rotation.y;
-  world.dispose();
-  styleName = next;
-  world = createTempleWorld(canvas, styleName);
-  world.visitor.position.copy(position); world.visitor.rotation.y = rotation;
-  world.locals.forEach(local => { local.visible = params.get('locals') === '1'; });
-  metrics = createMetrics(world.renderer);
-  resize();
-  document.body.dataset.style = next;
-  document.querySelectorAll('[data-style]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.style === next)));
+  if (!reduced) cameraDistance = Math.max(6.7, cameraDistance - .45);
 }
 
 function moveVisitor(delta, now) {
@@ -168,16 +160,17 @@ function moveVisitor(delta, now) {
     else { visitor.rotation.y = Math.atan2(dx, dz); stepX = dx / distance; stepZ = dz / distance; forward = 1; }
   }
   if (forward) {
+    document.body.classList.add('engaged');
     if (!target) { stepX = Math.sin(visitor.rotation.y); stepZ = Math.cos(visitor.rotation.y); }
     const speed = 2.15 * delta * forward;
     const nx = visitor.position.x + stepX * speed; const nz = visitor.position.z + stepZ * speed;
     if (canOccupy(nx, visitor.position.z)) visitor.position.x = nx;
     if (canOccupy(visitor.position.x, nz)) visitor.position.z = nz;
     walking = true;
-    poseVisitor(visitor, 'walk', now * .0022, reduced);
+    poseVisitor(visitor, 'walk', now / 1000, reduced);
   } else {
     walking = false;
-    const phase = Math.min(1, (now - actionStart) / (action === 'bow' ? 1500 : 500));
+    const phase = (now - actionStart) / 1000;
     poseVisitor(visitor, action, phase, reduced);
   }
 }
@@ -185,16 +178,20 @@ function moveVisitor(delta, now) {
 function updateCamera(delta) {
   const visitor = world.visitor;
   const behind = new THREE.Vector3(Math.sin(visitor.rotation.y), 0, Math.cos(visitor.rotation.y));
-  const desired = visitor.position.clone().addScaledVector(behind, -cameraDistance).add(new THREE.Vector3(cameraDistance * .16, cameraDistance * .5, 0));
+  const ritual = !walking && ['incense', 'palms', 'bow'].includes(action);
+  const desired = ritual
+    ? visitor.position.clone().add(new THREE.Vector3(cameraDistance * .25, cameraDistance * .62, cameraDistance * .9))
+    : visitor.position.clone().addScaledVector(behind, -cameraDistance).add(new THREE.Vector3(cameraDistance * .3, cameraDistance * .68, 0));
   const factor = reduced ? 1 : 1 - Math.pow(.001, delta);
   world.camera.position.lerp(desired, factor);
-  const look = visitor.position.clone().add(new THREE.Vector3(0, 1.25, 0));
+  const look = visitor.position.clone().add(new THREE.Vector3(0, ritual ? 2.35 : 2.15, ritual ? -3 : -1.8));
   world.camera.lookAt(look);
+  setVisitorView(visitor, world.camera);
 }
 
 function updateContext() {
   const zone = nearestZone(world.visitor.position.x, world.visitor.position.z);
-  context.hidden = !zone;
+  context.hidden = !zone || action !== 'stand';
   if (!zone) return;
   contextLabel.textContent = zone.label;
   context.querySelectorAll('button').forEach(button => { button.hidden = !({ incense: ['incense'], cushion: ['sit'], buddha: ['palms', 'bow'] }[zone.id] || []).includes(button.dataset.action); });
@@ -207,10 +204,10 @@ function frame(now) {
   moveVisitor(delta, now);
   updateCamera(delta);
   updateContext();
-  world.render(now / 1000);
+  world.render();
   metrics.tick(now);
   window.__CHUAMAY_STATE__ = {
-    style: styleName,
+    style: 'hd2d',
     action: walking ? 'walk' : action,
     position: { x: world.visitor.position.x, z: world.visitor.position.z },
     zone: nearestZone(world.visitor.position.x, world.visitor.position.z)?.id || null,

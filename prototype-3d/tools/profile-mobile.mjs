@@ -22,7 +22,7 @@ try {
     await cdp.send('Network.emulateNetworkConditions', { offline: false, latency: 80, downloadThroughput: 500 * 1024, uploadThroughput: 125 * 1024, connectionType: 'cellular4g' });
     await cdp.send('Emulation.setCPUThrottlingRate', { rate: profile.cpu });
     const started = performance.now();
-    await page.goto(`http://127.0.0.1:${port}/?style=soft&locals=1`, { waitUntil: 'domcontentloaded' });
+    await page.goto(`http://127.0.0.1:${port}/?locals=1`, { waitUntil: 'domcontentloaded' });
     await page.waitForFunction(() => window.__CHUAMAY_READY__ === true, null, { timeout: 30000 });
     const readyMs = performance.now() - started;
     await page.waitForTimeout(6500);
