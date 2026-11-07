@@ -208,7 +208,7 @@ body[data-flower="hoa-dao"] .fes-fl{background-image:url(assets/festival/flower-
 .fes-fl[data-side="l"]{left:0;top:40%;transform-origin:bottom left;animation:branch-sway 15s ease-in-out infinite}
 .fes-fl[data-side="r"]{right:0;top:40%;transform-origin:bottom center;scale:-1 1;animation:branch-sway 15s ease-in-out 5s infinite}
 /* moon */
-.fes-moon{width:16%;aspect-ratio:1;background:url(assets/festival/moon.svg)no-repeat center/contain;left:8%;top:25%;opacity:.88}
+.fes-moon{width:16%;aspect-ratio:1;background:url(assets/festival/moon.svg)no-repeat center/contain;right:18%;top:25%;opacity:.88}
 /* petals */
 .fes-p{width:clamp(7px,2%,10px);aspect-ratio:12/14;background:url(assets/festival/petal-mai.svg)no-repeat center/contain;opacity:.65}
 body[data-flower="hoa-dao"] .fes-p{background-image:url(assets/festival/petal-dao.svg)}
@@ -512,8 +512,12 @@ body[data-festival="ram"][data-view="mo"] .fes-fl[data-side="r"]{top:44%;opacity
 body[data-festival="tat-nien"][data-view="mo"] .fes-pot[data-side="r"],
 body[data-festival="mung1"][data-view="mo"] .fes-pot[data-side="r"],
 body[data-festival="mung2"][data-view="mo"] .fes-pot[data-side="r"]{display:block;right:1%;bottom:9%;scale:-1 1}
-/* Hall-side visitor occupies the lower right; keep decorations in the outer margin. */
-body[data-festival]:is([data-view="incense"],[data-view="bow"],[data-view="mo"]) .fes-l{right:-1%!important}
+/* Hall-side visitor occupies the lower right; keep complete lanterns staggered in the outer margin. */
+body[data-festival]:is([data-view="incense"],[data-view="bow"],[data-view="mo"]) .fes-l.l4{right:3%!important}
+body[data-festival]:is([data-view="incense"],[data-view="bow"],[data-view="mo"]) .fes-l.l5{right:8%!important}
+body[data-festival]:is([data-view="incense"],[data-view="bow"],[data-view="mo"]) .fes-l.l6{right:3%!important}
+body[data-festival]:is([data-view="incense"],[data-view="bow"],[data-view="mo"]) .fes-l.l7{right:8%!important}
+body[data-festival]:is([data-view="incense"],[data-view="bow"],[data-view="mo"]) .fes-l.l8{right:3%!important}
 body[data-festival]:is([data-view="incense"],[data-view="bow"],[data-view="mo"]) .fes-fl[data-side="r"]{right:-9%;top:17%}
 body[data-festival]:is([data-view="incense"],[data-view="bow"],[data-view="mo"]) .fes-pot[data-side="r"]{right:-7%}
 /* --- hall-side: left flower + moon + left pot always suppressed --- */

@@ -1,20 +1,28 @@
 from datetime import datetime, timezone
 from pathlib import Path
 from playwright.sync_api import sync_playwright
-import subprocess, time
+import os, subprocess, time
 
 ROOT = Path(__file__).resolve().parents[1]
-OUT = ROOT / "screenshots" / "tet-art-staging-416187a"
+OUT = ROOT / os.environ.get("CT_SCREENSHOT_DIR", "screenshots/tet-art-staging-416187a")
 OUT.mkdir(parents=True, exist_ok=True)
 PORT = 8903
-BASE = f"http://127.0.0.1:{PORT}"
+BASE = os.environ.get("CT_BASE", f"http://127.0.0.1:{PORT}")
 DATES = ["2027-01-30", "2027-02-05", "2027-02-06", "2027-02-20"]
 
-server = subprocess.Popen(
-    ["python", "-m", "http.server", str(PORT), "-d", str(ROOT / "dist")],
-    stdout=subprocess.DEVNULL,
-    stderr=subprocess.DEVNULL,
-)
+server = None if os.environ.get("CT_BASE") else subprocess.Popen(
+    ["python", "-m", "http.server", str(PORT), "-d", str(ROOT / "dist")], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+
+def browser_credentials():
+    path = os.environ.get("CT_BASIC_AUTH_FILE")
+    if not path:
+        return None
+    raw = Path(path).read_text(encoding="utf-8").strip()
+    if ":" in raw:
+        username, password = raw.split(":", 1)
+        return {"username": username, "password": password}
+    return {"username": "reviewer", "password": raw}
 
 
 def enter(page, date):
@@ -52,12 +60,21 @@ def assert_controls_clear(page):
     assert stacking["art"] < stacking["controls"] and stacking["pointer"] == "none", stacking
 
 
+def assert_hall_lanterns(page):
+    lanterns = page.locator("#festival-layer .fes-l:visible")
+    boxes = [lanterns.nth(i).bounding_box() for i in range(lanterns.count())]
+    assert all(box and box["x"] >= 0 and box["x"] + box["width"] <= 393 for box in boxes), boxes
+    if len(boxes) > 1:
+        assert len({round(box["x"]) for box in boxes}) > 1, boxes
+
+
 try:
-    time.sleep(.4)
+    if server:
+        time.sleep(.4)
     with sync_playwright() as p:
         browser = p.chromium.launch()
         for date in DATES:
-            context = browser.new_context(viewport={"width": 393, "height": 659}, timezone_id="Asia/Bangkok")
+            context = browser.new_context(viewport={"width": 393, "height": 659}, timezone_id="Asia/Bangkok", http_credentials=browser_credentials())
             page = context.new_page()
             page.clock.set_fixed_time(datetime(2026, 11, 5, 5, tzinfo=timezone.utc))
             enter(page, date)
@@ -68,6 +85,7 @@ try:
             open_view(page, "incense", "[data-action=light]")
             page.screenshot(path=OUT / f"{date}-hall-side-incense-day.png")
             assert_controls_clear(page)
+            assert_hall_lanterns(page)
 
             open_view(page, "mo", "#daily-wood")
             art = visible_art(page)
@@ -76,6 +94,7 @@ try:
             assert all(not (item["className"] == "fes-pot" and item["side"] == "l") for item in art)
             page.screenshot(path=OUT / f"{date}-hall-side-mo-day.png")
             assert_controls_clear(page)
+            assert_hall_lanterns(page)
 
             open_view(page, "sit", "[data-action=sit-start]")
             assert page.locator(".fes-moon").evaluate("e=>getComputedStyle(e).display") == "none"
@@ -83,19 +102,26 @@ try:
             assert_controls_clear(page)
             context.close()
 
-        context = browser.new_context(viewport={"width": 393, "height": 659}, timezone_id="Asia/Bangkok")
+        context = browser.new_context(viewport={"width": 393, "height": 659}, timezone_id="Asia/Bangkok", http_credentials=browser_credentials())
         page = context.new_page()
         page.clock.set_fixed_time(datetime(2026, 11, 5, 15, tzinfo=timezone.utc))
         enter(page, "2027-02-20")
         open_view(page, "sit", "[data-action=sit-start]")
         assert page.locator("body").get_attribute("data-period") == "night"
         assert page.locator(".fes-moon").evaluate("e=>getComputedStyle(e).display") == "block"
+        moon = page.locator(".fes-moon").bounding_box()
+        assert moon and 659 * .15 <= moon["y"] <= 659 * .25 + 1, moon
+        assert 393 * .10 <= 393 - moon["x"] - moon["width"] <= 393 * .20 + 1, moon
+        blockers = [page.locator(selector) for selector in (".scene-heading", "#sound-toggle", "#sound-hint")]
+        for blocker in blockers:
+            box = blocker.bounding_box() if blocker.is_visible() else None
+            assert not box or not (moon["x"] < box["x"] + box["width"] and moon["x"] + moon["width"] > box["x"] and moon["y"] < box["y"] + box["height"] and moon["y"] + moon["height"] > box["y"]), (moon, box)
         page.screenshot(path=OUT / "2027-02-20-courtyard-sit-night.png")
         open_view(page, "mo", "#daily-wood")
         assert page.locator(".fes-moon").evaluate("e=>getComputedStyle(e).display") == "none"
         context.close()
 
-        context = browser.new_context(viewport={"width": 393, "height": 659}, timezone_id="Asia/Bangkok", reduced_motion="reduce")
+        context = browser.new_context(viewport={"width": 393, "height": 659}, timezone_id="Asia/Bangkok", reduced_motion="reduce", http_credentials=browser_credentials())
         page = context.new_page()
         page.clock.set_fixed_time(datetime(2026, 11, 5, 5, tzinfo=timezone.utc))
         enter(page, "2027-02-06")
@@ -114,5 +140,6 @@ try:
         browser.close()
     print({"passed": True, "screenshots": len(list(OUT.glob("*.png"))), "dates": DATES, "size": "393x659"})
 finally:
-    server.terminate()
-    server.wait(timeout=5)
+    if server:
+        server.terminate()
+        server.wait(timeout=5)
