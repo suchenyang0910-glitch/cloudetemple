@@ -37,6 +37,7 @@ foreach ($name in @('bead-wood-v2.webp','bead-spacer-v2.webp','bead-guru-v2.webp
 Copy-Item -LiteralPath (Join-Path $projectRoot 'assets/processed-v1/mobile') -Destination (Join-Path $outputRoot 'assets/processed-v1') -Recurse -Force
 Copy-Item -LiteralPath (Join-Path $projectRoot 'assets/fonts') -Destination (Join-Path $outputRoot 'assets') -Recurse
 Copy-Item -LiteralPath (Join-Path $projectRoot 'assets/share') -Destination (Join-Path $outputRoot 'assets') -Recurse
+Copy-Item -LiteralPath (Join-Path $projectRoot 'assets/festival') -Destination (Join-Path $outputRoot 'assets') -Recurse
 $debugOutput=Join-Path $outputRoot 'audio-debug.js'
 Copy-Item -LiteralPath (Join-Path $projectRoot 'analytics.js') -Destination $outputRoot
 $index=Join-Path $outputRoot 'index.html'

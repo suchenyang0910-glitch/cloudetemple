@@ -193,7 +193,7 @@ body[data-view=morning] .controls{display:flex;flex-direction:column;align-items
 
 /* ===== Tết 2027 Festival Layer ===== */
 #festival-layer{position:absolute;inset:0;pointer-events:none;z-index:1;overflow:hidden;display:none}
-body[data-festival]:not([data-festival=""])#festival-layer{display:block}
+body[data-festival]:not([data-festival=""]) #festival-layer{display:block}
 /* family.html has no #festival-layer element, so no extra rule needed */
 .fes-l,.fes-fl,.fes-moon,.fes-p,.fes-g{position:absolute;display:none}
 /* lantern: SVG via bg-image; thread via ::before */
@@ -202,12 +202,12 @@ body[data-festival]:not([data-festival=""])#festival-layer{display:block}
 .fes-l.l2{animation-delay:1.5s}.fes-l.l3{animation-delay:3s}.fes-l.l4{animation-delay:4.5s}
 .fes-l.l5{animation-delay:2s}.fes-l.l6{animation-delay:3.5s}.fes-l.l7{animation-delay:1s}.fes-l.l8{animation-delay:2.5s}
 /* flowers: same type both sides, controlled by data-flower */
-.fes-fl{width:17%;background:url(assets/festival/flower-mai.svg)no-repeat top center/contain}
+.fes-fl{width:17%;aspect-ratio:126/212;background:url(assets/festival/flower-mai.svg)no-repeat top center/contain}
 body[data-flower="hoa-dao"] .fes-fl{background-image:url(assets/festival/flower-dao.svg)}
 .fes-fl[data-side="l"]{left:0;top:40%;transform-origin:bottom left;animation:branch-sway 15s ease-in-out infinite}
-.fes-fl[data-side="r"]{right:0;top:40%;transform-origin:bottom right;scale:-1 1;animation:branch-sway 15s ease-in-out 5s infinite}
+.fes-fl[data-side="r"]{right:0;top:40%;transform-origin:bottom center;scale:-1 1;animation:branch-sway 15s ease-in-out 5s infinite}
 /* moon */
-.fes-moon{width:10%;aspect-ratio:1;background:url(assets/festival/moon.svg)no-repeat center/contain;right:5%;top:5%;opacity:.88}
+.fes-moon{width:10%;aspect-ratio:1;background:url(assets/festival/moon.svg)no-repeat center/contain;left:8%;top:25%;opacity:.88}
 /* petals */
 .fes-p{width:clamp(7px,2%,10px);aspect-ratio:12/14;background:url(assets/festival/petal-mai.svg)no-repeat center/contain;opacity:.65}
 body[data-flower="hoa-dao"] .fes-p{background-image:url(assets/festival/petal-dao.svg)}
