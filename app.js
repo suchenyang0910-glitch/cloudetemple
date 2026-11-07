@@ -3,7 +3,7 @@ import {mountBeads} from './beads.js';
 import {beadGuruRule} from './config.js';
 import {createTempleAudio} from './audio.js';
 import {assetURL,loadImage,placeholder,enableImageDebug} from './resources.js';
-import {copy,reflections} from './i18n.js';
+import {copy,reflections,shareCopy} from './i18n.js';
 import {apiURL,initTelegram,inTelegram,initData,telegramBack,telegramAppearance,haptic,telegramShare,telegramStory,telegramStartParam} from './telegram.js';
 import {createReferrals} from './referrals.js';
 
@@ -71,16 +71,6 @@ export function placement(layout,id,pose){
   const a=layout.front_image_anchors[`visitor-${id}-${pose}.webp`],s=layout.courtyard,scale=s.cushionWidth/a.cushionWidth;
   return {x:s.x-a.cushionBottomCenter[0]*scale,y:s.bottom-a.cushionBottomCenter[1]*scale,w:600*scale,h:900*scale};
 }
-export function stripEmbeddedCushion(data,width,height){
-  const cx=width/2,cy=height*.86,rx=width*.43,ry=height*.09;
-  for(let y=Math.floor(cy-ry);y<Math.min(height,Math.ceil(cy+ry));y++)for(let x=Math.floor(cx-rx);x<Math.min(width,Math.ceil(cx+rx));x++){
-    const dx=(x-cx)/rx,dy=(y-cy)/ry;if(dx*dx+dy*dy>1)continue;
-    const i=(y*width+x)*4,r=data[i],g=data[i+1],b=data[i+2];if(data[i+3]<8)continue;
-    const darkClothing=r<155&&g<105&&b<90,skin=r>180&&r-g>58&&g-b>16;
-    if(!darkClothing&&!skin)data[i+3]=0;
-  }
-  return data;
-}
 function image(name){
   if(!images.has(name)){
     const pending=loadImage(name,t('imageUnavailable'));images.set(name,pending);
@@ -91,18 +81,18 @@ function image(name){
 function sceneName(view=state.view){return ['incense','bow','mo'].includes(view)?'hall-side':['sit','beads','choose'].includes(view)?'courtyard':'hall-front';}
 function sceneFile(view=state.view,period=state.period){return `scene-vn-${sceneName(view)}-${period}.webp`;}
 function poses(view){return view==='bow'?['bow-1','bow-2','bow-3']:view==='incense'?['bow-1']:view==='mo'?['mo-1-v1','mo-2-v1','mo-3-v1']:view==='sit'?['sit']:view==='beads'?['beads']:[];}
+const artFile=(visitor,pose)=>`visitor-${visitor}-${pose}${pose==='sit'||pose==='beads'?'-nocushion':''}.webp`;
 async function prepare(view,period){
   const visitor=state.visitor;
   const scene=await image(sceneFile(view,period));
   const art={};let missing=!!scene.placeholder;
   if(view==='beads')missing=(await Promise.all(['wood','spacer','guru'].map(kind=>image(`bead-${kind}-v2.webp`)))).some(im=>im.placeholder)||missing;
   for(const pose of poses(view)){
-    const name=`visitor-${visitor}-${pose}.webp`,key=name+period;
+    const name=artFile(visitor,pose),key=name+period;
     if(!tinted.has(key)){
       const im=await image(name),c=document.createElement('canvas');c.width=im.width;c.height=im.height;
       const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(im,0,0);
       const data=x.getImageData(0,0,c.width,c.height),tone=state.layout.toneRGB[period];
-      if(pose==='sit'||pose==='beads')stripEmbeddedCushion(data,c.width,c.height);
       for(let i=0;i<data.data.length;i+=4){for(let j=0;j<3;j++)data.data[i+j]*=tone[j]*(view==='mo'&&period==='night'?.9:1);}
       x.putImageData(data,0,0);if(!im.placeholder)tinted.set(key,c);else {missing=true;art[pose]=c;continue;}
     }
@@ -145,7 +135,7 @@ function stopActivity(){stopWoodAuto();stopWoodMotion();clearTimeout(finishTimer
 function prefetch(view){
  const visitor=state.visitor,period=state.period;
  const run=()=>{if(state.visitor!==visitor||state.period!==period||state.view!==view)return;
-  const names=['bow-1','bow-2','bow-3','sit','beads','mo-1-v1','mo-2-v1','mo-3-v1'].map(p=>`visitor-${visitor}-${p}.webp`);
+  const names=['bow-1','bow-2','bow-3','sit','beads','mo-1-v1','mo-2-v1','mo-3-v1'].map(p=>artFile(visitor,p));
   if(view==='home')names.push(...['incense','sit','mo'].map(v=>sceneFile(v,period)));
   if(view==='choose')names.push(...state.layout.v1_scope.visitors.map(id=>`visitor-${id}-choose-v1.webp`));
   names.forEach(name=>void image(name));
@@ -349,7 +339,7 @@ function stopWoodAuto(){if(woodAuto){clearInterval(woodAuto);woodAuto=null;}}
 function stopWoodMotion(){clearTimeout(woodMotionTimer);woodMotionTimer=0;woodQueue=[];state.moFrame=1;}
 function runWoodMotion(){
   if(state.view!=='mo'||!woodQueue.length)return;
-  const hit=woodQueue.shift(),land=()=>{state.moFrame=3;paint();audio.strike('wood');if(!haptic('light'))try{navigator.vibrate?.(10);}catch{}if(hit.final){woodQueue=[];woodMotionTimer=setTimeout(()=>complete('mo',performance.now()-woodStarted,108),80);return;}woodMotionTimer=setTimeout(()=>{state.moFrame=1;paint();woodMotionTimer=0;if(woodQueue.length)runWoodMotion();},woodQueue.length?80:120);};
+  const hit=woodQueue.shift(),land=()=>{state.moFrame=3;paint();audio.strike('wood');if(!haptic('light'))try{navigator.vibrate?.(10);}catch{}if(hit.final){woodQueue=[];woodMotionTimer=setTimeout(()=>complete('mo',performance.now()-woodStarted,woodSession),80);return;}woodMotionTimer=setTimeout(()=>{state.moFrame=1;paint();woodMotionTimer=0;if(woodQueue.length)runWoodMotion();},woodQueue.length?80:120);};
   if(reduced.matches){land();return;}state.moFrame=2;paint();woodMotionTimer=setTimeout(land,60);
 }
 function tapWood(){
@@ -427,7 +417,7 @@ function download(){
 const shareActivity=()=>state.result?.kind||'share';
 const shareSource=channel=>referrals.telegram(channel,shareActivity());
 const shareLink=channel=>referrals.link(channel,shareActivity());
-function shareText(){const r=state.result||{},params={n:r.count??0,m:Math.max(1,Math.round((r.elapsed||0)/60000))};return t({incense:'shareIncenseText',bow:'shareBowText',sit:'shareSitText',mo:'shareMoText',beads:'shareBeadsText'}[r.kind]||'recommendText',params);}
+function shareText(){const r=state.result||{},{key,params}=shareCopy(r.kind,r.elapsed,r.count);return t(key,params);}
 async function copyShare(channel,track=true){try{await navigator.clipboard.writeText(shareLink(channel));if(track)event('share_channel',{channel:'copy'});$('#share-status').textContent=t('linkCopied');return true}catch{$('#share-status').textContent=t('shareError');return false}}
 function sharePanel(){if($('.share-channels'))return;const telegram=inTelegram();$('#modal-body').insertAdjacentHTML('beforeend',`<div class="share-channels">${telegram?button('story','share-story')+button('telegramForward','share-telegram'):button('zalo','share-zalo')+button('facebook','share-facebook')+button('messenger','share-messenger')+button('copyLink','share-copy')}</div>`);}
 async function shareFile(){
@@ -494,7 +484,7 @@ $('#sound-toggle').addEventListener('click',()=>{event('sound_toggle',{state:aud
 const savedVolume=read('ct-volume',80);$('#volume').value=typeof savedVolume==='number'&&Number.isFinite(savedVolume)&&savedVolume>=0&&savedVolume<=100?savedVolume:80;
 state.beadHand=read('ct-bead-hand','right')==='left'?'left':'right';
 $('#volume').addEventListener('input',()=>{write('ct-volume',Number($('#volume').value));audio.volume();});
-$('#controls').addEventListener('pointerdown',e=>{const action=e.target.closest('[data-action]')?.dataset.action;if(action==='enter')void image(`visitor-${state.visitor}-sit.webp`);else if(['incense','bow','sit','beads','mo'].includes(action))void image(sceneFile(action,periodNow()));});
+$('#controls').addEventListener('pointerdown',e=>{const action=e.target.closest('[data-action]')?.dataset.action;if(action==='enter')void image(artFile(state.visitor,'sit'));else if(['incense','bow','sit','beads','mo'].includes(action))void image(sceneFile(action,periodNow()));});
 document.addEventListener('click',()=>{void audio.wake();},true);
 reduced.addEventListener('change',()=>{animation();paint();fx();if(state.view==='beads')render();});
 document.addEventListener('visibilitychange',async()=>{if(document.hidden){stopWoodAuto();stopWoodMotion();audio.stopBackground();audio.stopBreathing();cancelAnimationFrame(drawFrame);if(state.view==='mo')render();}else{heartbeat();await audio.wake();tick();animation();if(state.view==='sit'&&state.activity?.running){audio.ambient(audio.ambientKind);startBreathing();}if(state.view==='incense'&&state.activity?.running)audio.ambient('forest',.6,2);if(state.view==='beads')void audio.load('bead-v1').catch(()=>{});}});

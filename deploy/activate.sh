@@ -27,7 +27,7 @@ PATH=/opt/chuamay/runtime/bin:$PATH /opt/chuamay/runtime/bin/npm test
 ln -s "$target" "$root/next-link"; mv -Tf "$root/next-link" "$root/current"
 systemctl restart "chuamay-api@$environment"
 healthy=false
-for attempt in {1..15}; do if curl -fsS "http://127.0.0.1:$port/healthz" >/dev/null; then healthy=true; break; fi; sleep 1; done
+for attempt in {1..30}; do if curl -fsS "http://127.0.0.1:$port/healthz" >/dev/null; then healthy=true; break; fi; sleep 1; done
 $healthy
 test -s "$root/current/dist/index.html"
 python3 - "$environment" <<'PY'
