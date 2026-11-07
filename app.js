@@ -6,6 +6,7 @@ import {assetURL,loadImage,placeholder,enableImageDebug} from './resources.js';
 import {copy,reflections,shareCopy} from './i18n.js';
 import {apiURL,initTelegram,inTelegram,initData,telegramBack,telegramAppearance,haptic,telegramShare,telegramStory,telegramStartParam} from './telegram.js';
 import {createReferrals} from './referrals.js';
+import {createMorning} from './morning.js';
 
 let analytics,woodStarted,referrals;
 const familyEnabled='__CT_FAMILY_ENABLED__'==='1';
@@ -81,6 +82,7 @@ function image(name){
 function sceneName(view=state.view){return ['incense','bow','mo'].includes(view)?'hall-side':['sit','beads','choose'].includes(view)?'courtyard':'hall-front';}
 function sceneFile(view=state.view,period=state.period){return `scene-vn-${sceneName(view)}-${period}.webp`;}
 function poses(view){return view==='bow'?['bow-1','bow-2','bow-3']:view==='incense'?['bow-1']:view==='mo'?['mo-1-v1','mo-2-v1','mo-3-v1']:view==='sit'?['sit']:view==='beads'?['beads']:[];}
+const morning=createMorning({event});
 const artFile=(visitor,pose)=>`visitor-${visitor}-${pose}${pose==='sit'||pose==='beads'?'-nocushion':''}.webp`;
 async function prepare(view,period){
   const visitor=state.visitor;
@@ -196,11 +198,14 @@ function render(){
   updateSoundUI();
   $('#sound-controls').hidden=!audio.enabled;
   $('#eyebrow').textContent=t(state.period);
-  const heading=state.view==='entry'?'entryTitle':state.view==='choose'?'choose':state.view==='home'?'home':state.view;
-  $('#heading').textContent=t(heading)+(state.view==='beads'?' · '+t('beadRound',{n:state.beadRound}):'');$('#subtitle').textContent=t(state.view==='home'?'homeNote':state.view==='entry'||state.view==='choose'?'tagline':`${state.view}Note`);
+  const heading=state.view==='entry'?'entryTitle':state.view==='choose'?'choose':state.view==='home'?'home':state.view==='morning'?'morningTitle':state.view;
+  $('#heading').textContent=t(heading)+(state.view==='beads'?' · '+t('beadRound',{n:state.beadRound}):'');$('#subtitle').textContent=t(state.view==='home'?'homeNote':state.view==='entry'||state.view==='choose'?'tagline':state.view==='morning'?'morningNote':`${state.view}Note`);
   canvas.setAttribute('aria-label',t(sceneName()==='hall-front'?'sceneFront':sceneName()==='hall-side'?'sceneSide':'sceneCourt'));
   $('#notice').textContent='';updateBreathCue();if(state.view!=='choose')$('#entry-overlay').innerHTML='';
-  if(state.view==='entry'){
+  if(state.view==='morning'){
+    const inProgress=morning.isActive();
+    $('#controls').innerHTML=`<div class="stack morning-stack"><p class="morning-bell-hint" id="morning-bell-status" aria-live="polite" role="status">${inProgress?t('morningBell'):''}</p><div class="row">${button('morningStart','morning-start','primary')}${button('morningSkip','morning-skip','')}</div></div>`;
+  }else if(state.view==='entry'){
     $('#controls').innerHTML=button('enter','enter','primary');
   }else if(state.view==='choose'){
     $('#controls').innerHTML=`<div class="choice-dots" aria-hidden="true">${state.layout.v1_scope.visitors.map(()=>'<i></i>').join('')}</div>${button('continue','continue','primary')}`;
@@ -217,13 +222,16 @@ function render(){
     $('#controls').innerHTML=`<div class="completion"><p>${reflections[state.result.reflection][state.lang]}</p>${state.result.kind==='beads'?button('beadAgain','bead-again','primary'):''}<div class="row">${button('shareAction','share','primary')}${button('download','download')}</div><p id="share-status" role="status"></p>${button('back','home','back-button')}</div>`;
     $('#subtitle').textContent=t('completed');
   }else if(state.view==='incense'){
-    $('#controls').innerHTML=`<div class="stack"><div id="incense-status" class="section-label"></div><div class="incense-stick" aria-hidden="true"><span id="incense-progress"></span></div><div class="row">${button('light','light','primary',state.activity?'disabled':'')}${button('back','home')}</div></div>`;
+    const morningSkipBtn=morning.isActive()?`<button type="button" class="text-button morning-skip-step" data-action="morning-skip-step" data-step="incense">${t('morningSkipStep')}</button>`:'';
+    $('#controls').innerHTML=`<div class="stack"><div id="incense-status" class="section-label"></div><div class="incense-stick" aria-hidden="true"><span id="incense-progress"></span></div><div class="row">${button('light','light','primary',state.activity?'disabled':'')}${morning.isActive()?morningSkipBtn:button('back','home')}</div></div>`;
   }else if(state.view==='bow'){
     const a=state.activity;
-    $('#controls').innerHTML=`<div class="stack"><p class="section-label">${t('bowTarget')}</p><div class="choice-row">${[3,27,54,108].map(n=>`<button data-target="${n}" aria-pressed="${state.bowTarget===n}" ${a?.bowStart!=null?'disabled':''}>${n}</button>`).join('')}</div><p class="count" id="bow-count">${a?.count??0} / ${state.bowTarget}</p><div class="row">${button('bowOnce','bow-once','primary',a?.bowStart!=null?'disabled':'')}${button(a?.auto?'stopAuto':'auto','auto','',`aria-pressed="${!!a?.auto}"`)}</div>${button('back','home','back-button')}</div>`;
+    const bowBack=morning.isActive()?`<button type="button" class="text-button morning-skip-step" data-action="morning-skip-step" data-step="bow">${t('morningSkipStep')}</button>`:button('back','home','back-button');
+    $('#controls').innerHTML=`<div class="stack"><p class="section-label">${t('bowTarget')}</p><div class="choice-row">${[3,27,54,108].map(n=>`<button data-target="${n}" aria-pressed="${state.bowTarget===n}" ${a?.bowStart!=null?'disabled':''}>${n}</button>`).join('')}</div><p class="count" id="bow-count">${a?.count??0} / ${state.bowTarget}</p><div class="row">${button('bowOnce','bow-once','primary',a?.bowStart!=null?'disabled':'')}${button(a?.auto?'stopAuto':'auto','auto','',`aria-pressed="${!!a?.auto}"`)}</div>${bowBack}</div>`;
   }else if(state.view==='sit'){
     const a=state.activity;
-    $('#controls').innerHTML=`<div class="stack"><p class="timer" id="timer" role="timer">${formatTime(a?remaining(a):state.sitMinutes*60000)}</p>${!a?`<div class="choice-row" aria-label="${t('duration')}">${[1,3,5,10].map(n=>`<button data-minutes="${n}" aria-pressed="${state.sitMinutes===n}">${n} ${t('minutes')}</button>`).join('')}</div>`:''}<div class="row">${!a?button('start','sit-start','primary'):button(a.running?'pause':'resume','pause','primary')}${a?button('finish','finish'):''}${a?button('wood','wood'):''}</div><p class="section-label" id="wood-count" ${!a?'hidden':''}>${t('woodCount')}: ${state.wood}</p><div class="breath-controls"><button type="button" data-action="breath-toggle" aria-pressed="${state.breathGuide}">${t('breathGuide')}</button><div class="choice-row" aria-label="${t('breathPace')}">${Object.keys(breathPatterns).map(k=>`<button data-breath="${k}" aria-pressed="${state.breathPattern===k}" aria-label="${t('breathPattern',{pattern:k.replace('-', ' / ')})}">${k.replace('-', ' / ')}</button>`).join('')}</div></div><div class="row"><label class="ambient-label">${t('ambient')}</label><div class="choice-row ambient-options">${['none','forest','rain'].map(k=>`<button data-ambient="${k}" aria-pressed="${audio.ambientKind===k}">${t(k)}</button>`).join('')}</div></div>${button('back','home','back-button')}</div>`;
+    const sitBack=morning.isActive()?`<button type="button" class="text-button morning-skip-step" data-action="morning-skip-step" data-step="sit">${t('morningSkipStep')}</button>`:button('back','home','back-button');
+    $('#controls').innerHTML=`<div class="stack"><p class="timer" id="timer" role="timer">${formatTime(a?remaining(a):state.sitMinutes*60000)}</p>${!a?`<div class="choice-row" aria-label="${t('duration')}">${[1,3,5,10].map(n=>`<button data-minutes="${n}" aria-pressed="${state.sitMinutes===n}">${n} ${t('minutes')}</button>`).join('')}</div>`:''}<div class="row">${!a?button('start','sit-start','primary'):button(a.running?'pause':'resume','pause','primary')}${a?button('finish','finish'):''}${a?button('wood','wood'):''}</div><p class="section-label" id="wood-count" ${!a?'hidden':''}>${t('woodCount')}: ${state.wood}</p><div class="breath-controls"><button type="button" data-action="breath-toggle" aria-pressed="${state.breathGuide}">${t('breathGuide')}</button><div class="choice-row" aria-label="${t('breathPace')}">${Object.keys(breathPatterns).map(k=>`<button data-breath="${k}" aria-pressed="${state.breathPattern===k}" aria-label="${t('breathPattern',{pattern:k.replace('-', ' / ')})}">${k.replace('-', ' / ')}</button>`).join('')}</div></div><div class="row"><label class="ambient-label">${t('ambient')}</label><div class="choice-row ambient-options">${['none','forest','rain'].map(k=>`<button data-ambient="${k}" aria-pressed="${audio.ambientKind===k}">${t(k)}</button>`).join('')}</div></div>${sitBack}</div>`;
   }else if(state.view==='mo'){
     $('#controls').innerHTML=`<div class="stack"><p id="daily-wood" class="count">${t('dailyWood',{count:dailyWood()})}</p><p id="wood-message" role="status">${woodSession>=108?t('wood108'):''}</p><div class="row">${button(woodAuto?'woodStop':'woodAuto','wood-auto','primary',`aria-pressed="${!!woodAuto}"`)}${button('back','home')}</div></div>`;
   }else if(state.view==='beads'){
@@ -279,7 +287,10 @@ function complete(kind,elapsed=0,countOverride){
   completed(kind,elapsed,state.result.count);
   const stored=read('ct-totals',{}),count=Number.isFinite(stored?.count)&&stored.count>=0?stored.count:0,seconds=Number.isFinite(stored?.seconds)&&stored.seconds>=0?stored.seconds:0;
   write('ct-totals',{count:count+1,seconds:seconds+Math.round(elapsed/1000)});
-  stopActivity();audio.strike('bell',kind==='bow'?.8:1);if(['incense','bow'].includes(kind))feedback('medium');render();paint();$('.scene-heading').animate([{opacity:.65},{opacity:1}],{duration:reduced.matches?150:200});
+  stopActivity();audio.strike('bell',kind==='bow'?.8:1);if(['incense','bow'].includes(kind))feedback('medium');
+  const morningNext=morning.advance(kind);
+  if(morningNext){void navigate(morningNext.navigate);return;}
+  render();paint();$('.scene-heading').animate([{opacity:.65},{opacity:1}],{duration:reduced.matches?150:200});
 }
 function syncBowControls(){
  const a=state.activity,active=a?.bowStart!=null;
@@ -439,7 +450,11 @@ document.addEventListener('click',async e=>{
     case 'enter':if(!read('ct-muted',false)&&!audio.enabled)void enableSound(true);await navigate('choose');break;
     case 'change':changeVisitor();break;
     case 'previous':changeVisitor(-1);break;
-    case 'continue':{write('ct-visitor',state.visitor);referrals.event('enter');const bound=await referrals.enter();if(bound)event('referral_bound',bound);const target=pendingLaunchActivity||'home';pendingLaunchActivity='';await navigate(target);break;}
+    case 'continue':{write('ct-visitor',state.visitor);referrals.event('enter');const bound=await referrals.enter();if(bound)event('referral_bound',bound);if(morning.shouldShow()&&!pendingLaunchActivity){morning.start();await navigate('morning');break;}const target=pendingLaunchActivity||'home';pendingLaunchActivity='';await navigate(target);break;}
+    case 'morning-start':{const status=$('#morning-bell-status');if(status)status.textContent=t('morningBell');audio.strike('bell',.8);const next=morning.bellDone();setTimeout(async()=>{if(morning.isActive())await navigate(next);},3200);break;}
+    case 'morning-skip':{morning.end();await navigate('home');break;}
+    case 'morning-skip-step':{const step=b.dataset.step;const r=morning.skip(step);if(r)await navigate(r.navigate);else await navigate('home');break;}
+    case 'morning-replay':{morning.replay();await navigate('morning');break;}
     case 'incense':case 'bow':case 'sit':case 'beads':case 'mo':case 'home':await navigate(action);break;
     case 'leave':audio.strike('bell',.5);await navigate('leave');break;
     case 'reenter':await navigate('entry');break;
