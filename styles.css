@@ -177,3 +177,27 @@ body[data-view=beads] .scene-heading{z-index:3}
 
 #ga-choice{bottom:calc(78px + var(--safe-bottom,0px));font-family:system-ui,sans-serif;position:fixed;z-index:9;left:50%;transform:translateX(-50%);width:min(94%,410px);padding:9px 12px;border-radius:12px;background:#382e26;color:#fff3de;display:flex;align-items:center;gap:8px;font-size:12px}#ga-choice[hidden]{display:none}#ga-choice div{display:flex;gap:4px}#ga-choice button{min-height:44px;min-width:48px;padding:4px;color:#fff3de;background:#614d3c}
 img,canvas,svg{-webkit-user-drag:none}
+
+/* Festival layer (Tết 2027) — visual framework.
+   body[data-festival] drives decoration; body[data-flower] picks the bloom.
+   Actual SVG lantern/flower assets TBD — pending CGS-06 art direction.
+   Placeholder shapes used until assets are approved and produced. */
+.tet-banner{position:fixed;bottom:calc(72px + var(--safe-bottom,0px));left:50%;transform:translateX(-50%);width:min(92%,380px);background:#3d1a0a;color:#fdf0de;border-radius:12px;padding:12px 18px;font:500 17px/1.4 'Be Vietnam Pro',sans-serif;text-align:center;z-index:50;pointer-events:none}
+.tet-banner[hidden]{display:none}
+@media(prefers-reduced-motion:reduce){.tet-banner{transition:none}}
+
+/* Lantern float animation — triggered at Giao thừa (00:00 02-06 VN).
+   Applies to inline SVG ellipse elements appended to #effects by launchLanterns(). */
+@keyframes lantern-rise{0%{transform:translateY(0) scale(1);opacity:.85}100%{transform:translateY(-500px) scale(.55);opacity:0}}
+
+/* Festival body-data classes — scope decoration CSS to active festival period. */
+body[data-festival='ong-tao'] .stage::after,
+body[data-festival='tat-nien'] .stage::after,
+body[data-festival='mung1'] .stage::after,
+body[data-festival='mung2'] .stage::after,
+body[data-festival='mung3'] .stage::after,
+body[data-festival='ram'] .stage::after{
+  content:'';display:block;position:absolute;inset:0;pointer-events:none;
+  /* Placeholder: real lantern/flower SVG asset overlays go here via background-image.
+     CGS-06 to provide: assets/festival/lantern-{n}.svg, flower-mai.svg, flower-dao.svg */
+}

@@ -6,8 +6,10 @@ import {assetURL,loadImage,placeholder,enableImageDebug} from './resources.js';
 import {copy,reflections} from './i18n.js';
 import {apiURL,initTelegram,inTelegram,initData,telegramBack,telegramAppearance,haptic,telegramShare,telegramStory,telegramStartParam} from './telegram.js';
 import {createReferrals} from './referrals.js';
+import {getFestivalPeriod,createNewYearBell,hasForbiddenWord,readFlower,writeFlower} from './festival.js';
 
 let analytics,woodStarted,referrals;
+let festivalPeriod=getFestivalPeriod(),newYearBell;
 const familyEnabled='__CT_FAMILY_ENABLED__'==='1';
 const referralsEnabled='__CT_REFERRALS_ENABLED__'==='1';
 const presenceEnabled='__CT_PRESENCE_ENABLED__'==='1';
@@ -197,7 +199,8 @@ function bounce(e){if(e&&!reduced.matches)e.animate([{transform:'translateY(0)'}
 function render(){
   beadCleanup?.();beadCleanup=null;$('.beads-area')?.remove();
   const focused=document.activeElement,action=focused?.dataset?.action,target=focused?.dataset?.target,minutes=focused?.dataset?.minutes;
-  document.documentElement.lang=state.lang;document.body.dataset.period=state.period;document.body.dataset.view=state.view;document.body.dataset.hand=state.beadHand;
+  document.documentElement.lang=state.lang;document.body.dataset.period=state.period;document.body.dataset.view=state.view;document.body.dataset.hand=state.beadHand;document.body.dataset.festival=festivalPeriod?.id??'';document.body.dataset.flower=readFlower();
+  const flowerBtn=$('#flower-toggle-btn');if(flowerBtn){const f=readFlower();flowerBtn.textContent=t(f==='hoa-mai'?'flowerDao':'flowerMai');flowerBtn.hidden=!festivalPeriod||['ong-tao'].includes(festivalPeriod.id);}
   telegramAppearance(state.period,!!state.activity?.running&&['incense','sit'].includes(state.view));
   document.querySelectorAll('[data-i18n]').forEach(e=>e.textContent=t(e.dataset.i18n));
   $('#language').setAttribute('aria-label',t('language'));$('#controls').setAttribute('aria-label',t('actions'));
@@ -427,7 +430,8 @@ function download(){
 const shareActivity=()=>state.result?.kind||'share';
 const shareSource=channel=>referrals.telegram(channel,shareActivity());
 const shareLink=channel=>referrals.link(channel,shareActivity());
-function shareText(){const r=state.result||{},params={n:r.count??0,m:Math.max(1,Math.round((r.elapsed||0)/60000))};return t({incense:'shareIncenseText',bow:'shareBowText',sit:'shareSitText',mo:'shareMoText',beads:'shareBeadsText'}[r.kind]||'recommendText',params);}
+function festivalShareKey(){if(!festivalPeriod)return null;const map={'ong-tao':'tetShareOngTao','tat-nien':'tetShareTatNien',mung1:'tetShareMung1',mung2:'tetShareMung2',mung3:'tetShareMung3',ram:'tetShareRam'};return map[festivalPeriod.id]??null;}
+function shareText(){const r=state.result||{},params={n:r.count??0,m:Math.max(1,Math.round((r.elapsed||0)/60000))};const base=t({incense:'shareIncenseText',bow:'shareBowText',sit:'shareSitText',mo:'shareMoText',beads:'shareBeadsText'}[r.kind]||'recommendText',params);if(hasForbiddenWord(base))console.warn('[festival] forbidden word detected in share copy');const fk=festivalShareKey();return fk?t(fk):base;}
 async function copyShare(channel,track=true){try{await navigator.clipboard.writeText(shareLink(channel));if(track)event('share_channel',{channel:'copy'});$('#share-status').textContent=t('linkCopied');return true}catch{$('#share-status').textContent=t('shareError');return false}}
 function sharePanel(){if($('.share-channels'))return;const telegram=inTelegram();$('#modal-body').insertAdjacentHTML('beforeend',`<div class="share-channels">${telegram?button('story','share-story')+button('telegramForward','share-telegram'):button('zalo','share-zalo')+button('facebook','share-facebook')+button('messenger','share-messenger')+button('copyLink','share-copy')}</div>`);}
 async function shareFile(){
@@ -468,6 +472,7 @@ document.addEventListener('click',async e=>{
     case 'bead-hand':state.beadHand=state.beadHand==='left'?'right':'left';event('hand_switch',{hand:state.beadHand});write('ct-bead-hand',state.beadHand);render();paint();break;
     case 'bead-again':state.result=null;state.bead=0;state.beadRound++;if(beadGuruRule==='turn-back')state.beadDirection*=-1;render();paint();$('#bead-control').focus({preventScroll:true});break;
     case 'memorial':memorial();break;
+    case 'flower-toggle':{const next=readFlower()==='hoa-mai'?'hoa-dao':'hoa-mai';writeFlower(next);render();break;}
     case 'share':event('share_open',{activity:state.result.kind});if(await makeShare(false))await shareFile();break;
     case 'share-file':await shareFile();break;
     case 'download':if(shareBlob||await makeShare(false))download();break;
@@ -505,6 +510,7 @@ async function tick(){
   if(a?.kind==='sit'&&a.running&&remaining(a)<=2000&&!a.breathFading){a.breathFading=true;audio.stopBreathing(2);}
   if(a?.running&&remaining(a)<=0){if(a.kind==='incense')complete('incense',60000);if(a.kind==='sit')complete('sit',a.total);}
   updateCounters();updateBreathCue();if(state.view==='mo'&&$('#daily-wood'))$('#daily-wood').textContent=t('dailyWood',{count:dailyWood()});
+  if(newYearBell&&audio.enabled&&!document.hidden)newYearBell.arm(true);
   const period=periodNow();if(period!==state.period&&!periodUpdating){periodUpdating=true;const token=transitionId,view=state.view;try{const assets=await prepare(view,period);if(token===transitionId){state.period=period;renderAssets=assets;render();paint();}}catch{/* Keep the last fully loaded scene on transient failures. */}finally{periodUpdating=false;}}
 }
 setInterval(tick,200);
@@ -518,8 +524,12 @@ async function init(){
     analytics=setupAnalytics(inTelegram,{...launchAttribution,startParam:telegramStartParam()});window.addEventListener('ct-image-failure',e=>event('image_load_failed',e.detail));
   }).catch(()=>{/* A statistics module failure must not interrupt the visit. */});
   window.addEventListener('ct-analytics-choice',()=>void referrals.sync());void referrals.sync();
-  try{const response=await fetch(assetURL('processed-v1/layout-v1.json'),{credentials:'omit'});if(!response.ok)throw new Error('layout');state.layout=await response.json();const saved=read('ct-visitor',null);state.visitor=state.layout.v1_scope.visitors.includes(saved)?saved:state.layout.v1_scope.visitors[Math.floor(Math.random()*6)];state.period=periodNow();resolveLayout();if(!transitionId)await navigate('entry');}
+  try{const response=await fetch(assetURL('processed-v1/layout-v1.json'),{credentials:'omit'});if(!response.ok)throw new Error('layout');state.layout=await response.json();const saved=read('ct-visitor',null);state.visitor=state.layout.v1_scope.visitors.includes(saved)?saved:state.layout.v1_scope.visitors[Math.floor(Math.random()*6)];state.period=periodNow();resolveLayout();
+  newYearBell=createNewYearBell({onBell:c=>{for(let i=0;i<c;i++)setTimeout(()=>audio.strike('bell',.6),i*1500);},onNewYear:c=>{showNewYearBanner();launchLanterns();for(let i=0;i<c;i++)setTimeout(()=>audio.strike('bell',.6),i*1500);}});
+  if(!transitionId)await navigate('entry');}
   catch{finishBoot();$('#loading').hidden=true;$('#notice').textContent=t('loadError');$('#controls').innerHTML=button('retry','reload');$('#controls').onclick=e=>{if(e.target.dataset.action==='reload')location.reload();};$('#app').setAttribute('aria-busy','false');}
 }
 function finishBoot(){const boot=$('#boot');if(!boot)return;performance.mark('ct-interactive');boot.classList.add('ready');setTimeout(()=>boot.remove(),350);}
+function showNewYearBanner(){const b=$('#tet-banner');if(!b)return;b.textContent=t('tetBanner');b.hidden=false;if(!reduced.matches)b.animate([{opacity:0},{opacity:1,offset:.1},{opacity:1,offset:.8},{opacity:0}],{duration:10000});setTimeout(()=>{b.hidden=true;b.textContent='';},10000);}
+function launchLanterns(){const svg=$('#effects');if(!svg||reduced.matches)return;const W=941;for(let i=0;i<5;i++){const el=document.createElementNS('http://www.w3.org/2000/svg','ellipse');el.setAttribute('cx',120+i*160);el.setAttribute('cy',1100);el.setAttribute('rx','18');el.setAttribute('ry','26');el.setAttribute('fill','#e8431a');el.setAttribute('opacity','.85');el.style.animation=`lantern-rise ${3+i*.4}s ease-in forwards`;el.style.animationDelay=`${i*.3}s`;svg.appendChild(el);setTimeout(()=>el.remove(),6000+i*300);}}
 init();
