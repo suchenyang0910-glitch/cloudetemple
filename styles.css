@@ -203,7 +203,7 @@ body[data-festival]:not([data-festival=""])#festival-layer{display:block}
 .fes-fl{width:17%;background:url(assets/festival/flower-mai.svg)no-repeat top center/contain}
 body[data-flower="hoa-dao"] .fes-fl{background-image:url(assets/festival/flower-dao.svg)}
 .fes-fl[data-side="l"]{left:0;top:40%;transform-origin:bottom left;animation:branch-sway 15s ease-in-out infinite}
-.fes-fl[data-side="r"]{right:0;top:40%;transform-origin:bottom right;animation:branch-sway 15s ease-in-out 5s infinite}
+.fes-fl[data-side="r"]{right:0;top:40%;transform-origin:bottom right;scale:-1 1;animation:branch-sway 15s ease-in-out 5s infinite}
 /* moon */
 .fes-moon{width:10%;aspect-ratio:1;background:url(assets/festival/moon.svg)no-repeat center/contain;right:5%;top:5%;opacity:.88}
 /* petals */
