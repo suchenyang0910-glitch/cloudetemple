@@ -66,10 +66,20 @@ export function periodNow(date=new Date(),periods=state.layout?.periods??{dawn:"
 export function placement(layout,id,pose){
   if(pose.startsWith('bow-')||pose.startsWith('mo-')){
     const s=layout['hall-side'],scale=s.bowCanvasWidth/s.sourceCanvas[0];
-    return {x:s.foot[0]-s.anchor[0]*scale,y:s.foot[1]-s.anchor[1]*scale,w:s.sourceCanvas[0]*scale,h:s.sourceCanvas[1]*scale};
+    return {x:s.foot[0]-s.anchor[0]*scale,y:s.foot[1]-s.anchor[1]*scale-(pose.startsWith('mo-')?55:0),w:s.sourceCanvas[0]*scale,h:s.sourceCanvas[1]*scale};
   }
   const a=layout.front_image_anchors[`visitor-${id}-${pose}.webp`],s=layout.courtyard,scale=s.cushionWidth/a.cushionWidth;
   return {x:s.x-a.cushionBottomCenter[0]*scale,y:s.bottom-a.cushionBottomCenter[1]*scale,w:600*scale,h:900*scale};
+}
+export function stripEmbeddedCushion(data,width,height){
+  const cx=width/2,cy=height*.86,rx=width*.43,ry=height*.09;
+  for(let y=Math.floor(cy-ry);y<Math.min(height,Math.ceil(cy+ry));y++)for(let x=Math.floor(cx-rx);x<Math.min(width,Math.ceil(cx+rx));x++){
+    const dx=(x-cx)/rx,dy=(y-cy)/ry;if(dx*dx+dy*dy>1)continue;
+    const i=(y*width+x)*4,r=data[i],g=data[i+1],b=data[i+2];if(data[i+3]<8)continue;
+    const darkClothing=r<155&&g<105&&b<90,skin=r>180&&r-g>58&&g-b>16;
+    if(!darkClothing&&!skin)data[i+3]=0;
+  }
+  return data;
 }
 function image(name){
   if(!images.has(name)){
@@ -92,6 +102,7 @@ async function prepare(view,period){
       const im=await image(name),c=document.createElement('canvas');c.width=im.width;c.height=im.height;
       const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(im,0,0);
       const data=x.getImageData(0,0,c.width,c.height),tone=state.layout.toneRGB[period];
+      if(pose==='sit'||pose==='beads')stripEmbeddedCushion(data,c.width,c.height);
       for(let i=0;i<data.data.length;i+=4){for(let j=0;j<3;j++)data.data[i+j]*=tone[j]*(view==='mo'&&period==='night'?.9:1);}
       x.putImageData(data,0,0);if(!im.placeholder)tinted.set(key,c);else {missing=true;art[pose]=c;continue;}
     }
@@ -110,8 +121,9 @@ function paint(now=performance.now()){
     const frame=bowFrame(now-a.bowStart,reduced.matches);pose=`bow-${frame.to}`;previous=`bow-${frame.from}`;mix=frame.mix;
   }
   const pos=placement(state.layout,state.visitor,pose),s=state.layout;
+  canvas.dataset.cushionPolicy='scene';canvas.dataset.pose=pose;canvas.dataset.visitor=state.visitor;
   if(sceneName()==='courtyard'){const box=$('.stage').getBoundingClientRect(),space=$('#controls').getBoundingClientRect().top-$('.scene-heading').getBoundingClientRect().bottom-48;const factor=Math.max(.3,Math.min(.72,space/(pos.h*(parseFloat($('.stage').style.getPropertyValue('--scene-width'))||box.width)/941))); pos.x=s.courtyard.x+(pos.x-s.courtyard.x)*factor;pos.y=s.courtyard.bottom+(pos.y-s.courtyard.bottom)*factor;pos.w*=factor;pos.h*=factor;}
-  const shift=state.view==='beads'?(state.beadHand==='left'?1:-1)*$('.stage').clientWidth*.1/(parseFloat($('.stage').style.getPropertyValue('--scene-width'))/941):0;
+  const shift=0;
   pos.x+=shift;
   ctx.save();ctx.fillStyle='rgba(34,27,19,.10)';ctx.filter='blur(7px)';ctx.beginPath();
   if(sceneName()==='courtyard')ctx.ellipse(s.courtyard.x+shift,s.courtyard.bottom-3,s.courtyard.cushionWidth*.45,12,0,0,Math.PI*2);
@@ -381,18 +393,24 @@ async function submitWaitlist(e){
   }catch{event('waitlist_submit',{result:'error'});status.textContent=t('unavailable');}
   finally{submit.disabled=false;submit.textContent=t('register');}
 }
-function wrap(c,text,x,y,width,lineHeight){let line='';for(const word of text.split(' ')){const next=line?line+' '+word:word;if(c.measureText(next).width>width&&line){c.fillText(line,x,y);line=word;y+=lineHeight;}else line=next;}if(line)c.fillText(line,x,y);return y+lineHeight;}
+function lines(c,text,width){const result=[];let line='';for(const word of text.split(' ')){const next=line?line+' '+word:word;if(c.measureText(next).width>width&&line){result.push(line);line=word;}else line=next;}if(line)result.push(line);return result;}
+export function shareCardLayout(c,text){
+  let font=44,body=[];do{c.font=`500 ${font}px "Be Vietnam Pro", sans-serif`;body=lines(c,text,620);if(body.length*font*1.2<=142)break;font-=2;}while(font>=28);
+  const lineHeight=Math.round(font*1.2),top=958+(142-body.length*lineHeight)/2;
+  return {font,lineHeight,body,bodyBox:{top,bottom:top+body.length*lineHeight},footerBox:{top:1112,bottom:1238}};
+}
 async function makeShare(show=true){
   if(!state.result)return false;
   try{
     await document.fonts.ready;
     paint();const c=document.createElement('canvas');c.width=720;c.height=1280;const x=c.getContext('2d');
-    x.fillStyle='#f3ecde';x.fillRect(0,0,720,1280);x.drawImage(canvas,90,0,540,960);
-    x.fillStyle='#3d3429';x.textAlign='center';x.font='500 44px "Be Vietnam Pro", sans-serif';
-    const qr=await image('share-qr.png');wrap(x,shareText(),360,1018,620,54);
-    if(!qr.placeholder)x.drawImage(qr,52,1110,112,112);
-    x.font='500 28px "Be Vietnam Pro", sans-serif';x.fillText(t('brand'),360,1145);
-    x.font='18px "Be Vietnam Pro", sans-serif';x.fillText(t('tagline'),360,1184);x.font='15px sans-serif';x.fillText('h5.chuamay.org',360,1225);
+    x.fillStyle='#f3ecde';x.fillRect(0,0,720,1280);x.drawImage(canvas,90,0,540,930);
+    x.fillStyle='#3d3429';x.textAlign='center';const layout=shareCardLayout(x,shareText());x.font=`500 ${layout.font}px "Be Vietnam Pro", sans-serif`;
+    layout.body.forEach((line,index)=>x.fillText(line,360,layout.bodyBox.top+(index+1)*layout.lineHeight-layout.lineHeight*.18));
+    const qr=await image('share-qr.png');if(!qr.placeholder)x.drawImage(qr,52,1118,112,112);
+    x.textAlign='left';x.font='500 28px "Be Vietnam Pro", sans-serif';x.fillText(t('brand'),200,1145);
+    x.font='18px "Be Vietnam Pro", sans-serif';x.fillText(t('tagline'),200,1184);x.font='15px sans-serif';x.fillText('h5.chuamay.org',200,1225);
+    window.__ctShareLayout=layout;
     shareBlob=await new Promise(resolve=>c.toBlob(resolve,'image/png'));if(!shareBlob)throw new Error('png');shareURL=URL.createObjectURL(shareBlob);
     if(show)showShareModal();return true;
   }catch{$('#notice').textContent=t('shareError');return false;}
