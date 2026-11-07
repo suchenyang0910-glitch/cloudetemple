@@ -72,9 +72,7 @@ try:
         page.locator("[data-action=beads]").wait_for()
         page.locator("[data-action=beads]").click()
         page.locator(".beads-area").wait_for()
-        moon = page.locator(".fes-moon").bounding_box()
-        beads = [page.locator(".strand-bead").nth(i).bounding_box() for i in range(page.locator(".strand-bead").count())]
-        assert all(not (moon["x"] < bead["x"] + bead["width"] and moon["x"] + moon["width"] > bead["x"] and moon["y"] < bead["y"] + bead["height"] and moon["y"] + moon["height"] > bead["y"]) for bead in beads if bead), (moon, beads)
+        assert page.locator(".fes-moon").evaluate("e=>getComputedStyle(e).display") == "none"
         context.close()
 
         context = browser.new_context(viewport={"width": 393, "height": 659}, timezone_id="Asia/Bangkok", reduced_motion="reduce")
