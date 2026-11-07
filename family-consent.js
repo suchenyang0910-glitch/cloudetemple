@@ -1,9 +1,10 @@
 export const FAMILY_CONSENT_VERSION = "pilot-2026-11-07-v2";
+export const FAMILY_CONSENT_REVIEW = Object.freeze({ nativeLanguage: "approved", legal: "公开上线前需律师确认" });
 
 // Kept separate so native-language and legal review do not require application changes.
 export const FAMILY_CONSENT_COPY = Object.freeze({
   title: "Bản đồng ý sử dụng thử nghiệm — Chùa Mây Bài vị gia đình",
-  review: "🔸 Chờ người bản ngữ xác nhận · v1.0 · 2026-11-07",
+  review: "v2 · 2026-11-07",
   vi: [
     "Đây là bản thử nghiệm chưa công khai, chỉ dành cho nhóm thân hữu được mời trực tiếp.",
     "1. Chúng tôi lưu danh xưng và họ tên của bạn; họ tên, năm sinh, năm mất và ngày giỗ của người thân; cùng địa chỉ email của bạn.",

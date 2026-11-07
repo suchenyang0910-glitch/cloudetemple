@@ -61,7 +61,8 @@ if(process.argv.includes('--staging')){
  assert(familyApp,'staging family app');
  assert(!/(?:familyEvent|gtag\()/.test(await fs.readFile(new URL(familyApp,root),'utf8')),'family events stay out of GA4');
  assert(versioned.some(n=>n.startsWith('family-i18n.')&&n.endsWith('.js')),'staging family copy dictionary');
-  assert(versioned.some(n=>n.startsWith('family-consent.')&&n.endsWith('.js')),'staging family consent copy');
+  const familyConsent=versioned.find(n=>n.startsWith('family-consent.')&&n.endsWith('.js'));assert(familyConsent,'staging family consent copy');
+  const familyConsentText=await fs.readFile(new URL(familyConsent,root),'utf8');assert(familyConsentText.includes('v2 · 2026-11-07')&&!familyConsentText.includes('Chờ người bản ngữ xác nhận'),'native-language review marker removed');assert(familyConsentText.includes('公开上线前需律师确认'),'internal legal review marker retained');
   assert(versioned.some(n=>n.startsWith('calendar-presale.')&&n.endsWith('.js')),'staging calendar presale app');
   const presale=await fs.readFile(new URL('calendar-presale.html',root),'utf8');assert(presale.includes('noindex,nofollow')&&presale.includes('Sắp mở')===false,'staging presale is private and runtime-configured');
  assert((await fs.readFile(new URL(versioned.find(n=>n.startsWith('app.')),root),'utf8')).match(/const familyEnabled\s*=\s*["']1["']\s*===\s*["']1["']/));

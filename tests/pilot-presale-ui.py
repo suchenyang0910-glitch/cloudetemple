@@ -37,8 +37,11 @@ with sync_playwright() as playwright:
         page.goto(BASE + "/family.html")
         page.locator("#new").click()
         page.locator(".consent").wait_for()
-        assert "chờ người bản ngữ" in page.locator(".review").inner_text().lower()
-        assert "leishen8806@gmail.com" in page.locator(".consent").inner_text()
+        consent_text = page.locator(".consent").inner_text()
+        assert "v2" in page.locator(".review").inner_text()
+        assert "chờ người bản ngữ" not in consent_text.lower()
+        assert "公开上线前需律师确认" not in consent_text
+        assert "leishen8806@gmail.com" in consent_text
         assert page.locator("#consent-continue").is_disabled()
         page.screenshot(path=str(OUT / f"{width}x{height}-consent.png"), full_page=True)
         page.locator("#consent-agree").check()
