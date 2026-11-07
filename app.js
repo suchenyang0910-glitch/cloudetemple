@@ -67,6 +67,7 @@ export function periodNow(date=new Date(),periods=state.layout?.periods??{dawn:"
   return 'day';
 }
 export function placement(layout,id,pose){
+  if(pose==='stand')return {x:351,y:1041,w:240,h:360};
   if(pose.startsWith('bow-')||pose.startsWith('mo-')){
     const s=layout['hall-side'],scale=s.bowCanvasWidth/s.sourceCanvas[0];
     return {x:s.foot[0]-s.anchor[0]*scale,y:s.foot[1]-s.anchor[1]*scale-(pose.startsWith('mo-')?55:0),w:s.sourceCanvas[0]*scale,h:s.sourceCanvas[1]*scale};
@@ -83,7 +84,7 @@ function image(name){
 }
 function sceneName(view=state.view){return ['incense','bow','mo'].includes(view)?'hall-side':['sit','beads','choose'].includes(view)?'courtyard':'hall-front';}
 function sceneFile(view=state.view,period=state.period){return `scene-vn-${sceneName(view)}-${period}.webp`;}
-function poses(view){return view==='bow'?['bow-1','bow-2','bow-3']:view==='incense'?['bow-1']:view==='mo'?['mo-1-v1','mo-2-v1','mo-3-v1']:view==='sit'?['sit']:view==='beads'?['beads']:[];}
+function poses(view){return view==='morning'?['stand']:view==='bow'?['bow-1','bow-2','bow-3']:view==='incense'?['bow-1']:view==='mo'?['mo-1-v1','mo-2-v1','mo-3-v1']:view==='sit'?['sit']:view==='beads'?['beads']:[];}
 const morning=createMorning({event});
 const artFile=(visitor,pose)=>`visitor-${visitor}-${pose}${pose==='sit'||pose==='beads'?'-nocushion':''}.webp`;
 async function prepare(view,period){
@@ -163,7 +164,7 @@ async function navigate(view,{keepResult=false}={}){
   canvas.style.opacity='1';const duration=reduced.matches?150:300;
   canvas.animate([{opacity:0,filter:reduced.matches?'none':'blur(4px)'},{opacity:1,filter:'none'}],{duration});
   for(const e of [$('.scene-heading'),$('#controls')])e.animate([{opacity:.5},{opacity:1}],{duration:reduced.matches?150:220,delay:reduced.matches?0:80});
-  if(old){const a=old.animate([{opacity:1},{opacity:0}],{duration});a.onfinish=()=>old.remove();}
+  if(old){const remove=()=>old.remove();const a=old.animate([{opacity:1},{opacity:0}],{duration});a.onfinish=remove;a.oncancel=remove;setTimeout(remove,duration+100);}
   $('.stage').classList.add('scene-ready');
   if(assets.missing){$('#notice').textContent=t('imageUnavailable');$('#controls').insertAdjacentHTML('beforeend',button('retry','retry'));}
   if(['home','choose'].includes(view))prefetch(view);
