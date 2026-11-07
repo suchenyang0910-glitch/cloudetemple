@@ -180,3 +180,12 @@ body[data-view=beads] .scene-heading{z-index:3}
 
 #ga-choice{bottom:calc(78px + var(--safe-bottom,0px));font-family:system-ui,sans-serif;position:fixed;z-index:9;left:50%;transform:translateX(-50%);width:min(94%,410px);padding:9px 12px;border-radius:12px;background:#382e26;color:#fff3de;display:flex;align-items:center;gap:8px;font-size:12px}#ga-choice[hidden]{display:none}#ga-choice div{display:flex;gap:4px}#ga-choice button{min-height:44px;min-width:48px;padding:4px;color:#fff3de;background:#614d3c}
 img,canvas,svg{-webkit-user-drag:none}
+
+/* Morning sequence (早课 Buổi sáng) */
+body[data-view=morning] .controls{display:flex;flex-direction:column;align-items:center;gap:0}
+.morning-stack{align-items:center;gap:16px;text-align:center}
+.morning-bell-hint{font-size:18px;min-height:1.5em;color:var(--ink);opacity:.7;text-align:center}
+.morning-stack .row{justify-content:center;gap:12px;flex-wrap:wrap}
+.morning-stack .primary{min-width:160px}
+.morning-skip-step{font-size:15px;min-height:44px;padding:8px 16px;color:var(--ink);opacity:.6;background:transparent;border:none;cursor:pointer;width:100%;text-align:center}
+@media(prefers-reduced-motion:reduce){.morning-bell-hint{transition:none}}
