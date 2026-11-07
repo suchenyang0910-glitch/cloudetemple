@@ -19,9 +19,12 @@ and added here before staging deployment.
 
 ## Festival layer decorations (I2 · Tết 2027)
 
-Pending CGS-06 (Art Director) sign-off on asset specs. All new SVG/PNG festival
-decoration assets must be:
+**Status**: Logic layer implemented; visual asset integration pending CGS-06 (Art Director) sign-off.
+
+The CSS framework uses `body[data-festival]` and `body[data-flower]`; the New Year effect reuses inline original geometry. Planned artwork targets are `assets/festival/lantern-red.svg`, `flower-mai.svg`, `flower-dao.svg`, and `moon-ram.svg`.
+
+All new SVG/PNG festival decoration assets must be:
 - Original (drawn in-house) OR
 - CC0 / CC-BY sourced, with source URL and author recorded in this file
 
-This section will be completed when I2 assets are produced.
+**New Year bell**: Reuses the existing CC0 `assets/audio/bell-v2` recording. No new third-party audio is introduced.
