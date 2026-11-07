@@ -270,6 +270,7 @@ export function createFamilyApi(settings, family, dependencies = {}) {
             ok: true,
             csrf: anti,
             user: { displayName: account.display_name },
+            tablets: family.listTablets(account.id),
           }),
           true
         );
@@ -561,8 +562,12 @@ export function createFamilyApi(settings, family, dependencies = {}) {
         );
       if (route === "/family/tablets" && req.method === "POST") {
         const v = tabletInput(await body(req)),
-          created = family.createTablet(user.user_id, v);
-        return json(res, 201, { ok: true, tablet: created }), true;
+          requestId = String(req.headers["idempotency-key"] || "");
+        if (requestId && !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(requestId))
+          return json(res, 400, { ok: false, error: "request_id" }), true;
+        const duplicate = requestId && family.member(user.user_id, requestId),
+          created = duplicate || family.createTablet(user.user_id, v, requestId || undefined);
+        return json(res, duplicate ? 200 : 201, { ok: true, tablet: created }), true;
       }
       const memberMatch = route.match(
         /^\/family\/tablets\/([0-9a-f-]{36})\/members\/([0-9a-f-]{36})$/i,

@@ -72,11 +72,24 @@ async function api(path, options = {}) {
         ...(csrf ? { "X-CSRF-Token": csrf } : {}),
         ...options.headers,
       },
-    }),
+    });
+  const type = r.headers.get("content-type") || "";
+  if (!type.toLowerCase().includes("application/json")) throw Error("network");
+  let data;
+  try {
     data = await r.json();
+  } catch {
+    throw Error("network");
+  }
   if (!r.ok) throw Error(data.message || data.error || "unavailable");
   return data;
 }
+const friendlyError = (error, fallback) =>
+  error?.message === "network"
+    ? navigator.language.toLowerCase().startsWith("zh")
+      ? "网络不稳定，请稍后再试"
+      : t("network_error")
+    : fallback;
 function note(text) {
   status.textContent = text;
   setTimeout(() => {
@@ -128,7 +141,8 @@ function captureInvite() {
 }
 function login() {
   const invite = pendingInvite();
-  screen.innerHTML = `<section class="login"><h2>${t("login_title")}</h2>${invite ? `<p>${t("invite_after_login")}</p>` : ""}<p>${t("login_privacy")} ${t("native_pending")}</p><form id="email-login"><input name="email" type="email" autocomplete="email" maxlength="254" placeholder="${t("email_placeholder")}" required><button class="primary">${t("send_code")}</button></form><form id="code-form" hidden><input name="code" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="${t("code_placeholder")}" required><button class="primary">${t("sign_in")}</button></form>${embedded() ? `<p class="muted">${t("open_browser_google")}</p>` : `<a class="google" href="/api/auth/google/start">${t("google_sign_in")}</a>`}<a href="/?telegram=1" class="muted">${t("open_telegram")}</a></section>`;
+  $("#period").textContent = "";
+  screen.innerHTML = `<section class="login"><h2>${t("login_title")}</h2>${invite ? `<p>${t("invite_after_login")}</p>` : ""}<p>${t("login_privacy")}</p><form id="email-login"><input name="email" type="email" autocomplete="email" maxlength="254" placeholder="${t("email_placeholder")}" required><button class="primary">${t("send_code")}</button></form><form id="code-form" hidden><input name="code" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="${t("code_placeholder")}" required><button class="primary">${t("sign_in")}</button></form>${embedded() ? `<p class="muted">${t("open_browser_google")}</p>` : `<a class="google" href="/api/auth/google/start">${t("google_sign_in")}</a>`}<a href="/?telegram=1" class="muted">${t("open_telegram")}</a></section>`;
   const first = $("#email-login"),
     codes = $("#code-form");
   const google = $(".google");
@@ -145,7 +159,9 @@ function login() {
       note(t("code_valid"));
     } catch (err) {
       note(
-        err.message === "rate_limit" ? t("retry_later") : t("send_code_failed"),
+        err.message === "rate_limit"
+          ? t("retry_later")
+          : friendlyError(err, t("send_code_failed")),
       );
     }
   };
@@ -162,14 +178,17 @@ function login() {
       csrf = d.csrf;
       const savedInvite = pendingInvite();
       if (savedInvite) await inviteLanding(savedInvite, true);
-      else await list();
-    } catch {
-      note(t("code_invalid"));
+      else await list(d.tablets);
+    } catch (error) {
+      note(friendlyError(error, t("code_invalid")));
     }
   };
 }
-async function list() {
-  tablets = demo ? demoTablets : (await api("/tablets")).tablets;
+async function list(initialTablets) {
+  $("#period").textContent = periods[period];
+  tablets = demo
+    ? demoTablets
+    : initialTablets || (await api("/tablets")).tablets;
   screen.innerHTML = `<section class="list"><h2>${t("relatives")}</h2><p class="muted">${t("demo_only")}</p><div>${tablets.map((tablet) => `<button class="card" data-id="${tablet.id}"><b>${esc(tablet.honorific)} · ${esc(tablet.full_name)}</b><small>${tablet.death_lunar_day}/${tablet.death_lunar_month} ${t("lunar_suffix")}</small></button>`).join("") || `<p>${t("no_tablets")}</p>`}</div><button class="primary" id="new">${t("new_tablet")}</button></section>`;
   screen
     .querySelectorAll("[data-id]")
@@ -225,8 +244,9 @@ function form(edit = null) {
     honorificOptions = FAMILY_COPY.honorifics
       .map((value) => `<option>${value}</option>`)
       .join("");
-  screen.innerHTML = `<section class="form"><h2>${t(edit ? "form_edit" : "form_create")}</h2><form id="tablet-form"><label>${t("honorific")}<select name="honorific">${honorificOptions}</select></label><label>${t("full_name")}<input name="fullName" maxlength="100" required value="${esc(tablet.full_name || "")}"></label><div class="row"><label>${t("birth_year")}<input name="birthYear" inputmode="numeric" value="${tablet.birth_year || ""}"></label><label>${t("death_year")}<input name="deathYear" inputmode="numeric" value="${tablet.death_year || ""}"></label></div><div class="row"><label>${t("lunar_day")}<input name="day" type="number" min="1" max="30" required value="${tablet.death_lunar_day || 12}"></label><label>${t("lunar_month")}<input name="month" type="number" min="1" max="12" required value="${tablet.death_lunar_month || 3}"></label></div><label><input name="leap" type="checkbox" ${tablet.death_lunar_leap ? "checked" : ""}> ${t("leap_month")}</label><label>${t("notes")}<textarea name="note" maxlength="200">${esc(tablet.note || "")}</textarea></label><button class="primary">${t("save_tablet")}</button><button type="button" id="cancel">${t("cancel")}</button></form></section>`;
+  screen.innerHTML = `<section class="form"><h2>${t(edit ? "form_edit" : "form_create")}</h2><form id="tablet-form"><label>${t("honorific")}<select name="honorific">${honorificOptions}</select></label><label>${t("full_name")}<input name="fullName" maxlength="100" required value="${esc(tablet.full_name || "")}"></label><div class="row"><label>${t("birth_year")}<input name="birthYear" inputmode="numeric" value="${tablet.birth_year || ""}"></label><label>${t("death_year")}<input name="deathYear" inputmode="numeric" value="${tablet.death_year || ""}"></label></div><div class="row"><label>${t("lunar_month")}<input name="month" type="number" min="1" max="12" required value="${tablet.death_lunar_month || 3}"></label><label>${t("lunar_day")}<input name="day" type="number" min="1" max="30" required value="${tablet.death_lunar_day || 12}"></label></div><label><input name="leap" type="checkbox" ${tablet.death_lunar_leap ? "checked" : ""}> ${t("leap_month")}</label><label>${t("notes")}<textarea name="note" maxlength="200">${esc(tablet.note || "")}</textarea></label><button class="primary">${t("save_tablet")}</button><button type="button" id="cancel">${t("cancel")}</button></form></section>`;
   const f = $("#tablet-form");
+  const requestId = crypto.randomUUID();
   f.honorific
     .closest("label")
     .insertAdjacentHTML(
@@ -296,13 +316,17 @@ function form(edit = null) {
     for (const k of ["birthYear", "deathYear", "day", "month"])
       v[k] = v[k] ? Number(v[k]) : null;
     if (!demo) {
+      const save = f.querySelector("button.primary");
+      save.disabled = true;
       try {
         await api(edit ? `/tablets/${edit.id}` : "/tablets", {
           method: edit ? "PATCH" : "POST",
+          headers: edit ? {} : { "Idempotency-Key": requestId },
           body: JSON.stringify(v),
         });
       } catch (error) {
-        note(error.message);
+        save.disabled = false;
+        note(friendlyError(error, t("network_error")));
         return;
       }
       if (!edit) familyEvent("memorial_create");
@@ -376,7 +400,7 @@ async function inviteLanding(raw, authenticated = false) {
   if (loginButton) loginButton.onclick = login;
 }
 async function account() {
-  screen.innerHTML = `<section class="account"><h2>${t("account_title")}</h2><p>${t("account_privacy")}</p><label><input id="email-remind" type="checkbox"> ${t("remind_email")}</label><label><input id="tg-remind" type="checkbox"> ${t("remind_telegram")}</label><label><input id="festival" type="checkbox" checked> ${t("remind_festival")}</label><button id="save-reminders">${t("save_reminders")}</button><button id="calendar">${t("subscribe_calendar")}</button><input id="calendar-family-name" type="text" maxlength="80" placeholder="${t("family_name_placeholder")}" autocomplete="organization"><button id="download-calendar">${t("download_calendar")}</button><button id="revoke-calendar">${t("revoke_calendar")}</button><button id="export">${t("export_data")}</button><button id="delete">${t("delete_data")}</button><button id="account-back">${t("back")}</button><p class="muted">${t("native_pending")}</p></section>`;
+  screen.innerHTML = `<section class="account"><h2>${t("account_title")}</h2><p>${t("account_privacy")}</p><label><input id="email-remind" type="checkbox"> ${t("remind_email")}</label><label><input id="tg-remind" type="checkbox"> ${t("remind_telegram")}</label><label><input id="festival" type="checkbox" checked> ${t("remind_festival")}</label><button id="save-reminders">${t("save_reminders")}</button><button id="calendar">${t("subscribe_calendar")}</button><input id="calendar-family-name" type="text" maxlength="80" placeholder="${t("family_name_placeholder")}" autocomplete="organization"><button id="download-calendar">${t("download_calendar")}</button><button id="revoke-calendar">${t("revoke_calendar")}</button><button id="export">${t("export_data")}</button><button id="delete">${t("delete_data")}</button><button id="account-back">${t("back")}</button></section>`;
   if (!demo) {
     const reminder = await api("/reminders");
     $("#email-remind").checked = !!reminder.prefs.email_on;

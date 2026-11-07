@@ -1,4 +1,3 @@
-// Vietnamese pilot copy. Every value remains pending native-speaker review.
 export const FAMILY_COPY = Object.freeze({
   period_dawn: "Sớm mai",
   period_day: "Ban ngày",
@@ -10,7 +9,6 @@ export const FAMILY_COPY = Object.freeze({
   account_aria: "Tài khoản",
   login_title: "Giữ gìn ký ức gia đình",
   login_privacy: "Tên và ngày giỗ chỉ những người được mời mới xem được.",
-  native_pending: "Bản dịch tiếng Việt đang chờ người bản ngữ duyệt.",
   email_placeholder: "Email",
   send_code: "Gửi mã 6 số",
   code_placeholder: "Mã xác nhận",
@@ -22,7 +20,8 @@ export const FAMILY_COPY = Object.freeze({
   retry_later: "Vui lòng thử lại sau.",
   send_code_failed: "Không thể gửi mã.",
   code_invalid: "Mã không đúng hoặc đã hết hạn.",
-  relatives: "Người thân",
+  network_error: "Mạng không ổn định, vui lòng thử lại.",
+  relatives: "Người thân được mời",
   demo_only: "Chỉ dùng dữ liệu hư cấu cho tới khi sao lưu được diễn tập.",
   lunar_suffix: "âm lịch",
   no_tablets: "Chưa có bài vị.",

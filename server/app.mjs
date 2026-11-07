@@ -12,7 +12,7 @@ export function createServer(settings,store,send=async(method,body)=>{const r=aw
       if(origin&&!settings.origins?.has(origin))return reply(403,'origin');
       if(origin){res.setHeader('Access-Control-Allow-Origin',origin);res.setHeader('Vary','Origin');}
       if(settings.telegramEnabled===false&&route.startsWith('/telegram/'))return reply(503,'telegram_disabled');
-      if(req.method==='OPTIONS'){if(!origin)return reply(403,'origin');res.setHeader('Access-Control-Allow-Methods','GET, POST, PATCH, PUT, DELETE, OPTIONS');res.setHeader('Access-Control-Allow-Headers','Content-Type, X-CSRF-Token');return reply(204);}
+      if(req.method==='OPTIONS'){if(!origin)return reply(403,'origin');res.setHeader('Access-Control-Allow-Methods','GET, POST, PATCH, PUT, DELETE, OPTIONS');res.setHeader('Access-Control-Allow-Headers','Content-Type, X-CSRF-Token, Idempotency-Key');return reply(204);}
       if(await family(req,res,route))return;
       if(!['/waitlist','/telegram/remind','/telegram/webhook'].includes(route))return reply(404,'route');
       if(req.method!=='POST'){res.setHeader('Allow','POST');return reply(405,'method');}

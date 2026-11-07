@@ -156,11 +156,12 @@ CREATE TABLE IF NOT EXISTS deliveries(id TEXT PRIMARY KEY,user_id TEXT NOT NULL 
         user,
       );
     },
-    createTablet(user, v) {
+    createTablet(user, v, id = randomUUID()) {
+      const existing = member(user, id);
+      if (existing) return existing;
       if (one("SELECT count(*) n FROM tablets WHERE owner_id=?", user).n >= 10)
         throw Error("tablet_limit");
-      const id = randomUUID(),
-        at = now();
+      const at = now();
       db.transaction(() => {
         run(
           "INSERT INTO tablets VALUES(?,?,?,?,?,?,?,?,?,?,?,?)",

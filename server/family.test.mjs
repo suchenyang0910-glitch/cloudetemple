@@ -125,6 +125,7 @@ test("email code stays in protected outbox and session CRUD enforces CSRF", asyn
     assert.equal(r.status, 200);
     const data = await r.json(),
       cookie = r.headers.get("set-cookie").split(";")[0];
+    assert.deepEqual(data.tablets, []);
     r = await f.request("/family/tablets", {
       method: "POST",
       headers: { Cookie: cookie },
@@ -139,7 +140,10 @@ test("email code stays in protected outbox and session CRUD enforces CSRF", asyn
     assert.equal(r.status, 403);
     r = await f.request("/family/tablets", {
       method: "POST",
-      headers: { Cookie: cookie, "X-CSRF-Token": data.csrf },
+      headers: {
+        Cookie: cookie,
+        "X-CSRF-Token": data.csrf,
+      },
       body: JSON.stringify({
         honorific: "Bà ngoại",
         fullName: "Ngày không tồn tại",
@@ -174,7 +178,10 @@ test("email code stays in protected outbox and session CRUD enforces CSRF", asyn
     });
     r = await f.request("/family/tablets", {
       method: "POST",
-      headers: { Cookie: cookie, "X-CSRF-Token": data.csrf },
+      headers: {
+        Cookie: cookie,
+        "X-CSRF-Token": data.csrf,
+      },
       body: JSON.stringify({
         honorific: "Bà ngoại",
         fullName: "Cần năm mất",
@@ -192,7 +199,11 @@ test("email code stays in protected outbox and session CRUD enforces CSRF", asyn
     });
     r = await f.request("/family/tablets", {
       method: "POST",
-      headers: { Cookie: cookie, "X-CSRF-Token": data.csrf },
+      headers: {
+        Cookie: cookie,
+        "X-CSRF-Token": data.csrf,
+        "Idempotency-Key": "22222222-2222-4222-8222-222222222222",
+      },
       body: JSON.stringify({
         honorific: "Bà ngoại",
         fullName: "Nguyễn Thị An",
@@ -204,6 +215,23 @@ test("email code stays in protected outbox and session CRUD enforces CSRF", asyn
     assert.equal(r.status, 201);
     const tablet = (await r.json()).tablet;
     assert.equal(tablet.demo, 1);
+    r = await f.request("/family/tablets", {
+      method: "POST",
+      headers: {
+        Cookie: cookie,
+        "X-CSRF-Token": data.csrf,
+        "Idempotency-Key": "22222222-2222-4222-8222-222222222222",
+      },
+      body: JSON.stringify({
+        honorific: "Bà ngoại",
+        fullName: "Nguyễn Thị An",
+        day: 12,
+        month: 3,
+        note: "",
+      }),
+    });
+    assert.equal(r.status, 200);
+    assert.equal((await r.json()).tablet.id, tablet.id);
     r = await f.request("/family/tablets", { headers: { Cookie: cookie } });
     assert.equal((await r.json()).tablets.length, 1);
     r = await f.request(`/family/tablets/${tablet.id}/offerings`, {
