@@ -208,7 +208,7 @@ body[data-flower="hoa-dao"] .fes-fl{background-image:url(assets/festival/flower-
 .fes-fl[data-side="l"]{left:0;top:40%;transform-origin:bottom left;animation:branch-sway 15s ease-in-out infinite}
 .fes-fl[data-side="r"]{right:0;top:40%;transform-origin:bottom center;scale:-1 1;animation:branch-sway 15s ease-in-out 5s infinite}
 /* moon */
-.fes-moon{width:16%;aspect-ratio:1;background:url(assets/festival/moon.svg)no-repeat center/contain;right:18%;top:25%;opacity:.88}
+.fes-moon{width:16%;aspect-ratio:1;background:url(assets/festival/moon.svg)no-repeat center/contain;right:18%;top:27%;opacity:.88}
 /* petals */
 .fes-p{width:clamp(7px,2%,10px);aspect-ratio:12/14;background:url(assets/festival/petal-mai.svg)no-repeat center/contain;opacity:.65}
 body[data-flower="hoa-dao"] .fes-p{background-image:url(assets/festival/petal-dao.svg)}
