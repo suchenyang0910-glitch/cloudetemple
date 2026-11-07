@@ -13,6 +13,7 @@ import {
   qingmingDate,
 } from "./lunar-hnd.mjs";
 import { sendMail } from "./mail.mjs";
+import { createFamilyCalendarPdf } from "./calendar-pdf.mjs";
 import {
   escapeFamilyHTML,
   familyServerLanguage,
@@ -136,7 +137,8 @@ function tabletInput(v) {
     leap: v?.leap === true,
   };
 }
-export function createFamilyApi(settings, family) {
+export function createFamilyApi(settings, family, dependencies = {}) {
+  const calendarPdf = dependencies.calendarPdf || createFamilyCalendarPdf;
   const oauthRedirect = (res, reason) => {
     res.writeHead(302, {
       Location: `/family.html?auth=${encodeURIComponent(reason)}`,
@@ -531,6 +533,24 @@ export function createFamilyApi(settings, family) {
         return true;
       }
       if (!user) return json(res, 401, { ok: false, error: "auth" }), true;
+      if (route === "/family/calendar.pdf" && req.method === "POST") {
+        const v = await body(req),
+          year = Number(v.year),
+          pdf = await calendarPdf({
+            familyName: v.familyName,
+            tablets: family.listTablets(user.user_id),
+            year,
+            leapRule: settings.lunarLeapRule,
+          }, { python: settings.calendarPython });
+        res.writeHead(200, {
+          "Content-Type": "application/pdf",
+          "Content-Disposition": `attachment; filename="lich-ngay-gio-${year}.pdf"`,
+          "Cache-Control": "private, no-store",
+          "X-Content-Type-Options": "nosniff",
+        });
+        res.end(pdf);
+        return true;
+      }
       if (route === "/family/tablets" && req.method === "GET")
         return (
           json(res, 200, {
@@ -758,6 +778,8 @@ export function createFamilyApi(settings, family) {
       const known = [
         "invalid",
         "invalid_date",
+        "invalid_family_name",
+        "invalid_calendar_year",
         "death_year_required",
         "tablet_limit",
         "body",

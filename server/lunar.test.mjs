@@ -77,6 +77,22 @@ test("61 month starts match independently checked Vietnamese GMT+7 tables", () =
       year: solarYear,
     });
 });
+test("all 2027 new moon and full moon dates match the reviewed UTC+7 calendar", () => {
+  const expected = [
+    [8,1,1,12],[22,1,15,12],[6,2,1,1],[20,2,15,1],[8,3,1,2],[22,3,15,2],
+    [7,4,1,3],[21,4,15,3],[6,5,1,4],[20,5,15,4],[5,6,1,5],[19,6,15,5],
+    [4,7,1,6],[18,7,15,6],[2,8,1,7],[16,8,15,7],[1,9,1,8],[15,9,15,8],
+    [30,9,1,9],[14,10,15,9],[29,10,1,10],[12,11,15,10],[28,11,1,11],
+    [12,12,15,11],[28,12,1,12],
+  ];
+  const actual = [];
+  for (let month = 1; month <= 12; month++)
+    for (let day = 1; day <= new Date(Date.UTC(2027, month, 0)).getUTCDate(); day++) {
+      const lunar = solarToLunar({ day, month, year: 2027 });
+      if (lunar.day === 1 || lunar.day === 15) actual.push([day, month, lunar.day, lunar.month]);
+    }
+  assert.deepEqual(actual, expected);
+});
 test("20 deterministic round trips are internal consistency checks only", () => {
   for (let i = 0; i < 20; i++) {
     const year = 2026 + (i % 5),

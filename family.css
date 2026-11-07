@@ -270,6 +270,7 @@ h1 {
 }
 .login input,
 .form input,
+.account input[type="text"],
 .form select,
 .form textarea {
   width: 100%;

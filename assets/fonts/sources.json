@@ -22,5 +22,10 @@
   {
     "file": "be-vietnam-pro-v12-600-latin.woff2",
     "source": "https://fonts.gstatic.com/s/bevietnampro/v12/QdVMSTAyLFyeg_IDWvOJmVES_HToIW81Rb0.woff2"
+  },
+  {
+    "file": "BeVietnamPro-Regular.ttf",
+    "source": "https://github.com/google/fonts/blob/main/ofl/bevietnampro/BeVietnamPro-Regular.ttf",
+    "sha256": "cd1ef6e9d7db28ad5cdb88a65ccbe693870e60d340b791f349d248342b4fe4c3"
   }
 ]
