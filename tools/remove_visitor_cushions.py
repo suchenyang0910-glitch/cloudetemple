@@ -69,6 +69,17 @@ with sync_playwright() as pw:
                     if(skin||cloth||shirt)core[p]=1;
                   }
                   for(let y=Math.floor(h*.68);y<h;y++)for(let x=0;x<w;x++){const p=y*w+x;if(core[p])d[p*4+3]=255;else d[p*4+3]=0;}
+                  seen.fill(0);let main=[];
+                  for(let seed=0;seed<n;seed++){
+                    if(seen[seed]||d[seed*4+3]===0)continue;
+                    let head=0,tail=0;queue[tail++]=seed;seen[seed]=1;const component=[];
+                    while(head<tail){const p=queue[head++];component.push(p);const x=p%w;
+                      for(const q of [p-w,p+w,x?p-1:-1,x<w-1?p+1:-1])if(q>=0&&q<n&&!seen[q]&&d[q*4+3]>0){seen[q]=1;queue[tail++]=q;}
+                    }
+                    if(component.length>main.length)main=component;
+                  }
+                  const finalKeep=new Uint8Array(n);for(const p of main)finalKeep[p]=1;
+                  for(let p=0;p<n;p++)if(!finalKeep[p])d[p*4+3]=0;
                   let bottom=0,opaque=0;for(let p=0;p<n;p++)if(d[p*4+3]){opaque++;bottom=Math.max(bottom,Math.floor(p/w));}
                   ctx.putImageData(pixels,0,0);
                   return {url:canvas.toDataURL('image/webp',.94),width:w,height:h,bottom,opaque};
