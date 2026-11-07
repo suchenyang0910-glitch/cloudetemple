@@ -58,6 +58,23 @@ const validEmail = (v) =>
   typeof v === "string" &&
   v.length <= 254 &&
   /^[^\s@<>]+@[^\s@<>.]+(?:\.[^\s@<>.]+)+$/.test(v);
+const CONSENT_VERSION = "pilot-2026-11-07-v1";
+const forbiddenPresale = /công đức|hòm công đức|功德箱|积功德|消灾|保佑|祈福有效|功德圆满/iu;
+const text = (value, max, required = true) => {
+  const result = String(value || "").normalize("NFC").trim();
+  if ((required && !result) || result.length > max || /[\u0000-\u001f]/u.test(result) || forbiddenPresale.test(result)) throw Error("invalid");
+  return result;
+};
+function interestInput(value) {
+  const ancestorCount = String(value?.ancestorCount || ""), willingness = String(value?.willingness || "");
+  if (value?.agree !== true || !["1-2", "3-5", "6-10", "10+"].includes(ancestorCount) || !["under-50", "50-99", "100+", "none"].includes(willingness)) throw Error("invalid");
+  return { name: text(value?.name, 80, false), contact: text(value?.contact, 100), ancestorCount, willingness, region: text(value?.region, 40, false) };
+}
+function preorderInput(value) {
+  const anniversaries = Array.isArray(value?.anniversaries) ? value.anniversaries.slice(0, 10).map((item) => ({ name: text(item?.name, 100), date: text(item?.date, 40) })) : [];
+  if (value?.agree !== true || !anniversaries.length || !["basic", "family"].includes(value?.edition)) throw Error("invalid");
+  return { contact: text(value.contact, 100), familyName: text(value.familyName, 100), edition: value.edition, anniversaries, address: text(value.address, 300) };
+}
 const validSolarDate = ({ day, month, year }) => {
   if (![day, month, year].every(Number.isInteger) || year < 1900 || year > 2100)
     return false;
@@ -533,7 +550,31 @@ export function createFamilyApi(settings, family, dependencies = {}) {
         );
         return true;
       }
+      if (route === "/family/presale/config" && req.method === "GET")
+        return json(res, 200, { ok: true, open: settings.calendarPresale.open, ...(settings.calendarPresale.open ? settings.calendarPresale : {}) }), true;
+      if (route === "/family/presale/interests" && req.method === "POST") {
+        const value = interestInput(await body(req)), ip = hash(settings.hashSecret, clientIP(req, settings.trustLocal));
+        if (!family.rate("interest:" + ip, Date.now() + 60000)) return json(res, 429, { ok: false, error: "rate_limit" }), true;
+        const created = family.createInterest(value);
+        return json(res, 201, { ok: true, id: created.id }), true;
+      }
+      if (route === "/family/presale/orders" && req.method === "POST") {
+        if (!settings.calendarPresale.open) return json(res, 403, { ok: false, error: "not_open" }), true;
+        const value = preorderInput(await body(req)), ip = hash(settings.hashSecret, clientIP(req, settings.trustLocal));
+        if (!family.rate("preorder:" + ip, Date.now() + 60000)) return json(res, 429, { ok: false, error: "rate_limit" }), true;
+        const created = family.createPreorder(user?.user_id, value);
+        return json(res, 201, { ok: true, order: created, reference: settings.calendarPresale.reference.replace("{order}", created.id.slice(0, 8).toUpperCase()) }), true;
+      }
       if (!user) return json(res, 401, { ok: false, error: "auth" }), true;
+      if (route === "/family/consent" && req.method === "GET") {
+        const consent = family.consent(user.user_id);
+        return json(res, 200, { ok: true, accepted: consent?.version === CONSENT_VERSION, consent, version: CONSENT_VERSION }), true;
+      }
+      if (route === "/family/consent" && req.method === "POST") {
+        const value = await body(req);
+        if (value.agree !== true || value.version !== CONSENT_VERSION) return json(res, 400, { ok: false, error: "consent" }), true;
+        return json(res, 200, { ok: true, consent: family.acceptConsent(user.user_id, CONSENT_VERSION) }), true;
+      }
       if (route === "/family/calendar.pdf" && req.method === "POST") {
         const v = await body(req),
           year = Number(v.year),
@@ -561,6 +602,8 @@ export function createFamilyApi(settings, family, dependencies = {}) {
           true
         );
       if (route === "/family/tablets" && req.method === "POST") {
+        if (family.consent(user.user_id)?.version !== CONSENT_VERSION)
+          return json(res, 428, { ok: false, error: "consent_required", version: CONSENT_VERSION }), true;
         const v = tabletInput(await body(req)),
           requestId = String(req.headers["idempotency-key"] || "");
         if (requestId && !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(requestId))
@@ -586,6 +629,11 @@ export function createFamilyApi(settings, family, dependencies = {}) {
           ),
           true
         );
+      }
+      const leaveMatch = route.match(/^\/family\/tablets\/([0-9a-f-]{36})\/membership$/i);
+      if (leaveMatch && req.method === "DELETE") {
+        const left = family.leaveTablet(user.user_id, leaveMatch[1]);
+        return json(res, left ? 200 : 403, left ? { ok: true } : { ok: false, error: "owner" }), true;
       }
       const inviteMatch = route.match(
         /^\/family\/tablets\/([0-9a-f-]{36})\/invites\/([0-9a-f-]{36})$/i,
@@ -653,7 +701,7 @@ export function createFamilyApi(settings, family, dependencies = {}) {
           if (!["incense", "flower", "fruit", "tea"].includes(v.kind))
             return json(res, 400, { ok: false, error: "kind" }), true;
           const count = family.offer(user.user_id, id, v.kind);
-          return json(res, 201, { ok: true, count }), true;
+          return json(res, count == null ? 403 : 201, count == null ? { ok: false, error: "owner" } : { ok: true, count }), true;
         }
         if (child === "invites" && req.method === "POST") {
           if (m.role !== "owner")

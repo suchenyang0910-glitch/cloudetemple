@@ -44,7 +44,7 @@ $banner=[IO.File]::ReadAllText((Join-Path $projectRoot 'analytics-choice.html'))
 $html=$html.Replace('</main>',$banner+'</main>')
 [IO.File]::WriteAllText($index,$html,[Text.UTF8Encoding]::new($false))
 if($Environment -eq 'staging'){
-  foreach ($name in @('family.html','family.css','family.js','family-analytics.js','family-i18n.js','dev-outbox.js')) { Copy-Item -LiteralPath (Join-Path $projectRoot $name) -Destination $outputRoot -Force }
+  foreach ($name in @('family.html','family.css','family.js','family-analytics.js','family-i18n.js','family-consent.js','calendar-presale.html','calendar-presale.css','calendar-presale.js','dev-outbox.js')) { Copy-Item -LiteralPath (Join-Path $projectRoot $name) -Destination $outputRoot -Force }
   foreach ($name in @('admin.html','admin.css','presence.css','admin.js')) { Copy-Item -LiteralPath (Join-Path $projectRoot "admin-ui/$name") -Destination (Join-Path $outputRoot $name) -Force }
   $devOutput=Join-Path $outputRoot 'dev'
   New-Item -ItemType Directory -Path $devOutput -Force | Out-Null

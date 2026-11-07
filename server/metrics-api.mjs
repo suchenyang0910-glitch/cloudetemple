@@ -18,9 +18,13 @@ async function ops(path) {
 export function createMetricsApi(settings, store, access, family = null) {
   return async function handle(req, res, route) {
     if (route.startsWith("/admin/")) {
-      if (!settings.adminEnabled || req.method !== "GET" || route !== "/admin/summary") return json(res, 403, { error: "forbidden" }), true;
+      if (!settings.adminEnabled || req.method !== "GET" || !["/admin/summary", "/admin/presale"].includes(route)) return json(res, 403, { error: "forbidden" }), true;
       try {
         const email = await access.validate(req.headers["cf-access-jwt-assertion"]);
+        if (route === "/admin/presale") {
+          store.audit(email, "view", "presale");
+          return json(res, 200, { data: family?.presaleAdmin() || { preorders: [], interests: [] } }), true;
+        }
         store.audit(email, "view", "summary");
         const operations = await ops(settings.adminOpsPath); operations.errors = [...store.errors(), ...operations.errors].slice(0, 24);
         return json(res, 200, { data: { ...store.summary(), operations, features: { family: settings.familyEnabled, beadGuruRule: settings.beadGuruRule, guideNoindex: true, mailProvider: settings.mailProvider, telegram: settings.telegramEnabled } } }), true;

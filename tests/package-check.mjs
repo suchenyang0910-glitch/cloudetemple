@@ -35,7 +35,7 @@ const mobile=JSON.parse(await fs.readFile(new URL(`assets/releases/${release}/pr
 assert.equal(mobile.length,12);assert(mobile.every(x=>x.mobile<=120000&&x.width===720));
 if(process.argv.includes('--production')){
  assert(!files.some(n=>/^audio-debug(\.|$)/.test(n)));
- assert(!files.some(n=>/^(family|dev-outbox)(\.|$)/.test(n)),'production excludes family pilot and outbox');
+  assert(!files.some(n=>/^(family|calendar-presale|dev-outbox)(\.|$)/.test(n)),'production excludes family pilot, presale and outbox');
  await assert.rejects(fs.access(new URL('family.html',root)),'production family page is unreachable');
  await assert.rejects(fs.access(new URL(`assets/releases/${release}/family`,root)),'production family assets are absent');
  for(const name of files){const item=new URL(name,root);if((await fs.stat(item)).isFile())assert(!(await fs.readFile(item)).includes(Buffer.from('debug_mode')),name+' contains debug_mode');}
@@ -54,12 +54,15 @@ if(process.argv.includes('--staging')){
  assert(analytics,'staging analytics module');
  assert((await fs.readFile(new URL(analytics,root),'utf8')).includes('debug_mode:true'),'staging debug_mode');
  assert((await fs.readFile(new URL(`config.${release}.js`,root),'utf8')).includes("'turn-back'"),'staging guru rule');
- for(const name of ['family.html','dev/outbox.html'])await fs.access(new URL(name,root));
+  for(const name of ['family.html','calendar-presale.html','dev/outbox.html'])await fs.access(new URL(name,root));
  const outboxHTML=await fs.readFile(new URL('dev/outbox.html',root),'utf8');
  assert(outboxHTML.includes(`dev-outbox.${release}.js`),'staging outbox references hashed script');
  const familyApp=versioned.find(n=>n.startsWith('family.')&&n.endsWith('.js'));
  assert(familyApp,'staging family app');
  assert(versioned.some(n=>n.startsWith('family-i18n.')&&n.endsWith('.js')),'staging family copy dictionary');
+  assert(versioned.some(n=>n.startsWith('family-consent.')&&n.endsWith('.js')),'staging family consent copy');
+  assert(versioned.some(n=>n.startsWith('calendar-presale.')&&n.endsWith('.js')),'staging calendar presale app');
+  const presale=await fs.readFile(new URL('calendar-presale.html',root),'utf8');assert(presale.includes('noindex,nofollow')&&presale.includes('Sắp mở')===false,'staging presale is private and runtime-configured');
  assert((await fs.readFile(new URL(versioned.find(n=>n.startsWith('app.')),root),'utf8')).match(/const familyEnabled\s*=\s*["']1["']\s*===\s*["']1["']/));
  assert((await fs.readFile(new URL(versioned.find(n=>n.startsWith('app.')),root),'utf8')).match(/const referralsEnabled\s*=\s*["']1["']\s*===\s*["']1["']/));
  assert((await fs.readFile(new URL(versioned.find(n=>n.startsWith('app.')),root),'utf8')).match(/const presenceEnabled\s*=\s*["']1["']\s*===\s*["']1["']/));

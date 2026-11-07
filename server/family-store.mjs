@@ -14,7 +14,10 @@ CREATE TABLE IF NOT EXISTS tablet_members(tablet_id TEXT NOT NULL REFERENCES tab
 CREATE TABLE IF NOT EXISTS invites(id TEXT PRIMARY KEY,tablet_id TEXT NOT NULL REFERENCES tablets(id) ON DELETE CASCADE,token_hash TEXT NOT NULL UNIQUE,created_by TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,expires_at INTEGER NOT NULL,revoked_at TEXT,uses INTEGER NOT NULL DEFAULT 0,max_uses INTEGER NOT NULL DEFAULT 20,created_at TEXT NOT NULL,demo INTEGER NOT NULL DEFAULT 1);
 CREATE TABLE IF NOT EXISTS offerings(id TEXT PRIMARY KEY,tablet_id TEXT NOT NULL REFERENCES tablets(id) ON DELETE CASCADE,user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,kind TEXT NOT NULL CHECK(kind IN('incense','flower','fruit','tea')),at TEXT NOT NULL,created_at TEXT NOT NULL,demo INTEGER NOT NULL DEFAULT 1);
 CREATE TABLE IF NOT EXISTS reminder_prefs(user_id TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,email_on INTEGER NOT NULL DEFAULT 0,telegram_on INTEGER NOT NULL DEFAULT 0,telegram_chat_id TEXT,ics_token TEXT,festival_on INTEGER NOT NULL DEFAULT 1,created_at TEXT NOT NULL,demo INTEGER NOT NULL DEFAULT 1);
-CREATE TABLE IF NOT EXISTS deliveries(id TEXT PRIMARY KEY,user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,tablet_id TEXT,kind TEXT NOT NULL,due_date TEXT NOT NULL,channel TEXT NOT NULL,sent_at TEXT,status TEXT NOT NULL,attempts INTEGER NOT NULL DEFAULT 0,created_at TEXT NOT NULL,dedupe_key TEXT UNIQUE,demo INTEGER NOT NULL DEFAULT 1);`);
+CREATE TABLE IF NOT EXISTS deliveries(id TEXT PRIMARY KEY,user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,tablet_id TEXT,kind TEXT NOT NULL,due_date TEXT NOT NULL,channel TEXT NOT NULL,sent_at TEXT,status TEXT NOT NULL,attempts INTEGER NOT NULL DEFAULT 0,created_at TEXT NOT NULL,dedupe_key TEXT UNIQUE,demo INTEGER NOT NULL DEFAULT 1);
+CREATE TABLE IF NOT EXISTS family_consents(user_id TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,version TEXT NOT NULL,consented_at TEXT NOT NULL,demo INTEGER NOT NULL DEFAULT 1);
+CREATE TABLE IF NOT EXISTS calendar_preorders(id TEXT PRIMARY KEY,user_id TEXT REFERENCES users(id) ON DELETE SET NULL,contact TEXT NOT NULL,family_name TEXT NOT NULL,edition TEXT NOT NULL CHECK(edition IN('basic','family')),anniversaries_json TEXT NOT NULL,address TEXT NOT NULL,status TEXT NOT NULL DEFAULT 'pending',created_at TEXT NOT NULL,demo INTEGER NOT NULL DEFAULT 1);
+CREATE TABLE IF NOT EXISTS membership_interests(id TEXT PRIMARY KEY,name TEXT NOT NULL DEFAULT '',contact TEXT NOT NULL,ancestor_count TEXT NOT NULL,willingness TEXT NOT NULL,region TEXT NOT NULL DEFAULT '',created_at TEXT NOT NULL,expires_at INTEGER NOT NULL,demo INTEGER NOT NULL DEFAULT 1);`);
   const deliveryColumns = db.prepare("PRAGMA table_info(deliveries)").all();
   if (!deliveryColumns.some((column) => column.name === "dedupe_key")) {
     db.exec("ALTER TABLE deliveries ADD COLUMN dedupe_key TEXT");
@@ -150,6 +153,14 @@ CREATE TABLE IF NOT EXISTS deliveries(id TEXT PRIMARY KEY,user_id TEXT NOT NULL 
     logout(hash) {
       run("DELETE FROM sessions WHERE token_hash=?", hash);
     },
+    consent(user) {
+      return one("SELECT version,consented_at FROM family_consents WHERE user_id=?", user) || null;
+    },
+    acceptConsent(user, version) {
+      const at = now();
+      run("INSERT INTO family_consents VALUES(?,?,?,?) ON CONFLICT(user_id) DO UPDATE SET version=excluded.version,consented_at=excluded.consented_at", user, version, at, demoFlag);
+      return { version, consented_at: at };
+    },
     listTablets(user) {
       return all(
         "SELECT t.*,m.role FROM tablets t JOIN tablet_members m ON m.tablet_id=t.id WHERE m.user_id=? ORDER BY t.created_at",
@@ -212,7 +223,8 @@ CREATE TABLE IF NOT EXISTS deliveries(id TEXT PRIMARY KEY,user_id TEXT NOT NULL 
       return true;
     },
     offer(user, id, kind) {
-      if (!member(user, id)) return null;
+      const membership = member(user, id);
+      if (!membership || membership.role !== "owner") return null;
       const at = now();
       run(
         "INSERT INTO offerings VALUES(?,?,?,?,?,?,?)",
@@ -261,6 +273,7 @@ CREATE TABLE IF NOT EXISTS deliveries(id TEXT PRIMARY KEY,user_id TEXT NOT NULL 
           if (!i) return null;
           const existing = member(user, i.tablet_id);
           if (existing) return existing;
+          if (one("SELECT count(*) n FROM tablet_members WHERE tablet_id=?", i.tablet_id).n >= 5) return null;
           const claimed = run(
             "UPDATE invites SET uses=uses+1 WHERE id=? AND revoked_at IS NULL AND expires_at>=? AND uses<max_uses",
             i.id,
@@ -300,6 +313,9 @@ CREATE TABLE IF NOT EXISTS deliveries(id TEXT PRIMARY KEY,user_id TEXT NOT NULL 
           memberId,
         ).changes === 1
       );
+    },
+    leaveTablet(user, tabletId) {
+      return run("DELETE FROM tablet_members WHERE tablet_id=? AND user_id=? AND role='family'", tabletId, user).changes === 1;
     },
     prefs(user) {
       return one("SELECT * FROM reminder_prefs WHERE user_id=?", user);
@@ -349,6 +365,23 @@ CREATE TABLE IF NOT EXISTS deliveries(id TEXT PRIMARY KEY,user_id TEXT NOT NULL 
           user,
         ),
         reminders: this.prefs(user),
+        consent: this.consent(user),
+      };
+    },
+    createPreorder(user, value) {
+      const id = randomUUID(), at = now();
+      run("INSERT INTO calendar_preorders VALUES(?,?,?,?,?,?,?,?,?,?)", id, user || null, value.contact, value.familyName, value.edition, JSON.stringify(value.anniversaries), value.address, "pending", at, demoFlag);
+      return { id, status: "pending" };
+    },
+    createInterest(value) {
+      const id = randomUUID(), at = now();
+      run("INSERT INTO membership_interests VALUES(?,?,?,?,?,?,?,?,?)", id, value.name, value.contact, value.ancestorCount, value.willingness, value.region, at, Date.now() + 730 * 86400000, demoFlag);
+      return { id };
+    },
+    presaleAdmin() {
+      return {
+        preorders: all("SELECT id,contact,family_name,edition,address,status,created_at FROM calendar_preorders ORDER BY created_at DESC LIMIT 500"),
+        interests: all("SELECT id,name,contact,ancestor_count,willingness,region,created_at FROM membership_interests ORDER BY created_at DESC LIMIT 500"),
       };
     },
     deleteUser(user) {
@@ -359,6 +392,7 @@ CREATE TABLE IF NOT EXISTS deliveries(id TEXT PRIMARY KEY,user_id TEXT NOT NULL 
       run("DELETE FROM email_codes WHERE expires_at<=?", Date.now());
       run("DELETE FROM oauth_states WHERE expires_at<=?", Date.now());
       run("DELETE FROM family_rates WHERE until<=?", Date.now());
+      run("DELETE FROM membership_interests WHERE expires_at<=?", Date.now());
       if (
         one(
           "SELECT 1 ok FROM sqlite_master WHERE type='table' AND name='mail_outbox'",

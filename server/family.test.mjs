@@ -17,15 +17,18 @@ const settings = {
   familyUrl: "https://staging.chuamay.org/family.html",
   lunarLeapRule: "regular-month",
   trustLocal: false,
+  calendarPresale: { open: false },
 };
-async function fixture(dependencies) {
+const acceptConsent = (f, cookie, csrf) => f.request("/family/consent", { method: "POST", headers: { Cookie: cookie, "X-CSRF-Token": csrf }, body: JSON.stringify({ agree: true, version: "pilot-2026-11-07-v1" }) });
+async function fixture(dependencies, overrides = {}) {
+  const configured = { ...settings, ...overrides };
   const store = openStore(":memory:"),
     family = openFamilyStore(store.db),
     server = createServer(
-      settings,
+      configured,
       store,
       async () => {},
-      createFamilyApi(settings, family, dependencies),
+      createFamilyApi(configured, family, dependencies),
     );
   await new Promise((r) => server.listen(0, "127.0.0.1", r));
   const base = `http://127.0.0.1:${server.address().port}`;
@@ -138,6 +141,15 @@ test("email code stays in protected outbox and session CRUD enforces CSRF", asyn
       }),
     });
     assert.equal(r.status, 403);
+    r = await f.request("/family/tablets", {
+      method: "POST",
+      headers: { Cookie: cookie, "X-CSRF-Token": data.csrf },
+      body: JSON.stringify({ honorific: "Bà ngoại", fullName: "Consent first", day: 12, month: 3 }),
+    });
+    assert.equal(r.status, 428);
+    assert.equal((await r.json()).error, "consent_required");
+    r = await acceptConsent(f, cookie, data.csrf);
+    assert.equal(r.status, 200);
     r = await f.request("/family/tablets", {
       method: "POST",
       headers: {
@@ -478,6 +490,7 @@ test("authenticated calendar PDF is private, bounded and generated without a thi
       body: JSON.stringify({ email: "calendar@example.com", code }),
     });
     const session = await r.json(), cookie = r.headers.get("set-cookie").split(";", 1)[0];
+    assert.equal((await acceptConsent(f, cookie, session.csrf)).status, 200);
     r = await f.request("/family/tablets", {
       method: "POST",
       headers: { Cookie: cookie, "X-CSRF-Token": session.csrf },
@@ -501,4 +514,64 @@ test("authenticated calendar PDF is private, bounded and generated without a thi
     await new Promise((resolve) => f.server.close(resolve));
     f.store.close();
   }
+});
+
+test("pilot consent, invited read-only access and account deletion cascade are enforced", () => {
+  const store = openStore(":memory:"), family = openFamilyStore(store.db), owner = family.userFor("email", "owner-subject", "owner@example.invalid", "Owner"), guest = family.userFor("email", "guest-subject", "guest@example.invalid", "Guest");
+  try {
+    const consent = family.acceptConsent(owner.id, "pilot-2026-11-07-v1");
+    assert.equal(family.consent(owner.id).version, consent.version);
+    const tablet = family.createTablet(owner.id, { honorific: "Bà ngoại", fullName: "Nguyễn An", birthYear: null, deathYear: 2026, day: 12, month: 3, leap: false, note: "" });
+    const inviteHash = "invite-hash";
+    family.invite(owner.id, tablet.id, inviteHash, Date.now() + 60000, 1);
+    assert.equal(family.acceptInvite(guest.id, inviteHash).role, "family");
+    assert.equal(family.updateTablet(guest.id, tablet.id, { honorific: "X", fullName: "Y", birthYear: null, deathYear: null, day: 1, month: 1, leap: false, note: "" }), null);
+    assert.equal(family.offer(guest.id, tablet.id, "incense"), null);
+    assert.equal(family.leaveTablet(guest.id, tablet.id), true);
+    assert.equal(family.member(guest.id, tablet.id), undefined);
+    family.invite(owner.id, tablet.id, "invite-hash-2", Date.now() + 60000, 1);
+    assert.equal(family.acceptInvite(guest.id, "invite-hash-2").role, "family");
+    family.deleteUser(owner.id);
+    for (const table of ["tablets", "tablet_members", "invites", "offerings", "family_consents"]) assert.equal(store.db.prepare(`SELECT count(*) n FROM ${table}`).get().n, 0, table);
+  } finally { store.close(); }
+});
+
+test("a tablet is limited to five family members including its owner", () => {
+  const store = openStore(":memory:"), family = openFamilyStore(store.db), owner = family.userFor("email", "limit-owner", "owner@example.invalid", "Owner");
+  try {
+    const tablet = family.createTablet(owner.id, { honorific: "Ông", fullName: "Synthetic", birthYear: null, deathYear: 2026, day: 1, month: 1, leap: false, note: "" });
+    for (let index = 0; index < 5; index++) {
+      const guest = family.userFor("email", `limit-${index}`, `guest-${index}@example.invalid`, `Guest ${index}`), token = `limit-token-${index}`;
+      family.invite(owner.id, tablet.id, token, Date.now() + 60000, 1);
+      assert.equal(!!family.acceptInvite(guest.id, token), index < 4);
+    }
+    assert.equal(store.db.prepare("SELECT count(*) n FROM tablet_members WHERE tablet_id=?").get(tablet.id).n, 5);
+  } finally { store.close(); }
+});
+
+test("presale stays closed without server config while interest records remain separate", async () => {
+  const f = await fixture();
+  try {
+    let response = await f.request("/family/presale/config");
+    assert.deepEqual(await response.json(), { ok: true, open: false });
+    response = await f.request("/family/presale/orders", { method: "POST", body: JSON.stringify({}) });
+    assert.equal(response.status, 403);
+    response = await f.request("/family/presale/interests", { method: "POST", body: JSON.stringify({ name: "", contact: "zalo-test", ancestorCount: "3-5", willingness: "50-99", region: "viet-nam", agree: true }) });
+    assert.equal(response.status, 201);
+    assert.equal(f.family.db.prepare("SELECT count(*) n FROM membership_interests").get().n, 1);
+    assert.equal(f.family.db.prepare("SELECT count(*) n FROM calendar_preorders").get().n, 0);
+    response = await f.request("/family/presale/interests", { method: "POST", body: JSON.stringify({ name: "功德箱", contact: "zalo-test", ancestorCount: "3-5", willingness: "50-99", region: "", agree: true }) });
+    assert.equal(response.status, 400);
+  } finally { await new Promise((resolve) => f.server.close(resolve)); f.store.close(); }
+});
+
+test("configured staging presale accepts at most ten manual anniversaries", async () => {
+  const calendarPresale = { open: true, price: "150.000₫", familyPrice: "199.000₫", deadline: "2026-12-20", bank: "Test Bank", accountName: "Test", account: "0000", reference: "CHUAMAY-{order}" };
+  const f = await fixture(undefined, { calendarPresale });
+  try {
+    const anniversaries = Array.from({ length: 12 }, (_, index) => ({ name: `Người ${index + 1}`, date: `${index + 1}/3 âm lịch` }));
+    const response = await f.request("/family/presale/orders", { method: "POST", body: JSON.stringify({ edition: "basic", familyName: "Gia đình thử", contact: "zalo-test", anniversaries, address: "Địa chỉ thử", agree: true }) });
+    assert.equal(response.status, 201);
+    assert.equal(JSON.parse(f.family.db.prepare("SELECT anniversaries_json FROM calendar_preorders").get().anniversaries_json).length, 10);
+  } finally { await new Promise((resolve) => f.server.close(resolve)); f.store.close(); }
 });

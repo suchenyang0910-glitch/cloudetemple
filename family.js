@@ -1,5 +1,6 @@
 import { familyEvent } from "./family-analytics.js";
 import { familyText as t, FAMILY_COPY } from "./family-i18n.js";
+import { FAMILY_CONSENT_COPY, FAMILY_CONSENT_VERSION } from "./family-consent.js";
 const $ = (s) => document.querySelector(s),
   screen = $("#screen"),
   status = $("#status"),
@@ -193,8 +194,28 @@ async function list(initialTablets) {
   screen
     .querySelectorAll("[data-id]")
     .forEach((b) => (b.onclick = () => showTablet(b.dataset.id)));
-  $("#new").onclick = () => form();
+  $("#new").onclick = () => consentThenForm();
   location.hash = "list";
+}
+async function consentThenForm() {
+  if (demo) return form();
+  const state = await api("/consent");
+  if (state.accepted) return form();
+  screen.innerHTML = `<section class="consent"><h2>${FAMILY_CONSENT_COPY.title}</h2><p class="review">${FAMILY_CONSENT_COPY.review}</p><div lang="vi">${FAMILY_CONSENT_COPY.vi.map((item) => `<p>${esc(item)}</p>`).join("")}</div><details lang="zh"><summary>中文对照</summary>${FAMILY_CONSENT_COPY.zh.map((item) => `<p>${esc(item)}</p>`).join("")}</details><label><input id="consent-agree" type="checkbox"> ${FAMILY_CONSENT_COPY.agree}</label><button class="primary" id="consent-continue" disabled>${FAMILY_CONSENT_COPY.continue}</button><button id="consent-cancel">${FAMILY_CONSENT_COPY.cancel}</button></section>`;
+  const agree = $("#consent-agree"), proceed = $("#consent-continue");
+  agree.onchange = () => { proceed.disabled = !agree.checked; };
+  proceed.onclick = async () => {
+    proceed.disabled = true;
+    try {
+      await api("/consent", { method: "POST", body: JSON.stringify({ agree: true, version: FAMILY_CONSENT_VERSION }) });
+      form();
+    } catch (error) {
+      proceed.disabled = false;
+      note(friendlyError(error, t("network_error")));
+    }
+  };
+  $("#consent-cancel").onclick = list;
+  location.hash = "consent";
 }
 function plaque(t) {
   const name = esc(t.full_name.normalize("NFC")),
@@ -210,8 +231,9 @@ async function showTablet(id) {
     solar = d.solar;
   }
   const shown = tablets.slice(0, 3),
-    many = shown.length > 1;
-  screen.innerHTML = `<section class="scene" style="background-image:url(assets/family/altar-${many ? "three-" : ""}${period}.webp)"><div class="plaque-row">${shown.map(plaque).join("")}</div><svg class="smoke hidden" viewBox="0 0 50 110" aria-hidden="true"><g fill="none" stroke="#eee4d6" stroke-width="2.8" opacity=".78"><path d="M25 48c-12-19 12-26 4-47"/><path class="extra" d="M16 52c10-16-11-24-2-41M34 52c-4-12 10-23 3-33"/></g><g stroke="#723e27" stroke-width="2.4"><path d="m16 52 5 57m4-61v61m9-57-5 57"/></g><g class="embers"><circle cx="16" cy="52" r="3"/><circle cx="25" cy="48" r="3"/><circle cx="34" cy="52" r="3"/></g></svg><div class="panel"><p>${t("anniversary", { lunar: `${current.death_lunar_day}/${current.death_lunar_month}`, solar: `${solar.day}/${solar.month}/${solar.year}` })}</p>${["incense", "flower", "fruit", "tea"].map((kind) => `<button data-kind="${kind}">${t(kind)}</button>`).join("")}<button class="wide" id="invite">${t("invite_family")}</button><button class="wide" id="back">${t("back_list")}</button></div></section>`;
+    many = shown.length > 1,
+    owner = current.role === "owner";
+  screen.innerHTML = `<section class="scene" style="background-image:url(assets/family/altar-${many ? "three-" : ""}${period}.webp)"><div class="plaque-row">${shown.map(plaque).join("")}</div><svg class="smoke hidden" viewBox="0 0 50 110" aria-hidden="true"><g fill="none" stroke="#eee4d6" stroke-width="2.8" opacity=".78"><path d="M25 48c-12-19 12-26 4-47"/><path class="extra" d="M16 52c10-16-11-24-2-41M34 52c-4-12 10-23 3-33"/></g><g stroke="#723e27" stroke-width="2.4"><path d="m16 52 5 57m4-61v61m9-57-5 57"/></g><g class="embers"><circle cx="16" cy="52" r="3"/><circle cx="25" cy="48" r="3"/><circle cx="34" cy="52" r="3"/></g></svg><div class="panel"><p>${t("anniversary", { lunar: `${current.death_lunar_day}/${current.death_lunar_month}`, solar: `${solar.day}/${solar.month}/${solar.year}` })}</p>${owner ? ["incense", "flower", "fruit", "tea"].map((kind) => `<button data-kind="${kind}">${t(kind)}</button>`).join("") : `<p>${t("invited_read_only")}</p><button class="wide" id="leave">${t("leave_family")}</button>`}${owner ? `<button class="wide" id="invite">${t("invite_family")}</button>` : ""}<button class="wide" id="back">${t("back_list")}</button></div></section>`;
   screen.querySelectorAll("[data-kind]").forEach(
     (b) =>
       (b.onclick = async () => {
@@ -236,7 +258,8 @@ async function showTablet(id) {
       }),
   );
   $("#back").onclick = list;
-  $("#invite").onclick = () => invite(id);
+  if (owner) $("#invite").onclick = () => invite(id);
+  else $("#leave").onclick = async () => { if (!demo) await api(`/tablets/${id}/membership`, { method: "DELETE", body: "{}" }); await list(); };
   location.hash = "tablet=" + id;
 }
 function form(edit = null) {
@@ -400,7 +423,7 @@ async function inviteLanding(raw, authenticated = false) {
   if (loginButton) loginButton.onclick = login;
 }
 async function account() {
-  screen.innerHTML = `<section class="account"><h2>${t("account_title")}</h2><p>${t("account_privacy")}</p><label><input id="email-remind" type="checkbox"> ${t("remind_email")}</label><label><input id="tg-remind" type="checkbox"> ${t("remind_telegram")}</label><label><input id="festival" type="checkbox" checked> ${t("remind_festival")}</label><button id="save-reminders">${t("save_reminders")}</button><button id="calendar">${t("subscribe_calendar")}</button><input id="calendar-family-name" type="text" maxlength="80" placeholder="${t("family_name_placeholder")}" autocomplete="organization"><button id="download-calendar">${t("download_calendar")}</button><button id="revoke-calendar">${t("revoke_calendar")}</button><button id="export">${t("export_data")}</button><button id="delete">${t("delete_data")}</button><button id="account-back">${t("back")}</button></section>`;
+  screen.innerHTML = `<section class="account"><h2>${t("account_title")}</h2><p>${t("account_privacy")}</p><label><input id="email-remind" type="checkbox"> ${t("remind_email")}</label><label><input id="tg-remind" type="checkbox"> ${t("remind_telegram")}</label><label><input id="festival" type="checkbox" checked> ${t("remind_festival")}</label><button id="save-reminders">${t("save_reminders")}</button><button id="calendar">${t("subscribe_calendar")}</button><input id="calendar-family-name" type="text" maxlength="80" placeholder="${t("family_name_placeholder")}" autocomplete="organization"><button id="download-calendar">${t("download_calendar")}</button><button id="revoke-calendar">${t("revoke_calendar")}</button><a class="google" href="/calendar-presale.html">${t("preorder_calendar")}</a><button id="export">${t("export_data")}</button><button id="delete">${t("delete_data")}</button><button id="account-back">${t("back")}</button></section>`;
   if (!demo) {
     const reminder = await api("/reminders");
     $("#email-remind").checked = !!reminder.prefs.email_on;

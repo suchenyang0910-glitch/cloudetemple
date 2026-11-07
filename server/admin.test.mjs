@@ -88,9 +88,9 @@ test("presence heartbeat accepts one UUID field from a browser and rejects unsaf
 });
 
 test("admin endpoint is read-only, writes audit and returns only allowlisted aggregate fields", async (t) => {
-  const database = openStore(":memory:"), metrics = openMetricsStore(database.db), access = createAccessVerifier(settings, fetchKeys, () => now), server = createServer(settings, database, async () => {}, createMetricsApi(settings, metrics, access));
+  const database = openStore(":memory:"), family = openFamilyStore(database.db), metrics = openMetricsStore(database.db), access = createAccessVerifier(settings, fetchKeys, () => now), server = createServer(settings, database, async () => {}, createMetricsApi(settings, metrics, access, family));
   await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve)); t.after(async () => { await new Promise((resolve) => server.close(resolve)); database.close(); });
-  const base = `http://127.0.0.1:${server.address().port}`, request = (token, method = "GET") => fetch(`${base}/admin/summary`, { method, headers: token ? { "Cf-Access-Jwt-Assertion": token } : {} });
+  const base = `http://127.0.0.1:${server.address().port}`, request = (token, method = "GET", path = "summary") => fetch(`${base}/admin/${path}`, { method, headers: token ? { "Cf-Access-Jwt-Assertion": token } : {} });
   assert.equal((await request("")).status, 403); assert.equal((await request(jwt({ aud: ["wrong"] }))).status, 403); assert.equal((await request(jwt(), "POST")).status, 403);
   metrics.error("api_5xx"); const response = await request(jwt()); assert.equal(response.status, 200); const data = await response.json();
   const allowed = new Set(["ok","data","overview","counters","day","metric","dimension","value","presence","hours","peak","average","samples","referrals","identities","bindings","k","channels","activities","tree","status","nodes","edges","id","from","to","key","subjects","family","tablets","members","invites","accepted","averageMembers","inviteAcceptance","reminderReturn","deliveries","operations","release","api","backupAt","backupCheck","certificateExpires","diskFreeBytes","errors","category","count","at","features","beadGuruRule","guideNoindex","mailProvider","telegram"]);
@@ -98,6 +98,8 @@ test("admin endpoint is read-only, writes audit and returns only allowlisted agg
   const serialized = JSON.stringify(data); for (const forbidden of ["full_name","email","death_","token","referral_code","query","body","raw"]) assert(!serialized.toLowerCase().includes(forbidden));
   assert.equal(data.data.operations.errors[0].category, "api_5xx"); assert.equal(data.data.operations.errors[0].count, 1);
   assert.equal(database.db.prepare("SELECT count(*) n FROM admin_audit").get().n, 1);
+  family.createInterest({ name: "Synthetic", contact: "contact-test", ancestorCount: "1-2", willingness: "none", region: "" });
+  const presale = await request(jwt(), "GET", "presale"); assert.equal(presale.status, 200); const listed = await presale.json(); assert.equal(listed.data.interests[0].contact, "contact-test"); assert.equal(database.db.prepare("SELECT count(*) n FROM admin_audit").get().n, 2);
 });
 
 test("server observer receives 5xx status without request content", async (t) => {
@@ -119,6 +121,7 @@ test("admin and referral switches default off in production and fail closed", ()
   const base = { TELEGRAM_ENABLED: "0", HASH_SECRET: "x".repeat(64), CHUAMAY_ENV: "production" };
   assert.equal(config(base).adminEnabled, false); assert.equal(config(base).referralsEnabled, false);
   assert.equal(config(base).presenceEnabled, false);
+  assert.equal(config({ ...base, CALENDAR_PREORDER_PRICE: "150000", CALENDAR_PREORDER_DEADLINE: "2026-12-20", CALENDAR_PAYMENT_BANK: "Bank", CALENDAR_PAYMENT_NAME: "Name", CALENDAR_PAYMENT_ACCOUNT: "0000" }).calendarPresale.open, false);
   assert.throws(() => config({ ...base, ADMIN_ENABLED: "1" }), /staging-only/);
   assert.throws(() => config({ ...base, CHUAMAY_ENV: "staging", ADMIN_ENABLED: "1" }), /admin access/);
   const staged = config({ ...base, CHUAMAY_ENV: "staging", ADMIN_ENABLED: "1", CF_ACCESS_TEAM_DOMAIN: team, CF_ACCESS_AUD: audience, ADMIN_EMAILS: email });
