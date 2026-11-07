@@ -27,3 +27,8 @@ deploy/*.tmp
 
 audio/raw/
 tools/*.tmp.py
+
+# secrets and local review files
+chuamay-certs/
+client_secret_*.json
+_claude-review/
