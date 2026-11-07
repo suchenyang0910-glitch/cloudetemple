@@ -76,6 +76,28 @@ def paper_wash(c, width, height, alpha=.68):
         c.rect(width + index * 2.7 * mm, 0, 2.9 * mm, height, fill=1, stroke=0)
     c.restoreState()
 
+def year_name(c, value, x, y):
+    if "→" not in value:
+        text(c, value, x, y, 8.5, ACCENT, bold=True)
+        return
+    before, after = (part.strip() for part in value.split("→", 1))
+    text(c, before, x, y, 8.5, ACCENT, bold=True)
+    arrow_x = x + pdfmetrics.stringWidth(before + " ", FONT, 8.5)
+    arrow_y = y + 2.1
+    c.saveState()
+    c.setStrokeColor(ACCENT)
+    c.setFillColor(ACCENT)
+    c.setLineWidth(.7)
+    c.line(arrow_x, arrow_y, arrow_x + 4 * mm, arrow_y)
+    arrow = c.beginPath()
+    arrow.moveTo(arrow_x + 4 * mm, arrow_y)
+    arrow.lineTo(arrow_x + 2.8 * mm, arrow_y + .75 * mm)
+    arrow.lineTo(arrow_x + 2.8 * mm, arrow_y - .75 * mm)
+    arrow.close()
+    c.drawPath(arrow, fill=1, stroke=0)
+    c.restoreState()
+    text(c, after, arrow_x + 5.4 * mm, y, 8.5, ACCENT, bold=True)
+
 def incense_icon(c, x, y):
     c.saveState()
     c.setStrokeColor(ACCENT)
@@ -117,7 +139,6 @@ def cover(c, model, asset):
     text(c, f'Lịch ngày giỗ {model["year"]}', center, h * .50, 15, ACCENT, "center", True)
     text(c, model["yearName"], center, h * .40, 10.5, INK, "center")
     text(c, model["blessing"], center, h * .26, 8.2, MUTED, "center")
-    text(c, model["note"], 8 * mm, 8 * mm, 6, MUTED)
     c.showPage()
 
 def month_page(c, model, month, asset):
@@ -128,7 +149,8 @@ def month_page(c, model, month, asset):
     c.drawImage(ImageReader(asset), 0, image_y, width=w, height=image_h, preserveAspectRatio=False, mask="auto")
     paper_wash(c, 72 * mm, image_h, .61)
     c.saveState()
-    c.setFillColor(Color(.96, .93, .86, alpha=.69))
+    c.setFillColor(Color(.97, .94, .87, alpha=.86))
+    c.roundRect(6 * mm, h - 23 * mm, 105 * mm, 17.5 * mm, 2 * mm, fill=1, stroke=0)
     c.roundRect(w - 62 * mm, h - 17 * mm, 54 * mm, 9.5 * mm, 2 * mm, fill=1, stroke=0)
     c.restoreState()
     left, right, grid_bottom = 8 * mm, 8 * mm, 24 * mm
@@ -138,7 +160,7 @@ def month_page(c, model, month, asset):
     text(c, month_word, month_x, h - 12 * mm, 16, INK)
     year_x = month_x + pdfmetrics.stringWidth(month_word + " ", FONT, 16)
     text(c, model["year"], year_x, h - 12 * mm, 16, INK)
-    text(c, model["yearName"], left, h - 19 * mm, 8.5, ACCENT, bold=True)
+    year_name(c, month["yearName"], left, h - 19 * mm)
     text(c, model["familyName"], w - 35 * mm, h - 12.7 * mm, 7.5, MUTED, "center")
     grid_top = h - 58 * mm
     grid_h = grid_top - grid_bottom
@@ -193,7 +215,6 @@ def month_page(c, model, month, asset):
             text(c, f'+ {len(memorials) - 6} ngày khác', w - right, 5.8 * mm, 7.2, MUTED, "right")
     else:
         text(c, "Không có ngày giỗ", left, 13.2 * mm, 8, MUTED)
-    text(c, model["note"], left, 3.4 * mm, 5.2, MUTED)
     text(c, month["number"], w - right, 4.5 * mm, 5, MUTED, "right")
     c.showPage()
 

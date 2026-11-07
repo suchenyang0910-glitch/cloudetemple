@@ -72,7 +72,10 @@ export function buildFamilyCalendarModel({ familyName, tablets, year = 2027, lea
       });
     }
     while (cells.length % 7) cells.push(null);
-    months.push({ number: month, name: MONTHS[month - 1], cells, memorials: monthMemorials });
+    const yearName = month === 1 ? "Năm Bính Ngọ"
+      : month === 2 ? "Bính Ngọ → Đinh Mùi (từ 6/2)"
+      : "Năm Đinh Mùi";
+    months.push({ number: month, name: MONTHS[month - 1], yearName, cells, memorials: monthMemorials });
   }
   return {
     year,
@@ -81,7 +84,6 @@ export function buildFamilyCalendarModel({ familyName, tablets, year = 2027, lea
     brand: "CHÙA MÂY · CLOUD TEMPLE",
     blessing: "Gìn giữ ký ức gia đình qua từng mùa.",
     months,
-    note: "Bản mẫu · Nội dung tiếng Việt chờ người bản ngữ duyệt",
   };
 }
 
