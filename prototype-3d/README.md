@@ -16,6 +16,10 @@ npm run serve
 
 打开 `http://127.0.0.1:4173/`。内部性能检查可加 `?locals=1` 显示两个本地模拟访客；对外预览不加此参数。
 
+## 独立预览
+
+`https://staging.chuamay.org/hd2d/`，使用 staging 现有 Basic Auth。该路径未从 staging 主站链出，且带 `noindex`；没有修改正式机器人或正式环境。
+
 ## 操作
 
 - 手机：点地面走过去；按住并左右拖动持续转向前进；双指缩放。
@@ -28,6 +32,6 @@ npm run serve
 - 不使用 Tripo、付费服务、外部 3D 模型、外部动作、CDN 或第三方字体。
 - 佛像只是不带五官、手印或装饰的光晕剪影占位。
 - 本地模拟访客仅在 `?locals=1` 时出现。
-- 本目录不接入 H5、Mini App、staging 主站或正式环境。
+- 本目录不接入 H5、Mini App、staging 主站导航或正式环境。
 
 素材来源与补帧提示词见 `assets/ASSET-SOURCES.md` 和 `assets/IMAGEGEN-PROMPTS.md`。

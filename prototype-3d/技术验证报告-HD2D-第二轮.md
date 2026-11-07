@@ -51,8 +51,11 @@
 - 4Mbps 下载 / 1Mbps 上传 / 80ms RTT：iPhone 15 Chromium 代理约 4.95 秒可运行、约 60FPS；4 倍 CPU 的 Redmi 代理约 5.12 秒、约 55FPS。
 - 浏览器实际请求资源约 4.88MB；静态发布包 4.88MB，低于 10MB。
 - 性能面板可导出最近三分钟 FPS、绘制量、资源字节和浏览器可用内存 JSON；数据不上传。
-- 30 秒 H.264 录屏：394×660、5FPS、958,943 字节、时长 30 秒。
+- 30 秒 H.264 录屏：394×660、5FPS、958,611 字节、时长 30 秒。
 - 人物为透明 2D billboard；走路使用侧/背帧，坐禅和礼拜复用现有批准帧；没有双臂上举动作。
+- 独立预览 `https://staging.chuamay.org/hd2d/`：未认证返回 401；使用 staging 同一 Basic Auth 后，HTML、JS 和 WebP 均返回 200，并带 `X-Robots-Tag: noindex`。
+- 公网 393×659 Chromium 加载：页面标题正确、WebGL canvas 存在、页面无滚动；应用自身无控制台错误。Cloudflare 注入的 Web Analytics beacon 被 staging CSP 拦截，不影响小样。
+- 服务器上发布包 35 个文件均通过 SHA-256 复核；h5、miniapp 和 production API healthz 在部署后仍为 200。
 
 证据：
 
