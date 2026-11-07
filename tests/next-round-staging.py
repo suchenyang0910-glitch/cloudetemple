@@ -3,7 +3,7 @@ from playwright.sync_api import sync_playwright
 import subprocess, time
 
 ROOT=Path(__file__).resolve().parents[1]
-OUT=ROOT/'screenshots'/'next-round-staging'
+OUT=ROOT/'screenshots'/'staging-small-fixes'/'main'
 OUT.mkdir(parents=True,exist_ok=True)
 PORT=8898
 server=subprocess.Popen(['python','-m','http.server',str(PORT),'-d',str(ROOT/'dist')],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
@@ -19,11 +19,16 @@ try:
       page.reload(); page.locator('[data-action=enter]').wait_for()
       page.locator('#sound-hint').wait_for(state='visible'); assert 'âm thanh' in page.locator('#sound-hint').inner_text();page.locator('#boot').wait_for(state='detached')
       page.screenshot(path=OUT/f'{width}x{height}-entry.png')
-      page.locator('[data-action=enter]').click();page.locator('[data-action=continue]').click();page.locator('[data-action=incense]').wait_for();page.locator('#ga-choice').evaluate("el=>el.hidden=true")
+      page.locator('[data-action=enter]').click()
+      for _ in range(8):
+        hints=page.evaluate("""()=>{const heading=document.querySelector('.scene-heading').getBoundingClientRect();const visible=['audio-status','sound-hint'].map(id=>document.getElementById(id)).filter(e=>e&&getComputedStyle(e).display!=='none'&&e.textContent.trim());return {count:visible.length,heading,visible:visible.map(e=>({id:e.id,rect:e.getBoundingClientRect()})),overlap:visible.some(e=>{const r=e.getBoundingClientRect();return r.left<heading.right&&r.right>heading.left&&r.top<heading.bottom&&r.bottom>heading.top})}}""")
+        assert hints['count']<=1 and not hints['overlap'],hints;page.wait_for_timeout(80)
+      page.wait_for_function("document.getElementById('audio-status').textContent.trim()===''",timeout=5000)
+      page.locator('[data-action=continue]').click();page.locator('[data-action=incense]').wait_for();page.locator('#ga-choice').evaluate("el=>el.hidden=true")
       page.screenshot(path=OUT/f'{width}x{height}-home.png')
-      home=page.evaluate("""()=>({scroll:[document.scrollingElement.scrollWidth,document.scrollingElement.scrollHeight,innerWidth,innerHeight],nav:[...document.querySelectorAll('.action-nav button')].map(e=>({font:parseFloat(getComputedStyle(e).fontSize),r:e.getBoundingClientRect()})),gap:parseFloat(getComputedStyle(document.querySelector('.action-nav')).gap),heading:parseFloat(getComputedStyle(document.querySelector('.scene-heading h1')).fontSize)})""")
+      home=page.evaluate("""()=>({scroll:[document.scrollingElement.scrollWidth,document.scrollingElement.scrollHeight,innerWidth,innerHeight],nav:[...document.querySelectorAll('.action-nav button')].map(e=>({font:parseFloat(getComputedStyle(e).fontSize),r:e.getBoundingClientRect(),clipped:e.scrollHeight>e.clientHeight||e.scrollWidth>e.clientWidth})),gap:parseFloat(getComputedStyle(document.querySelector('.action-nav')).gap),heading:parseFloat(getComputedStyle(document.querySelector('.scene-heading h1')).fontSize)})""")
       assert home['scroll']==[width,height,width,height],home
-      assert home['gap']>=8 and home['heading']>=18 and all(x['font']>=14 and x['r']['height']>=44 for x in home['nav']),home
+      assert home['gap']>=8 and home['heading']>=18 and all(x['font']>=(13 if width<=380 else 14) and x['r']['height']>=44 and not x['clipped'] for x in home['nav']),home
       page.locator('[data-action=incense]').click();page.locator('[data-action=light]').wait_for();page.screenshot(path=OUT/f'{width}x{height}-incense.png')
       back=page.locator('[data-action=home]'); style=back.evaluate("e=>({font:parseFloat(getComputedStyle(e).fontSize),border:getComputedStyle(e).borderStyle,height:e.getBoundingClientRect().height})")
       assert style['font']>=16 and style['border']!='none' and style['height']>=44,style

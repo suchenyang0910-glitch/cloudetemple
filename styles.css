@@ -89,8 +89,8 @@ body:is([data-period=night],[data-period=dusk]) .controls button[aria-pressed=tr
 #sound-toggle{right:calc(10px + var(--safe-right))}#more-toggle{left:calc(10px + var(--safe-left))}
 .scene-heading,body[data-view=entry] .scene-heading{top:calc(10px + var(--safe-top));left:calc(62px + var(--safe-left));right:calc(62px + var(--safe-right));padding:7px;background:#241d14b8;border-radius:6px}
 .scene-heading h1{font-size:18px}.scene-heading #eyebrow{display:none}#subtitle{font-size:10px}
-#audio-status,#sound-hint{position:absolute;right:calc(12px + var(--safe-right));top:calc(60px + var(--safe-top));z-index:9;max-width:260px;background:#eee8dc;color:#342f28;padding:8px 12px;border-radius:6px;font-size:11px;line-height:1.5;pointer-events:none}
-#audio-status:empty{display:none}#sound-hint{top:calc(99px + var(--safe-top));transition:opacity .3s}
+#audio-status,#sound-hint{position:absolute;right:calc(12px + var(--safe-right));z-index:9;max-width:260px;background:#eee8dc;color:#342f28;padding:8px 12px;border-radius:6px;font-size:11px;line-height:1.5;pointer-events:none}
+#audio-status{top:calc(160px + var(--safe-top))}#audio-status:empty{display:none}#sound-hint{top:calc(120px + var(--safe-top));transition:opacity .3s}
 .action-nav{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.controls .action-nav button{min-height:50px;padding:5px;font-size:11px}.nav-icon{width:21px;height:21px;margin-bottom:2px}
 .controls{z-index:5}.stage::before{filter:none;opacity:1;inset:0;background-size:cover}
 .legal-links{flex-direction:column;align-items:stretch;gap:0;text-align:left}.legal-links a{justify-content:flex-start;padding:7px 0}
@@ -186,6 +186,7 @@ body[data-view=morning] .controls{display:flex;flex-direction:column;align-items
 .morning-bell-hint{font-size:18px;min-height:1.5em;color:var(--ink);opacity:.7;text-align:center}
 .morning-stack .row{justify-content:center;gap:12px;flex-wrap:wrap}
 .action-nav{gap:8px}.controls .action-nav button{font-size:14px}.scene-heading h1{font-size:18px}.controls .row:has([data-action=home])>button{border:1px solid var(--line);font-size:16px}.choice-row,.breath-controls{gap:8px}@media(max-height:740px){.scene-heading h1{font-size:18px}}
+@media(max-width:380px){.controls .action-nav button{height:64px;min-height:64px;font-size:13px;line-height:1.12;white-space:normal;overflow-wrap:anywhere}}
 .morning-stack .primary{min-width:160px}
 .morning-skip-step{font-size:15px;min-height:44px;padding:8px 16px;color:var(--ink);opacity:.6;background:transparent;border:none;cursor:pointer;width:100%;text-align:center}
 @media(prefers-reduced-motion:reduce){.morning-bell-hint{transition:none}}

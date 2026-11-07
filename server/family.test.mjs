@@ -314,6 +314,31 @@ test("email code stays in protected outbox and session CRUD enforces CSRF", asyn
     f.store.close();
   }
 });
+test("successful Google OAuth creates a session without an email code", async (t) => {
+  const nativeFetch = globalThis.fetch;
+  globalThis.fetch = async (input, init) => {
+    const url = String(input);
+    if (url === "https://oauth2.googleapis.com/token") return new Response(JSON.stringify({ access_token: "test-token" }), { status: 200, headers: { "Content-Type": "application/json" } });
+    if (url === "https://openidconnect.googleapis.com/v1/userinfo") return new Response(JSON.stringify({ sub: "google-subject", email_verified: true, name: "Người thân" }), { status: 200, headers: { "Content-Type": "application/json" } });
+    return nativeFetch(input, init);
+  };
+  t.after(() => { globalThis.fetch = nativeFetch; });
+  const f = await fixture({}, { googleId: "client", googleSecret: "secret", googleRedirect: "https://staging.chuamay.org/api/auth/google/callback" });
+  try {
+    let r = await f.request("/auth/google/start", { redirect: "manual" });
+    assert.equal(r.status, 302);
+    const oauthCookie = r.headers.get("set-cookie").split(";", 1)[0], state = new URL(r.headers.get("location")).searchParams.get("state");
+    r = await f.request(`/auth/google/callback?state=${encodeURIComponent(state)}&code=ok`, { redirect: "manual", headers: { Cookie: oauthCookie } });
+    assert.equal(r.status, 302); assert.equal(r.headers.get("location"), "/family.html");
+    const sessionCookie = r.headers.get("set-cookie").split(";", 1)[0];
+    r = await f.request("/family/session", { headers: { Cookie: sessionCookie } });
+    assert.equal((await r.json()).authenticated, true);
+    assert.equal(f.family.db.prepare("SELECT count(*) n FROM email_codes").get().n, 0);
+  } finally {
+    await new Promise((resolve) => f.server.close(resolve));
+    f.store.close();
+  }
+});
 test("member privacy, removal, expiry and invite revocation are enforced", () => {
   const store = openStore(":memory:"),
     f = openFamilyStore(store.db);

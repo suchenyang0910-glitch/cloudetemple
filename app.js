@@ -341,13 +341,12 @@ function updateSoundUI(){
  b.innerHTML=`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z"/>${audio.enabled?'<path d="M16 8q5 4 0 8m3-11q7 7 0 14"/>':'<path d="m16 9 5 6m0-6-5 6"/>'}</svg>`;
  $('#sound-controls').hidden=!audio.enabled;
  $('#audio-status').textContent=audio.loading?t('audioLoading'):'';
+ if(audio.loading){clearTimeout(hintTimer);$('#sound-hint').hidden=true;}
 }
 function showSoundHint(key,ms=3000){clearTimeout(hintTimer);const hint=$('#sound-hint');hint.getAnimations().forEach(a=>a.cancel());hint.textContent=t(key);hint.hidden=false;if(!reduced.matches)hint.animate([{opacity:1,offset:0},{opacity:1,offset:Math.max(0,1-300/ms)},{opacity:0}],{duration:ms});hintTimer=setTimeout(()=>{hint.hidden=true;},ms);}
 async function enableSound(automatic=false){
  const began=Date.now();const pending=audio.enable();
- if(automatic)showSoundHint('tapMute');
- else setTimeout(()=>{if(audio.enabled&&audio.lastPlayed<began)showSoundHint('silentTip',6000);},2000);
-  if(await pending){audio.strike('bell',.6);if(state.view==='sit'&&state.activity?.running){audio.ambient(audio.ambientKind);startBreathing();}if(state.view==='incense'&&state.activity?.running)audio.ambient('forest',.6,2);if(state.view==='beads')void audio.load('bead-v1').catch(()=>{});}
+  if(await pending){if(automatic)showSoundHint('tapMute');else setTimeout(()=>{if(audio.enabled&&audio.lastPlayed<began)showSoundHint('silentTip',6000);},2000);audio.strike('bell',.6);if(state.view==='sit'&&state.activity?.running){audio.ambient(audio.ambientKind);startBreathing();}if(state.view==='incense'&&state.activity?.running)audio.ambient('forest',.6,2);if(state.view==='beads')void audio.load('bead-v1').catch(()=>{});}
 }
 function localDay(){const d=new Date();return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;}
 function dailyWood(){const stored=read('ct-wood',{});if(stored.day===localDay()&&Number.isSafeInteger(stored.count)&&stored.count>=0)return stored.count;return 0;}
