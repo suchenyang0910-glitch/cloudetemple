@@ -1,5 +1,5 @@
 export const apiURL=path=>['h5.chuamay.org','miniapp.chuamay.org'].includes(location.hostname)?'https://api.chuamay.org'+path:'/api'+path;
-export const MINI_APP_URL='https://t.me/ChuaMayBot/chamy';
+export const MINI_APP_URL='https://t.me/ChuaMayBot/chuamay';
 let app=null,back=null;
 export async function initTelegram(onBack,onSettings){
   if(location.hostname!=='miniapp.chuamay.org'&&!(location.hostname==='staging.chuamay.org'&&new URLSearchParams(location.search).get('telegram')==='1'))return;
