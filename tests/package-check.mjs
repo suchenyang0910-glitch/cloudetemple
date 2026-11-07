@@ -5,6 +5,7 @@ const root=new URL('../dist/',import.meta.url),{release}=JSON.parse(await fs.rea
 const home=await fs.readFile(new URL('index.html',root),'utf8');assert(home.includes('property="og:image"')&&home.includes('class="home-content"')&&home.includes('application/ld+json'),'home metadata and prerendered copy');
 const about=await fs.readFile(new URL('gioi-thieu.html',root),'utf8');assert(about.includes('Hồ Ngọc Đức công bố')&&about.includes('calrules.html'),'lunar algorithm attribution');
 const files=await fs.readdir(root),pattern=new RegExp(`\\.${release}\\.(js|css)$`),versioned=files.filter(n=>pattern.test(n));
+for(const name of ['morning','festival'])assert(versioned.includes(`${name}.${release}.js`),`${name} module packaged and versioned`);
 const analyticsName=versioned.find(n=>n.startsWith('analytics.')),analyticsText=await fs.readFile(new URL(analyticsName,root),'utf8');assert(analyticsText.includes('campaign_content')&&analyticsText.includes("endsWith('_a_'+name)"),'anonymous activity attribution allowlist');
 assert(files.filter(n=>/\.(js|css)$/.test(n)).every(n=>pattern.test(n)),'only current hashed JS/CSS');
 assert.deepEqual(await fs.readdir(new URL('assets/',root)),['releases','share']);

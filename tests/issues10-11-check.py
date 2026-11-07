@@ -21,6 +21,7 @@ with sync_playwright() as pw:
             timezone_id="Asia/Ho_Chi_Minh",
         )
         page = context.new_page()
+        page.add_init_script("localStorage.setItem('ct-morning-seen','true')")
         page.add_init_script(
             "localStorage.setItem('ct-muted','true');"
             "localStorage.setItem('ct-analytics','no');"
@@ -155,6 +156,7 @@ with sync_playwright() as pw:
 
     context = browser.new_context(viewport={"width": 375, "height": 548})
     page = context.new_page()
+    page.add_init_script("localStorage.setItem('ct-morning-seen','true')")
     page.emulate_media(reduced_motion="reduce")
     page.add_init_script("localStorage.setItem('ct-muted','true');localStorage.setItem('ct-analytics','no');localStorage.setItem('ct-visitor',JSON.stringify('bun-light'))")
     page.clock.install(time=datetime.fromisoformat("2026-11-06T10:00:00+07:00"))

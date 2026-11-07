@@ -88,6 +88,7 @@ def main():
                         http_credentials=credentials,
                     )
                     page = context.new_page()
+                    page.add_init_script("localStorage.setItem('ct-morning-seen','true')")
                     page.add_init_script(
                         f"localStorage.setItem('ct-muted','true');localStorage.setItem('ct-analytics','no');localStorage.setItem('ct-visitor',JSON.stringify('{visitor}'));"
                     )
@@ -119,6 +120,7 @@ def main():
 
         share_context = browser.new_context(http_credentials=credentials)
         share_page = share_context.new_page()
+        share_page.add_init_script("localStorage.setItem('ct-morning-seen','true')")
         share_page.goto(args.base)
         module_url = share_page.locator('script[type="module"][src*="app."]').get_attribute("src") or "/app.js"
         share_result = share_page.evaluate(

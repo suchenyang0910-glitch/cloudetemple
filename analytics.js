@@ -1,12 +1,13 @@
 // Stage-only. Capture attribution and initialize Telegram before cleaning the launch URL.
 const id='G-0EF24Y0Q9M', key='ct-analytics';
 const debug={debug_mode:true};
-const views='entry choose home incense bow sit mo beads leave memorial'.split(' ');
+const views='entry choose morning home incense bow sit mo beads leave memorial'.split(' ');
 const activities='incense bow sit mo beads'.split(' ');
 const fields={
  activity_start:{activity:activities},activity_complete:{activity:activities,duration_bucket:['<1m','1-3m','3-10m','>10m'],count_bucket:['1','2-26','27-53','54-107','108+']},
  share_open:{activity:activities},share_channel:{channel:['download','system','copy','zalo','facebook','messenger','telegram_forward','telegram_story']},sound_toggle:{state:['on','off']},hand_switch:{hand:['left','right']},
  waitlist_submit:{result:['invalid','rate_limit','success','error']},image_load_failed:{asset_group:['scene','visitor','prop'],path_kind:['fetch-blob','native-img','failed']},referral_bound:{channel:['system','copy','zalo','facebook','messenger','telegram_forward','telegram_story','recommend'],activity:['incense','bow','sit','mo','beads','recommend']}
+ ,morning_start:{},morning_step:{step:['incense','bow','sit']},morning_skip:{step:['bell','morning','incense','bow','sit']},morning_complete:{}
 };
 export function setupAnalytics(platform,attribution={}){
  const startActivity=activities.find(name=>attribution.startParam?.endsWith('_a_'+name))||'';

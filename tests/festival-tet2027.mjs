@@ -68,11 +68,26 @@ for (const [text, expected] of [
   ['祈福有效', true],
   ['Chùa Mây đồng hành', false],
   ['bảo hộ trọn đời', true],
+  ['công đức', true],
+  ['hòm công đức', true],
+  ['功德箱', true],
+  ['功德圆满', true],
 ]) {
   assert.equal(hasForbiddenWord(text), expected, `hasForbiddenWord('${text}')`);
 }
 
 // 5. readFlower returns 'hoa-mai' by default (no localStorage in Node)
 assert.equal(readFlower(), 'hoa-mai', 'default flower');
+
+// 6. Query preview is staging/local only; production hosts ignore it.
+globalThis.location={hostname:'staging.chuamay.org',search:'?festival-date=2027-02-06'};
+assert.equal(getFestivalPeriod()?.id,'mung1');
+globalThis.location={hostname:'localhost',search:'?festival-date=2027-02-20'};
+assert.equal(getFestivalPeriod()?.id,'ram');
+for(const hostname of ['h5.chuamay.org','miniapp.chuamay.org']){
+  globalThis.location={hostname,search:'?festival-date=2027-02-06'};
+  assert.notEqual(getFestivalPeriod()?.id,'mung1',`${hostname} ignores preview override`);
+}
+delete globalThis.location;
 
 console.log('Festival Tết 2027: all assertions passed');

@@ -203,6 +203,7 @@ function render(){
   $('#eyebrow').textContent=t(state.period);
   const heading=state.view==='entry'?'entryTitle':state.view==='choose'?'choose':state.view==='home'?'home':state.view==='morning'?'morningTitle':state.view;
   $('#heading').textContent=t(heading)+(state.view==='beads'?' · '+t('beadRound',{n:state.beadRound}):'');$('#subtitle').textContent=t(state.view==='home'?'homeNote':state.view==='entry'||state.view==='choose'?'tagline':state.view==='morning'?'morningNote':`${state.view}Note`);
+  if(festivalPeriod&&state.view==='home')$('#subtitle').textContent=t(festivalShareKey());
   canvas.setAttribute('aria-label',t(sceneName()==='hall-front'?'sceneFront':sceneName()==='hall-side'?'sceneSide':'sceneCourt'));
   $('#notice').textContent='';updateBreathCue();if(state.view!=='choose')$('#entry-overlay').innerHTML='';
   if(state.view==='morning'){
@@ -455,10 +456,10 @@ document.addEventListener('click',async e=>{
     case 'change':changeVisitor();break;
     case 'previous':changeVisitor(-1);break;
     case 'continue':{write('ct-visitor',state.visitor);referrals.event('enter');const bound=await referrals.enter();if(bound)event('referral_bound',bound);if(morning.shouldShow()&&!pendingLaunchActivity){morning.start();await navigate('morning');break;}const target=pendingLaunchActivity||'home';pendingLaunchActivity='';await navigate(target);break;}
-    case 'morning-start':{const status=$('#morning-bell-status');if(status)status.textContent=t('morningBell');audio.strike('bell',.8);const next=morning.bellDone();setTimeout(async()=>{if(morning.isActive())await navigate(next);},3200);break;}
-    case 'morning-skip':{morning.end();await navigate('home');break;}
+    case 'morning-start':{state.bowTarget=3;state.sitMinutes=1;const status=$('#morning-bell-status');if(status)status.textContent=t('morningBell');audio.strike('bell',.8);const next=morning.bellDone();setTimeout(async()=>{if(morning.isActive())await navigate(next);},3200);break;}
+    case 'morning-skip':{morning.skip('morning');await navigate('home');break;}
     case 'morning-skip-step':{const step=b.dataset.step;const r=morning.skip(step);if(r)await navigate(r.navigate);else await navigate('home');break;}
-    case 'morning-replay':{morning.replay();await navigate('morning');break;}
+    case 'morning-replay':{if($('#more-menu').open)$('#more-menu').close();morning.replay();await navigate('morning');break;}
     case 'flower-toggle':writeFlower(readFlower()==='hoa-mai'?'hoa-dao':'hoa-mai');render();break;
     case 'incense':case 'bow':case 'sit':case 'beads':case 'mo':case 'home':await navigate(action);break;
     case 'leave':audio.strike('bell',.5);await navigate('leave');break;
