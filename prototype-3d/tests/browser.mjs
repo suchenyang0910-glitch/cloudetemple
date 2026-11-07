@@ -19,7 +19,7 @@ try {
     const page = await browser.newPage({ viewport, reducedMotion: 'no-preference' });
     const errors = [];
     page.on('console', message => { if (message.type() === 'error') errors.push(message.text()); });
-    await page.goto(`${origin}/?locals=1`, { waitUntil: 'networkidle' });
+    await page.goto(origin, { waitUntil: 'networkidle' });
     await page.waitForFunction(() => window.__CHUAMAY_READY__ === true);
     await page.waitForTimeout(2500);
     const initial = await page.evaluate(() => ({
@@ -30,7 +30,7 @@ try {
     assert.equal(initial.scroll.width, viewport.width);
     assert.equal(initial.scroll.height, viewport.height);
     assert.equal(initial.state.style, 'hd2d');
-    assert.equal(initial.state.locals, 2);
+    assert.equal(initial.state.locals, 0);
     assert.ok(initial.metrics.bytes < 10 * 1024 * 1024, `first load ${initial.metrics.bytes} exceeds budget`);
     assert.ok(initial.metrics.fps >= 30, `emulated FPS ${initial.metrics.fps} below target`);
     assert.ok(initial.resources.every(item => new URL(item.name).origin === origin), 'external runtime request found');

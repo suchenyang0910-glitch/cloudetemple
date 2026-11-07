@@ -96,7 +96,7 @@ def main() -> None:
     for index, height in enumerate((470, 430, 300), 1):
         save_frame(Image.open(APP_ASSETS / f"visitor-bun-light-bow-{index}.webp").convert("RGBA"), f"bow-{index}", height)
     save_frame(Image.open(APP_ASSETS / "visitor-bun-light-sit.webp").convert("RGBA"), "sit", 565)
-    save_frame(clean_generated(Image.open(SOURCE / "visitor-sit-side.png")), "sit-side", 565)
+    save_frame(clean_generated(Image.open(SOURCE / "visitor-sit-side-no-cushion.png")), "sit-side", 525)
 
     hall = Image.open(PACK / "hall-front-day-no-buddha.png").convert("RGB")
     courtyard = Image.open(APP_ASSETS / "scene-vn-courtyard-day.webp").convert("RGB")

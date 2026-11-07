@@ -80,14 +80,41 @@ function createHall() {
   const hall = new THREE.Group();
   const woodMap = loadTexture('assets/scene/hall-roof.webp');
   const floorMap = loadTexture('assets/scene/hall-floor.webp');
+  const floorCanvas = document.createElement('canvas');
+  floorCanvas.width = floorCanvas.height = 512;
+  const floorContext = floorCanvas.getContext('2d');
+  floorContext.fillStyle = '#9b765d';
+  floorContext.fillRect(0, 0, 512, 512);
+  for (let row = 0; row < 8; row += 1) {
+    floorContext.fillStyle = row % 2 ? 'rgba(236,211,180,.055)' : 'rgba(74,47,32,.035)';
+    floorContext.fillRect(0, row * 64, 512, 64);
+    floorContext.strokeStyle = 'rgba(63,42,29,.24)';
+    floorContext.beginPath();
+    floorContext.moveTo(0, row * 64);
+    floorContext.lineTo(512, row * 64);
+    floorContext.stroke();
+    for (let x = row % 2 ? 64 : 0; x < 512; x += 128) {
+      floorContext.beginPath();
+      floorContext.moveTo(x, row * 64);
+      floorContext.lineTo(x, row * 64 + 64);
+      floorContext.stroke();
+    }
+  }
+  const cleanFloorMap = new THREE.CanvasTexture(floorCanvas);
+  cleanFloorMap.colorSpace = THREE.SRGBColorSpace;
+  cleanFloorMap.wrapS = cleanFloorMap.wrapT = THREE.MirroredRepeatWrapping;
+  cleanFloorMap.repeat.set(3, 4);
   const wood = material(STYLE.wood, woodMap);
   const stone = material(STYLE.stone, floorMap);
 
-  addMesh(hall, new THREE.BoxGeometry(18, .32, 8.4), stone, [0, .08, -6.2], null, null, false);
-  addTexturedPlane(hall, 'assets/scene/hall-floor.webp', 17.7, 8.1, [0, .251, -6.2], 1, [-Math.PI / 2, 0, 0]);
-  addTexturedPlane(hall, 'assets/scene/hall-wall.webp', 11.8, 6.3, [0, 3.25, -10.15]);
-  addTexturedPlane(hall, 'assets/scene/hall-mountain-left.webp', 3.2, 6.1, [-7.5, 3.15, -9.96]);
-  addTexturedPlane(hall, 'assets/scene/hall-mountain-right.webp', 3.2, 6.1, [7.5, 3.15, -9.96]);
+  addMesh(hall, new THREE.BoxGeometry(18, .32, 12.4), stone, [0, .08, -4.2], null, null, false);
+  addMesh(hall, new THREE.PlaneGeometry(17.7, 12.1), new THREE.MeshBasicMaterial({ map: cleanFloorMap, toneMapped: false }), [0, .251, -4.2], [-Math.PI / 2, 0, 0], null, false);
+  addMesh(hall, new THREE.PlaneGeometry(18.4, 6.5), new THREE.MeshBasicMaterial({ color: STYLE.paper }), [0, 3.25, -10.22], null, null, false);
+  addTexturedPlane(hall, 'assets/scene/hall-wall.webp', 12.2, 6.3, [0, 3.25, -10.18]);
+  addTexturedPlane(hall, 'assets/scene/hall-mountain-left.webp', 3.45, 6.1, [-7.65, 3.15, -10.17]);
+  addTexturedPlane(hall, 'assets/scene/hall-mountain-right.webp', 3.45, 6.1, [7.65, 3.15, -10.17]);
+  addTexturedPlane(hall, 'assets/scene/courtyard-mist.webp', 8.8, 7, [-8.95, 3.4, -5.8], 1, [0, Math.PI / 2, 0]);
+  addTexturedPlane(hall, 'assets/scene/courtyard-mist.webp', 8.8, 7, [8.95, 3.4, -5.8], 1, [0, -Math.PI / 2, 0]);
   addTexturedPlane(hall, 'assets/scene/hall-roof.webp', 18.8, 7.1, [0, 6.28, -7.55], 1, [-Math.PI / 2, 0, 0]);
 
   const columnProfile = [[.35, 0], [.43, .1], [.46, .22], [.34, .34], [.25, .43], [.22, 5.25], [.27, 5.36]];
@@ -108,9 +135,34 @@ function createHall() {
   const lampProfile = [[.18, 0], [.28, .08], [.19, .18], [.17, .46], [.43, .58], [.31, .78], [.18, .86]];
   for (const x of [-1.9, 1.9]) addLathe(hall, lampProfile, 14, material(0x8a7254, loadTexture('assets/scene/lotus-oil-lamp.webp')), [x, 1.55, -8.85], .58);
 
-  const cushion = material(0xb59b78, loadTexture('assets/scene/meditation-cushion.webp'));
+  const weave = document.createElement('canvas');
+  weave.width = weave.height = 256;
+  const weaveContext = weave.getContext('2d');
+  weaveContext.fillStyle = '#b8b39f';
+  weaveContext.fillRect(0, 0, 256, 256);
+  weaveContext.strokeStyle = 'rgba(107,91,59,.24)';
+  weaveContext.lineWidth = 2;
+  for (let radius = 18; radius < 128; radius += 11) {
+    weaveContext.beginPath();
+    weaveContext.arc(128, 128, radius, 0, Math.PI * 2);
+    weaveContext.stroke();
+  }
+  weaveContext.strokeStyle = 'rgba(245,236,205,.28)';
+  for (let angle = 0; angle < Math.PI * 2; angle += Math.PI / 18) {
+    weaveContext.beginPath();
+    weaveContext.moveTo(128, 128);
+    weaveContext.lineTo(128 + Math.cos(angle) * 126, 128 + Math.sin(angle) * 126);
+    weaveContext.stroke();
+  }
+  const weaveTexture = new THREE.CanvasTexture(weave);
+  weaveTexture.colorSpace = THREE.SRGBColorSpace;
+  const cushionTop = new THREE.MeshToonMaterial({ color: 0xc9c5b8, map: weaveTexture });
+  const cushionSide = new THREE.MeshToonMaterial({ color: 0xa9a596 });
   for (const [x, z] of [[-2.7, -4], [0, -4], [2.7, -4], [-2.7, -2.15], [0, -2.15], [2.7, -2.15]]) {
-    addMesh(hall, new THREE.CylinderGeometry(.65, .72, .16, 24), cushion, [x, .34, z]);
+    const cushion = new THREE.Mesh(new THREE.CylinderGeometry(.7, .72, .16, 32), [cushionSide, cushionTop, cushionSide]);
+    cushion.position.set(x, .34, z);
+    cushion.castShadow = cushion.receiveShadow = true;
+    hall.add(cushion);
   }
   const seatStone = material(0xc5b79f, floorMap);
   addMesh(hall, new THREE.BoxGeometry(3.5, .3, 1.55), seatStone, [0, 1.72, -9.55]);

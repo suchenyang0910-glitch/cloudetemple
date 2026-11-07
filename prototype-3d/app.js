@@ -183,11 +183,11 @@ function updateCamera(delta) {
   const ritual = !walking && ['incense', 'palms', 'bow', 'sit'].includes(action);
   const toBuddha = BUDDHA_POSITION.clone().sub(visitor.position).setY(0).normalize();
   const side = new THREE.Vector3(-toBuddha.z, 0, toBuddha.x);
-  const ritualDistance = Math.max(cameraDistance, action === 'bow' ? 8.8 : 8.35);
+  const ritualDistance = Math.max(cameraDistance, action === 'bow' ? 9.2 : 8.9);
   const desired = ritual
     ? visitor.position.clone().addScaledVector(toBuddha, -ritualDistance * .25).addScaledVector(side, ritualDistance * .43).add(new THREE.Vector3(0, ritualDistance * .55, 0))
     : visitor.position.clone().addScaledVector(behind, -cameraDistance).add(new THREE.Vector3(cameraDistance * .3, cameraDistance * .68, 0));
-  const fieldOfView = ritual ? 72 : 44;
+  const fieldOfView = ritual ? 80 : 44;
   if (world.camera.fov !== fieldOfView) {
     world.camera.fov = fieldOfView;
     world.camera.updateProjectionMatrix();
@@ -195,7 +195,7 @@ function updateCamera(delta) {
   const factor = reduced ? 1 : 1 - Math.pow(.001, delta);
   world.camera.position.lerp(desired, factor);
   const look = ritual
-    ? visitor.position.clone().addScaledVector(toBuddha, 1.75).add(new THREE.Vector3(0, action === 'bow' ? 1.35 : 1.8, 0))
+    ? visitor.position.clone().addScaledVector(toBuddha, 2.2).add(new THREE.Vector3(0, action === 'bow' ? 1.35 : 1.8, 0))
     : visitor.position.clone().add(new THREE.Vector3(0, 2.15, -1.8));
   world.camera.lookAt(look);
   setVisitorView(visitor, world.camera, ritual ? 'ritual' : 'free', BUDDHA_POSITION);
