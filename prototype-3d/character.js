@@ -4,7 +4,7 @@ import * as THREE from './vendor/three.module.min.js';
 const loader = new THREE.TextureLoader();
 const FRAME_NAMES = [
   'stand-front', 'stand-side', 'stand-back', 'walk-side-1', 'walk-side-2',
-  'walk-back-1', 'walk-back-2', 'palms', 'bow-1', 'bow-2', 'bow-3', 'sit'
+  'walk-back-1', 'walk-back-2', 'palms', 'bow-1', 'bow-2', 'bow-3', 'sit', 'sit-side'
 ];
 const FRAMES = Object.fromEntries(FRAME_NAMES.map(name => {
   const texture = loader.load(`assets/visitor/${name}.webp`);
@@ -12,6 +12,14 @@ const FRAMES = Object.fromEntries(FRAME_NAMES.map(name => {
   texture.minFilter = THREE.LinearMipmapLinearFilter;
   texture.magFilter = THREE.LinearFilter;
   return [name, texture];
+}));
+const FLIPPED_FRAMES = Object.fromEntries(Object.entries(FRAMES).map(([name, texture]) => {
+  const flipped = texture.clone();
+  flipped.wrapS = THREE.RepeatWrapping;
+  flipped.repeat.x = -1;
+  flipped.offset.x = 1;
+  flipped.needsUpdate = true;
+  return [name, flipped];
 }));
 
 function shadowTexture() {
@@ -33,12 +41,13 @@ const SHADOW = shadowTexture();
 
 function setFrame(visitor, name, flip = false) {
   const rig = visitor.userData.rig;
-  if (rig.frame !== name) {
-    rig.sprite.material.map = FRAMES[name];
+  if (rig.frame !== name || rig.frameFlip !== flip) {
+    rig.sprite.material.map = flip ? FLIPPED_FRAMES[name] : FRAMES[name];
     rig.sprite.material.needsUpdate = true;
     rig.frame = name;
+    rig.frameFlip = flip;
   }
-  rig.sprite.scale.x = (flip ? -1 : 1) * rig.size;
+  rig.sprite.scale.x = rig.size;
 }
 
 export function createVisitor({ ghost = false } = {}) {
@@ -63,12 +72,19 @@ export function createVisitor({ ghost = false } = {}) {
   shadow.position.y = .012;
   shadow.renderOrder = 2;
   group.add(shadow);
-  group.userData.rig = { sprite, shadow, size, frame: 'stand-back', view: 'back', flip: false, state: 'stand' };
+  group.userData.rig = { sprite, shadow, size, frame: 'stand-back', frameFlip: false, view: 'back', flip: false, state: 'stand' };
   return group;
 }
 
-export function setVisitorView(visitor, camera) {
+export function setVisitorView(visitor, camera, mode = 'free', buddha = null) {
   const rig = visitor.userData.rig;
+  if (mode === 'ritual' && buddha) {
+    const visitorScreen = visitor.position.clone().add(new THREE.Vector3(0, 1.3, 0)).project(camera);
+    const buddhaScreen = buddha.clone().project(camera);
+    rig.view = 'side';
+    rig.flip = buddhaScreen.x > visitorScreen.x;
+    return;
+  }
   const forward = new THREE.Vector3(Math.sin(visitor.rotation.y), 0, Math.cos(visitor.rotation.y));
   const toCamera = camera.position.clone().sub(visitor.position).setY(0).normalize();
   const facing = forward.dot(toCamera);
@@ -92,7 +108,7 @@ export function poseVisitor(visitor, state, phase = 0, reduced = false) {
     if (!reduced) rig.sprite.position.y += Math.abs(Math.sin(phase * Math.PI * 5.5)) * .035;
     return;
   }
-  if (state === 'sit') { setFrame(visitor, 'sit'); rig.shadow.scale.set(1.18, 1.18, 1); return; }
+  if (state === 'sit') { setFrame(visitor, 'sit-side', rig.flip); rig.shadow.scale.set(1.18, 1.18, 1); return; }
   if (state === 'palms' || state === 'incense') { setFrame(visitor, 'palms', rig.flip); return; }
   if (state === 'bow') {
     const cycle = reduced ? 3.2 : phase % 3.6;

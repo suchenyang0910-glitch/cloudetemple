@@ -3,7 +3,7 @@ import { spawn } from 'node:child_process';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { chromium } from 'playwright';
 
-const port = 4181;
+const port = Number(process.env.PORT || 4181);
 const origin = `http://127.0.0.1:${port}`;
 const server = spawn(process.execPath, ['tools/serve.mjs'], { cwd: new URL('..', import.meta.url), env: { ...process.env, PORT: String(port) }, stdio: 'ignore' });
 await new Promise(resolve => setTimeout(resolve, 500));
@@ -13,7 +13,9 @@ await mkdir(evidence, { recursive: true });
 const report = [];
 
 try {
-  for (const viewport of [{ width: 375, height: 548 }, { width: 393, height: 659 }]) {
+  const viewports = [{ width: 375, height: 548 }, { width: 393, height: 659 }]
+    .filter(viewport => !process.env.VIEWPORT_WIDTH || viewport.width === Number(process.env.VIEWPORT_WIDTH));
+  for (const viewport of viewports) {
     const page = await browser.newPage({ viewport, reducedMotion: 'no-preference' });
     const errors = [];
     page.on('console', message => { if (message.type() === 'error') errors.push(message.text()); });
@@ -44,13 +46,28 @@ try {
 
     await page.getByRole('button', { name: 'Thắp hương' }).click();
     await page.waitForTimeout(900);
-    assert.equal((await page.evaluate(() => window.__CHUAMAY_STATE__)).action, 'palms');
+    const incense = await page.evaluate(() => ({ state: window.__CHUAMAY_STATE__, hint: getComputedStyle(document.querySelector('#walk-hint')).display }));
+    assert.equal(incense.state.action, 'palms');
+    assert.equal(incense.state.visitorView, 'side');
+    assert.equal(incense.state.visitorFlip, true);
+    assert.equal(incense.hint, 'none');
     await page.screenshot({ path: new URL(`incense-${viewport.width}x${viewport.height}.png`, evidence).pathname.slice(1) });
 
     await page.keyboard.press('b');
     await page.waitForTimeout(1850);
-    assert.equal((await page.evaluate(() => window.__CHUAMAY_STATE__)).action, 'bow');
+    const bow = await page.evaluate(() => window.__CHUAMAY_STATE__);
+    assert.equal(bow.action, 'bow');
+    assert.equal(bow.visitorView, 'side');
+    assert.equal(bow.visitorFlip, true);
     await page.screenshot({ path: new URL(`bow-mid-${viewport.width}x${viewport.height}.png`, evidence).pathname.slice(1) });
+
+    await page.keyboard.press('c');
+    await page.waitForTimeout(1100);
+    const sit = await page.evaluate(() => window.__CHUAMAY_STATE__);
+    assert.equal(sit.action, 'sit');
+    assert.equal(sit.visitorView, 'side');
+    assert.equal(sit.visitorFlip, true);
+    await page.screenshot({ path: new URL(`sit-side-${viewport.width}x${viewport.height}.png`, evidence).pathname.slice(1) });
 
     const downloadPromise = page.waitForEvent('download');
     await page.getByRole('button', { name: 'FPS' }).click();
@@ -61,7 +78,7 @@ try {
     report.push({ viewport, initial: initial.metrics, afterWalk: near, externalRequests: 0 });
     await page.close();
   }
-  await writeFile(new URL('browser-report.json', evidence), `${JSON.stringify(report, null, 2)}\n`);
+  await writeFile(new URL(process.env.VIEWPORT_WIDTH ? `browser-report-${process.env.VIEWPORT_WIDTH}.json` : 'browser-report.json', evidence), `${JSON.stringify(report, null, 2)}\n`);
   console.log(JSON.stringify(report, null, 2));
 } finally {
   await browser.close();

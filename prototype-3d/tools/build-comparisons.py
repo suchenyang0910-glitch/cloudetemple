@@ -8,13 +8,14 @@ from PIL import Image, ImageDraw, ImageFont
 ROOT = Path(__file__).resolve().parents[1]
 EVIDENCE = ROOT / "evidence"
 OUT = EVIDENCE / "hd2d"
-BASELINE = EVIDENCE / "walk-30s.mp4"
-CURRENT = EVIDENCE / "walk-hd2d-30s.mp4"
+BASELINE = EVIDENCE / "walk-hd2d-round2-30s.mp4"
+CURRENT = EVIDENCE / "walk-hd2d-round3-30s.mp4"
 FRAMES = {
     "courtyard-walk": (2.0, 2.0),
-    "hall-front": (9.0, 9.0),
-    "incense": (17.0, 11.0),
-    "bow-mid": (22.5, 18.0),
+    "hall-front": (8.7, 8.7),
+    "incense": (11.0, 11.0),
+    "bow-mid": (18.0, 18.0),
+    "sit": (26.0, 26.0),
 }
 
 
@@ -40,9 +41,9 @@ def main() -> None:
             canvas = Image.new("RGB", (old.width + new.width, height + 42), "#e8e0d1")
             canvas.paste(old, (0, 42)); canvas.paste(new, (old.width, 42))
             draw = ImageDraw.Draw(canvas)
-            draw.text((12, 9), "Round 1 - procedural 3D", fill="#3d3933", font=font)
-            draw.text((old.width + 12, 9), "Round 2 - HD-2D", fill="#3d3933", font=font)
-            canvas.save(OUT / f"comparison-{name}.png", optimize=True)
+            draw.text((12, 9), "Round 2 - HD-2D", fill="#3d3933", font=font)
+            draw.text((old.width + 12, 9), "Round 3 - cultural framing fix", fill="#3d3933", font=font)
+            canvas.save(OUT / f"comparison-round2-round3-{name}.png", optimize=True)
 
 
 if __name__ == "__main__":

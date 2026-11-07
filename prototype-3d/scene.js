@@ -3,8 +3,8 @@ import { createVisitor, poseVisitor } from './character.js';
 
 
 const STYLE = Object.freeze({
-  sky: 0xc7ccc2, fog: 0xd8d7cb, paper: 0xe8e0d1, ink: 0x3d3933,
-  wood: 0x71583f, stone: 0xaaa392, bronze: 0x786650, grain: .065
+  sky: 0xd9ddd5, fog: 0xe3e1d8, paper: 0xeee7da, ink: 0x514a40,
+  wood: 0xe1ceb6, stone: 0xc8ccc5, bronze: 0xb79a62, grain: .055
 });
 const loader = new THREE.TextureLoader();
 const textures = new Map();
@@ -26,7 +26,7 @@ function material(color, map = null, opacity = 1) {
   });
 }
 
-const outlineMaterial = new THREE.MeshBasicMaterial({ color: STYLE.ink, side: THREE.BackSide, transparent: true, opacity: .42 });
+const outlineMaterial = new THREE.MeshBasicMaterial({ color: STYLE.ink, side: THREE.BackSide, transparent: true, opacity: .28 });
 
 function addMesh(group, geometry, meshMaterial, position, rotation = null, scale = null, outline = true) {
   const mesh = new THREE.Mesh(geometry, meshMaterial);
@@ -98,9 +98,12 @@ function createHall() {
   addMesh(hall, new THREE.BoxGeometry(4.8, .92, 1.45), wood, [0, 1.04, -9.12]);
   addTexturedPlane(hall, 'assets/scene/altar-table.webp', 4.5, 2.25, [0, 1.34, -8.36]);
 
-  const burnerProfile = [[.24, 0], [.45, .08], [.56, .3], [.53, .62], [.38, .83], [.36, .95]];
-  addLathe(hall, burnerProfile, 16, material(STYLE.bronze, loadTexture('assets/scene/incense-burner.webp')), [0, .28, -6.48], .58);
-  for (const x of [-.1, 0, .1]) addMesh(hall, new THREE.CylinderGeometry(.01, .013, .78, 5), material(0x75503a), [x, 1.03, -6.48], null, null, false);
+  const bronze = material(STYLE.bronze);
+  const burnerProfile = [[.26, 0], [.46, .08], [.58, .32], [.55, .64], [.4, .84], [.38, .96]];
+  addLathe(hall, burnerProfile, 18, bronze, [0, 2.45, -8.08], .66);
+  for (const x of [-.43, .43]) addMesh(hall, new THREE.TorusGeometry(.2, .055, 6, 16), bronze, [x, 2.91, -8.08], [0, Math.PI / 2, 0], null, false);
+  for (const [x, z] of [[-.27, -.12], [.27, -.12], [0, .18]]) addMesh(hall, new THREE.CylinderGeometry(.045, .07, .3, 7), bronze, [x, 2.41, -8.08 + z], null, null, false);
+  for (const x of [-.11, 0, .11]) addMesh(hall, new THREE.CylinderGeometry(.012, .015, .74, 5), material(0x8b5d42), [x, 3.4, -8.08], null, null, false);
 
   const lampProfile = [[.18, 0], [.28, .08], [.19, .18], [.17, .46], [.43, .58], [.31, .78], [.18, .86]];
   for (const x of [-1.9, 1.9]) addLathe(hall, lampProfile, 14, material(0x8a7254, loadTexture('assets/scene/lotus-oil-lamp.webp')), [x, 1.55, -8.85], .58);
@@ -109,11 +112,21 @@ function createHall() {
   for (const [x, z] of [[-2.7, -4], [0, -4], [2.7, -4], [-2.7, -2.15], [0, -2.15], [2.7, -2.15]]) {
     addMesh(hall, new THREE.CylinderGeometry(.65, .72, .16, 24), cushion, [x, .34, z]);
   }
-  const silhouette = new THREE.MeshBasicMaterial({ color: STYLE.ink, transparent: true, opacity: .56, depthWrite: false, side: THREE.DoubleSide });
-  addMesh(hall, new THREE.RingGeometry(1.25, 1.31, 48), new THREE.MeshBasicMaterial({ color: 0xb79b62, transparent: true, opacity: .25, depthWrite: false, side: THREE.DoubleSide }), [0, 4.15, -9.86], null, null, false);
-  addMesh(hall, new THREE.CircleGeometry(.34, 32), silhouette, [0, 5.05, -9.84], null, null, false);
-  addMesh(hall, new THREE.CircleGeometry(1, 40), silhouette, [0, 4.08, -9.84], null, [.86, 1.12, 1], false);
-  addMesh(hall, new THREE.CircleGeometry(1, 40), silhouette, [0, 3.28, -9.83], null, [1.36, .5, 1], false);
+  const seatStone = material(0xc5b79f, floorMap);
+  addMesh(hall, new THREE.BoxGeometry(3.5, .3, 1.55), seatStone, [0, 1.72, -9.55]);
+  addMesh(hall, new THREE.BoxGeometry(2.9, .27, 1.22), seatStone, [0, 2, -9.57]);
+  addMesh(hall, new THREE.BoxGeometry(2.35, .24, .96), seatStone, [0, 2.25, -9.6]);
+  addMesh(hall, new THREE.CylinderGeometry(1.05, 1.17, .22, 32), material(0xbca780), [0, 2.47, -9.61]);
+  const silhouette = new THREE.MeshBasicMaterial({ color: 0xc8ad78, transparent: true, opacity: .7, depthWrite: false, side: THREE.DoubleSide });
+  addMesh(hall, new THREE.CircleGeometry(1.58, 48), new THREE.MeshBasicMaterial({ color: 0xe1c77f, transparent: true, opacity: .12, depthWrite: false, side: THREE.DoubleSide }), [0, 3.82, -9.9], null, null, false);
+  addMesh(hall, new THREE.RingGeometry(1.25, 1.31, 48), new THREE.MeshBasicMaterial({ color: 0xd4b66d, transparent: true, opacity: .42, depthWrite: false, side: THREE.DoubleSide }), [0, 3.88, -9.86], null, null, false);
+  addMesh(hall, new THREE.CircleGeometry(.29, 32), silhouette, [0, 4.42, -9.82], null, null, false);
+  addMesh(hall, new THREE.CircleGeometry(1, 40), silhouette, [0, 3.58, -9.82], null, [.58, .82, 1], false);
+  addMesh(hall, new THREE.CircleGeometry(1, 40), silhouette, [-.48, 2.92, -9.81], null, [.72, .34, 1], false);
+  addMesh(hall, new THREE.CircleGeometry(1, 40), silhouette, [.48, 2.92, -9.81], null, [.72, .34, 1], false);
+  const haloLight = new THREE.PointLight(0xe5c77f, .85, 7, 2);
+  haloLight.position.set(0, 3.9, -9.35);
+  hall.add(haloLight);
   return hall;
 }
 
@@ -121,17 +134,18 @@ function createCourtyard() {
   const yard = new THREE.Group();
   const floorMap = loadTexture('assets/scene/courtyard-floor.webp');
   floorMap.wrapS = floorMap.wrapT = THREE.MirroredRepeatWrapping;
-  floorMap.repeat.set(1.35, 1.8);
-  addMesh(yard, new THREE.PlaneGeometry(30, 28), material(0xffffff, floorMap), [0, -.02, 7], [-Math.PI / 2, 0, 0], null, false);
-  addTexturedPlane(yard, 'assets/scene/courtyard-mist.webp', 17, 16.8, [-11.8, 6.6, 2], .7, [0, .45, 0]);
-  addTexturedPlane(yard, 'assets/scene/courtyard-mist.webp', 17, 16.8, [11.8, 6.6, 2], .7, [0, -.45, 0]);
-  const stone = material(STYLE.stone, loadTexture('assets/scene/column-stone-base.webp'));
+  floorMap.repeat.set(1.15, 1.35);
+  addMesh(yard, new THREE.PlaneGeometry(30, 28), material(0xb5beb9, floorMap), [0, -.02, 7], [-Math.PI / 2, 0, 0], null, false);
+  addTexturedPlane(yard, 'assets/scene/courtyard-mist.webp', 15.2, 15, [-11.2, 6.5, 1.8], .82, [0, .35, 0]);
+  addTexturedPlane(yard, 'assets/scene/courtyard-mist.webp', 15.2, 15, [11.2, 6.5, 1.8], .82, [0, -.35, 0]);
+  const stone = material(0x929f9a);
   for (let z = -1; z < 15; z += 1.65) addMesh(yard, new THREE.BoxGeometry(2.55, .08, 1.02), stone, [0, .035, z], [0, Math.sin(z * 2.1) * .025, 0]);
   const trunk = material(0x6a5039, loadTexture('assets/scene/hall-roof.webp'));
   addLathe(yard, [[.78, 0], [.9, .3], [.72, 2.5], [.58, 5.8]], 10, trunk, [-6.8, 0, 7.2]);
-  const leaves = material(0x66705c, loadTexture('assets/scene/courtyard-mist.webp'), .92);
+  const leafTones = [material(0x71806d), material(0x82917b), material(0x657463)];
+  let leafIndex = 0;
   for (const [x, y, z, s] of [[-6.4, 5.8, 7.1, 2], [-7.6, 5.4, 7, 1.7], [-5.5, 4.8, 6.8, 1.55], [-7.1, 4.2, 6.5, 1.6]]) {
-    addMesh(yard, new THREE.IcosahedronGeometry(1, 1), leaves, [x, y, z], null, [s, s * .72, s], false);
+    addMesh(yard, new THREE.IcosahedronGeometry(1, 1), leafTones[leafIndex++ % leafTones.length], [x, y, z], null, [s, s * .78, s], false);
   }
   return yard;
 }
@@ -174,14 +188,14 @@ export function createTempleWorld(canvas) {
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = .9;
+  renderer.toneMappingExposure = 1.08;
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(STYLE.sky);
   scene.fog = new THREE.FogExp2(STYLE.fog, .018);
   const camera = new THREE.PerspectiveCamera(44, 1, .1, 80);
   camera.position.set(7.4, 6.2, 14.5);
-  scene.add(new THREE.HemisphereLight(0xf3ead9, 0x5c6258, 2.45));
-  const sun = new THREE.DirectionalLight(0xffe2b7, 2.25);
+  scene.add(new THREE.HemisphereLight(0xfff4df, 0x7d8178, 2.75));
+  const sun = new THREE.DirectionalLight(0xffe8c7, 2.35);
   sun.position.set(-5, 12, 8);
   sun.castShadow = true;
   sun.shadow.mapSize.set(1024, 1024);

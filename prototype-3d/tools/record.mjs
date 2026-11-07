@@ -28,7 +28,7 @@ try {
     const due = started + (frame + 1) * 200;
     if (Date.now() < due) await page.waitForTimeout(due - Date.now());
   }
-  const output = resolve(evidence, 'walk-hd2d-30s.mp4');
+  const output = resolve(evidence, 'walk-hd2d-round3-30s.mp4');
   const encoded = spawnSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-y', '-framerate', '5', '-i', join(frames, 'frame-%03d.png'), '-vf', 'pad=ceil(iw/2)*2:ceil(ih/2)*2', '-c:v', 'libx264', '-crf', '23', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', output], { stdio: 'inherit' });
   if (encoded.status !== 0) throw new Error(`ffmpeg failed with ${encoded.status}`);
   console.log(output);

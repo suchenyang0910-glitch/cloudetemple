@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from PIL import Image, ImageChops
+from PIL import Image, ImageChops, ImageEnhance
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -58,8 +58,12 @@ def save_crop(image: Image.Image, box: tuple[int, int, int, int], name: str, siz
     image.crop(box).resize(size, Image.Resampling.LANCZOS).save(SCENE / name, "WEBP", quality=82, method=6)
 
 
-def save_cutout(path: Path, name: str, width: int = 512) -> None:
+def save_cutout(path: Path, name: str, width: int = 512, saturation: float = 1, brightness: float = 1) -> None:
     image = remove_white(Image.open(path))
+    if saturation != 1:
+        image = ImageEnhance.Color(image).enhance(saturation)
+    if brightness != 1:
+        image = ImageEnhance.Brightness(image).enhance(brightness)
     bounds = image.getchannel("A").getbbox()
     if not bounds:
         raise ValueError(f"empty cutout: {name}")
@@ -92,6 +96,7 @@ def main() -> None:
     for index, height in enumerate((470, 430, 300), 1):
         save_frame(Image.open(APP_ASSETS / f"visitor-bun-light-bow-{index}.webp").convert("RGBA"), f"bow-{index}", height)
     save_frame(Image.open(APP_ASSETS / "visitor-bun-light-sit.webp").convert("RGBA"), "sit", 565)
+    save_frame(clean_generated(Image.open(SOURCE / "visitor-sit-side.png")), "sit-side", 565)
 
     hall = Image.open(PACK / "hall-front-day-no-buddha.png").convert("RGB")
     courtyard = Image.open(APP_ASSETS / "scene-vn-courtyard-day.webp").convert("RGB")
@@ -103,7 +108,7 @@ def main() -> None:
     save_crop(courtyard, (0, 0, 941, 930), "courtyard-mist.webp", (768, 760))
     save_crop(courtyard, (0, 780, 941, 1672), "courtyard-floor.webp", (768, 728))
 
-    save_cutout(PACK / "objects" / "altar-table.png", "altar-table.webp")
+    save_cutout(PACK / "objects" / "altar-table.png", "altar-table.webp", saturation=.62, brightness=1.08)
     save_cutout(PACK / "objects" / "cloud-bracket.png", "cloud-bracket.webp")
     save_cutout(PACK / "objects" / "incense-burner.png", "incense-burner.webp")
     save_cutout(PACK / "objects" / "lotus-oil-lamp.png", "lotus-oil-lamp.webp")

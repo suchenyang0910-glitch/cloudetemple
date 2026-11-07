@@ -26,6 +26,7 @@ const raycaster = new THREE.Raycaster();
 const pointerNdc = new THREE.Vector2();
 const ground = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
 const point = new THREE.Vector3();
+const BUDDHA_POSITION = new THREE.Vector3(0, 3.5, -9.65);
 
 function boot() {
   try {
@@ -129,7 +130,8 @@ function setAction(next) {
   action = next;
   actionStart = performance.now();
   target = null;
-  if (next === 'palms' || next === 'bow' || next === 'incense') faceBuddha();
+  document.body.classList.toggle('ritual', ['incense', 'palms', 'bow', 'sit'].includes(next));
+  if (next === 'palms' || next === 'bow' || next === 'incense' || next === 'sit') faceBuddha();
 }
 
 function faceBuddha() {
@@ -178,15 +180,25 @@ function moveVisitor(delta, now) {
 function updateCamera(delta) {
   const visitor = world.visitor;
   const behind = new THREE.Vector3(Math.sin(visitor.rotation.y), 0, Math.cos(visitor.rotation.y));
-  const ritual = !walking && ['incense', 'palms', 'bow'].includes(action);
+  const ritual = !walking && ['incense', 'palms', 'bow', 'sit'].includes(action);
+  const toBuddha = BUDDHA_POSITION.clone().sub(visitor.position).setY(0).normalize();
+  const side = new THREE.Vector3(-toBuddha.z, 0, toBuddha.x);
+  const ritualDistance = Math.max(cameraDistance, action === 'bow' ? 8.8 : 8.35);
   const desired = ritual
-    ? visitor.position.clone().add(new THREE.Vector3(cameraDistance * .25, cameraDistance * .62, cameraDistance * .9))
+    ? visitor.position.clone().addScaledVector(toBuddha, -ritualDistance * .25).addScaledVector(side, ritualDistance * .43).add(new THREE.Vector3(0, ritualDistance * .55, 0))
     : visitor.position.clone().addScaledVector(behind, -cameraDistance).add(new THREE.Vector3(cameraDistance * .3, cameraDistance * .68, 0));
+  const fieldOfView = ritual ? 72 : 44;
+  if (world.camera.fov !== fieldOfView) {
+    world.camera.fov = fieldOfView;
+    world.camera.updateProjectionMatrix();
+  }
   const factor = reduced ? 1 : 1 - Math.pow(.001, delta);
   world.camera.position.lerp(desired, factor);
-  const look = visitor.position.clone().add(new THREE.Vector3(0, ritual ? 2.35 : 2.15, ritual ? -3 : -1.8));
+  const look = ritual
+    ? visitor.position.clone().addScaledVector(toBuddha, 1.75).add(new THREE.Vector3(0, action === 'bow' ? 1.35 : 1.8, 0))
+    : visitor.position.clone().add(new THREE.Vector3(0, 2.15, -1.8));
   world.camera.lookAt(look);
-  setVisitorView(visitor, world.camera);
+  setVisitorView(visitor, world.camera, ritual ? 'ritual' : 'free', BUDDHA_POSITION);
 }
 
 function updateContext() {
@@ -210,6 +222,8 @@ function frame(now) {
     style: 'hd2d',
     action: walking ? 'walk' : action,
     position: { x: world.visitor.position.x, z: world.visitor.position.z },
+    visitorView: world.visitor.userData.rig.view,
+    visitorFlip: world.visitor.userData.rig.frameFlip,
     zone: nearestZone(world.visitor.position.x, world.visitor.position.z)?.id || null,
     locals: world.locals.filter(local => local.visible).length
   };

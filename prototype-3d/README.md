@@ -35,3 +35,5 @@ npm run serve
 - 本目录不接入 H5、Mini App、staging 主站导航或正式环境。
 
 素材来源与补帧提示词见 `assets/ASSET-SOURCES.md` 和 `assets/IMAGEGEN-PROMPTS.md`。
+
+第三轮文化朝向、佛座、香炉、构图与色调修正的验证边界见 `技术验证报告-HD2D-第三轮.md`。
