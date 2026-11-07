@@ -67,7 +67,7 @@ export function periodNow(date=new Date(),periods=state.layout?.periods??{dawn:"
   return 'day';
 }
 export function placement(layout,id,pose){
-  if(pose==='stand')return {x:351,y:1041,w:240,h:360};
+  if(pose==='stand')return {x:193,y:1018,w:240,h:360};
   if(pose.startsWith('bow-')||pose.startsWith('mo-')){
     const s=layout['hall-side'],scale=s.bowCanvasWidth/s.sourceCanvas[0];
     return {x:s.foot[0]-s.anchor[0]*scale,y:s.foot[1]-s.anchor[1]*scale-(pose.startsWith('mo-')?55:0),w:s.sourceCanvas[0]*scale,h:s.sourceCanvas[1]*scale};
@@ -203,7 +203,7 @@ function render(){
   $('#sound-controls').hidden=!audio.enabled;
   $('#eyebrow').textContent=t(state.period);
   const heading=state.view==='entry'?'entryTitle':state.view==='choose'?'choose':state.view==='home'?'home':state.view==='morning'?'morningTitle':state.view;
-  $('#heading').textContent=t(heading)+(state.view==='beads'?' · '+t('beadRound',{n:state.beadRound}):'');$('#subtitle').textContent=t(state.view==='home'?'homeNote':state.view==='entry'||state.view==='choose'?'tagline':state.view==='morning'?'morningNote':`${state.view}Note`);
+  $('#heading').textContent=t(heading)+(state.view==='beads'?' · '+t('beadRound',{n:state.beadRound}):'');$('#subtitle').textContent=t(state.view==='home'?'homeNote':state.view==='entry'?'entryGuide':state.view==='choose'?'tagline':state.view==='morning'?'morningNote':`${state.view}Note`);
   if(festivalPeriod&&state.view==='home')$('#subtitle').textContent=t(festivalShareKey());
   canvas.setAttribute('aria-label',t(sceneName()==='hall-front'?'sceneFront':sceneName()==='hall-side'?'sceneSide':'sceneCourt'));
   $('#notice').textContent='';updateBreathCue();if(state.view!=='choose')$('#entry-overlay').innerHTML='';
@@ -534,7 +534,7 @@ async function init(){
   window.addEventListener('ct-analytics-choice',()=>void referrals.sync());void referrals.sync();
   try{const response=await fetch(assetURL('processed-v1/layout-v1.json'),{credentials:'omit'});if(!response.ok)throw new Error('layout');state.layout=await response.json();const saved=read('ct-visitor',null);state.visitor=state.layout.v1_scope.visitors.includes(saved)?saved:state.layout.v1_scope.visitors[Math.floor(Math.random()*6)];state.period=periodNow();resolveLayout();
   const ring=(count,newYear=false)=>{if(state.view==='sit'&&state.activity?.running){audio.strike('bell',.22);return;}if(newYear)showNewYearBanner();for(let i=0;i<count;i++)setTimeout(()=>audio.strike('bell',.6),i*1500);};
-  newYearBell=createNewYearBell({onBell:count=>ring(count),onNewYear:count=>{launchLanterns();ring(count,true);}});if(!transitionId)await navigate('entry');}
+  newYearBell=createNewYearBell({onBell:count=>ring(count),onNewYear:count=>{launchLanterns();ring(count,true);}});if(!transitionId)await navigate('entry');if(!read('ct-sound-hint-seen',false)){write('ct-sound-hint-seen',true);showSoundHint('soundFirstHint',5000);}}
   catch{finishBoot();$('#loading').hidden=true;$('#notice').textContent=t('loadError');$('#controls').innerHTML=button('retry','reload');$('#controls').onclick=e=>{if(e.target.dataset.action==='reload')location.reload();};$('#app').setAttribute('aria-busy','false');}
 }
 function finishBoot(){const boot=$('#boot');if(!boot)return;performance.mark('ct-interactive');boot.classList.add('ready');setTimeout(()=>boot.remove(),350);}

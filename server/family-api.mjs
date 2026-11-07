@@ -58,7 +58,7 @@ const validEmail = (v) =>
   typeof v === "string" &&
   v.length <= 254 &&
   /^[^\s@<>]+@[^\s@<>.]+(?:\.[^\s@<>.]+)+$/.test(v);
-const CONSENT_VERSION = "pilot-2026-11-07-v1";
+const CONSENT_VERSION = "pilot-2026-11-07-v2";
 const forbiddenPresale = /công đức|hòm công đức|功德箱|积功德|消灾|保佑|祈福有效|功德圆满/iu;
 const text = (value, max, required = true) => {
   const result = String(value || "").normalize("NFC").trim();
@@ -156,6 +156,7 @@ function tabletInput(v) {
 }
 export function createFamilyApi(settings, family, dependencies = {}) {
   const calendarPdf = dependencies.calendarPdf || createFamilyCalendarPdf;
+  const metric = dependencies.metric || (() => {});
   const oauthRedirect = (res, reason) => {
     res.writeHead(302, {
       Location: `/family.html?auth=${encodeURIComponent(reason)}`,
@@ -530,6 +531,7 @@ export function createFamilyApi(settings, family, dependencies = {}) {
           "Cache-Control": "private, no-store",
           "Content-Disposition": 'inline; filename="chuamay.ics"',
         });
+        metric("ics_export");
         res.end(lines.join("\r\n"));
         return true;
       }
@@ -590,6 +592,7 @@ export function createFamilyApi(settings, family, dependencies = {}) {
           "Cache-Control": "private, no-store",
           "X-Content-Type-Options": "nosniff",
         });
+        metric("calendar_pdf_view");
         res.end(pdf);
         return true;
       }
@@ -670,6 +673,7 @@ export function createFamilyApi(settings, family, dependencies = {}) {
             new Date().getFullYear(),
             settings.lunarLeapRule,
           );
+          metric("memorial_view");
           return json(res, 200, { ok: true, tablet: m, solar: current }), true;
         }
         if (!child && req.method === "PATCH") {
@@ -701,6 +705,7 @@ export function createFamilyApi(settings, family, dependencies = {}) {
           if (!["incense", "flower", "fruit", "tea"].includes(v.kind))
             return json(res, 400, { ok: false, error: "kind" }), true;
           const count = family.offer(user.user_id, id, v.kind);
+          if (count != null) metric("offering_complete", v.kind);
           return json(res, count == null ? 403 : 201, count == null ? { ok: false, error: "owner" } : { ok: true, count }), true;
         }
         if (child === "invites" && req.method === "POST") {
@@ -726,11 +731,9 @@ export function createFamilyApi(settings, family, dependencies = {}) {
         }
       }
       if (route === "/family/invites/accept" && req.method === "POST") {
-        const v = await body(req),
-          joined = family.acceptInvite(
-            user.user_id,
-            hash(settings.hashSecret, String(v.token || "")),
-          );
+        const v = await body(req), tokenHash = hash(settings.hashSecret, String(v.token || "")), info = family.inviteInfo(tokenHash), wasMember = info ? !!family.member(user.user_id, info.tablet_id) : false,
+          joined = family.acceptInvite(user.user_id, tokenHash);
+        if (joined && !wasMember) metric("member_invite_accept");
         return (
           json(
             res,
@@ -762,6 +765,7 @@ export function createFamilyApi(settings, family, dependencies = {}) {
             icsHash: raw ? hash(settings.hashSecret, raw) : null,
           });
         if (v.calendar === false) family.revokeCalendar(user.user_id);
+        metric("reminder_set");
         return (
           json(res, 200, {
             ok: true,

@@ -19,7 +19,7 @@ const settings = {
   trustLocal: false,
   calendarPresale: { open: false },
 };
-const acceptConsent = (f, cookie, csrf) => f.request("/family/consent", { method: "POST", headers: { Cookie: cookie, "X-CSRF-Token": csrf }, body: JSON.stringify({ agree: true, version: "pilot-2026-11-07-v1" }) });
+const acceptConsent = (f, cookie, csrf) => f.request("/family/consent", { method: "POST", headers: { Cookie: cookie, "X-CSRF-Token": csrf }, body: JSON.stringify({ agree: true, version: "pilot-2026-11-07-v2" }) });
 async function fixture(dependencies, overrides = {}) {
   const configured = { ...settings, ...overrides };
   const store = openStore(":memory:"),
@@ -110,7 +110,7 @@ test("email code stays in protected outbox and session CRUD enforces CSRF", asyn
     () => familyServerText("otp_subject", { code: "123456" }),
     /family_copy_param/,
   );
-  const f = await fixture();
+  const metrics = [], f = await fixture({ metric: (...args) => metrics.push(args) });
   try {
     let r = await f.request("/family/auth/email/start", {
       method: "POST",
@@ -246,12 +246,19 @@ test("email code stays in protected outbox and session CRUD enforces CSRF", asyn
     assert.equal((await r.json()).tablet.id, tablet.id);
     r = await f.request("/family/tablets", { headers: { Cookie: cookie } });
     assert.equal((await r.json()).tablets.length, 1);
+    r = await f.request(`/family/tablets/${tablet.id}`, { headers: { Cookie: cookie } });
+    assert.equal(r.status, 200);
     r = await f.request(`/family/tablets/${tablet.id}/offerings`, {
       method: "POST",
       headers: { Cookie: cookie, "X-CSRF-Token": data.csrf },
       body: JSON.stringify({ kind: "incense" }),
     });
     assert.equal((await r.json()).count, 1);
+    r = await f.request(`/family/tablets/${tablet.id}/invites`, { method: "POST", headers: { Cookie: cookie, "X-CSRF-Token": data.csrf }, body: "{}" });
+    const inviteToken = new URL((await r.json()).url).hash.replace("#invite=", ""), guest = f.family.userFor("email", "guest-subject", "guest@example.invalid"), guestSession = "guest-session", guestCsrf = "guest-csrf";
+    f.family.session(hash(settings.hashSecret, guestSession), guest.id, Date.now() + 60000, "test", hash(settings.hashSecret, guestCsrf));
+    r = await f.request("/family/invites/accept", { method: "POST", headers: { Cookie: `ct_session=${guestSession}`, "X-CSRF-Token": guestCsrf }, body: JSON.stringify({ token: inviteToken }) });
+    assert.equal(r.status, 200);
     for (const payload of [
       { kind: "solar", day: 30, month: 2, year: 2026 },
       { kind: "lunar", day: 30, month: 2, year: 2026 },
@@ -293,6 +300,7 @@ test("email code stays in protected outbox and session CRUD enforces CSRF", asyn
     });
     assert.equal(r.status, 200);
     assert.equal((await f.request(calendarPath)).status, 404);
+    assert.deepEqual(metrics, [["memorial_view"], ["offering_complete", "incense"], ["member_invite_accept"], ["reminder_set"], ["ics_export"], ["reminder_set"]]);
     r = await f.request("/family/account", {
       method: "DELETE",
       headers: { Cookie: cookie, "X-CSRF-Token": data.csrf },
@@ -362,7 +370,7 @@ test("member privacy, removal, expiry and invite revocation are enforced", () =>
 });
 
 test("email login is rate limited and ICS is a private three-year feed", async () => {
-  const f = await fixture();
+  const metrics = [], f = await fixture({ metric: (...args) => metrics.push(args) });
   try {
     let r = await f.request("/family/auth/email/start", {
       method: "POST",
@@ -426,6 +434,7 @@ test("email login is rate limited and ICS is a private three-year feed", async (
     assert.equal(f.family.revokeCalendar(owner.id), true);
     r = await f.request("/family/calendar.ics?token=calendar-token");
     assert.equal(r.status, 404);
+    assert.deepEqual(metrics, [["ics_export"], ["ics_export"]]);
     const unsubscribe = `${owner.id}.${hash(
       settings.hashSecret,
       `unsubscribe:${owner.id}`,
@@ -471,12 +480,13 @@ test("every family write requires allowed Origin and JSON", async () => {
 });
 
 test("authenticated calendar PDF is private, bounded and generated without a third-party call", async () => {
-  let received;
+  let received; const metrics = [];
   const f = await fixture({
     calendarPdf: async (input) => {
       received = input;
       return Buffer.from("%PDF-1.7\nreview\n");
     },
+    metric: (...args) => metrics.push(args),
   });
   try {
     let r = await f.request("/family/auth/email/start", {
@@ -510,6 +520,7 @@ test("authenticated calendar PDF is private, bounded and generated without a thi
     assert.equal(received.familyName, "Gia đình họ Nguyễn");
     assert.equal(received.year, 2027);
     assert.equal(received.tablets.length, 1);
+    assert.deepEqual(metrics, [["calendar_pdf_view"]]);
   } finally {
     await new Promise((resolve) => f.server.close(resolve));
     f.store.close();
@@ -519,7 +530,7 @@ test("authenticated calendar PDF is private, bounded and generated without a thi
 test("pilot consent, invited read-only access and account deletion cascade are enforced", () => {
   const store = openStore(":memory:"), family = openFamilyStore(store.db), owner = family.userFor("email", "owner-subject", "owner@example.invalid", "Owner"), guest = family.userFor("email", "guest-subject", "guest@example.invalid", "Guest");
   try {
-    const consent = family.acceptConsent(owner.id, "pilot-2026-11-07-v1");
+    const consent = family.acceptConsent(owner.id, "pilot-2026-11-07-v2");
     assert.equal(family.consent(owner.id).version, consent.version);
     const tablet = family.createTablet(owner.id, { honorific: "Bà ngoại", fullName: "Nguyễn An", birthYear: null, deathYear: 2026, day: 12, month: 3, leap: false, note: "" });
     const inviteHash = "invite-hash";

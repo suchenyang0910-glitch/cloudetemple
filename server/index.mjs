@@ -29,7 +29,7 @@ const familyHandler =
         familyStore.cleanup();
         familyCleanup = setInterval(() => familyStore.cleanup(), 60000);
         familyCleanup.unref();
-        return createFamilyApi(settings, familyStore);
+        return createFamilyApi(settings, familyStore, { metric: (name, dimension) => metrics.count(name, dimension) });
       })()
     : async () => false;
 const access = settings.adminEnabled ? createAccessVerifier(settings) : { validate: async () => { throw Error("disabled"); } };

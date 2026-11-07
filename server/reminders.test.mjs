@@ -51,6 +51,8 @@ test("reminder delivery is idempotent", async () => {
       outbox[0].text_body,
       new RegExp(`${familyServerText("reminder_unsubscribe")}:`),
     );
+    assert.match(outbox[0].text_body, /family\.html\?s=reminder/);
+    assert.doesNotMatch(family.db.prepare("SELECT html_body FROM mail_outbox").get().html_body, /<img/i);
     assert.ok(
       outbox[0].text_body.includes(
         familyServerText("anniversary_reminder", {

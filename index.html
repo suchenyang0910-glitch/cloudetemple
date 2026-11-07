@@ -18,9 +18,7 @@
     .js-ready .home-content{display:none}
     #boot{position:fixed;inset:0;z-index:99;display:grid;place-items:center;background:#eee8dc;color:#453a2f;transition:opacity .28s;pointer-events:none}#boot.ready{opacity:0}#boot div{text-align:center}#boot strong{display:block;font:500 25px/1.4 Georgia,serif;letter-spacing:.03em}#boot p{margin:14px 0 0;font:14px/1.5 system-ui,sans-serif}#boot svg{width:84px;height:76px;overflow:visible}#boot path{fill:none;stroke:#766352;stroke-width:2;stroke-linecap:round;animation:boot-smoke 2.4s ease-in-out infinite}@keyframes boot-smoke{0%,100%{opacity:.28;transform:translateY(5px)}50%{opacity:.75;transform:translateY(-5px)}}@media(prefers-reduced-motion:reduce){#boot path{animation:none}#boot{transition:none}}
   </style>
-  <script>
-    (()=>{const d=new Date(),m=d.getHours()*60+d.getMinutes(),p=m>=300&&m<480?'dawn':m>=480&&m<1020?'day':m>=1020&&m<1140?'dusk':'night',r='__CT_RELEASE__',w=innerWidth<=720?Math.min(720,Math.ceil(innerWidth*(devicePixelRatio||1))):941,l=document.createElement('link');l.rel='preload';l.as='image';l.fetchPriority='high';l.crossOrigin='anonymous';l.href=`assets/${r.startsWith('__')?'':`releases/${r}/`}processed-v1/${w<=720?'mobile':'img'}/scene-vn-hall-front-${p}.webp`;document.head.append(l)})();
-  </script>
+  <script src="preload.js"></script>
   <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebSite","name":"Chùa Mây","alternateName":"Cloud Temple","url":"https://h5.chuamay.org/","inLanguage":["vi","en"]},{"@type":"WebApplication","name":"Chùa Mây","url":"https://h5.chuamay.org/","applicationCategory":"LifestyleApplication","operatingSystem":"Any","isAccessibleForFree":true,"inLanguage":["vi","en"],"offers":{"@type":"Offer","price":"0","priceCurrency":"VND"}},{"@type":"Organization","name":"Chùa Mây","url":"https://h5.chuamay.org/"}]}</script>
   <link rel="stylesheet" href="styles.css">
   <script type="module" src="app.js"></script>

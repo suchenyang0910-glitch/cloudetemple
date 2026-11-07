@@ -81,12 +81,12 @@ export async function runReminders(
     let status = "sent";
     try {
       if (channel === "email") {
-        const unsubscribe = unsubscribeURL(user.id);
+        const unsubscribe = unsubscribeURL(user.id), open = new URL(settings.familyUrl); open.searchParams.set("s", "reminder");
         await sendMail(settings, family, {
           to: user.email,
           subject: familyServerText("reminder_subject"),
-          text: `${text}\n\n${familyServerText("reminder_open")}: ${settings.familyUrl}\n${familyServerText("reminder_unsubscribe")}: ${unsubscribe}`,
-          html: `<p>${escapeFamilyHTML(text)}</p><p><a href="${settings.familyUrl}">${escapeFamilyHTML(familyServerText("reminder_open"))}</a></p><p><a href="${unsubscribe}">${escapeFamilyHTML(familyServerText("reminder_unsubscribe_email"))}</a></p>`,
+          text: `${text}\n\n${familyServerText("reminder_open")}: ${open}\n${familyServerText("reminder_unsubscribe")}: ${unsubscribe}`,
+          html: `<p>${escapeFamilyHTML(text)}</p><p><a href="${open}">${escapeFamilyHTML(familyServerText("reminder_open"))}</a></p><p><a href="${unsubscribe}">${escapeFamilyHTML(familyServerText("reminder_unsubscribe_email"))}</a></p>`,
         });
       } else await telegram(user.telegram_chat_id, text);
       sent++;

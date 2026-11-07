@@ -23,9 +23,9 @@ with sync_playwright() as playwright:
             elif path.endswith("/tablets"):
                 body = {"ok": True, "tablets": []}
             elif path.endswith("/consent") and route.request.method == "GET":
-                body = {"ok": True, "accepted": False, "version": "pilot-2026-11-07-v1"}
+                body = {"ok": True, "accepted": False, "version": "pilot-2026-11-07-v2"}
             elif path.endswith("/consent"):
-                body = {"ok": True, "consent": {"version": "pilot-2026-11-07-v1"}}
+                body = {"ok": True, "consent": {"version": "pilot-2026-11-07-v2"}}
             elif path.endswith("/presale/config"):
                 body = {"ok": True, "open": False}
             else:
@@ -37,7 +37,8 @@ with sync_playwright() as playwright:
         page.goto(BASE + "/family.html")
         page.locator("#new").click()
         page.locator(".consent").wait_for()
-        assert "chờ người bản ngữ" in page.locator(".review").inner_text()
+        assert "chờ người bản ngữ" in page.locator(".review").inner_text().lower()
+        assert "leishen8806@gmail.com" in page.locator(".consent").inner_text()
         assert page.locator("#consent-continue").is_disabled()
         page.screenshot(path=str(OUT / f"{width}x{height}-consent.png"), full_page=True)
         page.locator("#consent-agree").check()

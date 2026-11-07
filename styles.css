@@ -185,6 +185,7 @@ body[data-view=morning] .controls{display:flex;flex-direction:column;align-items
 .morning-stack{align-items:center;gap:16px;text-align:center}
 .morning-bell-hint{font-size:18px;min-height:1.5em;color:var(--ink);opacity:.7;text-align:center}
 .morning-stack .row{justify-content:center;gap:12px;flex-wrap:wrap}
+.action-nav{gap:8px}.controls .action-nav button{font-size:14px}.scene-heading h1{font-size:18px}.controls .row:has([data-action=home])>button{border:1px solid var(--line);font-size:16px}.choice-row,.breath-controls{gap:8px}@media(max-height:740px){.scene-heading h1{font-size:18px}}
 .morning-stack .primary{min-width:160px}
 .morning-skip-step{font-size:15px;min-height:44px;padding:8px 16px;color:var(--ink);opacity:.6;background:transparent;border:none;cursor:pointer;width:100%;text-align:center}
 @media(prefers-reduced-motion:reduce){.morning-bell-hint{transition:none}}

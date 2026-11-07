@@ -2,7 +2,7 @@ import fs from 'node:fs/promises';
 import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
 const root=new URL('../dist/',import.meta.url),{release}=JSON.parse(await fs.readFile(new URL('release.json',root)));
-const home=await fs.readFile(new URL('index.html',root),'utf8');assert(home.includes('property="og:image"')&&home.includes('class="home-content"')&&home.includes('application/ld+json'),'home metadata and prerendered copy');
+const home=await fs.readFile(new URL('index.html',root),'utf8');assert(home.includes('property="og:image"')&&home.includes('class="home-content"')&&home.includes('application/ld+json'),'home metadata and prerendered copy');assert(!/<script(?![^>]*(?:src=|type="application\/ld\+json"))[^>]*>/i.test(home),'no executable inline script under strict CSP');
 const about=await fs.readFile(new URL('gioi-thieu.html',root),'utf8');assert(about.includes('Hồ Ngọc Đức công bố')&&about.includes('calrules.html'),'lunar algorithm attribution');
 const files=await fs.readdir(root),pattern=new RegExp(`\\.${release}\\.(js|css)$`),versioned=files.filter(n=>pattern.test(n));
 for(const name of ['morning','festival'])assert(versioned.includes(`${name}.${release}.js`),`${name} module packaged and versioned`);
@@ -59,6 +59,7 @@ if(process.argv.includes('--staging')){
  assert(outboxHTML.includes(`dev-outbox.${release}.js`),'staging outbox references hashed script');
  const familyApp=versioned.find(n=>n.startsWith('family.')&&n.endsWith('.js'));
  assert(familyApp,'staging family app');
+ assert(!/(?:familyEvent|gtag\()/.test(await fs.readFile(new URL(familyApp,root),'utf8')),'family events stay out of GA4');
  assert(versioned.some(n=>n.startsWith('family-i18n.')&&n.endsWith('.js')),'staging family copy dictionary');
   assert(versioned.some(n=>n.startsWith('family-consent.')&&n.endsWith('.js')),'staging family consent copy');
   assert(versioned.some(n=>n.startsWith('calendar-presale.')&&n.endsWith('.js')),'staging calendar presale app');

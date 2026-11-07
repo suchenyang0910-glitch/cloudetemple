@@ -1,4 +1,3 @@
-import { familyEvent } from "./family-analytics.js";
 import { familyText as t, FAMILY_COPY } from "./family-i18n.js";
 import { FAMILY_CONSENT_COPY, FAMILY_CONSENT_VERSION } from "./family-consent.js";
 const $ = (s) => document.querySelector(s),
@@ -249,7 +248,6 @@ async function showTablet(id) {
           });
           count = result.count;
         }
-        familyEvent("memorial_offer", b.dataset.kind);
         note(
           b.dataset.kind === "incense"
             ? t("today_incense", { count })
@@ -352,7 +350,6 @@ function form(edit = null) {
         note(friendlyError(error, t("network_error")));
         return;
       }
-      if (!edit) familyEvent("memorial_create");
     } else if (!edit)
       demoTablets.push({
         id: crypto.randomUUID(),
@@ -371,11 +368,9 @@ async function invite(id) {
     await navigator.clipboard?.writeText(
       location.origin + "/family.html#invite=demo",
     );
-    familyEvent("invite_create");
     return note(t("test_link_copied"));
   }
   const d = await api(`/tablets/${id}/invites`, { method: "POST", body: "{}" });
-  familyEvent("invite_create");
   if (navigator.share)
     await navigator.share({
       title: t("share_title"),
@@ -409,7 +404,6 @@ async function inviteLanding(raw, authenticated = false) {
           method: "POST",
           body: JSON.stringify({ token: raw }),
         });
-      familyEvent("invite_accept");
       clearInvite();
       await list();
     } catch (error) {
@@ -449,7 +443,6 @@ async function account() {
       ["email-remind", "email"],
       ["tg-remind", "telegram"],
     ])
-      if ($("#" + id).checked) familyEvent("reminder_channel_set", ch);
     note(t("saved"));
   };
   $("#calendar").onclick = async () => {
@@ -458,7 +451,6 @@ async function account() {
       method: "PUT",
       body: JSON.stringify({ calendar: true, festival: true }),
     });
-    familyEvent("reminder_channel_set", "calendar");
     location.href = d.calendarURL;
   };
   $("#download-calendar").onclick = async () => {

@@ -11,7 +11,7 @@ if (Test-Path -LiteralPath $outputRoot) {
   Move-Item -LiteralPath $resolvedOutput -Destination (Join-Path $archiveRoot 'dist')
 }
 New-Item -ItemType Directory -Path $outputRoot -Force | Out-Null
-foreach ($name in @('index.html','styles.css','app.js','config.js','i18n.js','telegram.js','audio.js','resources.js','beads.js','bow.js','referrals.js','morning.js','festival.js','gioi-thieu.html','quyen-rieng-tu.html','dieu-khoan.html','_headers','_routes.json')) { Copy-Item -LiteralPath (Join-Path $projectRoot $name) -Destination (Join-Path $outputRoot $name) -Force }
+foreach ($name in @('index.html','preload.js','styles.css','app.js','config.js','i18n.js','telegram.js','audio.js','resources.js','beads.js','bow.js','referrals.js','morning.js','festival.js','gioi-thieu.html','quyen-rieng-tu.html','dieu-khoan.html','_headers','_routes.json')) { Copy-Item -LiteralPath (Join-Path $projectRoot $name) -Destination (Join-Path $outputRoot $name) -Force }
 Copy-Item -Path (Join-Path $projectRoot 'static/*') -Destination $outputRoot -Recurse -Force
 $appFile=Join-Path $outputRoot 'app.js'
 $appSource=[IO.File]::ReadAllText($appFile).Replace('__CT_FAMILY_ENABLED__',$(if($Environment -eq 'staging'){'1'}else{'0'})).Replace('__CT_REFERRALS_ENABLED__',$(if($Environment -eq 'staging'){'1'}else{'0'})).Replace('__CT_PRESENCE_ENABLED__',$(if($Environment -eq 'staging'){'1'}else{'0'}))
@@ -45,7 +45,7 @@ $banner=[IO.File]::ReadAllText((Join-Path $projectRoot 'analytics-choice.html'))
 $html=$html.Replace('</main>',$banner+'</main>')
 [IO.File]::WriteAllText($index,$html,[Text.UTF8Encoding]::new($false))
 if($Environment -eq 'staging'){
-  foreach ($name in @('family.html','family.css','family.js','family-analytics.js','family-i18n.js','family-consent.js','calendar-presale.html','calendar-presale.css','calendar-presale.js','dev-outbox.js')) { Copy-Item -LiteralPath (Join-Path $projectRoot $name) -Destination $outputRoot -Force }
+  foreach ($name in @('family.html','family.css','family.js','family-i18n.js','family-consent.js','calendar-presale.html','calendar-presale.css','calendar-presale.js','dev-outbox.js')) { Copy-Item -LiteralPath (Join-Path $projectRoot $name) -Destination $outputRoot -Force }
   foreach ($name in @('admin.html','admin.css','presence.css','admin.js')) { Copy-Item -LiteralPath (Join-Path $projectRoot "admin-ui/$name") -Destination (Join-Path $outputRoot $name) -Force }
   $devOutput=Join-Path $outputRoot 'dev'
   New-Item -ItemType Directory -Path $devOutput -Force | Out-Null

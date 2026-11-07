@@ -64,6 +64,7 @@ CREATE INDEX IF NOT EXISTS admin_audit_at ON admin_audit(at);`);
       invites: one("SELECT count(*) n FROM invites").n,
       accepted: one("SELECT COALESCE(sum(uses),0) n FROM invites").n,
     } : { tablets: 0, members: 0, invites: 0, accepted: 0 };
+    const familyMetrics = Object.fromEntries(all("SELECT metric key,sum(value) value FROM daily_counters WHERE metric IN ('memorial_view','offering_complete','member_invite_accept','reminder_set','ics_export','calendar_pdf_view') AND day>=date('now','-29 day') GROUP BY metric").map((row) => [row.key, Number(row.value)]));
     const reminderCohort = table("deliveries") ? one("SELECT count(DISTINCT user_id) n FROM deliveries WHERE status='sent' AND sent_at>=datetime('now','-30 day')").n : 0;
     const reminderReturns = reminderCohort ? one("SELECT count(DISTINCT d.user_id) n FROM deliveries d WHERE d.status='sent' AND d.sent_at>=datetime('now','-30 day') AND EXISTS(SELECT 1 FROM offerings o WHERE o.user_id=d.user_id AND o.tablet_id=d.tablet_id AND o.kind='incense' AND o.at>=d.sent_at AND o.at<datetime(d.sent_at,'+3 day'))").n : 0;
     const deliveries = table("deliveries") ? all("SELECT status key,channel,count(*) value,count(DISTINCT user_id) subjects FROM deliveries WHERE created_at>=datetime('now','-7 day') GROUP BY status,channel") : [];
@@ -73,7 +74,7 @@ CREATE INDEX IF NOT EXISTS admin_audit_at ON admin_audit(at);`);
       overview: { counters },
       presence: { hours: presence },
       referrals: { identities, bindings, k: identities >= 5 ? Number((bindings / identities).toFixed(2)) : null, channels, activities, tree: identities < 5 ? { status: "insufficient", nodes: [], edges: [] } : { status: "ok", nodes: [...labels.values()].map((id) => ({ id })), edges: treeRows.map((row) => ({ from: label(row.referrer_hash), to: label(row.referee_hash) })) } },
-      family: { ...family, averageMembers: family.tablets >= 5 ? Number((family.members / family.tablets).toFixed(2)) : null, inviteAcceptance: family.invites >= 5 ? Number((family.accepted / family.invites).toFixed(3)) : null, reminderReturn: reminderCohort >= 5 ? Number((reminderReturns / reminderCohort).toFixed(3)) : null },
+      family: { ...family, averageMembers: family.tablets >= 5 ? Number((family.members / family.tablets).toFixed(2)) : null, inviteAcceptance: family.invites >= 5 ? Number((family.accepted / family.invites).toFixed(3)) : null, reminderReturn: reminderCohort >= 5 ? Number((reminderReturns / reminderCohort).toFixed(3)) : null, metrics: familyMetrics },
       deliveries: suppress(deliveries),
     };
   }
