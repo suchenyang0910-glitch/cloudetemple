@@ -1,7 +1,7 @@
 # Cloud Temple HD-2D 第三轮修正
 
-日期：2026-11-07  
-分支：`codex/three-walk-prototype`  
+日期：2026-11-07
+分支：`codex/three-walk-prototype`
 预览：`https://staging.chuamay.org/hd2d/`
 
 ## 已实测
@@ -37,4 +37,3 @@
 - `evidence/hd2d/sit-side-375x548.png`
 - `evidence/walk-hd2d-round3-30s.mp4`
 - `evidence/hd2d/browser-report.json`
-
