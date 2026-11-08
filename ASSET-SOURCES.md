@@ -28,3 +28,14 @@ All new SVG/PNG festival decoration assets must be:
 - CC0 / CC-BY sourced, with source URL and author recorded in this file
 
 **New Year bell**: Reuses the existing CC0 `assets/audio/bell-v2` recording. No new third-party audio is introduced.
+
+## L1 sitting visitors without cushions
+
+**Files**: `assets/processed-v1/img/visitor-{short-light,curly-dark,curly-medium,bun-light,bun-dark,ponytail-medium}-sit-nocushion.webp`
+
+**Source**: Existing original Cloud Temple visitor artwork in this repository.
+
+**Process**: Locally removed the remaining cushion-edge fragments and isolated
+alpha specks; no third-party artwork or external background-removal service was
+used. The six v2 files were reviewed on dark, cushion-tone, and white
+backgrounds and approved by the user on 2026-11-09.
