@@ -11,7 +11,7 @@ if (Test-Path -LiteralPath $outputRoot) {
   Move-Item -LiteralPath $resolvedOutput -Destination (Join-Path $archiveRoot 'dist')
 }
 New-Item -ItemType Directory -Path $outputRoot -Force | Out-Null
-foreach ($name in @('index.html','styles.css','app.js','config.js','i18n.js','telegram.js','audio.js','resources.js','beads.js','bow.js','gioi-thieu.html','quyen-rieng-tu.html','dieu-khoan.html','_headers','_routes.json')) { Copy-Item -LiteralPath (Join-Path $projectRoot $name) -Destination (Join-Path $outputRoot $name) -Force }
+foreach ($name in @('index.html','preload.js','styles.css','app.js','config.js','i18n.js','telegram.js','audio.js','resources.js','beads.js','bow.js','gioi-thieu.html','quyen-rieng-tu.html','dieu-khoan.html','_headers','_routes.json')) { Copy-Item -LiteralPath (Join-Path $projectRoot $name) -Destination (Join-Path $outputRoot $name) -Force }
 Copy-Item -Path (Join-Path $projectRoot 'static/*') -Destination $outputRoot -Recurse -Force
 $appFile=Join-Path $outputRoot 'app.js'
 $appSource=[IO.File]::ReadAllText($appFile).Replace('__CT_FAMILY_ENABLED__',$(if($Environment -eq 'staging'){'1'}else{'0'}))
