@@ -136,7 +136,7 @@ function fx(){
   const f=state.layout.fx_hall_side,lit=state.view==='incense'&&state.activity?.running,bowing=state.view==='bow';
   $('#effects').innerHTML=`${bowing?`<ellipse class="halo-pulse" cx="${f.halo_center[0]}" cy="${f.halo_center[1]}" rx="92" ry="112" fill="#ffe2a6" opacity=".07"/>`:''}${lit?[-10,0,10].map((dx,i)=>`<circle class="fire" cx="${f.incense_tips[0]+dx}" cy="${f.incense_tips[1]}" r="4"/><path class="smoke" style="animation-delay:-${i*2}s" d="M${f.incense_tips[0]+dx} ${f.incense_tips[1]-5} c-18 -40 30 -65 3 -100 s23 -65 8 -95"/>`).join(''):''}`;
 }
-function stopActivity(){stopWoodAuto();stopWoodMotion();clearTimeout(finishTimer);beadCleanup?.();beadCleanup=null;state.activity=null;cancelAnimationFrame(drawFrame);audio.ambient('none',1,2);audio.stopBreathing(2);updateBreathCue();}
+function stopActivity(){stopWoodAuto();stopWoodMotion();clearTimeout(finishTimer);clearTimeout(incenseReadyTimer);beadCleanup?.();beadCleanup=null;state.activity=null;cancelAnimationFrame(drawFrame);audio.ambient('none',1,2);audio.stopBreathing(2);updateBreathCue();}
 function prefetch(view){
  const visitor=state.visitor,period=state.period;
  const run=()=>{if(state.visitor!==visitor||state.period!==period||state.view!==view)return;
@@ -227,8 +227,9 @@ function render(){
     $('#controls').innerHTML=`<div class="completion"><p>${reflections[state.result.reflection][state.lang]}</p>${state.result.kind==='beads'?button('beadAgain','bead-again','primary'):''}<div class="row">${button('shareAction','share','primary')}${button('download','download')}</div><p id="share-status" role="status"></p>${button('back','home','back-button')}</div>`;
     $('#subtitle').textContent=t('completed');
   }else if(state.view==='incense'){
+    const earlyOk=state.activity&&(performance.now()-state.activity.startedMonotonic>=20000);
     const morningSkipBtn=morning.isActive()?`<button type="button" class="text-button morning-skip-step" data-action="morning-skip-step" data-step="incense">${t('morningSkipStep')}</button>`:'';
-    $('#controls').innerHTML=`<div class="stack"><div id="incense-status" class="section-label"></div><div class="incense-stick" aria-hidden="true"><span id="incense-progress"></span></div><div class="row">${button('light','light','primary',state.activity?'disabled':'')}${morning.isActive()?morningSkipBtn:button('back','home')}</div></div>`;
+    $('#controls').innerHTML=`<div class="stack"><div id="incense-status" class="section-label"></div><div class="incense-stick" aria-hidden="true"><span id="incense-progress"></span></div><div class="row">${button('light','light','primary',state.activity?'disabled':'')}${earlyOk?button('incenseDone','incense-done'):''}${morning.isActive()?morningSkipBtn:button('back','home')}</div></div>`;
   }else if(state.view==='bow'){
     const a=state.activity;
     const bowBack=morning.isActive()?`<button type="button" class="text-button morning-skip-step" data-action="morning-skip-step" data-step="bow">${t('morningSkipStep')}</button>`:button('back','home','back-button');
@@ -332,7 +333,7 @@ function bead(){
 }
 
 export const audio=createTempleAudio({onChange:updateSoundUI,onError:()=>showSoundHint('soundUnavailable',6000),volume:()=>Number($('#volume').value)/100});
-let hintTimer=0,woodAuto=null,woodSession=0,woodMotionTimer=0,finishTimer=0,woodQueue=[];
+let hintTimer=0,woodAuto=null,woodSession=0,woodMotionTimer=0,finishTimer=0,incenseReadyTimer=0,woodQueue=[];
 function updateBreathCue(phase){const cue=$('#stage-note');if(!cue)return;const active=state.view==='sit'&&state.activity?.running&&state.breathGuide;if(!active){if(cue.dataset.breath)cue.textContent='';delete cue.dataset.breath;return;}const next=phase??breathFrame(performance.now(),state.activity.breathStarted,state.breathPattern).phase;cue.dataset.breath=next;cue.textContent=t(next==='inhale'?'inhale':'exhale');}
 function startBreathing(fade=.2){if(state.view!=='sit'||!state.activity?.running||!state.breathGuide)return;state.activity.breathStarted=performance.now();updateBreathCue('inhale');void audio.breathing(state.breathPattern,.5,fade);animation();}
 function updateSoundUI(){
@@ -466,7 +467,8 @@ document.addEventListener('click',async e=>{
     case 'reenter':await navigate('entry');break;
     case 'retry-choice':images.delete(`visitor-${state.visitor}-choose-v1.webp`);b.remove();void showChoice();break;
     case 'retry':images.clear();tinted.clear();await navigate(state.view);break;
-    case 'light':if(!state.activity){event('activity_start',{activity:'incense'});state.activity={kind:'incense',running:true,startedMonotonic:performance.now(),started:Date.now()};audio.strike('keisu',.6);feedback('soft');void audio.ambient('forest',.6,2);render();}break;
+    case 'light':if(!state.activity){event('activity_start',{activity:'incense'});state.activity={kind:'incense',running:true,startedMonotonic:performance.now(),started:Date.now()};audio.strike('keisu',.6);feedback('soft');void audio.ambient('forest',.6,2);render();incenseReadyTimer=setTimeout(render,20000);}break;
+    case 'incense-done':{const a=state.activity;if(a?.kind==='incense')complete('incense',Math.round(performance.now()-a.startedMonotonic));break;}
     case 'bow-once':bowOnce();break;
     case 'auto':if(!state.activity){bowOnce();state.activity.auto=true;}else{state.activity.auto=!state.activity.auto;if(state.activity.auto&&state.activity.bowStart==null)bowOnce();}syncBowControls();break;
     case 'sit-start':event('activity_start',{activity:'sit'});state.activity={kind:'sit',running:true,deadline:Date.now()+state.sitMinutes*60000,left:state.sitMinutes*60000,total:state.sitMinutes*60000,breathStarted:performance.now(),breathFading:false};audio.ambient(audio.ambientKind);startBreathing();render();animation();break;

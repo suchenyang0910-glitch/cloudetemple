@@ -13,6 +13,7 @@ assert.deepEqual(await fs.readdir(new URL('assets/releases/',root)),[release]);
 for(const kind of ['wood','spacer','guru'])await fs.access(new URL(`assets/releases/${release}/processed-v1/img/bead-${kind}-v2.webp`,root));
 await fs.access(new URL(`assets/releases/${release}/processed-v1/img/share-qr.png`,root));
 for(const id of ['short-light','curly-dark','curly-medium','bun-light','bun-dark','ponytail-medium'])for(const frame of [1,2,3])await fs.access(new URL(`assets/releases/${release}/processed-v1/img/visitor-${id}-mo-${frame}-v1.webp`,root));
+for(const id of ['short-light','curly-dark','curly-medium','bun-light','bun-dark','ponytail-medium'])await fs.access(new URL(`assets/releases/${release}/processed-v1/img/visitor-${id}-stand.webp`,root));
 for(const id of ['short-light','curly-dark','curly-medium','bun-light','bun-dark','ponytail-medium'])for(const pose of ['sit','beads']){
  await fs.access(new URL(`assets/releases/${release}/processed-v1/img/visitor-${id}-${pose}-nocushion.webp`,root));
  await assert.rejects(fs.access(new URL(`assets/releases/${release}/processed-v1/img/visitor-${id}-${pose}.webp`,root)),`${id} ${pose} original excluded from package`);
@@ -20,7 +21,8 @@ for(const id of ['short-light','curly-dark','curly-medium','bun-light','bun-dark
 for(const pace of ['4-6','4-4','5-7'])for(const ext of ['mp3','m4a'])await fs.access(new URL(`assets/releases/${release}/audio/breath-${pace}.${ext}`,root));
 for(const old of ['mo.webp','mo-mallet.webp'])await assert.rejects(fs.access(new URL(`assets/releases/${release}/processed-v1/img/${old}`,root)),old+' removed');
 for(const name of ['og-share-vi.webp','og-share-en.webp']){const file=new URL(`assets/share/${name}`,root);assert((await fs.stat(file)).size<=200000,name+' max 200KB')}
-for(const name of ['flower-dao.svg','flower-mai.svg','lantern.svg','moon.svg','petal-dao.svg','petal-mai.svg','pot-dao.svg','pot-mai.svg'])await fs.access(new URL(`assets/releases/${release}/festival/${name}`,root));
+const festivalNames=['flower-dao.svg','flower-mai.svg','lantern.svg','moon.svg','petal-dao.svg','petal-mai.svg','pot-dao.svg','pot-mai.svg'];
+for(const name of festivalNames)await fs.access(new URL(`assets/releases/${release}/festival/${name}`,root));
 for(const route of ['huong-dan/thap-huong','huong-dan/le-phat','huong-dan/lan-chuoi','huong-dan/go-mo','huong-dan/ngoi-yen','cau-hoi-thuong-gap'])for(const prefix of ['','en/']){const html=await fs.readFile(new URL(prefix+route+'/index.html',root),'utf8');assert(html.includes('name="robots" content="noindex,follow"'),prefix+route+' noindex');assert(!html.includes('待核'),prefix+route+' hides review markers');assert(!/<p>[htap]<\/p>/.test(html),prefix+route+' no orphan marker');assert(html.includes('application/ld+json'),prefix+route+' structured data')}
 for(const name of ['sitemap.xml','robots.txt','llms.txt'])await fs.access(new URL(name,root));
 const sitemap=await fs.readFile(new URL('sitemap.xml',root),'utf8');assert(sitemap.includes('xmlns:xhtml=')&&sitemap.includes('hreflang="en"'),'sitemap hreflang');
@@ -29,6 +31,8 @@ for(const name of files.filter(n=>n.endsWith('.html'))){const text=await fs.read
 for(const name of versioned.filter(n=>n.endsWith('.js'))){const text=await fs.readFile(new URL(name,root),'utf8');for(const match of text.matchAll(/(?:from\s+|import\s*)['"]\.\/([^'"]+\.js)['"]/g)){assert(pattern.test(match[1]),name+': '+match[1]);await fs.access(new URL(match[1].replace(/^\//,''),root));}}
 const css=await fs.readFile(new URL(`styles.${release}.css`,root),'utf8');
 assert(!css.includes('fonts.googleapis.com')&&!css.includes('fonts.gstatic.com'));
+assert(!css.includes('assets/festival/'),'festival assets are never referenced without a release hash');
+for(const name of festivalNames)assert(css.includes(`assets/releases/${release}/festival/${name}`),name+' uses release-hashed URL');
 const fontURLs=[...css.matchAll(/url\((assets\/[^)]+\.woff2)\)/g)].map(m=>m[1]);assert.equal(fontURLs.length,6);
 for(const url of fontURLs){assert(url.includes(`/releases/${release}/fonts/`));await fs.access(new URL(url,root));}
 assert((await fs.readFile(new URL(`assets/releases/${release}/fonts/OFL-v1.txt`,root),'utf8')).includes('SIL OPEN FONT LICENSE'));
