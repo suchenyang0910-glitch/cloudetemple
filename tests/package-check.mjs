@@ -5,6 +5,7 @@ const root=new URL('../dist/',import.meta.url),{release}=JSON.parse(await fs.rea
 const home=await fs.readFile(new URL('index.html',root),'utf8');assert(home.includes('property="og:image"')&&home.includes('class="home-content"')&&home.includes('application/ld+json'),'home metadata and prerendered copy');assert(!/<script(?![^>]*(?:src=|type="application\/ld\+json"))[^>]*>/i.test(home),'no executable inline script under strict CSP');
 const about=await fs.readFile(new URL('gioi-thieu.html',root),'utf8');assert(about.includes('Hồ Ngọc Đức công bố')&&about.includes('calrules.html'),'lunar algorithm attribution');
 const files=await fs.readdir(root),pattern=new RegExp(`\\.${release}\\.(js|css)$`),versioned=files.filter(n=>pattern.test(n));
+for(const name of ['morning','festival'])assert(versioned.includes(`${name}.${release}.js`),`${name} module packaged and versioned`);
 const analyticsName=versioned.find(n=>n.startsWith('analytics.')),analyticsText=await fs.readFile(new URL(analyticsName,root),'utf8');assert(analyticsText.includes('campaign_content')&&analyticsText.includes("endsWith('_a_'+name)"),'anonymous activity attribution allowlist');
 assert(files.filter(n=>/\.(js|css)$/.test(n)).every(n=>pattern.test(n)),'only current hashed JS/CSS');
 assert.deepEqual(await fs.readdir(new URL('assets/',root)),['releases','share']);
@@ -12,6 +13,7 @@ assert.deepEqual(await fs.readdir(new URL('assets/releases/',root)),[release]);
 for(const kind of ['wood','spacer','guru'])await fs.access(new URL(`assets/releases/${release}/processed-v1/img/bead-${kind}-v2.webp`,root));
 await fs.access(new URL(`assets/releases/${release}/processed-v1/img/share-qr.png`,root));
 for(const id of ['short-light','curly-dark','curly-medium','bun-light','bun-dark','ponytail-medium'])for(const frame of [1,2,3])await fs.access(new URL(`assets/releases/${release}/processed-v1/img/visitor-${id}-mo-${frame}-v1.webp`,root));
+for(const id of ['short-light','curly-dark','curly-medium','bun-light','bun-dark','ponytail-medium'])await fs.access(new URL(`assets/releases/${release}/processed-v1/img/visitor-${id}-stand.webp`,root));
 for(const id of ['short-light','curly-dark','curly-medium','bun-light','bun-dark','ponytail-medium'])for(const pose of ['sit','beads']){
  await fs.access(new URL(`assets/releases/${release}/processed-v1/img/visitor-${id}-${pose}-nocushion.webp`,root));
  await assert.rejects(fs.access(new URL(`assets/releases/${release}/processed-v1/img/visitor-${id}-${pose}.webp`,root)),`${id} ${pose} original excluded from package`);
@@ -19,6 +21,7 @@ for(const id of ['short-light','curly-dark','curly-medium','bun-light','bun-dark
 for(const pace of ['4-6','4-4','5-7'])for(const ext of ['mp3','m4a'])await fs.access(new URL(`assets/releases/${release}/audio/breath-${pace}.${ext}`,root));
 for(const old of ['mo.webp','mo-mallet.webp'])await assert.rejects(fs.access(new URL(`assets/releases/${release}/processed-v1/img/${old}`,root)),old+' removed');
 for(const name of ['og-share-vi.webp','og-share-en.webp']){const file=new URL(`assets/share/${name}`,root);assert((await fs.stat(file)).size<=200000,name+' max 200KB')}
+for(const name of ['flower-dao.svg','flower-mai.svg','lantern.svg','moon.svg','petal-dao.svg','petal-mai.svg','pot-dao.svg','pot-mai.svg'])await fs.access(new URL(`assets/releases/${release}/festival/${name}`,root));
 for(const route of ['huong-dan/thap-huong','huong-dan/le-phat','huong-dan/lan-chuoi','huong-dan/go-mo','huong-dan/ngoi-yen','cau-hoi-thuong-gap'])for(const prefix of ['','en/']){const html=await fs.readFile(new URL(prefix+route+'/index.html',root),'utf8');assert(html.includes('name="robots" content="noindex,follow"'),prefix+route+' noindex');assert(!html.includes('待核'),prefix+route+' hides review markers');assert(!/<p>[htap]<\/p>/.test(html),prefix+route+' no orphan marker');assert(html.includes('application/ld+json'),prefix+route+' structured data')}
 for(const name of ['sitemap.xml','robots.txt','llms.txt'])await fs.access(new URL(name,root));
 const sitemap=await fs.readFile(new URL('sitemap.xml',root),'utf8');assert(sitemap.includes('xmlns:xhtml=')&&sitemap.includes('hreflang="en"'),'sitemap hreflang');
@@ -43,7 +46,7 @@ if(process.argv.includes('--production')){
  assert((await fs.readFile(new URL(analytics,root),'utf8')).includes('const debug={}'),'production analytics has no debug fields');
  assert((await fs.readFile(new URL(`config.${release}.js`,root),'utf8')).includes("'pass-through'"),'production guru rule');
  assert(versioned.includes(`preload.${release}.js`),'scene preload is external and versioned');
- for(const excluded of ['morning','festival','family','family-consent','admin','presence','calendar-presale'])assert(!versioned.some(n=>n.startsWith(excluded+'.')),excluded+' excluded from production');
+ for(const excluded of ['family','family-consent','admin','presence','calendar-presale'])assert(!versioned.some(n=>n.startsWith(excluded+'.')),excluded+' excluded from production');
  const app=versioned.find(n=>n.startsWith('app.')&&n.endsWith('.js'));
  assert(app,'production app module');
  assert((await fs.readFile(new URL(app,root),'utf8')).match(/const familyEnabled\s*=\s*["']0["']\s*===\s*["']1["']/),'production family entry disabled');

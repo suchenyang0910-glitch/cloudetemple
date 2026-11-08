@@ -19,9 +19,6 @@ and added here before staging deployment.
 
 ## Festival layer decorations (I2 · Tết 2027)
 
-Pending CGS-06 (Art Director) sign-off on asset specs. All new SVG/PNG festival
-decoration assets must be:
-- Original (drawn in-house) OR
-- CC0 / CC-BY sourced, with source URL and author recorded in this file
+**Status**: Logic and reviewed visual layer implemented.
 
-This section will be completed when I2 assets are produced.
+The eight files under `assets/festival/` are original in-repository SVG illustrations: lantern, hoa mai, hoa đào, moon, two petals and two flower pots. They were drawn for Chùa Mây and do not incorporate external images, fonts or third-party artwork. The New Year rising-lantern effect uses original inline geometry.

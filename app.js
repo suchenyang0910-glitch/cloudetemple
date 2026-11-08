@@ -6,8 +6,10 @@ import {assetURL,loadImage,placeholder,enableImageDebug} from './resources.js';
 import {copy,reflections,shareCopy} from './i18n.js';
 import {apiURL,initTelegram,inTelegram,initData,telegramBack,telegramAppearance,haptic,telegramShare,telegramStory,telegramStartParam} from './telegram.js';
 import {createMorning} from './morning.js';
+import {getFestivalPeriod,createNewYearBell,hasForbiddenWord,readFlower,writeFlower} from './festival.js';
 
 let analytics,woodStarted;
+let festivalPeriod=getFestivalPeriod(),newYearBell;
 const familyEnabled='__CT_FAMILY_ENABLED__'==='1';
 const event=(name,params)=>analytics?.event(name,params);
 function completed(activity,ms,n){event('activity_complete',{activity,duration_bucket:ms<60000?'<1m':ms<180000?'1-3m':ms<=600000?'3-10m':'>10m',count_bucket:n>=108?'108+':n>=54?'54-107':n>=27?'27-53':n>1?'2-26':'1'})}
@@ -57,6 +59,7 @@ export function periodNow(date=new Date(),periods=state.layout?.periods??{dawn:"
   return 'day';
 }
 export function placement(layout,id,pose){
+  if(pose==='stand')return {x:193,y:1018,w:240,h:360};
   if(pose.startsWith('bow-')||pose.startsWith('mo-')){
     const s=layout['hall-side'],scale=s.bowCanvasWidth/s.sourceCanvas[0];
     return {x:s.foot[0]-s.anchor[0]*scale,y:s.foot[1]-s.anchor[1]*scale-(pose.startsWith('mo-')?55:0),w:s.sourceCanvas[0]*scale,h:s.sourceCanvas[1]*scale};
@@ -73,7 +76,7 @@ function image(name){
 }
 function sceneName(view=state.view){return ['incense','bow','mo'].includes(view)?'hall-side':['sit','beads','choose'].includes(view)?'courtyard':'hall-front';}
 function sceneFile(view=state.view,period=state.period){return `scene-vn-${sceneName(view)}-${period}.webp`;}
-function poses(view){return view==='bow'?['bow-1','bow-2','bow-3']:view==='incense'?['bow-1']:view==='mo'?['mo-1-v1','mo-2-v1','mo-3-v1']:view==='sit'?['sit']:view==='beads'?['beads']:[];}
+function poses(view){return view==='morning'?['stand']:view==='bow'?['bow-1','bow-2','bow-3']:view==='incense'?['bow-1']:view==='mo'?['mo-1-v1','mo-2-v1','mo-3-v1']:view==='sit'?['sit']:view==='beads'?['beads']:[];}
 const morning=createMorning({event});
 const artFile=(visitor,pose)=>`visitor-${visitor}-${pose}${pose==='sit'||pose==='beads'?'-nocushion':''}.webp`;
 async function prepare(view,period){
@@ -181,7 +184,8 @@ function bounce(e){if(e&&!reduced.matches)e.animate([{transform:'translateY(0)'}
 function render(){
   beadCleanup?.();beadCleanup=null;$('.beads-area')?.remove();
   const focused=document.activeElement,action=focused?.dataset?.action,target=focused?.dataset?.target,minutes=focused?.dataset?.minutes;
-  document.documentElement.lang=state.lang;document.body.dataset.period=state.period;document.body.dataset.view=state.view;document.body.dataset.hand=state.beadHand;
+  document.documentElement.lang=state.lang;document.body.dataset.period=state.period;document.body.dataset.view=state.view;document.body.dataset.hand=state.beadHand;document.body.dataset.festival=festivalPeriod?.id??'';document.body.dataset.flower=readFlower();
+  const flowerBtn=$('#flower-toggle-btn');if(flowerBtn){const f=readFlower();flowerBtn.textContent=t(f==='hoa-mai'?'flowerDao':'flowerMai');flowerBtn.hidden=!festivalPeriod||festivalPeriod.id==='ong-tao';}
   telegramAppearance(state.period,!!state.activity?.running&&['incense','sit'].includes(state.view));
   document.querySelectorAll('[data-i18n]').forEach(e=>e.textContent=t(e.dataset.i18n));
   $('#language').setAttribute('aria-label',t('language'));$('#controls').setAttribute('aria-label',t('actions'));
@@ -192,6 +196,7 @@ function render(){
   $('#eyebrow').textContent=t(state.period);
   const heading=state.view==='entry'?'entryTitle':state.view==='choose'?'choose':state.view==='home'?'home':state.view==='morning'?'morningTitle':state.view;
   $('#heading').textContent=t(heading)+(state.view==='beads'?' · '+t('beadRound',{n:state.beadRound}):'');$('#subtitle').textContent=t(state.view==='home'?'homeNote':state.view==='entry'?'entryGuide':state.view==='choose'?'tagline':state.view==='morning'?'morningNote':`${state.view}Note`);
+  if(festivalPeriod&&state.view==='home')$('#subtitle').textContent=t(festivalShareKey());
   canvas.setAttribute('aria-label',t(sceneName()==='hall-front'?'sceneFront':sceneName()==='hall-side'?'sceneSide':'sceneCourt'));
   $('#notice').textContent='';updateBreathCue();if(state.view!=='choose')$('#entry-overlay').innerHTML='';
   if(state.view==='morning'){
@@ -420,7 +425,8 @@ function download(){
 const shareActivity=()=>state.result?.kind||'share';
 const shareSource=channel=>`s_${channel}_a_${shareActivity()}`.replace(/[^a-z0-9_-]/g,'').slice(0,64);
 const shareLink=channel=>`${location.origin}/?s=${encodeURIComponent(channel)}&a=${encodeURIComponent(shareActivity())}`;
-function shareText(){const r=state.result||{},{key,params}=shareCopy(r.kind,r.elapsed,r.count);return t(key,params);}
+function festivalShareKey(){return festivalPeriod&&({'ong-tao':'tetShareOngTao','tat-nien':'tetShareTatNien',mung1:'tetShareMung1',mung2:'tetShareMung2',mung3:'tetShareMung3',ram:'tetShareRam'}[festivalPeriod.id]||null);}
+function shareText(){const r=state.result||{},{key,params}=shareCopy(r.kind,r.elapsed,r.count),base=t(key,params),festival=festivalShareKey();const text=festival?`${base} · ${t(festival)}`:base;if(hasForbiddenWord(text))console.warn('[festival] forbidden word detected');return text;}
 async function copyShare(channel,track=true){try{await navigator.clipboard.writeText(shareLink(channel));if(track)event('share_channel',{channel:'copy'});$('#share-status').textContent=t('linkCopied');return true}catch{$('#share-status').textContent=t('shareError');return false}}
 function sharePanel(){if($('.share-channels'))return;const telegram=inTelegram();$('#modal-body').insertAdjacentHTML('beforeend',`<div class="share-channels">${telegram?button('story','share-story')+button('telegramForward','share-telegram'):button('facebook','share-facebook')+button('messenger','share-messenger')+button('copyLink','share-copy')}</div>`);}
 async function shareFile(){
@@ -443,10 +449,11 @@ document.addEventListener('click',async e=>{
     case 'change':changeVisitor();break;
     case 'previous':changeVisitor(-1);break;
     case 'continue':{write('ct-visitor',state.visitor);if(morning.shouldShow()&&!pendingLaunchActivity){morning.start();await navigate('morning');break;}const target=pendingLaunchActivity||'home';pendingLaunchActivity='';await navigate(target);break;}
-    case 'morning-start':{const status=$('#morning-bell-status');if(status)status.textContent=t('morningBell');audio.strike('bell',.8);const next=morning.bellDone();setTimeout(async()=>{if(morning.isActive())await navigate(next);},3200);break;}
-    case 'morning-skip':{morning.end();await navigate('home');break;}
+    case 'morning-start':{state.bowTarget=3;state.sitMinutes=1;const status=$('#morning-bell-status');if(status)status.textContent=t('morningBell');audio.strike('bell',.8);const next=morning.bellDone();setTimeout(async()=>{if(morning.isActive())await navigate(next);},3200);break;}
+    case 'morning-skip':{morning.skip('morning');await navigate('home');break;}
     case 'morning-skip-step':{const step=b.dataset.step;const r=morning.skip(step);if(r)await navigate(r.navigate);else await navigate('home');break;}
-    case 'morning-replay':{morning.replay();await navigate('morning');break;}
+    case 'morning-replay':{if($('#more-menu').open)$('#more-menu').close();morning.replay();await navigate('morning');break;}
+    case 'flower-toggle':writeFlower(readFlower()==='hoa-mai'?'hoa-dao':'hoa-mai');render();break;
     case 'incense':case 'bow':case 'sit':case 'beads':case 'mo':case 'home':await navigate(action);break;
     case 'leave':audio.strike('bell',.5);await navigate('leave');break;
     case 'reenter':await navigate('entry');break;
@@ -501,6 +508,8 @@ async function tick(){
   if(a?.kind==='sit'&&a.running&&remaining(a)<=2000&&!a.breathFading){a.breathFading=true;audio.stopBreathing(2);}
   if(a?.running&&remaining(a)<=0){if(a.kind==='incense')complete('incense',60000);if(a.kind==='sit')complete('sit',a.total);}
   updateCounters();updateBreathCue();if(state.view==='mo'&&$('#daily-wood'))$('#daily-wood').textContent=t('dailyWood',{count:dailyWood()});
+  const nextFestival=getFestivalPeriod();if(nextFestival?.id!==festivalPeriod?.id){festivalPeriod=nextFestival;render();}
+  if(newYearBell&&audio.enabled&&!document.hidden)newYearBell.arm(true);
   const period=periodNow();if(period!==state.period&&!periodUpdating){periodUpdating=true;const token=transitionId,view=state.view;try{const assets=await prepare(view,period);if(token===transitionId){state.period=period;renderAssets=assets;render();paint();}}catch{/* Keep the last fully loaded scene on transient failures. */}finally{periodUpdating=false;}}
 }
 setInterval(tick,200);
@@ -512,8 +521,12 @@ async function init(){
   if(['staging.chuamay.org','h5.chuamay.org','miniapp.chuamay.org'].includes(location.hostname))void import('./analytics.js').then(({setupAnalytics})=>{
     analytics=setupAnalytics(inTelegram,{...launchAttribution,startParam:telegramStartParam()});window.addEventListener('ct-image-failure',e=>event('image_load_failed',e.detail));
   }).catch(()=>{/* A statistics module failure must not interrupt the visit. */});
-  try{const response=await fetch(assetURL('processed-v1/layout-v1.json'),{credentials:'omit'});if(!response.ok)throw new Error('layout');state.layout=await response.json();const saved=read('ct-visitor',null);state.visitor=state.layout.v1_scope.visitors.includes(saved)?saved:state.layout.v1_scope.visitors[Math.floor(Math.random()*6)];state.period=periodNow();resolveLayout();if(!transitionId)await navigate('entry');if(!read('ct-sound-hint-seen',false)){write('ct-sound-hint-seen',true);showSoundHint('soundFirstHint',5000);}}
+  try{const response=await fetch(assetURL('processed-v1/layout-v1.json'),{credentials:'omit'});if(!response.ok)throw new Error('layout');state.layout=await response.json();const saved=read('ct-visitor',null);state.visitor=state.layout.v1_scope.visitors.includes(saved)?saved:state.layout.v1_scope.visitors[Math.floor(Math.random()*6)];state.period=periodNow();resolveLayout();
+  const ring=(count,newYear=false)=>{if(state.view==='sit'&&state.activity?.running){audio.strike('bell',.22);return;}if(newYear)showNewYearBanner();for(let i=0;i<count;i++)setTimeout(()=>audio.strike('bell',.6),i*1500);};
+  newYearBell=createNewYearBell({onBell:count=>ring(count),onNewYear:count=>{launchLanterns();ring(count,true);}});if(!transitionId)await navigate('entry');if(!read('ct-sound-hint-seen',false)){write('ct-sound-hint-seen',true);showSoundHint('soundFirstHint',5000);}}
   catch{finishBoot();$('#loading').hidden=true;$('#notice').textContent=t('loadError');$('#controls').innerHTML=button('retry','reload');$('#controls').onclick=e=>{if(e.target.dataset.action==='reload')location.reload();};$('#app').setAttribute('aria-busy','false');}
 }
 function finishBoot(){const boot=$('#boot');if(!boot)return;performance.mark('ct-interactive');boot.classList.add('ready');setTimeout(()=>boot.remove(),350);}
+function showNewYearBanner(){const b=$('#tet-banner');if(!b)return;b.textContent=t('tetBanner');b.hidden=false;if(!reduced.matches)b.animate([{opacity:0},{opacity:1,offset:.1},{opacity:1,offset:.8},{opacity:0}],{duration:10000});setTimeout(()=>{b.hidden=true;b.textContent='';},10000);}
+function launchLanterns(){const svg=$('#effects');if(!svg||reduced.matches)return;for(let i=0;i<5;i++){const el=document.createElementNS('http://www.w3.org/2000/svg','ellipse');el.setAttribute('cx',120+i*160);el.setAttribute('cy',1100);el.setAttribute('rx','18');el.setAttribute('ry','26');el.setAttribute('fill','#e8431a');el.setAttribute('opacity','.85');el.style.animation=`lantern-rise ${3+i*.4}s ease-in forwards`;el.style.animationDelay=`${i*.3}s`;svg.appendChild(el);setTimeout(()=>el.remove(),6000+i*300);}}
 init();

@@ -2,7 +2,9 @@ import assert from 'node:assert/strict';
 import {createMorning} from '../morning.js';
 
 // helpers
-const makeM = () => { const events=[]; return {m:createMorning({event:(n,p)=>events.push({n,p})}),events}; };
+const storage = new Map();
+globalThis.localStorage = { getItem: (key) => storage.get(key) ?? null, setItem: (key, value) => storage.set(key, value), removeItem: (key) => storage.delete(key), clear: () => storage.clear() };
+const makeM = () => { storage.clear(); const events=[]; return {m:createMorning({event:(n,p)=>events.push({n,p})}),events}; };
 
 // 1. shouldShow returns true when localStorage has no entry (simulated by default state)
 {const {m}=makeM(); assert.equal(m.shouldShow(),true,'fresh morning shows');}
@@ -46,13 +48,7 @@ const makeM = () => { const events=[]; return {m:createMorning({event:(n,p)=>eve
 // 14. currentStep returns null when inactive
 {const {m}=makeM(); assert.equal(m.currentStep(),null);}
 
-// 15. shouldShow false after start (write flag set)
-{
-  // This test checks in-memory state: after start(), the morning module writes
-  // to localStorage (which is unavailable in Node). The write path catches and
-  // the shouldShow check reads null back — in this env it stays true.
-  // Verified in browser integration test instead (see notes below).
-  const {m}=makeM(); m.start(); /* shouldShow in browser returns false after start */ assert.ok(true,'see browser integration');
-}
+// 15. old visitors do not repeat the sequence; replay remains available.
+{const {m}=makeM(); m.start(); assert.equal(m.shouldShow(),false); m.end(); m.replay(); assert.equal(m.isActive(),true);}
 
-console.log('Morning sequence: all 14 unit assertions passed');
+console.log('Morning sequence: all 15 unit assertions passed');
