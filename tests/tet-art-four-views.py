@@ -25,8 +25,8 @@ def browser_credentials():
     return {"username": "reviewer", "password": raw}
 
 
-def enter(page, date):
-    page.goto(f"{BASE}/?festival-date={date}")
+def enter(page):
+    page.goto(BASE)
     page.evaluate("localStorage.clear();localStorage.setItem('ct-analytics','no');localStorage.setItem('ct-morning-seen','true');localStorage.setItem('ct-visitor','bun-light')")
     page.reload()
     page.locator("[data-action=enter]").click()
@@ -76,8 +76,8 @@ try:
         for date in DATES:
             context = browser.new_context(viewport={"width": 393, "height": 659}, timezone_id="Asia/Bangkok", http_credentials=browser_credentials())
             page = context.new_page()
-            page.clock.set_fixed_time(datetime(2026, 11, 5, 5, tzinfo=timezone.utc))
-            enter(page, date)
+            page.clock.set_fixed_time(datetime.fromisoformat(f"{date}T05:00:00+00:00"))
+            enter(page)
             assert page.locator("body").get_attribute("data-period") == "day"
             page.screenshot(path=OUT / f"{date}-hall-front-day.png")
             assert_controls_clear(page)
@@ -104,8 +104,8 @@ try:
 
         context = browser.new_context(viewport={"width": 393, "height": 659}, timezone_id="Asia/Bangkok", http_credentials=browser_credentials())
         page = context.new_page()
-        page.clock.set_fixed_time(datetime(2026, 11, 5, 15, tzinfo=timezone.utc))
-        enter(page, "2027-02-20")
+        page.clock.set_fixed_time(datetime(2027, 2, 20, 15, tzinfo=timezone.utc))
+        enter(page)
         open_view(page, "sit", "[data-action=sit-start]")
         assert page.locator("body").get_attribute("data-period") == "night"
         assert page.locator(".fes-moon").evaluate("e=>getComputedStyle(e).display") == "block"
@@ -123,8 +123,8 @@ try:
 
         context = browser.new_context(viewport={"width": 393, "height": 659}, timezone_id="Asia/Bangkok", reduced_motion="reduce", http_credentials=browser_credentials())
         page = context.new_page()
-        page.clock.set_fixed_time(datetime(2026, 11, 5, 5, tzinfo=timezone.utc))
-        enter(page, "2027-02-06")
+        page.clock.set_fixed_time(datetime(2027, 2, 6, 5, tzinfo=timezone.utc))
+        enter(page)
         art = visible_art(page)
         assert art and all(item["animation"] == "none" for item in art), art
         flowers = page.locator(".fes-fl")
