@@ -40,7 +40,7 @@ async (page) => {
       },
       family: { tablets: 12, members: 31, invites: 9, accepted: 6, averageMembers: 2.58, inviteAcceptance: 0.667, reminderReturn: 0.58 },
       deliveries: [{ key: "sent", value: 18, subjects: 12 }, { key: "failed", status: "insufficient" }],
-      operations: { release: "candidate-local", api: "ok", backupAt: "2026-11-06 02:10 UTC", backupCheck: "ok", certificateExpires: "2031-11-06", diskFreeBytes: 12884901888, errors: [{ category: "mail_failed", count: 2, at: "2026-11-06T03:20:00Z" }] },
+      operations: { release: "candidate-local", api: "ok", backupAt: "2026-11-06 02:10 UTC", backupCheck: "ok", certificateExpires: "2031-11-06", diskFreeBytes: 12884901888, daily: { day: "2026-11-07", expected: 18, sent: 17, failed: 1, bounces: 0, errors: 2, checkedAt: "2026-11-08T01:15:00Z" }, errors: [{ category: "mail_failed", count: 2, at: "2026-11-06T03:20:00Z" }] },
       features: { family: true, beadGuruRule: "turn-back", guideNoindex: true, mailProvider: "resend", telegram: false },
     },
   };

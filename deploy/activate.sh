@@ -42,5 +42,11 @@ with urllib.request.urlopen(urllib.request.Request('http://127.0.0.1:'+('8803' i
     assert response.status==200
 PY
 systemctl enable "chuamay-api@$environment"
+if [[ "$environment" == staging ]]; then
+  install -o root -g root -m 644 "$target/deploy/chuamay-daily-ops@.service" /etc/systemd/system/chuamay-daily-ops@.service
+  install -o root -g root -m 644 "$target/deploy/chuamay-daily-ops@.timer" /etc/systemd/system/chuamay-daily-ops@.timer
+  systemctl daemon-reload
+  systemctl enable --now chuamay-daily-ops@staging.timer
+fi
 trap - ERR
 echo "Activated $environment $release"

@@ -1,5 +1,9 @@
 User-agent: *
 Allow: /
+Disallow: /admin.html
+Disallow: /family.html
+Disallow: /calendar-presale.html
+Disallow: /dev/
 
 User-agent: GPTBot
 Allow: /

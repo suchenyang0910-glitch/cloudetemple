@@ -1,0 +1,10 @@
+[Unit]
+Description=Daily Chua May operations summary
+
+[Timer]
+OnCalendar=*-*-* 08:15:00 Asia/Ho_Chi_Minh
+Persistent=true
+Unit=chuamay-daily-ops@%i.service
+
+[Install]
+WantedBy=timers.target

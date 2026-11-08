@@ -8,6 +8,7 @@ import { createAccessVerifier } from "./access-auth.mjs";
 import { createMetricsApi } from "./metrics-api.mjs";
 import { createServer } from "./app.mjs";
 import { config } from "./security.mjs";
+import { collectDailyOps } from "./daily-ops.mjs";
 
 const now = 1800000000000, DAY = 86400000, team = "safe-team.cloudflareaccess.com", audience = "audience_12345678", email = "admin@example.invalid";
 const { privateKey, publicKey } = generateKeyPairSync("rsa", { modulusLength: 2048 }), jwk = { ...publicKey.export({ format: "jwk" }), kid: "key-1", alg: "RS256", use: "sig" };
@@ -56,6 +57,21 @@ test("reminder return rate counts only incense within three days and suppresses 
   } finally { database.close(); }
 });
 
+test("daily operations report contains only aggregate reminder, bounce and error counts", async () => {
+  const database = openStore(":memory:"); openFamilyStore(database.db); openMetricsStore(database.db); const created = "2026-11-07T01:00:00.000Z";
+  try {
+    database.db.prepare("INSERT INTO users(id,created_at) VALUES('user',?)").run(created);
+    database.db.prepare("INSERT INTO deliveries(id,user_id,kind,due_date,channel,sent_at,status,attempts,created_at,dedupe_key) VALUES(?,?,?,?,?,?,?,?,?,?)").run("sent", "user", "festival", "2026-11-07", "email", created, "sent", 1, created, "sent-key");
+    database.db.prepare("INSERT INTO deliveries(id,user_id,kind,due_date,channel,sent_at,status,attempts,created_at,dedupe_key) VALUES(?,?,?,?,?,?,?,?,?,?)").run("failed", "user", "festival", "2026-11-07", "email", null, "failed", 1, created, "failed-key");
+    database.db.prepare("INSERT INTO system_errors VALUES(?,?,?)").run("2026-11-07T01:00:00.000Z", "api_5xx", 2);
+    const fetcher = async (url, options) => { assert.equal(new URL(url).pathname, "/emails/metrics"); assert.match(options.headers.Authorization, /^Bearer /); return new Response(JSON.stringify({ totals: { bounced: 1 } }), { status: 200 }); };
+    const { snapshot, reasons } = await collectDailyOps({ mailProvider: "resend", resendKey: "secret" }, database.db, new Date("2026-11-08T03:00:00.000Z"), fetcher, async () => ({ backupCheck: "ok", diskFreeBytes: 3 * 1073741824, errors: [{ category: "web_5xx", count: 1 }] }));
+    assert.deepEqual(snapshot, { day: "2026-11-07", expected: 2, sent: 1, failed: 1, bounces: 1, errors: 3, checkedAt: "2026-11-08T03:00:00.000Z" });
+    assert.deepEqual(reasons, ["提醒失败 1", "邮件退信 1", "5xx 或运维错误 3"]);
+    assert(!JSON.stringify(snapshot).includes("user"));
+  } finally { database.close(); }
+});
+
 test("presence keeps temporary ids only in memory and stores five-minute numeric aggregates", () => {
   const database = openStore(":memory:"), store = openMetricsStore(database.db), at = Date.now();
   try {
@@ -93,7 +109,7 @@ test("admin endpoint is read-only, writes audit and returns only allowlisted agg
   const base = `http://127.0.0.1:${server.address().port}`, request = (token, method = "GET", path = "summary") => fetch(`${base}/admin/${path}`, { method, headers: token ? { "Cf-Access-Jwt-Assertion": token } : {} });
   assert.equal((await request("")).status, 403); assert.equal((await request(jwt({ aud: ["wrong"] }))).status, 403); assert.equal((await request(jwt(), "POST")).status, 403);
   metrics.error("api_5xx"); metrics.count("memorial_view"); metrics.count("offering_complete", "incense"); const response = await request(jwt()); assert.equal(response.status, 200); const data = await response.json();
-  const allowed = new Set(["ok","data","overview","counters","day","metric","dimension","value","presence","hours","peak","average","samples","referrals","identities","bindings","k","channels","activities","tree","status","nodes","edges","id","from","to","key","subjects","family","tablets","members","invites","accepted","averageMembers","inviteAcceptance","reminderReturn","metrics","memorial_view","offering_complete","member_invite_accept","reminder_set","ics_export","calendar_pdf_view","deliveries","operations","release","api","backupAt","backupCheck","certificateExpires","diskFreeBytes","errors","category","count","at","features","beadGuruRule","guideNoindex","mailProvider","telegram"]);
+  const allowed = new Set(["ok","data","overview","counters","day","metric","dimension","value","presence","hours","peak","average","samples","referrals","identities","bindings","k","channels","activities","tree","status","nodes","edges","id","from","to","key","subjects","family","tablets","members","invites","accepted","averageMembers","inviteAcceptance","reminderReturn","metrics","memorial_view","offering_complete","member_invite_accept","reminder_set","ics_export","calendar_pdf_view","deliveries","operations","release","api","backupAt","backupCheck","certificateExpires","diskFreeBytes","errors","daily","expected","sent","failed","bounces","checkedAt","category","count","at","features","beadGuruRule","guideNoindex","mailProvider","telegram"]);
   const walk = (value) => { if (Array.isArray(value)) return value.forEach(walk); if (value && typeof value === "object") for (const [key, item] of Object.entries(value)) { assert(allowed.has(key), `unexpected admin field ${key}`); walk(item); } }; walk(data);
   const serialized = JSON.stringify(data); for (const forbidden of ["full_name","email","death_","token","referral_code","query","body","raw"]) assert(!serialized.toLowerCase().includes(forbidden));
   assert.equal(data.data.operations.errors[0].category, "api_5xx"); assert.equal(data.data.operations.errors[0].count, 1);

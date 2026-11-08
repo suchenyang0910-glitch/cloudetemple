@@ -7,12 +7,17 @@ async function body(req) { const chunks = []; let size = 0; for await (const par
 const anon = (settings, value) => typeof value === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value) ? hash(settings.hashSecret, `anon:${value.toLowerCase()}`) : "";
 const identity = (settings, value) => { if (value.initData) return hash(settings.hashSecret, `telegram:${validateInitData(value.initData, settings.token).id}`); return anon(settings, value.anonymousId); };
 
-async function ops(path) {
+async function ops(path, dailyPath) {
   try {
     const raw = JSON.parse(await fs.readFile(path, "utf8"));
     const errors = Array.isArray(raw.errors) ? raw.errors.filter((item) => ["api_5xx", "web_5xx", "backup_failed", "mail_failed"].includes(item?.category) && Number.isInteger(item.count) && typeof item.at === "string").slice(0, 20).map(({ category, count, at }) => ({ category, count, at })) : [];
-    return { release: String(raw.release || "").slice(0, 40), api: raw.api === "ok" ? "ok" : "unknown", backupAt: typeof raw.backupAt === "string" ? raw.backupAt : "", backupCheck: raw.backupCheck === "ok" ? "ok" : "unknown", certificateExpires: typeof raw.certificateExpires === "string" ? raw.certificateExpires : "", diskFreeBytes: Number.isSafeInteger(raw.diskFreeBytes) && raw.diskFreeBytes >= 0 ? raw.diskFreeBytes : null, errors };
-  } catch { return { release: "", api: "unknown", backupAt: "", backupCheck: "unknown", certificateExpires: "", diskFreeBytes: null, errors: [] }; }
+    let daily = null;
+    try {
+      const value = JSON.parse(await fs.readFile(dailyPath, "utf8"));
+      if (typeof value.day === "string" && ["expected", "sent", "failed", "bounces", "errors"].every((key) => value[key] === null || Number.isSafeInteger(value[key]) && value[key] >= 0)) daily = { day: value.day, expected: value.expected, sent: value.sent, failed: value.failed, bounces: value.bounces, errors: value.errors, checkedAt: typeof value.checkedAt === "string" ? value.checkedAt : "" };
+    } catch {}
+    return { release: String(raw.release || "").slice(0, 40), api: raw.api === "ok" ? "ok" : "unknown", backupAt: typeof raw.backupAt === "string" ? raw.backupAt : "", backupCheck: raw.backupCheck === "ok" ? "ok" : "unknown", certificateExpires: typeof raw.certificateExpires === "string" ? raw.certificateExpires : "", diskFreeBytes: Number.isSafeInteger(raw.diskFreeBytes) && raw.diskFreeBytes >= 0 ? raw.diskFreeBytes : null, errors, daily };
+  } catch { return { release: "", api: "unknown", backupAt: "", backupCheck: "unknown", certificateExpires: "", diskFreeBytes: null, errors: [], daily: null }; }
 }
 
 export function createMetricsApi(settings, store, access, family = null) {
@@ -26,7 +31,7 @@ export function createMetricsApi(settings, store, access, family = null) {
           return json(res, 200, { data: family?.presaleAdmin() || { preorders: [], interests: [] } }), true;
         }
         store.audit(email, "view", "summary");
-        const operations = await ops(settings.adminOpsPath); operations.errors = [...store.errors(), ...operations.errors].slice(0, 24);
+        const operations = await ops(settings.adminOpsPath, settings.dailyOpsPath); operations.errors = [...store.errors(), ...operations.errors].slice(0, 24);
         return json(res, 200, { data: { ...store.summary(), operations, features: { family: settings.familyEnabled, beadGuruRule: settings.beadGuruRule, guideNoindex: true, mailProvider: settings.mailProvider, telegram: settings.telegramEnabled } } }), true;
       } catch { return json(res, 403, { error: "forbidden" }), true; }
     }
