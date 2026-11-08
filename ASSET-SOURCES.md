@@ -21,3 +21,14 @@ audio asset or licence review is required.
 **Status**: Logic and reviewed visual layer implemented.
 
 The eight files under `assets/festival/` are original in-repository SVG illustrations: lantern, hoa mai, hoa đào, moon, two petals and two flower pots. They were drawn for Chùa Mây and do not incorporate external images, fonts or third-party artwork. The New Year rising-lantern effect uses original inline geometry.
+
+## L1 sitting visitors without cushions
+
+**Files**: `assets/processed-v1/img/visitor-{short-light,curly-dark,curly-medium,bun-light,bun-dark,ponytail-medium}-sit-nocushion.webp`
+
+**Source**: Existing original Cloud Temple visitor artwork in this repository.
+
+**Process**: Locally removed the remaining cushion-edge fragments and isolated
+alpha specks; no third-party artwork or external background-removal service was
+used. The six v2 files were reviewed on dark, cushion-tone, and white
+backgrounds and approved by the user on 2026-11-09.
