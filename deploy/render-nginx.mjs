@@ -21,7 +21,7 @@ for(const [host,port,env,mini,api] of [['h5',8800,'production',false,false],['mi
   ${headers}
   ${host==='staging'?'auth_basic "Chua May staging"; auth_basic_user_file /etc/chuamay/staging.htpasswd;\n  add_header X-Robots-Tag noindex always;':''}
   ${api?`location / { ${proxy} }`:`location / { ${locationHeaders} add_header Cache-Control "no-cache" always; try_files $uri $uri.html $uri/ =404; }
-  location ^~ /assets/ { auth_basic off; ${locationHeaders} add_header Cache-Control "public, max-age=31536000, immutable"; types { image/webp webp; image/png png; application/json json; text/plain txt md; audio/mp4 m4a; audio/mpeg mp3; font/woff2 woff2; } try_files $uri =404; }
+  location ^~ /assets/ { auth_basic off; ${locationHeaders} add_header Cache-Control "public, max-age=31536000, immutable"; types { image/webp webp; image/png png; image/svg+xml svg; application/json json; text/plain txt md; audio/mp4 m4a; audio/mpeg mp3; font/woff2 woff2; } try_files $uri =404; }
   location ~ "^/[a-z0-9-]+\\.[a-f0-9]{12}\\.(js|css)$" { auth_basic off; ${locationHeaders} add_header Cache-Control "public, max-age=31536000, immutable"; try_files $uri =404; }`}
   ${host==='staging'?`location /api/ { ${proxy.replace('8791;','8791/;')} }
   # Telegram cannot supply browser Basic Auth; this one route uses the webhook secret instead.
