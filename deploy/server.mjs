@@ -14,9 +14,16 @@ const env={WAITLIST:store,WAITLIST_SECRET:process.env.WAITLIST_SECRET};
 const headers={'X-Content-Type-Options':'nosniff','X-Frame-Options':'DENY','Referrer-Policy':'strict-origin-when-cross-origin','Permissions-Policy':'camera=(), microphone=(), geolocation=()'};
 const headerFile=await fs.readFile(path.join(root,'_headers'),'utf8');
 headers['Content-Security-Policy']=headerFile.match(/Content-Security-Policy:\s*(.+)/)[1].trim();
-const types={'.html':'text/html; charset=utf-8','.css':'text/css','.js':'text/javascript','.json':'application/json','.webp':'image/webp'};
-const files=new Set(['index.html','styles.css','app.js','i18n.js','assets/processed-v1/layout-v1.json']);
-for(const name of await fs.readdir(path.join(root,'assets/processed-v1/img')))if(name.endsWith('.webp'))files.add('assets/processed-v1/img/'+name);
+const types={'.html':'text/html; charset=utf-8','.css':'text/css','.js':'text/javascript','.json':'application/json','.webp':'image/webp','.svg':'image/svg+xml','.png':'image/png','.mp3':'audio/mpeg','.m4a':'audio/mp4','.woff2':'font/woff2'};
+async function publicFiles(dir='',files=new Set()){
+  for(const entry of await fs.readdir(path.join(root,dir),{withFileTypes:true})){
+    const name=path.posix.join(dir,entry.name);
+    if(entry.isDirectory())await publicFiles(name,files);
+    else if(!entry.name.startsWith('_'))files.add(name);
+  }
+  return files;
+}
+const files=await publicFiles();
 const server=http.createServer(async(req,res)=>{
   for(const [k,v] of Object.entries(headers))res.setHeader(k,v);
   try{

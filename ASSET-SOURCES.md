@@ -13,9 +13,8 @@ app. Using the same sound in the morning-sequence entry screen is consistent
 with the established audio palette and avoids introducing a new asset whose
 provenance would need separate review.
 
-**Pending**: CGS-07 (Audio Director) to review whether a distinct morning bell
-timbre is needed. If yes, a new CC0/CC-BY source will be sourced from Freesound
-and added here before staging deployment.
+**Selected for this candidate**: keep the existing reviewed CC0 bell; no new
+audio asset or licence review is required.
 
 ## Festival layer decorations (I2 · Tết 2027)
 
