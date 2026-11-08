@@ -110,7 +110,7 @@ try:
         assert page.locator("body").get_attribute("data-period") == "night"
         assert page.locator(".fes-moon").evaluate("e=>getComputedStyle(e).display") == "block"
         moon = page.locator(".fes-moon").bounding_box()
-        assert moon and 659 * .15 <= moon["y"] <= 659 * .28, moon
+        assert moon and 659 * .15 <= moon["y"] <= 659 * .25, moon
         assert 393 * .10 <= 393 - moon["x"] - moon["width"] <= 393 * .20 + 1, moon
         blockers = [page.locator(selector) for selector in (".scene-heading", "#sound-toggle", "#sound-hint")]
         for blocker in blockers:
