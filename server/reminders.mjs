@@ -16,6 +16,20 @@ const solar = (d) => ({
   month: d.getMonth() + 1,
   year: d.getFullYear(),
 });
+
+export function reminderEmail(settings, userId, text) {
+  const signature = hash(settings.hashSecret, `unsubscribe:${userId}`).slice(0, 32),
+    base = settings.familyUrl.replace(/\/family\.html$/, ""),
+    unsubscribe = `${base}/api/family/reminders/unsubscribe?token=${encodeURIComponent(`${userId}.${signature}`)}`,
+    open = new URL(settings.familyUrl);
+  open.searchParams.set("s", "reminder");
+  return {
+    subject: familyServerText("reminder_subject"),
+    text: `${text}\n\n${familyServerText("reminder_open")}: ${open}\n${familyServerText("reminder_unsubscribe")}: ${unsubscribe}`,
+    html: `<p>${escapeFamilyHTML(text)}</p><p><a href="${open}">${escapeFamilyHTML(familyServerText("reminder_open"))}</a></p><p><a href="${unsubscribe}">${escapeFamilyHTML(familyServerText("reminder_unsubscribe_email"))}</a></p>`,
+  };
+}
+
 export async function runReminders(
   settings,
   family,
@@ -35,11 +49,11 @@ export async function runReminders(
   const db = family.db,
     users = db
       .prepare(
-        `SELECT DISTINCT u.id,u.demo,p.email_on,p.telegram_on,p.telegram_chat_id,p.festival_on,i.email FROM users u JOIN tablet_members m ON m.user_id=u.id JOIN reminder_prefs p ON p.user_id=u.id LEFT JOIN identities i ON i.user_id=u.id AND i.provider='email' WHERE u.deleted_at IS NULL`,
+        `SELECT DISTINCT u.id,u.demo,p.email_on,p.telegram_on,p.telegram_chat_id,p.festival_on,i.email FROM users u JOIN tablet_members m ON m.user_id=u.id JOIN reminder_prefs p ON p.user_id=u.id JOIN family_consents c ON c.user_id=u.id LEFT JOIN identities i ON i.user_id=u.id AND i.provider='email' AND i.demo=0 WHERE u.deleted_at IS NULL AND u.demo=0 AND p.demo=0 AND c.demo=0`,
       )
       .all(),
     tablets = db.prepare(
-      "SELECT t.* FROM tablets t JOIN tablet_members m ON m.tablet_id=t.id WHERE m.user_id=?",
+      "SELECT t.* FROM tablets t JOIN tablet_members m ON m.tablet_id=t.id WHERE m.user_id=? AND t.demo=0 AND m.demo=0",
     ),
     claim = db.prepare(
       `INSERT INTO deliveries(id,user_id,tablet_id,kind,due_date,channel,sent_at,status,attempts,created_at,dedupe_key,demo)
@@ -54,14 +68,6 @@ export async function runReminders(
     );
   let sent = 0,
     failed = 0;
-  const unsubscribeURL = (userId) => {
-    const signature = hash(settings.hashSecret, `unsubscribe:${userId}`).slice(
-        0,
-        32,
-      ),
-      base = settings.familyUrl.replace(/\/family\.html$/, "");
-    return `${base}/api/family/reminders/unsubscribe?token=${encodeURIComponent(`${userId}.${signature}`)}`;
-  };
   const deliver = async (user, tablet, kind, due, channel, text) => {
     const now = new Date(),
       key = [user.id, tablet?.id || "festival", kind, due, channel].join("|"),
@@ -81,12 +87,9 @@ export async function runReminders(
     let status = "sent";
     try {
       if (channel === "email") {
-        const unsubscribe = unsubscribeURL(user.id), open = new URL(settings.familyUrl); open.searchParams.set("s", "reminder");
         await sendMail(settings, family, {
           to: user.email,
-          subject: familyServerText("reminder_subject"),
-          text: `${text}\n\n${familyServerText("reminder_open")}: ${open}\n${familyServerText("reminder_unsubscribe")}: ${unsubscribe}`,
-          html: `<p>${escapeFamilyHTML(text)}</p><p><a href="${open}">${escapeFamilyHTML(familyServerText("reminder_open"))}</a></p><p><a href="${unsubscribe}">${escapeFamilyHTML(familyServerText("reminder_unsubscribe_email"))}</a></p>`,
+          ...reminderEmail(settings, user.id, text),
         });
       } else await telegram(user.telegram_chat_id, text);
       sent++;

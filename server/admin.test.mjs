@@ -61,8 +61,9 @@ test("daily operations report contains only aggregate reminder, bounce and error
   const database = openStore(":memory:"); openFamilyStore(database.db); openMetricsStore(database.db); const created = "2026-11-07T01:00:00.000Z";
   try {
     database.db.prepare("INSERT INTO users(id,created_at) VALUES('user',?)").run(created);
-    database.db.prepare("INSERT INTO deliveries(id,user_id,kind,due_date,channel,sent_at,status,attempts,created_at,dedupe_key) VALUES(?,?,?,?,?,?,?,?,?,?)").run("sent", "user", "festival", "2026-11-07", "email", created, "sent", 1, created, "sent-key");
-    database.db.prepare("INSERT INTO deliveries(id,user_id,kind,due_date,channel,sent_at,status,attempts,created_at,dedupe_key) VALUES(?,?,?,?,?,?,?,?,?,?)").run("failed", "user", "festival", "2026-11-07", "email", null, "failed", 1, created, "failed-key");
+    database.db.prepare("INSERT INTO deliveries(id,user_id,kind,due_date,channel,sent_at,status,attempts,created_at,dedupe_key,demo) VALUES(?,?,?,?,?,?,?,?,?,?,0)").run("sent", "user", "festival", "2026-11-07", "email", created, "sent", 1, created, "sent-key");
+    database.db.prepare("INSERT INTO deliveries(id,user_id,kind,due_date,channel,sent_at,status,attempts,created_at,dedupe_key,demo) VALUES(?,?,?,?,?,?,?,?,?,?,0)").run("failed", "user", "festival", "2026-11-07", "email", null, "failed", 1, created, "failed-key");
+    database.db.prepare("INSERT INTO deliveries(id,user_id,kind,due_date,channel,sent_at,status,attempts,created_at,dedupe_key,demo) VALUES(?,?,?,?,?,?,?,?,?,?,1)").run("demo", "user", "festival", "2026-11-07", "email", created, "sent", 1, created, "demo-key");
     database.db.prepare("INSERT INTO system_errors VALUES(?,?,?)").run("2026-11-07T01:00:00.000Z", "api_5xx", 2);
     const fetcher = async (url, options) => { assert.equal(new URL(url).pathname, "/emails/metrics"); assert.match(options.headers.Authorization, /^Bearer /); return new Response(JSON.stringify({ totals: { bounced: 1 } }), { status: 200 }); };
     const { snapshot, reasons } = await collectDailyOps({ mailProvider: "resend", resendKey: "secret" }, database.db, new Date("2026-11-08T03:00:00.000Z"), fetcher, async () => ({ backupCheck: "ok", diskFreeBytes: 3 * 1073741824, errors: [{ category: "web_5xx", count: 1 }] }));

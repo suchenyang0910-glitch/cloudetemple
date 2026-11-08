@@ -13,7 +13,7 @@ const vnDay = (date) => {
 
 export async function collectDailyOps(settings, db, now = new Date(), fetcher = fetch, readOps = () => fs.readFile(settings.adminOpsPath, "utf8").then(JSON.parse)) {
   const today = vnDay(now), yesterday = vnDay(new Date(Date.parse(`${today}T00:00:00+07:00`) - 86400000)), start = new Date(`${yesterday}T00:00:00+07:00`).toISOString(), end = new Date(`${today}T00:00:00+07:00`).toISOString();
-  const deliveries = db.prepare("SELECT count(*) expected,sum(status='sent') sent,sum(status='failed') failed FROM deliveries WHERE created_at>=? AND created_at<?").get(start, end), apiErrors = db.prepare("SELECT COALESCE(sum(value),0) n FROM system_errors WHERE hour>=? AND hour<? AND category='api_5xx'").get(start, end).n;
+  const deliveries = db.prepare("SELECT count(*) expected,sum(status='sent') sent,sum(status='failed') failed FROM deliveries WHERE demo=0 AND created_at>=? AND created_at<?").get(start, end), apiErrors = db.prepare("SELECT COALESCE(sum(value),0) n FROM system_errors WHERE hour>=? AND hour<? AND category='api_5xx'").get(start, end).n;
   let operations = {}, bounces = null;
   try { operations = await readOps(); } catch {}
   if (settings.mailProvider === "resend" && settings.resendKey) {

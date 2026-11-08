@@ -17,6 +17,7 @@ test("reminder delivery is idempotent", async () => {
         month: target.getMonth() + 1,
         year: target.getFullYear(),
       });
+    family.acceptConsent(u.id, "v2");
     family.createTablet(u.id, {
       honorific: "Bà ngoại",
       fullName: "Nguyễn An",
@@ -73,7 +74,7 @@ test("reminder delivery is idempotent", async () => {
 
 test("concurrent reminder runs atomically claim one delivery", async () => {
   const store = openStore(":memory:"),
-    family = openFamilyStore(store.db);
+    family = openFamilyStore(store.db, { demo: false });
   try {
     const u = family.userFor("telegram", "tg-user", "", "Người thân"),
       target = new Date(2027, 3, 18),
@@ -82,6 +83,7 @@ test("concurrent reminder runs atomically claim one delivery", async () => {
         month: target.getMonth() + 1,
         year: target.getFullYear(),
       });
+    family.acceptConsent(u.id, "v2");
     family.createTablet(u.id, {
       honorific: "Bà ngoại",
       fullName: "Nguyễn An",
@@ -131,11 +133,12 @@ test("concurrent reminder runs atomically claim one delivery", async () => {
 
 test("failed reminder is retried at most three times", async () => {
   const store = openStore(":memory:"),
-    family = openFamilyStore(store.db);
+    family = openFamilyStore(store.db, { demo: false });
   try {
     const u = family.userFor("telegram", "tg-fail", "", "Người thân"),
       target = new Date(2027, 3, 18),
       l = solarToLunar({ day: 18, month: 4, year: 2027 });
+    family.acceptConsent(u.id, "v2");
     family.createTablet(u.id, {
       honorific: "Bà ngoại",
       fullName: "Nguyễn An",
@@ -170,6 +173,25 @@ test("failed reminder is retried at most three times", async () => {
       family.db.prepare("SELECT status,attempts FROM deliveries").get(),
       { status: "failed", attempts: 3 },
     );
+  } finally {
+    store.close();
+  }
+});
+
+test("demo users and demo tablets never receive reminders", async () => {
+  const store = openStore(":memory:"),
+    family = openFamilyStore(store.db);
+  try {
+    const u = family.userFor("email", "demo-mail", "demo@example.com"),
+      target = new Date(2027, 3, 18),
+      l = solarToLunar({ day: target.getDate(), month: target.getMonth() + 1, year: target.getFullYear() });
+    family.acceptConsent(u.id, "v2");
+    family.createTablet(u.id, { honorific: "Bà ngoại", fullName: "Nguyễn An", birthYear: null, deathYear: null, day: l.day, month: l.month, leap: l.leap, note: "" });
+    family.setPrefs(u.id, { email: true, telegram: false, festival: false, telegramChat: null, icsHash: null });
+    const settings = { mailProvider: "outbox", familyUrl: "https://staging.chuamay.org/family.html", lunarLeapRule: "regular-month", telegramEnabled: false, hashSecret: "x".repeat(64) };
+    assert.deepEqual(await runReminders(settings, family, new Date(2027, 3, 11)), { sent: 0, failed: 0 });
+    assert.equal(listOutbox(family.db).length, 0);
+    assert.equal(family.db.prepare("SELECT count(*) n FROM deliveries").get().n, 0);
   } finally {
     store.close();
   }
