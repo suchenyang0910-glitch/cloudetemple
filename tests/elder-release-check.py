@@ -84,6 +84,8 @@ with sync_playwright() as pw:
             home = page.evaluate("""()=>({gap:parseFloat(getComputedStyle(document.querySelector('.action-nav')).gap),buttons:[...document.querySelectorAll('.action-nav button')].map(e=>({font:parseFloat(getComputedStyle(e).fontSize),height:e.getBoundingClientRect().height,clipped:e.scrollWidth>e.clientWidth||e.scrollHeight>e.clientHeight})),heading:parseFloat(getComputedStyle(document.querySelector('.scene-heading h1')).fontSize)})""")
             assert home["gap"] >= 8 and home["heading"] >= 18, home
             assert all(x["font"] >= 14 and x["height"] >= 44 and not x["clipped"] for x in home["buttons"]), home
+            hint = page.evaluate("""()=>{const h=document.querySelector('#sound-hint').getBoundingClientRect(),b=document.querySelector('#sound-toggle').getBoundingClientRect();return {visible:!document.querySelector('#sound-hint').hidden,h,b}}""")
+            assert hint["visible"] and hint["h"]["top"] >= hint["b"]["bottom"] and hint["h"]["right"] <= width - 8 and hint["h"]["width"] <= width * .6 and hint["h"]["left"] >= width * .64, hint
 
         for action in ("incense", "bow", "mo", "sit", "beads"):
             click(action)
@@ -105,6 +107,9 @@ with sync_playwright() as pw:
         shot("share")
 
         if PHASE == "after":
+            channels = page.evaluate("""()=>{const modal=document.querySelector('#modal').getBoundingClientRect(),buttons=[...document.querySelectorAll('.share-channels button')];return {labels:buttons.map(e=>e.textContent.trim()),inside:buttons.every(e=>{const r=e.getBoundingClientRect();return r.left>=modal.left&&r.right<=modal.right&&r.width>0&&e.scrollWidth<=e.clientWidth&&e.scrollHeight<=e.clientHeight}),rows:new Set(buttons.map(e=>Math.round(e.getBoundingClientRect().top))).size}}""")
+            assert not any("Zalo" in label for label in channels["labels"]), channels
+            assert channels["inside"] and channels["rows"] >= 2, channels
             page.wait_for_timeout(1500)
             events = page.evaluate("(window.dataLayer||[]).map(x=>Array.from(x)).filter(x=>x[0]==='event').map(x=>x[1])")
             assert "page_view" in events and "activity_start" in events, events

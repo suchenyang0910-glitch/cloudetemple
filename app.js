@@ -411,7 +411,7 @@ const shareSource=channel=>`s_${channel}_a_${shareActivity()}`.replace(/[^a-z0-9
 const shareLink=channel=>`${location.origin}/?s=${encodeURIComponent(channel)}&a=${encodeURIComponent(shareActivity())}`;
 function shareText(){const r=state.result||{},{key,params}=shareCopy(r.kind,r.elapsed,r.count);return t(key,params);}
 async function copyShare(channel,track=true){try{await navigator.clipboard.writeText(shareLink(channel));if(track)event('share_channel',{channel:'copy'});$('#share-status').textContent=t('linkCopied');return true}catch{$('#share-status').textContent=t('shareError');return false}}
-function sharePanel(){if($('.share-channels'))return;const telegram=inTelegram();$('#modal-body').insertAdjacentHTML('beforeend',`<div class="share-channels">${telegram?button('story','share-story')+button('telegramForward','share-telegram'):button('zalo','share-zalo')+button('facebook','share-facebook')+button('messenger','share-messenger')+button('copyLink','share-copy')}</div>`);}
+function sharePanel(){if($('.share-channels'))return;const telegram=inTelegram();$('#modal-body').insertAdjacentHTML('beforeend',`<div class="share-channels">${telegram?button('story','share-story')+button('telegramForward','share-telegram'):button('facebook','share-facebook')+button('messenger','share-messenger')+button('copyLink','share-copy')}</div>`);}
 async function shareFile(){
   const text=shareText();if(inTelegram()){showShareModal();sharePanel();return}
   const file=new File([shareBlob],'chua-may.png',{type:'image/png'});
