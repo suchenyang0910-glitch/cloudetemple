@@ -1,4 +1,5 @@
 import {assetURL} from './resources.js';
+import {beadMotionConfig} from './config.js';
 export class BeadMotion {
  constructor(step){this.step=step;this.pitch=42;this.position=0;this.count=0;this.last=-Infinity;}
  begin(x,y,width=Infinity){this.start={x,y};this.origin=this.position;this.startCount=this.count;this.target=this.origin;this.axis=null;this.active=x>=20&&x<=width-20;}
@@ -20,10 +21,10 @@ export class BeadMotion {
  tap(now){if(now-this.last<90)return false;this.count++;this.last=now;this.position+=this.pitch;this.step(this.count);return true;}
 }
 
-export function beadArc(width,height,offset,left=false){
- const radius=width*1.8,angle=.2+offset/radius;
- const x=width*2.58-radius*Math.cos(angle),y=height*.65-radius*Math.sin(.2)+radius*Math.sin(angle);
- return {x:left?width-x:x,y,angle:(left?-1:1)*-angle*180/Math.PI};
+export function beadArc(width,height,offset,left=false,config=beadMotionConfig){
+ const radius=width*config.arcRadius,angle=offset/radius,direction=left?-1:1;
+ const x=width*(left?config.laneLeft:config.laneRight)+direction*radius*(1-Math.cos(angle));
+ return {x,y:height*.65+radius*Math.sin(angle),angle:direction*-angle*180/Math.PI};
 }
 
 export function mountBeads(el,{step,count=0,reduced=false,left=false,direction=1}){
@@ -52,7 +53,7 @@ export function mountBeads(el,{step,count=0,reduced=false,left=false,direction=1
    node.style.opacity=String(Math.max(0,Math.min(1,(y-half-100)/35,(height+20-y)/45,(Math.min(x,width-x)-half-10)/8)));
   });
  };
- const resize=new ResizeObserver(()=>{width=area.clientWidth;height=area.clientHeight;const size=model.pitch-6;area.style.setProperty('--bead-size',size+'px');area.style.setProperty('--bead-touch-top',Math.max(100,document.querySelector('.scene-heading').getBoundingClientRect().bottom-area.getBoundingClientRect().top+8)+'px');const p=beadArc(width,height,0,left),hintX=p.x+(left?54:-54);el.querySelector('.thumb-point').style.cssText=`left:${p.x}px;top:${p.y}px`;guide.style.cssText=`left:${hintX}px;top:${p.y}px`;chevrons.style.cssText=`left:${p.x}px;top:${p.y+76}px`;const r=width*1.8;el.querySelector('.bead-thread').style.cssText=`width:${r*2}px;height:${r*2}px;left:${(left?-width*1.58:width*2.58)-r}px;top:${height*.65-r*Math.sin(.2)-r}px`;draw(model.position);});resize.observe(area);resize.observe(document.querySelector('.scene-heading'));
+ const resize=new ResizeObserver(()=>{width=area.clientWidth;height=area.clientHeight;const size=model.pitch-6,heading=document.querySelector('.scene-heading'),top=Math.max(100,heading.getBoundingClientRect().bottom-area.getBoundingClientRect().top+8);area.style.setProperty('--bead-size',size+'px');area.style.setProperty('--bead-touch-top',top+'px');area.style.setProperty('--bead-touch-left',left?'20px':`${beadMotionConfig.touchRightStart*100}%`);area.style.setProperty('--bead-touch-right',left?`${(1-beadMotionConfig.touchLeftEnd)*100}%`:'20px');const p=beadArc(width,height,0,left),r=width*beadMotionConfig.arcRadius;el.querySelector('.thumb-point').style.cssText=`left:${p.x}px;top:${p.y}px`;guide.style.cssText=`left:${p.x}px;top:${p.y-86}px`;chevrons.style.cssText=`left:${p.x}px;top:${p.y+76}px`;el.querySelector('.bead-thread').style.cssText=`width:${r*2}px;height:${r*2}px;left:${left?p.x-r*2:p.x}px;top:${p.y-r}px`;draw(model.position);});resize.observe(area);resize.observe(document.querySelector('.scene-heading'));
  const frame=now=>{
   if(disposed)return;
   if(model.active&&!reduced){model.frame(now);draw(model.position);}
