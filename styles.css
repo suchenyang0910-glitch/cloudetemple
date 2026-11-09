@@ -137,9 +137,8 @@ body[data-view=choose] .controls .primary{width:100%}
 .incense-stick>span::before{content:'';position:absolute;top:0;left:0;width:5px;height:4px;background:#e7a26a;border-radius:50%}
 .share-preview{max-height:calc(90dvh - 235px);width:100%;object-fit:contain;margin-bottom:8px;-webkit-touch-callout:default}.share-channels{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:10px}.share-channels button{min-width:0;white-space:normal;overflow-wrap:anywhere}.home-content{max-width:760px;margin:24px auto;padding:24px;line-height:1.8;background:var(--paper)}.home-content h2,.home-content h3,.home-content p,.home-content li{margin:10px 0}
 .modal-inner{padding:16px}.modal-inner h2{margin-bottom:12px}.close{margin-bottom:8px}
-.beads-area{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:hidden;--bead-size:56px;--bead-touch-top:100px;z-index:2;clip-path:inset(100px 0 0)}
-.bead-control{position:absolute;inset:0;width:100%;height:100%;padding:0!important;border:0!important;border-radius:0;background:transparent!important;color:var(--ink)!important;touch-action:none;clip-path:inset(var(--bead-touch-top) 0 0 50%);pointer-events:auto;overflow:hidden}
-body[data-hand=left] .bead-control{clip-path:inset(var(--bead-touch-top) 50% 0 0)}
+.beads-area{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:hidden;--bead-size:56px;--bead-touch-top:100px;--bead-touch-left:30%;--bead-touch-right:20px;z-index:2;clip-path:inset(100px 0 0)}
+.bead-control{position:absolute;inset:0;width:100%;height:100%;padding:0!important;border:0!important;border-radius:0;background:transparent!important;color:var(--ink)!important;touch-action:none;clip-path:inset(var(--bead-touch-top) var(--bead-touch-right) 0 var(--bead-touch-left));pointer-events:auto;overflow:hidden}
 .bead-control:active{transform:none}.bead-control span{display:block;position:absolute;inset:auto;pointer-events:none}
 .bead-control .bead-track{inset:0;width:100%;height:100%}
 .strand-bead{position:absolute;top:0;left:0;width:var(--bead-size);height:var(--bead-size);background:var(--bead-wood) center/contain no-repeat;will-change:transform,opacity;filter:drop-shadow(0 4px 8px rgba(0,0,0,.25))}
@@ -151,7 +150,7 @@ body[data-hand=left] .bead-control{clip-path:inset(var(--bead-touch-top) 50% 0 0
 .bead-control .thumb-point{width:68px;height:68px;transform:translate(-50%,-50%);border:2px solid #dab178aa;border-radius:50%;background:#d6b38228;box-shadow:0 0 16px #e4b37366}
 .bead-guide{z-index:4;width:88px;opacity:0;transform:translate(-50%,-50%);transition:opacity .18s;color:#fff7e9;text-align:center;text-shadow:0 1px 4px #24190d;filter:drop-shadow(0 2px 4px #0008)}.bead-guide.visible{opacity:1}.bead-guide svg{display:block;width:32px;height:56px;margin:auto;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;animation:bead-guide 2s ease-in-out infinite}.bead-guide b{display:block;font-size:12px;font-weight:500}.bead-chevrons{z-index:3;width:28px;height:54px;transform:translate(-50%,-50%);opacity:.48}.bead-chevrons svg{width:100%;height:100%;fill:none;stroke:#fff5df;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 1px 3px #0008)}
 @keyframes bead-guide{0%,70%,100%{transform:translateY(-8px);opacity:.65}55%{transform:translateY(12px);opacity:1}}
-.bead-summary{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px}#bead-count{font-size:28px;line-height:1.4;font-variant-numeric:tabular-nums;min-width:8ch}
+.bead-summary{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px}body[data-hand=left] .bead-summary{flex-direction:row-reverse}#bead-count{font-size:28px;line-height:1.4;font-variant-numeric:tabular-nums;min-width:8ch}.sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
 body[data-view=beads] .controls>.back-button{width:100%}
 body[data-period=night] .strand-bead{filter:brightness(.62) saturate(.75) drop-shadow(0 4px 8px #0004)}body[data-period=dusk] .strand-bead{filter:brightness(.8) drop-shadow(0 4px 8px #0004)}
 @media(max-height:740px){.scene-heading h1{font-size:14px}.controls .stack{gap:5px}.controls{padding-top:8px;padding-bottom:calc(8px + var(--safe-bottom))}.timer{font-size:28px}}
@@ -514,6 +513,39 @@ body[data-festival="ram"][data-view="mo"] .fes-fl[data-side="r"]{top:44%;opacity
 body[data-festival="tat-nien"][data-view="mo"] .fes-pot[data-side="r"],
 body[data-festival="mung1"][data-view="mo"] .fes-pot[data-side="r"],
 body[data-festival="mung2"][data-view="mo"] .fes-pot[data-side="r"]{display:block;right:1%;bottom:9%;scale:-1 1}
+/* beads shares hall-side: keep the Buddha side empty and use only right-side decoration */
+body[data-festival][data-view="beads"] :is(.fes-l.l1,.fes-l.l2,.fes-l.l3,.fes-l.l9,.fes-fl[data-side="l"],.fes-pot[data-side="l"],.fes-moon,.fes-p,.fes-g){display:none!important}
+body[data-festival="mung1"][data-view="beads"] .fes-l.l4,
+body[data-festival="mung3"][data-view="beads"] .fes-l.l4{display:none!important}
+body[data-festival="tat-nien"][data-view="beads"] :is(.fes-l.l4,.fes-l.l5,.fes-l.l6,.fes-fl[data-side="r"]),
+body[data-festival="mung1"][data-view="beads"] :is(.fes-l.l5,.fes-l.l6,.fes-l.l7,.fes-l.l8,.fes-fl[data-side="r"]),
+body[data-festival="mung2"][data-view="beads"] :is(.fes-l.l5,.fes-l.l6,.fes-l.l7,.fes-l.l8,.fes-fl[data-side="r"]),
+body[data-festival="mung3"][data-view="beads"] :is(.fes-l.l7,.fes-l.l8,.fes-fl[data-side="r"]),
+body[data-festival="ram"][data-view="beads"] :is(.fes-l.l5,.fes-l.l6,.fes-fl[data-side="r"]){display:block}
+body[data-festival="tat-nien"][data-view="beads"] .fes-l.l4{right:6%;top:18%}
+body[data-festival="tat-nien"][data-view="beads"] .fes-l.l5,
+body[data-festival="mung1"][data-view="beads"] .fes-l.l5,
+body[data-festival="mung2"][data-view="beads"] .fes-l.l5{right:12%;top:14%}
+body[data-festival="tat-nien"][data-view="beads"] .fes-l.l6{right:6%;top:38%}
+body[data-festival="mung1"][data-view="beads"] .fes-l.l6,
+body[data-festival="mung2"][data-view="beads"] .fes-l.l6{right:6%;top:22%}
+body[data-festival="mung1"][data-view="beads"] .fes-l.l7,
+body[data-festival="mung2"][data-view="beads"] .fes-l.l7{right:12%;top:31%}
+body[data-festival="mung1"][data-view="beads"] .fes-l.l8,
+body[data-festival="mung2"][data-view="beads"] .fes-l.l8{right:6%;top:40%}
+body[data-festival="mung3"][data-view="beads"] .fes-l.l7{right:12%;top:32%}
+body[data-festival="mung3"][data-view="beads"] .fes-l.l8{right:6%;top:42%}
+body[data-festival="ram"][data-view="beads"] .fes-l.l5{right:12%;top:28%}
+body[data-festival="ram"][data-view="beads"] .fes-l.l6{right:6%;top:37%}
+body[data-festival="tat-nien"][data-view="beads"] .fes-fl[data-side="r"]{top:42%}
+body[data-festival="mung1"][data-view="beads"] .fes-fl[data-side="r"]{top:36%}
+body[data-festival="mung2"][data-view="beads"] .fes-fl[data-side="r"]{top:38%}
+body[data-festival="mung3"][data-view="beads"] .fes-fl[data-side="r"]{top:42%;opacity:.7}
+body[data-festival="ram"][data-view="beads"] .fes-fl[data-side="r"]{top:44%;opacity:.7}
+body[data-festival="tat-nien"][data-view="beads"] .fes-pot[data-side="r"],
+body[data-festival="mung1"][data-view="beads"] .fes-pot[data-side="r"],
+body[data-festival="mung2"][data-view="beads"] .fes-pot[data-side="r"]{display:block;right:-7%;bottom:9%;scale:-1 1}
+body[data-festival][data-view="beads"] .fes-fl[data-side="r"]{right:-9%}
 /* Hall-side visitor occupies the lower right; keep complete lanterns staggered in the outer margin. */
 body[data-festival]:is([data-view="incense"],[data-view="bow"],[data-view="mo"]) .fes-l.l4{right:6%!important}
 body[data-festival]:is([data-view="incense"],[data-view="bow"],[data-view="mo"]) .fes-l.l5{right:12%!important}
@@ -531,9 +563,7 @@ body[data-festival][data-view="incense"] .fes-pot[data-side="l"],
 body[data-festival][data-view="bow"] .fes-pot[data-side="l"]{display:none!important}
 /* --- courtyard: no flowers; right pot suppressed --- */
 body[data-festival][data-view="sit"] .fes-fl,
-body[data-festival][data-view="beads"] .fes-fl,
-body[data-festival][data-view="sit"] .fes-pot[data-side="r"],
-body[data-festival][data-view="beads"] .fes-pot[data-side="r"]{display:none!important}
+body[data-festival][data-view="sit"] .fes-pot[data-side="r"]{display:none!important}
 
 /* --- Keyframes --- */
 @keyframes lantern-sway{0%,100%{transform:rotate(-3.5deg)}50%{transform:rotate(3.5deg)}}

@@ -1,6 +1,6 @@
 import {bowFrame} from './bow.js';
 import {mountBeads} from './beads.js';
-import {beadGuruRule} from './config.js';
+import {beadGuruRule,beadMotionConfig} from './config.js';
 import {createTempleAudio} from './audio.js';
 import {assetURL,loadImage,placeholder,enableImageDebug} from './resources.js';
 import {copy,reflections,shareCopy} from './i18n.js';
@@ -15,10 +15,11 @@ const event=(name,params)=>analytics?.event(name,params);
 function completed(activity,ms,n){event('activity_complete',{activity,duration_bucket:ms<60000?'<1m':ms<180000?'1-3m':ms<=600000?'3-10m':'>10m',count_bucket:n>=108?'108+':n>=54?'54-107':n>=27?'27-53':n>1?'2-26':'1'})}
 const $=s=>document.querySelector(s);
 const reduced=matchMedia('(prefers-reduced-motion: reduce)');
-const state={view:'entry',lang:'vi',visitor:null,period:'day',layout:null,busy:false,activity:null,result:null,bowTarget:3,sitMinutes:3,wood:0,moFrame:1,breathGuide:true,breathPattern:'4-6',bead:0,beadRound:1,beadDirection:1,beadHand:'right'};
+const state={view:'entry',lang:'vi',visitor:null,period:'day',layout:null,busy:false,activity:null,result:null,bowTarget:3,sitMinutes:3,wood:0,moFrame:1,breathGuide:true,breathPattern:'4-6',bead:0,beadRound:1,beadDirection:1,beadHand:'right',beadFrame:1};
 const images=new Map(),tinted=new Map();
 let beadCleanup=null,pendingView=null,choiceToken=0,choiceFront=0;
 let transitionId=0,drawFrame=0,lastFocus=null,shareBlob=null,shareURL=null;
+let beadMotionTimer=0,beadMotionRaf=0,beadLastStep=-Infinity,beadAnnounced=-1;
 const launchParams=new URLSearchParams(location.search),launchSources=new Set(['system','zalo','facebook','messenger','copy','recommend']),launchActivities=new Set(['incense','bow','sit','mo','beads']);
 const launchAttribution={source:launchSources.has(launchParams.get('s'))?launchParams.get('s'):'',activity:launchActivities.has(launchParams.get('a'))?launchParams.get('a'):''};
 let pendingLaunchActivity=launchAttribution.activity;
@@ -60,9 +61,9 @@ export function periodNow(date=new Date(),periods=state.layout?.periods??{dawn:"
 }
 export function placement(layout,id,pose){
   if(pose==='stand')return {x:193,y:1018,w:240,h:360};
-  if(pose.startsWith('bow-')||pose.startsWith('mo-')){
+  if(pose.startsWith('bow-')||pose.startsWith('mo-')||pose.startsWith('beads-side-')){
     const s=layout['hall-side'],scale=s.bowCanvasWidth/s.sourceCanvas[0];
-    return {x:s.foot[0]-s.anchor[0]*scale,y:s.foot[1]-s.anchor[1]*scale-(pose.startsWith('mo-')?55:0),w:s.sourceCanvas[0]*scale,h:s.sourceCanvas[1]*scale};
+    return {x:s.foot[0]-s.anchor[0]*scale,y:s.foot[1]-s.anchor[1]*scale-(pose.startsWith('bow-')?0:55),w:s.sourceCanvas[0]*scale,h:s.sourceCanvas[1]*scale};
   }
   const a=layout.front_image_anchors[`visitor-${id}-${pose}.webp`],s=layout.courtyard,scale=s.cushionWidth/a.cushionWidth;
   return {x:s.x-a.cushionBottomCenter[0]*scale,y:s.bottom-a.cushionBottomCenter[1]*scale,w:600*scale,h:900*scale};
@@ -74,9 +75,9 @@ function image(name){
   }
   return images.get(name);
 }
-function sceneName(view=state.view){return ['incense','bow','mo'].includes(view)?'hall-side':['sit','beads','choose'].includes(view)?'courtyard':'hall-front';}
+function sceneName(view=state.view){return ['incense','bow','mo','beads'].includes(view)?'hall-side':['sit','choose'].includes(view)?'courtyard':'hall-front';}
 function sceneFile(view=state.view,period=state.period){return `scene-vn-${sceneName(view)}-${period}.webp`;}
-function poses(view){return view==='morning'?['stand']:view==='bow'?['bow-1','bow-2','bow-3']:view==='incense'?['bow-1']:view==='mo'?['mo-1-v1','mo-2-v1','mo-3-v1']:view==='sit'?['sit']:view==='beads'?['beads']:[];}
+function poses(view){return view==='morning'?['stand']:view==='bow'?['bow-1','bow-2','bow-3']:view==='incense'?['bow-1']:view==='mo'?['mo-1-v1','mo-2-v1','mo-3-v1']:view==='sit'?['sit']:view==='beads'?['beads-side-1-v1','beads-side-2-v1','beads-side-3-v1']:[];}
 const morning=createMorning({event});
 const artFile=(visitor,pose)=>`visitor-${visitor}-${pose}${pose==='sit'||pose==='beads'?'-nocushion':''}.webp`;
 async function prepare(view,period){
@@ -90,7 +91,7 @@ async function prepare(view,period){
       const im=await image(name),c=document.createElement('canvas');c.width=im.width;c.height=im.height;
       const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(im,0,0);
       const data=x.getImageData(0,0,c.width,c.height),tone=state.layout.toneRGB[period];
-      for(let i=0;i<data.data.length;i+=4){for(let j=0;j<3;j++)data.data[i+j]*=tone[j]*(view==='mo'&&period==='night'?.9:1);}
+      for(let i=0;i<data.data.length;i+=4){for(let j=0;j<3;j++)data.data[i+j]*=tone[j]*(['mo','beads'].includes(view)&&period==='night'?.9:1);}
       x.putImageData(data,0,0);if(!im.placeholder)tinted.set(key,c);else {missing=true;art[pose]=c;continue;}
     }
     art[pose]=tinted.get(key);
@@ -102,7 +103,7 @@ function paint(now=performance.now()){
   if(!renderAssets||renderAssets.view!==state.view)return;
   ctx.clearRect(0,0,941,1672);ctx.drawImage(renderAssets.scene,0,0,941,1672);
   const available=poses(state.view);if(!available.length)return;
-  let pose=state.view==='mo'?`mo-${state.moFrame}-v1`:available[0],previous=null,mix=1;
+  let pose=state.view==='mo'?`mo-${state.moFrame}-v1`:state.view==='beads'?`beads-side-${state.beadFrame}-v1`:available[0],previous=null,mix=1;
   const a=state.activity;
   if(state.view==='bow'&&a?.bowStart!==null&&a?.bowStart!==undefined){
     const frame=bowFrame(now-a.bowStart,reduced.matches);pose=`bow-${frame.to}`;previous=`bow-${frame.from}`;mix=frame.mix;
@@ -128,11 +129,11 @@ function fx(){
   const f=state.layout.fx_hall_side,lit=state.view==='incense'&&state.activity?.running,bowing=state.view==='bow';
   $('#effects').innerHTML=`${bowing?`<ellipse class="halo-pulse" cx="${f.halo_center[0]}" cy="${f.halo_center[1]}" rx="92" ry="112" fill="#ffe2a6" opacity=".07"/>`:''}${lit?[-10,0,10].map((dx,i)=>`<circle class="fire" cx="${f.incense_tips[0]+dx}" cy="${f.incense_tips[1]}" r="4"/><path class="smoke" style="animation-delay:-${i*2}s" d="M${f.incense_tips[0]+dx} ${f.incense_tips[1]-5} c-18 -40 30 -65 3 -100 s23 -65 8 -95"/>`).join(''):''}`;
 }
-function stopActivity(){stopWoodAuto();stopWoodMotion();clearTimeout(finishTimer);clearTimeout(incenseReadyTimer);beadCleanup?.();beadCleanup=null;state.activity=null;cancelAnimationFrame(drawFrame);audio.ambient('none',1,2);audio.stopBreathing(2);updateBreathCue();}
+function stopActivity(){stopWoodAuto();stopWoodMotion();stopBeadMotion();clearTimeout(finishTimer);clearTimeout(incenseReadyTimer);beadCleanup?.();beadCleanup=null;state.activity=null;cancelAnimationFrame(drawFrame);audio.ambient('none',1,2);audio.stopBreathing(2);updateBreathCue();}
 function prefetch(view){
  const visitor=state.visitor,period=state.period;
  const run=()=>{if(state.visitor!==visitor||state.period!==period||state.view!==view)return;
-  const names=['bow-1','bow-2','bow-3','sit','beads','mo-1-v1','mo-2-v1','mo-3-v1'].map(p=>artFile(visitor,p));
+  const names=['bow-1','bow-2','bow-3','sit','beads','beads-side-1-v1','beads-side-2-v1','beads-side-3-v1','mo-1-v1','mo-2-v1','mo-3-v1'].map(p=>artFile(visitor,p));
   if(view==='home')names.push(...['incense','sit','mo'].map(v=>sceneFile(v,period)));
   if(view==='choose')names.push(...state.layout.v1_scope.visitors.map(id=>`visitor-${id}-choose-v1.webp`));
   names.forEach(name=>void image(name));
@@ -146,7 +147,7 @@ async function navigate(view,{keepResult=false}={}){
  const old=renderAssets?canvas.cloneNode():null;
  if(old){old.id='scene-old';old.className='scene-surface';old.setAttribute('aria-hidden','true');old.style.cssText=`width:${canvas.getBoundingClientRect().width}px;top:${canvas.offsetTop}px`;old.getContext('2d').drawImage(canvas,0,0);canvas.before(old);}
  if(state.view!==view)analytics?.view(view);state.view=view;state.period=periodNow();if(!keepResult)state.result=null;
-  if(view==='mo')woodSession=0;if(view==='beads'){state.bead=0;state.beadRound=1;state.beadDirection=1;}if(view==='sit')state.wood=0;
+  if(view==='mo')woodSession=0;if(view==='beads'){state.bead=0;state.beadRound=1;state.beadDirection=1;state.beadFrame=1;beadAnnounced=-1;}if(view==='sit')state.wood=0;
  render();$('#app').setAttribute('aria-busy','true');canvas.style.opacity='0';
  finishBoot();
  const timer=setTimeout(()=>{if(token===transitionId){$('#loading').hidden=false;$('#loading').textContent=t('loading');}},400);
@@ -233,8 +234,8 @@ function render(){
   }else if(state.view==='mo'){
     $('#controls').innerHTML=`<div class="stack"><p id="daily-wood" class="count">${t('dailyWood',{count:dailyWood()})}</p><p id="wood-message" role="status">${woodSession>=108?t('wood108'):''}</p><div class="row">${button(woodAuto?'woodStop':'woodAuto','wood-auto','primary',`aria-pressed="${!!woodAuto}"`)}${button('back','home')}</div></div>`;
   }else if(state.view==='beads'){
-    $('#controls').innerHTML=`<div class="beads-area"><button class="bead-control" id="bead-control" data-action="bead" aria-label="${escapeHTML(t('beadAction'))}"><span class="bead-thread" aria-hidden="true"></span><span class="thumb-point" aria-hidden="true"></span><span class="bead-chevrons" aria-hidden="true"><svg viewBox="0 0 28 54"><path d="m7 10 7 7 7-7M7 25l7 7 7-7M7 40l7 7 7-7"/></svg></span><span class="bead-guide" aria-hidden="true"><svg viewBox="0 0 32 56"><path d="M12 27V14a3 3 0 0 1 6 0v9-6a3 3 0 0 1 6 0v14c0 9-4 15-11 15-5 0-8-3-10-8l-2-6a3 3 0 0 1 5-2l3 4M16 49v6m-4-4 4 4 4-4"/></svg><b>${escapeHTML(t('beadSwipe'))}</b></span><span class="bead-track" aria-hidden="true">${Array.from({length:13},()=>'<i class="strand-bead"></i>').join('')}</span></button></div><div class="bead-summary"><span id="bead-count" role="status" aria-live="polite">${Math.min(108,state.bead)} / 108</span><button type="button" data-action="bead-hand" aria-label="${escapeHTML(t('switchHand')+' · '+t(state.beadHand==='left'?'currentLeft':'currentRight'))}"><svg class="hand-arrows" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8h18M7 4 3 8l4 4m14 4H3m14-4 4 4-4 4"/></svg>${t('switchHand')}</button></div>${button('back','home','back-button')}`;
-    $('.stage').append($('.beads-area'));beadCleanup=mountBeads($('#bead-control'),{step:bead,count:state.bead,reduced:reduced.matches,left:state.beadHand==='left',direction:state.beadDirection});
+    $('#controls').innerHTML=`<div class="beads-area"><button class="bead-control" id="bead-control" data-action="bead" aria-label="${escapeHTML(t('beadAction'))}"><span class="bead-thread" aria-hidden="true"></span><span class="thumb-point" aria-hidden="true"></span><span class="bead-chevrons" aria-hidden="true"><svg viewBox="0 0 28 54"><path d="m7 10 7 7 7-7M7 25l7 7 7-7M7 40l7 7 7-7"/></svg></span><span class="bead-guide" aria-hidden="true"><svg viewBox="0 0 32 56"><path d="M12 27V14a3 3 0 0 1 6 0v9-6a3 3 0 0 1 6 0v14c0 9-4 15-11 15-5 0-8-3-10-8l-2-6a3 3 0 0 1 5-2l3 4M16 49v6m-4-4 4 4 4-4"/></svg><b>${escapeHTML(t('beadSwipe'))}</b></span><span class="bead-track" aria-hidden="true">${Array.from({length:13},()=>'<i class="strand-bead"></i>').join('')}</span></button></div><div class="bead-summary"><span id="bead-count" aria-hidden="true">${Math.min(108,state.bead)} / 108</span><span id="bead-status" class="sr-only" role="status" aria-live="polite">${Math.min(108,Math.max(0,beadAnnounced))} / 108</span><button type="button" data-action="bead-hand" aria-label="${escapeHTML(t('switchHand')+' · '+t(state.beadHand==='left'?'currentLeft':'currentRight'))}"><svg class="hand-arrows" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8h18M7 4 3 8l4 4m14 4H3m14-4 4 4-4 4"/></svg>${t('switchHand')}</button></div>${button('back','home','back-button')}`;
+    $('.stage').append($('.beads-area'));beadCleanup=mountBeads($('#bead-control'),{step:bead,count:state.bead,reduced:reduced.matches,left:state.beadHand==='left',direction:state.beadDirection});updateBeadCount(state.bead===0);
   }
   $('#more-toggle').hidden=false;$('#more-toggle').setAttribute('aria-label',t('more'));
   if(familyEnabled)$('#memorial').textContent=t('familyAltar');
@@ -313,6 +314,21 @@ function bowOnce(now=performance.now()){
  Object.assign(state.activity,{bowStart:now,struck:false,counted:false});syncBowControls();animation();
 }
 
+function queueBeadFrame(frame){
+  state.beadFrame=frame;if(beadMotionRaf||state.view!=='beads')return;
+  beadMotionRaf=requestAnimationFrame(()=>{beadMotionRaf=0;if(state.view==='beads')paint();});
+}
+function stopBeadMotion(){clearTimeout(beadMotionTimer);cancelAnimationFrame(beadMotionRaf);beadMotionTimer=0;beadMotionRaf=0;beadLastStep=-Infinity;state.beadFrame=1;}
+function runBeadMotion(marker=false,now=performance.now()){
+  const rapid=now-beadLastStep<beadMotionConfig.rapidIntervalMs;beadLastStep=now;clearTimeout(beadMotionTimer);queueBeadFrame(2);
+  if(reduced.matches){beadMotionTimer=setTimeout(()=>{beadMotionTimer=0;queueBeadFrame(1);},beadMotionConfig.reducedHoldMs);return;}
+  const pause=(rapid?beadMotionConfig.idleReturnMs:beadMotionConfig.pullMs)+(marker?beadMotionConfig.markerExtraMs:0);
+  beadMotionTimer=setTimeout(()=>{beadMotionTimer=0;queueBeadFrame(3);beadMotionTimer=setTimeout(()=>{beadMotionTimer=0;queueBeadFrame(1);},beadMotionConfig.returnMs);},pause);
+}
+function updateBeadCount(announce=false){
+  const value=`${Math.min(108,state.bead)} / 108`,visible=$('#bead-count'),status=$('#bead-status');if(visible)visible.textContent=value;
+  if(status&&announce&&beadAnnounced!==state.bead){status.textContent=value;beadAnnounced=state.bead;}
+}
 function bead(){
   const limit=beadGuruRule==='turn-back'?108:109;
   if(state.result||state.bead>=limit)return;
@@ -320,8 +336,10 @@ function bead(){
   const marker=[27,54,81].includes(state.bead);
   feedback(state.bead===limit?'heavy':marker?'medium':'light');
   if(!audio.strike('bead-v1',1,.97+Math.random()*.06))audio.strike('wood',.35,1.6);
+  runBeadMotion(marker);
+  const announce=state.bead%9===0||marker||state.bead===limit;updateBeadCount(announce);bounce($('#bead-count'));
   if(state.bead===limit)complete('beads',Date.now()-state.activity.started,108);
-  else {if(marker)audio.strike('keisu',.25);$('#bead-count').textContent=`${Math.min(108,state.bead)} / 108`;bounce($('#bead-count'));}
+  else if(marker)audio.strike('keisu',.25);
 }
 
 export const audio=createTempleAudio({onChange:updateSoundUI,onError:()=>showSoundHint('soundUnavailable',6000),volume:()=>Number($('#volume').value)/100});
@@ -470,8 +488,8 @@ document.addEventListener('click',async e=>{
     case 'wood':tapWood();break;
     case 'wood-auto':if(woodAuto)stopWoodAuto();else if(!document.hidden)woodAuto=setInterval(tapWood,1000);render();break;
     case 'bead':break;
-    case 'bead-hand':state.beadHand=state.beadHand==='left'?'right':'left';event('hand_switch',{hand:state.beadHand});write('ct-bead-hand',state.beadHand);render();paint();break;
-    case 'bead-again':state.result=null;state.bead=0;state.beadRound++;if(beadGuruRule==='turn-back')state.beadDirection*=-1;render();paint();$('#bead-control').focus({preventScroll:true});break;
+    case 'bead-hand':stopBeadMotion();state.beadHand=state.beadHand==='left'?'right':'left';event('hand_switch',{hand:state.beadHand});write('ct-bead-hand',state.beadHand);render();paint();break;
+    case 'bead-again':stopBeadMotion();state.result=null;state.bead=0;beadAnnounced=-1;state.beadRound++;if(beadGuruRule==='turn-back')state.beadDirection*=-1;render();paint();$('#bead-control').focus({preventScroll:true});break;
     case 'memorial':memorial();break;
     case 'share':event('share_open',{activity:state.result.kind});if(await makeShare(false))await shareFile();break;
     case 'share-file':await shareFile();break;
@@ -499,8 +517,8 @@ state.beadHand=read('ct-bead-hand','right')==='left'?'left':'right';
 $('#volume').addEventListener('input',()=>{write('ct-volume',Number($('#volume').value));audio.volume();});
 $('#controls').addEventListener('pointerdown',e=>{const action=e.target.closest('[data-action]')?.dataset.action;if(action==='enter')void image(artFile(state.visitor,'sit'));else if(['incense','bow','sit','beads','mo'].includes(action))void image(sceneFile(action,periodNow()));});
 document.addEventListener('click',()=>{void audio.wake();},true);
-reduced.addEventListener('change',()=>{animation();paint();fx();if(state.view==='beads')render();});
-document.addEventListener('visibilitychange',async()=>{if(document.hidden){stopWoodAuto();stopWoodMotion();audio.stopBackground();audio.stopBreathing();cancelAnimationFrame(drawFrame);if(state.view==='mo')render();}else{await audio.wake();tick();animation();if(state.view==='sit'&&state.activity?.running){audio.ambient(audio.ambientKind);startBreathing();}if(state.view==='incense'&&state.activity?.running)audio.ambient('forest',.6,2);if(state.view==='beads')void audio.load('bead-v1').catch(()=>{});}});
+reduced.addEventListener('change',()=>{stopBeadMotion();animation();paint();fx();if(state.view==='beads')render();});
+document.addEventListener('visibilitychange',async()=>{if(document.hidden){stopWoodAuto();stopWoodMotion();stopBeadMotion();audio.stopBackground();audio.stopBreathing();cancelAnimationFrame(drawFrame);if(['mo','beads'].includes(state.view))render();}else{await audio.wake();tick();animation();if(state.view==='sit'&&state.activity?.running){audio.ambient(audio.ambientKind);startBreathing();}if(state.view==='incense'&&state.activity?.running)audio.ambient('forest',.6,2);if(state.view==='beads')void audio.load('bead-v1').catch(()=>{});}});
 let periodUpdating=false;
 async function tick(){
   if(!state.layout||state.busy)return;

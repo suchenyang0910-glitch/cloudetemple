@@ -9,7 +9,7 @@ with sync_playwright() as pw:
  b=pw.chromium.launch()
  def setup(browser,width=393,height=852,**options):
   c=browser.new_context(timezone_id='UTC',viewport={'width':width,'height':height},**options);p=c.new_page();p.on('pageerror',lambda e:errors.append(str(e)))
-  p.add_init_script("localStorage.setItem('ct-muted','true');localStorage.setItem('ct-visitor',JSON.stringify('bun-light'))")
+  p.add_init_script("localStorage.setItem('ct-muted','true');localStorage.setItem('ct-morning-seen','true');localStorage.setItem('ct-visitor',JSON.stringify('bun-light'))")
   p.clock.set_fixed_time(datetime(2026,11,5,10,tzinfo=timezone.utc));p.goto(base);ready(p);return c,p
  def ready(p):p.wait_for_function("document.querySelector('#app').getAttribute('aria-busy')==='false'");p.wait_for_timeout(320)
  def click(p,a):p.locator(f'[data-action={a}]:visible').first.click();ready(p)
