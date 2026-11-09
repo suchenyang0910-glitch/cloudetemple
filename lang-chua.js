@@ -2,12 +2,12 @@
 // Imports from sibling modules (paths relative to cloudtemple root at deploy time).
 // Prototype reference: prototypes/vietnam-h5/index.html
 
-import { initFestival, canShowGreetingCard } from './js/festival.js';
+import { initFestival, canShowGreetingCard } from '/lang-chua-festival.js';
 import {
   RITUAL_STATES, getRitualState, completeRitual, markerFor,
   runIncense, runSit, tapMo, tapBead, resetAll,
-} from './js/rituals.js';
-import { buildCard, shareCard, getFlowers, getGreetings } from './js/card.js';
+} from '/lang-chua-rituals.js';
+import { buildCard, shareCard, getFlowers, getGreetings } from '/lang-chua-card.js';
 import { createTempleAudio } from '/audio.js';
 
 // ── Audio ──────────────────────────────────────────────────────────────────
