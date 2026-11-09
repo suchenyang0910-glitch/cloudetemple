@@ -8,7 +8,7 @@ results=[]
 with sync_playwright() as pw:
  b=pw.chromium.launch();c=b.new_context(viewport={'width':393,'height':852},timezone_id='UTC',record_video_dir=str(out/'raw'),record_video_size={'width':393,'height':852})
  p=c.new_page();errors=[];p.on('pageerror',lambda e:errors.append(str(e)))
- p.add_init_script("localStorage.setItem('ct-muted','true');localStorage.setItem('ct-visitor','\"bun-light\"');window.haptics=[];Object.defineProperty(navigator,'vibrate',{value:v=>{haptics.push(v);return true}})")
+ p.add_init_script("localStorage.setItem('ct-muted','true');localStorage.setItem('ct-morning-seen','true');localStorage.setItem('ct-visitor','\"bun-light\"');window.haptics=[];Object.defineProperty(navigator,'vibrate',{value:v=>{haptics.push(v);return true}})")
  p.clock.set_fixed_time(datetime(2026,11,5,10,tzinfo=timezone.utc));p.goto('http://127.0.0.1:8825')
  def ready():p.wait_for_function("document.querySelector('#app').getAttribute('aria-busy')==='false'");p.wait_for_timeout(350)
  def click(a):p.locator(f'[data-action={a}]').click();ready()
