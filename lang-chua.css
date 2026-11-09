@@ -1,0 +1,467 @@
+/* lang-chua.css — Làng Chùa production styles
+   Self-contained: aliases cloudtemple palette tokens (--paper/--ink/--line/--muted/--accent)
+   with hardcoded fallbacks so the file works whether or not styles.css is loaded first. */
+
+/* ── Tokens ─────────────────────────────────────────────────────────────── */
+:root {
+  /* Alias cloudtemple palette → lang-chua tokens */
+  --bg:            var(--paper, #eee8dc);
+  --surface:       #f5efe3;
+  --border:        var(--line,  #c9bead);
+  --text:          var(--ink,   #342f28);
+  --text-soft:     var(--muted, #635a4c);
+  /* --accent inherited from cloudtemple styles.css (#725139) — not redefined here */
+  /* Festival gold for Tết and other festival scene tints */
+  --festival-gold: #c8991f;
+  /* Safe-area insets */
+  --safe-top:      env(safe-area-inset-top, 0px);
+  --safe-bottom:   env(safe-area-inset-bottom, 0px);
+  /* Layout constants */
+  --card-size:     80px;
+  --coming-soon-opacity: 0.4;
+}
+
+/* ── Base ───────────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100dvh;
+  -webkit-tap-highlight-color: transparent;
+  overflow-x: hidden;
+}
+
+.cn { font-size: 0.75em; opacity: 0.7; margin-left: 4px; }
+
+/* ── Map view ───────────────────────────────────────────────────────────── */
+#map-view {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+#map-view.hidden { display: none; }
+
+#map-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: calc(12px + var(--safe-top)) 16px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+#map-header h1 { font-size: 17px; font-weight: 600; flex: 1; }
+#settings-btn {
+  background: none; border: none; cursor: pointer;
+  color: var(--text-soft); padding: 6px;
+}
+#settings-btn svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 1.5; }
+
+#map-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 16px calc(80px + var(--safe-bottom));
+}
+
+.river-label {
+  text-align: center;
+  font-size: 11px;
+  color: var(--text-soft);
+  letter-spacing: 0.08em;
+  margin: 8px 0;
+  opacity: 0.6;
+}
+
+.temple-row {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+/* ── Temple card ────────────────────────────────────────────────────────── */
+.temple-card {
+  width: var(--card-size);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
+  position: relative;
+}
+.temple-card[data-state="coming_soon"],
+.temple-card[data-state="teaser"] {
+  cursor: default;
+  opacity: var(--coming-soon-opacity);
+}
+
+.card-thumb {
+  width: var(--card-size);
+  height: var(--card-size);
+  border-radius: 12px;
+  border: 2px solid var(--border);
+  overflow: hidden;
+  background: var(--surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  transition: border-color 0.3s, transform 0.1s;
+  position: relative;
+}
+.temple-card[data-state="open"]:active .card-thumb { transform: scale(0.96); }
+
+.temple-card.festival-highlight .card-thumb {
+  border-color: var(--festival-gold);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--festival-gold) 30%, transparent);
+  animation: glow-pulse 2s ease-in-out infinite;
+}
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 0 2px color-mix(in srgb, var(--festival-gold) 30%, transparent); }
+  50%       { box-shadow: 0 0 0 4px color-mix(in srgb, var(--festival-gold) 15%, transparent); }
+}
+
+.temple-card.my-temple .card-thumb::after {
+  content: '🏡';
+  position: absolute; top: 2px; right: 4px;
+  font-size: 12px; line-height: 1;
+}
+
+.card-lock {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  background: rgba(0,0,0,0.08);
+  border-radius: 10px;
+  pointer-events: none;
+}
+.temple-card[data-state="open"] .card-lock,
+.temple-card[data-state="teaser"] .card-lock { display: none; }
+
+.card-name    { font-size: 11px; font-weight: 500; text-align: center; line-height: 1.3; }
+.card-name-cn { font-size: 9px; color: var(--text-soft); text-align: center; }
+
+.festival-badge {
+  position: absolute; top: -4px; left: -4px;
+  font-size: 14px; line-height: 1; display: none;
+}
+.temple-card.festival-highlight .festival-badge { display: block; }
+
+.card-tooltip {
+  position: absolute;
+  bottom: calc(100% + 6px); left: 50%;
+  transform: translateX(-50%);
+  background: var(--text); color: var(--bg);
+  font-size: 11px; padding: 4px 8px; border-radius: 6px;
+  white-space: nowrap; pointer-events: none;
+  opacity: 0; transition: opacity 0.15s; z-index: 20;
+}
+.temple-card.show-tooltip .card-tooltip { opacity: 1; }
+
+/* ── Bottom nav ─────────────────────────────────────────────────────────── */
+#bottom-nav {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 10;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  display: flex; align-items: center;
+  padding: 8px 16px calc(8px + var(--safe-bottom));
+}
+.nav-btn {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px;
+  font-size: 10px; color: var(--text-soft);
+  background: none; border: none; padding: 6px 4px; cursor: pointer;
+}
+.nav-btn.active { color: var(--accent); }
+.nav-btn svg {
+  width: 22px; height: 22px; stroke: currentColor; fill: none;
+  stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round;
+}
+
+/* ── Temple view ────────────────────────────────────────────────────────── */
+#temple-view {
+  display: none; flex-direction: column; min-height: 100dvh;
+  background: var(--bg);
+}
+#temple-view.active { display: flex; }
+
+#temple-header {
+  position: sticky; top: 0; z-index: 10;
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  padding: calc(10px + var(--safe-top)) 16px 10px;
+  display: flex; align-items: center; gap: 10px;
+}
+#back-btn {
+  background: none; border: none; cursor: pointer;
+  color: var(--text-soft); padding: 4px; flex-shrink: 0;
+}
+#back-btn svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.5; stroke-linecap: round; }
+#temple-title { flex: 1; }
+#temple-name-vi { font-size: 15px; font-weight: 600; }
+#temple-name-cn { font-size: 11px; color: var(--text-soft); }
+
+/* ── Scene stage ────────────────────────────────────────────────────────── */
+#scene-stage {
+  flex: 1; position: relative; overflow: hidden;
+  background: #c8bfae; min-height: 55dvh;
+  display: flex; align-items: center; justify-content: center;
+}
+#scene-stage img.scene-img {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover; object-position: center top;
+}
+#scene-label {
+  position: relative; z-index: 2;
+  font-size: 12px; color: rgba(255,255,255,0.75);
+  text-align: center; padding: 12px;
+  text-shadow: 0 1px 6px rgba(0,0,0,0.6);
+}
+
+/* Period tones — only on color-block fallback, not on loaded images */
+body[data-period="night"] #scene-stage:not(.scene-loaded) { filter: brightness(0.63) saturate(0.75); }
+body[data-period="dusk"]  #scene-stage:not(.scene-loaded) { filter: brightness(0.83) sepia(0.15); }
+body[data-period="dawn"]  #scene-stage:not(.scene-loaded) { filter: brightness(0.90) saturate(0.85); }
+
+/* ── Scene controls ─────────────────────────────────────────────────────── */
+#scene-controls {
+  padding: 12px 16px calc(16px + var(--safe-bottom));
+  display: flex; flex-direction: column; gap: 10px;
+}
+
+/* View tabs */
+.view-tabs { display: flex; gap: 6px; }
+.view-tab {
+  flex: 1; padding: 7px 10px;
+  border-radius: 20px; border: 1px solid var(--border);
+  font-size: 12px; background: var(--surface); color: var(--text-soft);
+  cursor: pointer;
+}
+.view-tab.active {
+  background: var(--accent); color: #fff; border-color: var(--accent);
+}
+
+/* Period tabs */
+.period-tabs {
+  display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px;
+}
+.period-tabs::-webkit-scrollbar { display: none; }
+.period-tab {
+  flex-shrink: 0; padding: 6px 12px;
+  border-radius: 20px; border: 1px solid var(--border);
+  font-size: 12px; background: var(--surface); color: var(--text-soft); cursor: pointer;
+}
+.period-tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+/* Device tier — low: hide period tabs */
+body[data-tier="low"] .period-tabs { display: none; }
+
+/* ── Ritual list ────────────────────────────────────────────────────────── */
+#ritual-list { display: flex; flex-direction: column; gap: 4px; }
+.ritual-btn {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px; border-radius: 10px;
+  border: 1px solid var(--border); background: var(--surface);
+  cursor: pointer; text-align: left;
+}
+.ritual-btn:active { opacity: 0.7; }
+.ritual-marker { font-size: 14px; width: 18px; text-align: center; color: var(--accent); }
+.ritual-label  { font-size: 13px; color: var(--text); }
+
+/* ── Greeting card button ────────────────────────────────────────────────── */
+#greeting-card-btn {
+  display: none; width: 100%; padding: 14px;
+  background: var(--accent); color: #fff;
+  border: none; border-radius: 12px;
+  font-size: 15px; font-weight: 600; cursor: pointer;
+}
+body[data-festival="mung1"]   #greeting-card-btn,
+body[data-festival="mung2"]   #greeting-card-btn,
+body[data-festival="mung3"]   #greeting-card-btn,
+body[data-festival="tat-nien"] #greeting-card-btn,
+body[data-festival="ong-tao"] #greeting-card-btn,
+body[data-festival="ram"]     #greeting-card-btn { display: block; }
+#temple-view:not([data-temple="dilac"]) #greeting-card-btn { display: none !important; }
+
+/* ── Festival scene tints ────────────────────────────────────────────────── */
+body[data-festival="mung1"]  #scene-stage,
+body[data-festival="mung2"]  #scene-stage,
+body[data-festival="mung3"]  #scene-stage {
+  background: linear-gradient(160deg, #c8a060, #d4885a);
+}
+body[data-festival="tat-nien"] #scene-stage,
+body[data-festival="ong-tao"]  #scene-stage {
+  background: linear-gradient(160deg, #b87a40, #c86040);
+}
+body[data-festival="ram"]    #scene-stage { background: linear-gradient(160deg, #8898b8, #707898); }
+body[data-festival="vulan"]  #scene-stage { background: linear-gradient(160deg, #707880, #505860); }
+body[data-festival^="quanam"] #scene-stage { background: linear-gradient(160deg, #80a8c0, #6090a8); }
+
+/* ── Weather overlay ─────────────────────────────────────────────────────── */
+@keyframes rain-fall {
+  from { background-position: 0 0; }
+  to   { background-position: -24px 120px; }
+}
+body[data-weather="rain"] #scene-stage::after {
+  content: '';
+  position: absolute; inset: 0; z-index: 3; pointer-events: none;
+  background: repeating-linear-gradient(
+    105deg,
+    transparent 0, transparent 7px,
+    rgba(180,215,245,0.18) 7px, rgba(180,215,245,0.18) 8px
+  );
+  animation: rain-fall 0.45s linear infinite;
+}
+
+/* ── Bottom sheet shared ─────────────────────────────────────────────────── */
+.bottom-sheet {
+  position: fixed; left: 0; right: 0; bottom: 0;
+  z-index: 40;
+  background: var(--surface);
+  border-radius: 20px 20px 0 0;
+  padding: 8px 20px calc(20px + var(--safe-bottom));
+  transform: translateY(100%);
+  transition: transform 0.32s cubic-bezier(0.32, 0.72, 0, 1);
+  max-height: 85dvh;
+  overflow-y: auto;
+}
+.bottom-sheet[aria-hidden="false"] { transform: translateY(0); }
+.full-sheet { max-height: 92dvh; }
+
+.sheet-drag-handle {
+  width: 36px; height: 4px;
+  background: var(--border); border-radius: 2px;
+  margin: 0 auto 16px;
+}
+
+.backdrop {
+  position: fixed; inset: 0; z-index: 39;
+  background: rgba(0,0,0,0.4); opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s;
+}
+.backdrop.visible { opacity: 1; pointer-events: auto; }
+
+/* ── Ritual panel content ────────────────────────────────────────────────── */
+#ritual-panel-content h3 {
+  font-size: 17px; font-weight: 600; margin-bottom: 12px;
+}
+#ritual-panel-content .ritual-desc {
+  font-size: 14px; color: var(--text-soft); margin-bottom: 20px; line-height: 1.6;
+}
+.ritual-start-btn {
+  width: 100%; padding: 14px;
+  background: var(--accent); color: #fff;
+  border: none; border-radius: 12px;
+  font-size: 15px; font-weight: 600; cursor: pointer;
+}
+.ritual-start-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Progress bar (incense) */
+.progress-bar-wrap {
+  height: 6px; background: var(--border); border-radius: 3px;
+  overflow: hidden; margin-bottom: 16px;
+}
+.progress-bar {
+  height: 100%; border-radius: 3px;
+  background: var(--accent);
+  width: calc(var(--pct, 0) * 100%);
+  transition: width 0.2s linear;
+}
+
+/* Sit options */
+.sit-options { display: flex; gap: 8px; margin-bottom: 16px; }
+.sit-btn {
+  flex: 1; padding: 10px 8px;
+  border-radius: 10px; border: 1px solid var(--border);
+  background: var(--surface); color: var(--text);
+  font-size: 13px; cursor: pointer;
+}
+.sit-btn:disabled { opacity: 0.4; }
+#sit-status { font-size: 13px; color: var(--text-soft); text-align: center; min-height: 20px; }
+
+/* Mo / Beads tap buttons */
+.mo-tap-btn, .bead-tap-btn {
+  width: 100px; height: 100px; border-radius: 50%;
+  display: block; margin: 20px auto;
+  font-size: 48px; line-height: 1;
+  background: var(--surface); border: 2px solid var(--border);
+  cursor: pointer;
+  transition: transform 0.08s;
+}
+.mo-tap-btn:active, .bead-tap-btn:active { transform: scale(0.9); }
+#bead-count {
+  text-align: center; font-size: 20px; font-weight: 600;
+  color: var(--accent); margin-top: 8px;
+}
+
+/* ── Card panel ──────────────────────────────────────────────────────────── */
+#card-panel-inner { position: relative; }
+#card-panel-title { font-size: 17px; font-weight: 600; margin-bottom: 16px; }
+
+#flower-selector { display: flex; gap: 8px; margin-bottom: 14px; }
+.flower-btn {
+  flex: 1; padding: 8px 6px;
+  border-radius: 10px; border: 1px solid var(--border);
+  background: var(--surface); font-size: 12px; cursor: pointer;
+}
+.flower-btn.active { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, var(--surface)); }
+
+#greeting-picker { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+.greeting-btn {
+  padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border);
+  background: var(--surface); text-align: left; font-size: 13px; cursor: pointer;
+}
+.greeting-btn.active { border-color: var(--accent); }
+
+#card-custom-text {
+  width: 100%; height: 72px; padding: 10px 12px;
+  border: 1px solid var(--border); border-radius: 10px;
+  background: var(--surface); color: var(--text); font-size: 13px;
+  resize: none; font-family: inherit; margin-bottom: 2px;
+}
+#card-custom-text:focus { outline: 2px solid var(--accent); }
+#char-count { font-size: 11px; color: var(--text-soft); text-align: right; margin-bottom: 14px; }
+
+#card-preview-canvas {
+  display: block; width: 100%; border-radius: 12px;
+  margin-bottom: 14px; background: #c8bfae;
+}
+
+#card-actions { display: flex; gap: 10px; margin-bottom: 14px; }
+#card-share-btn, #card-download-btn {
+  flex: 1; padding: 13px 10px;
+  border-radius: 12px; border: none; font-size: 14px; font-weight: 600; cursor: pointer;
+}
+#card-share-btn    { background: var(--accent); color: #fff; }
+#card-download-btn { background: var(--surface); color: var(--text); border: 1px solid var(--border); }
+
+#card-close-btn {
+  position: absolute; top: 0; right: 0;
+  background: none; border: none; font-size: 18px;
+  color: var(--text-soft); cursor: pointer; padding: 4px;
+}
+
+/* ── My-temple prompt ────────────────────────────────────────────────────── */
+#my-temple-prompt {
+  position: fixed; bottom: calc(80px + var(--safe-bottom) + 12px);
+  left: 50%; transform: translateX(-50%);
+  z-index: 30;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 14px; padding: 12px 16px;
+  display: flex; align-items: center; gap: 10px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+  white-space: nowrap; font-size: 13px;
+  transition: opacity 0.2s, transform 0.2s;
+}
+#my-temple-prompt[aria-hidden="true"] { opacity: 0; pointer-events: none; transform: translateX(-50%) translateY(8px); }
+#my-temple-yes, #my-temple-skip {
+  padding: 6px 12px; border-radius: 8px; border: none; font-size: 12px; cursor: pointer;
+}
+#my-temple-yes  { background: var(--accent); color: #fff; font-weight: 600; }
+#my-temple-skip { background: var(--surface); color: var(--text-soft); border: 1px solid var(--border); }
