@@ -1,7 +1,9 @@
 import http from 'node:http';
+import {loadCalendar,lookupFestival,festivalToday,festivalMidnightMs} from './festival.mjs';
 import {equal,hash,clientIP,validateInitData} from './security.mjs';
 import {botCopy} from './bot-copy.mjs';
 export function createServer(settings,store,send=async(method,body)=>{const r=await fetch(`https://api.telegram.org/bot${settings.token}/${method}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal:AbortSignal.timeout(10000)});if(!r.ok||!(await r.json()).ok)throw Error('telegram unavailable');},family=async()=>false,observe=()=>{}){
+  const calendar=loadCalendar();
   const cooldown=new Map(),updates=new Map();
   return http.createServer(async(req,res)=>{
     res.once('finish',()=>{try{observe(res.statusCode);}catch{}});
@@ -9,6 +11,7 @@ export function createServer(settings,store,send=async(method,body)=>{const r=aw
     try{
       const route=new URL(req.url,'http://localhost').pathname,origin=req.headers.origin;
       if(route==='/healthz'&&req.method==='GET')return reply(200,null,settings.telegramEnabled===false?{telegram:'disabled'}:{});
+      if(route==='/api/festival/current'&&req.method==='GET'){const entry=lookupFestival(calendar,festivalToday());const exp=festivalMidnightMs();const ttl=Math.max(60,Math.floor((exp-Date.now())/1000));res.writeHead(200,{'Content-Type':'application/json','Cache-Control':`public, max-age=${ttl}`,'Access-Control-Allow-Origin':'*'});res.end(JSON.stringify({festival:entry?.festival??null,temple_highlight:entry?.temple??null,valid_until:new Date(exp).toISOString()}));return;}
       if(origin&&!settings.origins?.has(origin))return reply(403,'origin');
       if(origin){res.setHeader('Access-Control-Allow-Origin',origin);res.setHeader('Vary','Origin');}
       if(settings.telegramEnabled===false&&route.startsWith('/telegram/'))return reply(503,'telegram_disabled');
