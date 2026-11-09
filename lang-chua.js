@@ -13,10 +13,12 @@ import { createTempleAudio } from '/audio.js';
 // ── Audio ──────────────────────────────────────────────────────────────────
 const audio = createTempleAudio();
 let _audioEnabled = false;
+let _pendingRain = false;
 function enableAudioOnce() {
   if (_audioEnabled) return;
   _audioEnabled = true;
   audio.enable().catch(() => {});
+  if (_pendingRain) startRainSound();
 }
 
 // ── Service Worker registration ────────────────────────────────────────────
@@ -38,12 +40,21 @@ const TEMPLES = {
 
 const SCENE_EXT = '.webp';
 
+// ── Device time → period (VN timezone, UTC+7) ─────────────────────────────
+function devicePeriod() {
+  const h = (new Date().getUTCHours() + 7) % 24;
+  if (h >= 5  && h < 8)  return 'dawn';
+  if (h >= 8  && h < 17) return 'day';
+  if (h >= 17 && h < 19) return 'dusk';
+  return 'night';
+}
+
 // ── App state ──────────────────────────────────────────────────────────────
 const state = {
-  view:      'map',       // 'map' | 'temple'
-  temple:    null,        // templeId
-  period:    'day',       // 'day' | 'dawn' | 'dusk' | 'night'
-  sceneView: 'hall-front',// 'hall-front' | 'courtyard'
+  view:      'map',
+  temple:    null,
+  period:    devicePeriod(),      // follows device clock (VN timezone)
+  sceneView: 'hall-front',
   myTemple:  loadMyTemple(),
 };
 
@@ -60,12 +71,39 @@ const navTempleLabel = document.getElementById('nav-temple-label');
 const myTemplePrompt = document.getElementById('my-temple-prompt');
 
 // ── Boot ───────────────────────────────────────────────────────────────────
+let _rainNode = null;
+function startRainSound() {
+  if (_rainNode) return;
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const buf = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+    const src = ctx.createBufferSource();
+    src.buffer = buf; src.loop = true;
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'bandpass'; filter.frequency.value = 1200; filter.Q.value = 0.5;
+    const gain = ctx.createGain(); gain.gain.value = 0.08;
+    src.connect(filter); filter.connect(gain); gain.connect(ctx.destination);
+    src.start();
+    _rainNode = { src, ctx };
+  } catch {}
+}
+function stopRainSound() {
+  if (!_rainNode) return;
+  try { _rainNode.src.stop(); _rainNode.ctx.close(); } catch {}
+  _rainNode = null;
+}
+
 async function fetchWeather() {
   try {
     const r = await fetch('/api/weather/hcmc');
     if (!r.ok) return;
     const { raining } = await r.json();
     document.body.dataset.weather = raining ? 'rain' : 'clear';
+    _pendingRain = raining;
+    if (raining && _audioEnabled) startRainSound();
+    else if (!raining) stopRainSound();
   } catch {}
 }
 
