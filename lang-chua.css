@@ -302,6 +302,22 @@ body[data-festival="ram"]    #scene-stage { background: linear-gradient(160deg, 
 body[data-festival="vulan"]  #scene-stage { background: linear-gradient(160deg, #707880, #505860); }
 body[data-festival^="quanam"] #scene-stage { background: linear-gradient(160deg, #80a8c0, #6090a8); }
 
+/* ── Weather overlay ─────────────────────────────────────────────────────── */
+@keyframes rain-fall {
+  from { background-position: 0 0; }
+  to   { background-position: -24px 120px; }
+}
+body[data-weather="rain"] #scene-stage::after {
+  content: '';
+  position: absolute; inset: 0; z-index: 3; pointer-events: none;
+  background: repeating-linear-gradient(
+    105deg,
+    transparent 0, transparent 7px,
+    rgba(180,215,245,0.18) 7px, rgba(180,215,245,0.18) 8px
+  );
+  animation: rain-fall 0.45s linear infinite;
+}
+
 /* ── Bottom sheet shared ─────────────────────────────────────────────────── */
 .bottom-sheet {
   position: fixed; left: 0; right: 0; bottom: 0;

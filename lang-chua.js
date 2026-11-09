@@ -60,9 +60,19 @@ const navTempleLabel = document.getElementById('nav-temple-label');
 const myTemplePrompt = document.getElementById('my-temple-prompt');
 
 // ── Boot ───────────────────────────────────────────────────────────────────
+async function fetchWeather() {
+  try {
+    const r = await fetch('/api/weather/hcmc');
+    if (!r.ok) return;
+    const { raining } = await r.json();
+    document.body.dataset.weather = raining ? 'rain' : 'clear';
+  } catch {}
+}
+
 async function boot() {
   applyDeviceTier();
   await initFestival();             // sets body[data-festival]
+  fetchWeather();                   // sets body[data-weather] — non-blocking
   applyMyTempleHighlight();
   wireMapCards();
   wirePeriodTabs();
