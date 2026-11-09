@@ -1,0 +1,602 @@
+[
+  {
+    "size": [
+      360,
+      640
+    ],
+    "visitor": "short-light",
+    "hand": "right",
+    "visibleBeads": 9,
+    "thumbXRatio": 0.5489583333333333
+  },
+  {
+    "size": [
+      360,
+      640
+    ],
+    "visitor": "short-light",
+    "hand": "left",
+    "visibleBeads": 9,
+    "thumbXRatio": 0.6539930555555555
+  },
+  {
+    "size": [
+      360,
+      640
+    ],
+    "visitor": "curly-dark",
+    "hand": "right",
+    "visibleBeads": 9,
+    "thumbXRatio": 0.5489583333333333
+  },
+  {
+    "size": [
+      360,
+      640
+    ],
+    "visitor": "curly-dark",
+    "hand": "left",
+    "visibleBeads": 9,
+    "thumbXRatio": 0.6539930555555555
+  },
+  {
+    "size": [
+      360,
+      640
+    ],
+    "visitor": "curly-medium",
+    "hand": "right",
+    "visibleBeads": 9,
+    "thumbXRatio": 0.5489583333333333
+  },
+  {
+    "size": [
+      360,
+      640
+    ],
+    "visitor": "curly-medium",
+    "hand": "left",
+    "visibleBeads": 9,
+    "thumbXRatio": 0.6539930555555555
+  },
+  {
+    "size": [
+      360,
+      640
+    ],
+    "visitor": "bun-light",
+    "hand": "right",
+    "visibleBeads": 9,
+    "thumbXRatio": 0.5489583333333333
+  },
+  {
+    "size": [
+      360,
+      640
+    ],
+    "visitor": "bun-light",
+    "hand": "left",
+    "visibleBeads": 9,
+    "thumbXRatio": 0.6539930555555555
+  },
+  {
+    "size": [
+      360,
+      640
+    ],
+    "visitor": "bun-dark",
+    "hand": "right",
+    "visibleBeads": 9,
+    "thumbXRatio": 0.5489583333333333
+  },
+  {
+    "size": [
+      360,
+      640
+    ],
+    "visitor": "bun-dark",
+    "hand": "left",
+    "visibleBeads": 9,
+    "thumbXRatio": 0.6539930555555555
+  },
+  {
+    "size": [
+      360,
+      640
+    ],
+    "visitor": "ponytail-medium",
+    "hand": "right",
+    "visibleBeads": 9,
+    "thumbXRatio": 0.5489583333333333
+  },
+  {
+    "size": [
+      360,
+      640
+    ],
+    "visitor": "ponytail-medium",
+    "hand": "left",
+    "visibleBeads": 9,
+    "thumbXRatio": 0.6539930555555555
+  },
+  {
+    "size": [
+      375,
+      667
+    ],
+    "visitor": "short-light",
+    "hand": "right",
+    "visibleBeads": 9,
+    "thumbXRatio": 0.549
+  },
+  {
+    "size": [
+      375,
+      667
+    ],
+    "visitor": "short-light",
+    "hand": "left",
+    "visibleBeads": 9,
+    "thumbXRatio": 0.654
+  },
+  {
+    "size": [
+      375,
+      667
+    ],
+    "visitor": "curly-dark",
+    "hand": "right",
+    "visibleBeads": 9,
+    "thumbXRatio": 0.549
+  },
+  {
+    "size": [
+      375,
+      667
+    ],
+    "visitor": "curly-dark",
+    "hand": "left",
+    "visibleBeads": 9,
+    "thumbXRatio": 0.654
+  },
+  {
+    "size": [
+      375,
+      667
+    ],
+    "visitor": "curly-medium",
+    "hand": "right",
+    "visibleBeads": 9,
+    "thumbXRatio": 0.549
+  },
+  {
+    "size": [
+      375,
+      667
+    ],
+    "visitor": "curly-medium",
+    "hand": "left",
+    "visibleBeads": 9,
+    "thumbXRatio": 0.654
+  },
+  {
+    "size": [
+      375,
+      667
+    ],
+    "visitor": "bun-light",
+    "hand": "right",
+    "visibleBeads": 9,
+    "thumbXRatio": 0.549
+  },
+  {
+    "size": [
+      375,
+      667
+    ],
+    "visitor": "bun-light",
+    "hand": "left",
+    "visibleBeads": 9,
+    "thumbXRatio": 0.654
+  },
+  {
+    "size": [
+      375,
+      667
+    ],
+    "visitor": "bun-dark",
+    "hand": "right",
+    "visibleBeads": 9,
+    "thumbXRatio": 0.549
+  },
+  {
+    "size": [
+      375,
+      667
+    ],
+    "visitor": "bun-dark",
+    "hand": "left",
+    "visibleBeads": 9,
+    "thumbXRatio": 0.654
+  },
+  {
+    "size": [
+      375,
+      667
+    ],
+    "visitor": "ponytail-medium",
+    "hand": "right",
+    "visibleBeads": 9,
+    "thumbXRatio": 0.549
+  },
+  {
+    "size": [
+      375,
+      667
+    ],
+    "visitor": "ponytail-medium",
+    "hand": "left",
+    "visibleBeads": 9,
+    "thumbXRatio": 0.654
+  },
+  {
+    "size": [
+      390,
+      844
+    ],
+    "visitor": "short-light",
+    "hand": "right",
+    "visibleBeads": 12,
+    "thumbXRatio": 0.5489983974358974
+  },
+  {
+    "size": [
+      390,
+      844
+    ],
+    "visitor": "short-light",
+    "hand": "left",
+    "visibleBeads": 12,
+    "thumbXRatio": 0.6539663461538462
+  },
+  {
+    "size": [
+      390,
+      844
+    ],
+    "visitor": "curly-dark",
+    "hand": "right",
+    "visibleBeads": 12,
+    "thumbXRatio": 0.5489983974358974
+  },
+  {
+    "size": [
+      390,
+      844
+    ],
+    "visitor": "curly-dark",
+    "hand": "left",
+    "visibleBeads": 12,
+    "thumbXRatio": 0.6539663461538462
+  },
+  {
+    "size": [
+      390,
+      844
+    ],
+    "visitor": "curly-medium",
+    "hand": "right",
+    "visibleBeads": 12,
+    "thumbXRatio": 0.5489983974358974
+  },
+  {
+    "size": [
+      390,
+      844
+    ],
+    "visitor": "curly-medium",
+    "hand": "left",
+    "visibleBeads": 12,
+    "thumbXRatio": 0.6539663461538462
+  },
+  {
+    "size": [
+      390,
+      844
+    ],
+    "visitor": "bun-light",
+    "hand": "right",
+    "visibleBeads": 12,
+    "thumbXRatio": 0.5489983974358974
+  },
+  {
+    "size": [
+      390,
+      844
+    ],
+    "visitor": "bun-light",
+    "hand": "left",
+    "visibleBeads": 12,
+    "thumbXRatio": 0.6539663461538462
+  },
+  {
+    "size": [
+      390,
+      844
+    ],
+    "visitor": "bun-dark",
+    "hand": "right",
+    "visibleBeads": 12,
+    "thumbXRatio": 0.5489983974358974
+  },
+  {
+    "size": [
+      390,
+      844
+    ],
+    "visitor": "bun-dark",
+    "hand": "left",
+    "visibleBeads": 12,
+    "thumbXRatio": 0.6539663461538462
+  },
+  {
+    "size": [
+      390,
+      844
+    ],
+    "visitor": "ponytail-medium",
+    "hand": "right",
+    "visibleBeads": 12,
+    "thumbXRatio": 0.5489983974358974
+  },
+  {
+    "size": [
+      390,
+      844
+    ],
+    "visitor": "ponytail-medium",
+    "hand": "left",
+    "visibleBeads": 12,
+    "thumbXRatio": 0.6539663461538462
+  },
+  {
+    "size": [
+      393,
+      852
+    ],
+    "visitor": "short-light",
+    "hand": "right",
+    "visibleBeads": 12,
+    "thumbXRatio": 0.5489821882951654
+  },
+  {
+    "size": [
+      393,
+      852
+    ],
+    "visitor": "short-light",
+    "hand": "left",
+    "visibleBeads": 12,
+    "thumbXRatio": 0.6539837786259542
+  },
+  {
+    "size": [
+      393,
+      852
+    ],
+    "visitor": "curly-dark",
+    "hand": "right",
+    "visibleBeads": 12,
+    "thumbXRatio": 0.5489821882951654
+  },
+  {
+    "size": [
+      393,
+      852
+    ],
+    "visitor": "curly-dark",
+    "hand": "left",
+    "visibleBeads": 12,
+    "thumbXRatio": 0.6539837786259542
+  },
+  {
+    "size": [
+      393,
+      852
+    ],
+    "visitor": "curly-medium",
+    "hand": "right",
+    "visibleBeads": 12,
+    "thumbXRatio": 0.5489821882951654
+  },
+  {
+    "size": [
+      393,
+      852
+    ],
+    "visitor": "curly-medium",
+    "hand": "left",
+    "visibleBeads": 12,
+    "thumbXRatio": 0.6539837786259542
+  },
+  {
+    "size": [
+      393,
+      852
+    ],
+    "visitor": "bun-light",
+    "hand": "right",
+    "visibleBeads": 12,
+    "thumbXRatio": 0.5489821882951654
+  },
+  {
+    "size": [
+      393,
+      852
+    ],
+    "visitor": "bun-light",
+    "hand": "left",
+    "visibleBeads": 12,
+    "thumbXRatio": 0.6539837786259542
+  },
+  {
+    "size": [
+      393,
+      852
+    ],
+    "visitor": "bun-dark",
+    "hand": "right",
+    "visibleBeads": 12,
+    "thumbXRatio": 0.5489821882951654
+  },
+  {
+    "size": [
+      393,
+      852
+    ],
+    "visitor": "bun-dark",
+    "hand": "left",
+    "visibleBeads": 12,
+    "thumbXRatio": 0.6539837786259542
+  },
+  {
+    "size": [
+      393,
+      852
+    ],
+    "visitor": "ponytail-medium",
+    "hand": "right",
+    "visibleBeads": 12,
+    "thumbXRatio": 0.5489821882951654
+  },
+  {
+    "size": [
+      393,
+      852
+    ],
+    "visitor": "ponytail-medium",
+    "hand": "left",
+    "visibleBeads": 12,
+    "thumbXRatio": 0.6539837786259542
+  },
+  {
+    "size": [
+      430,
+      932
+    ],
+    "visitor": "short-light",
+    "hand": "right",
+    "visibleBeads": 13,
+    "thumbXRatio": 0.5489825581395349
+  },
+  {
+    "size": [
+      430,
+      932
+    ],
+    "visitor": "short-light",
+    "hand": "left",
+    "visibleBeads": 13,
+    "thumbXRatio": 0.6539970930232558
+  },
+  {
+    "size": [
+      430,
+      932
+    ],
+    "visitor": "curly-dark",
+    "hand": "right",
+    "visibleBeads": 13,
+    "thumbXRatio": 0.5489825581395349
+  },
+  {
+    "size": [
+      430,
+      932
+    ],
+    "visitor": "curly-dark",
+    "hand": "left",
+    "visibleBeads": 13,
+    "thumbXRatio": 0.6539970930232558
+  },
+  {
+    "size": [
+      430,
+      932
+    ],
+    "visitor": "curly-medium",
+    "hand": "right",
+    "visibleBeads": 13,
+    "thumbXRatio": 0.5489825581395349
+  },
+  {
+    "size": [
+      430,
+      932
+    ],
+    "visitor": "curly-medium",
+    "hand": "left",
+    "visibleBeads": 13,
+    "thumbXRatio": 0.6539970930232558
+  },
+  {
+    "size": [
+      430,
+      932
+    ],
+    "visitor": "bun-light",
+    "hand": "right",
+    "visibleBeads": 13,
+    "thumbXRatio": 0.5489825581395349
+  },
+  {
+    "size": [
+      430,
+      932
+    ],
+    "visitor": "bun-light",
+    "hand": "left",
+    "visibleBeads": 13,
+    "thumbXRatio": 0.6539970930232558
+  },
+  {
+    "size": [
+      430,
+      932
+    ],
+    "visitor": "bun-dark",
+    "hand": "right",
+    "visibleBeads": 13,
+    "thumbXRatio": 0.5489825581395349
+  },
+  {
+    "size": [
+      430,
+      932
+    ],
+    "visitor": "bun-dark",
+    "hand": "left",
+    "visibleBeads": 13,
+    "thumbXRatio": 0.6539970930232558
+  },
+  {
+    "size": [
+      430,
+      932
+    ],
+    "visitor": "ponytail-medium",
+    "hand": "right",
+    "visibleBeads": 13,
+    "thumbXRatio": 0.5489825581395349
+  },
+  {
+    "size": [
+      430,
+      932
+    ],
+    "visitor": "ponytail-medium",
+    "hand": "left",
+    "visibleBeads": 13,
+    "thumbXRatio": 0.6539970930232558
+  }
+]

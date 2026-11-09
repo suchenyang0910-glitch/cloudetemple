@@ -1,0 +1,88 @@
+{
+  "base": "http://127.0.0.1:8828",
+  "viewport": [
+    393,
+    659
+  ],
+  "visitors": [
+    {
+      "visitor": "short-light",
+      "placementDelta": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "visibleBeads": 9,
+      "touch": "inset(100px 20px 0px 30%)",
+      "frames": "1-2-3-1",
+      "srAnnouncements": "0 then 9"
+    },
+    {
+      "visitor": "curly-dark",
+      "placementDelta": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "visibleBeads": 9,
+      "touch": "inset(100px 20px 0px 30%)",
+      "frames": "1-2-3-1",
+      "srAnnouncements": "0 then 9"
+    },
+    {
+      "visitor": "curly-medium",
+      "placementDelta": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "visibleBeads": 9,
+      "touch": "inset(100px 20px 0px 30%)",
+      "frames": "1-2-3-1",
+      "srAnnouncements": "0 then 9"
+    },
+    {
+      "visitor": "bun-light",
+      "placementDelta": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "visibleBeads": 9,
+      "touch": "inset(100px 20px 0px 30%)",
+      "frames": "1-2-3-1",
+      "srAnnouncements": "0 then 9"
+    },
+    {
+      "visitor": "bun-dark",
+      "placementDelta": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "visibleBeads": 9,
+      "touch": "inset(100px 20px 0px 30%)",
+      "frames": "1-2-3-1",
+      "srAnnouncements": "0 then 9"
+    },
+    {
+      "visitor": "ponytail-medium",
+      "placementDelta": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "visibleBeads": 9,
+      "touch": "inset(100px 20px 0px 30%)",
+      "frames": "1-2-3-1",
+      "srAnnouncements": "0 then 9"
+    }
+  ],
+  "errors": []
+}
