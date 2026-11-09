@@ -201,8 +201,8 @@ function enterTemple(templeId) {
 }
 
 // ── Scene rendering ────────────────────────────────────────────────────────
-function sceneURL(templeId, view, period) {
-  return `/scenes/${templeId}-${view}-${period}${SCENE_EXT}`;
+function sceneURL(_templeId, view, period) {
+  return `/assets/processed-v1/img/scene-vn-${view}-${period}${SCENE_EXT}`;
 }
 
 function renderScene() {
