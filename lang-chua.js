@@ -36,8 +36,7 @@ const TEMPLES = {
   namtong: { nameVi: 'Khu Nam Tông', nameCn: '南传区',   state: 'coming_soon', scenes: false },
 };
 
-// Change to '.webp' when production assets arrive
-const SCENE_EXT = '.png';
+const SCENE_EXT = '.webp';
 
 // ── App state ──────────────────────────────────────────────────────────────
 const state = {
