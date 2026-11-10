@@ -18,6 +18,8 @@ def main():
     metadata = target.stat()
     backup = target.with_name(f"staging.env.pre-family-allowlist-{time.strftime('%Y%m%d%H%M%S')}")
     shutil.copy2(target, backup)
+    os.chown(backup, metadata.st_uid, metadata.st_gid)
+    os.chmod(backup, metadata.st_mode & 0o777)
     lines = [line for line in target.read_text(encoding="utf-8").splitlines() if not line.startswith(("FAMILY_ENABLED=", "FAMILY_ALLOWLIST="))]
     lines.extend(("FAMILY_ENABLED=1", f"FAMILY_ALLOWLIST={','.join(emails)}"))
     descriptor, temporary = tempfile.mkstemp(prefix=".staging.env.", dir=target.parent)
