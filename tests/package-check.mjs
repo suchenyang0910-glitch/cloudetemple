@@ -13,8 +13,9 @@ assert.deepEqual(await fs.readdir(new URL('assets/',root)),['releases','share'])
 assert.deepEqual(await fs.readdir(new URL('assets/releases/',root)),[release]);
 for(const kind of ['wood','spacer','guru'])await fs.access(new URL(`assets/releases/${release}/processed-v1/img/bead-${kind}-v2.webp`,root));
 await fs.access(new URL(`assets/releases/${release}/processed-v1/img/share-qr.png`,root));
-for(const id of ['short-light','curly-dark','curly-medium','bun-light','bun-dark','ponytail-medium'])await fs.access(new URL(`assets/releases/${release}/processed-v1/img/visitor-${id}-mo-base-v2.webp`,root));
-for(const name of ['hall-cushion-v2.webp','mo-low-table-v2.webp','mo-v6.webp','mo-mallet.webp'])await fs.access(new URL(`assets/releases/${release}/processed-v1/img/${name}`,root));
+for(const id of ['short-light','curly-dark','curly-medium','bun-light','bun-dark','ponytail-medium'])for(const frame of [1,2,3])await fs.access(new URL(`assets/releases/${release}/processed-v1/img/visitor-${id}-mo-${frame}-v3.webp`,root));
+for(const name of ['hall-cushion-v2.webp','mo-low-table-v2.webp','mo-v6.webp'])await fs.access(new URL(`assets/releases/${release}/processed-v1/img/${name}`,root));
+await assert.rejects(fs.access(new URL(`assets/releases/${release}/processed-v1/img/mo-mallet.webp`,root)),'mallet must be integrated into visitor frames');
 for(const id of ['short-light','curly-dark','curly-medium','bun-light','bun-dark','ponytail-medium'])for(const frame of [1,2,3])await fs.access(new URL(`assets/releases/${release}/processed-v1/img/visitor-${id}-beads-side-${frame}-v1.webp`,root));
 for(const id of ['short-light','curly-dark','curly-medium','bun-light','bun-dark','ponytail-medium'])await fs.access(new URL(`assets/releases/${release}/processed-v1/img/visitor-${id}-stand.webp`,root));
 for(const id of ['short-light','curly-dark','curly-medium','bun-light','bun-dark','ponytail-medium'])for(const pose of ['sit','beads']){

@@ -9,7 +9,7 @@ async(page)=>{
  await p.waitForTimeout(550);assert(await p.locator('#scene-old').count()===1,'old scene retained');assert(await p.locator('#loading').isVisible(),'indicator after 400ms');assert(await p.locator('[data-action=continue]').isVisible(),'next action usable while loading');
  await p.waitForFunction(()=>document.querySelector('#app').getAttribute('aria-busy')==='false');assert(requests===1,'duplicate navigation does not refetch scene');
  await p.waitForFunction(()=>prefetchAudit.filter(x=>x.url.includes('choose-v1')).length===6&&prefetchAudit.filter(x=>x.idle&&x.url.includes('choose-v1')).length>=5);
- await p.locator('[data-action=continue]').click();await p.waitForFunction(()=>prefetchAudit.some(x=>x.idle&&x.url.includes('mo-mallet')));
+ await p.locator('[data-action=continue]').click();await p.waitForFunction(()=>prefetchAudit.some(x=>x.idle&&x.url.includes('mo-1-v3')));
  assert(await p.evaluate(()=>prefetchAudit.every(x=>!x.url.includes('/audio/'))),'muted idle never fetches audio');
  return {passed:true,checks:['first scene only','old scene retained','400ms indicator','controls usable during load','duplicate navigation one request','six approved visitor thumbnails idle prefetch','home scene and pose idle prefetch','no muted audio downloads']};
  }finally{await p.close();}

@@ -65,7 +65,7 @@ with sync_playwright() as pw:
         resource_url = module_url.replace("app.", "resources.")
         image_status = page.evaluate("async src=>Object.fromEntries((await import(new URL(src,location.href))).imageStatus)", resource_url)
         assert image_status["scene-vn-hall-side-day.webp"]["path"] in ("fetch-blob", "native-img"), image_status
-        assert image_status["visitor-bun-light-mo-1-v1.webp"]["path"] in ("fetch-blob", "native-img"), image_status
+        assert image_status["visitor-bun-light-mo-1-v3.webp"]["path"] in ("fetch-blob", "native-img"), image_status
         page.evaluate(
             """async src => {
               const mod = await import(new URL(src, location.href));
