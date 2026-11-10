@@ -20,9 +20,8 @@ console.log('Bead motion: slow / capped catch-up / release / reverse / horizonta
 const edge=new BeadMotion(()=>{throw Error('edge counted');});edge.begin(390,100,393);edge.move(390,400);edge.frame(0);assert(!edge.active);
 for(const width of [360,375,390,393,430])for(let offset=-300;offset<=300;offset+=10){
  const right=beadArc(width,600,offset),left=beadArc(width,600,offset,true),r=width*beadMotionConfig.arcRadius;
- assert.equal(right.y,left.y);assert(right.x>=width*beadMotionConfig.laneRight-1e-8&&right.x<=width*beadMotionConfig.laneLeft+1e-8);assert(left.x>=width*beadMotionConfig.laneRight-1e-8&&left.x<=width*beadMotionConfig.laneLeft+1e-8);
+ assert.deepEqual(right,left,'hand switch must not move the strand');assert(right.x>=width*.88-1e-8&&right.x<=width*.99,'strand stays at the right edge');
  assert(Math.abs(Math.hypot(right.x-(width*beadMotionConfig.laneRight+r),right.y-600*.65)-r)<1e-8);
- assert(Math.abs(Math.hypot(left.x-(width*beadMotionConfig.laneLeft-r),left.y-600*.65)-r)<1e-8);
 }
 const loop=new BeadMotion(()=>{});for(let n=0;n<109;n++)assert(loop.tap(n*100));assert.equal(loop.count,109);
 

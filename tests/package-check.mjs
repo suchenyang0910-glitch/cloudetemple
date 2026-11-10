@@ -13,7 +13,8 @@ assert.deepEqual(await fs.readdir(new URL('assets/',root)),['releases','share'])
 assert.deepEqual(await fs.readdir(new URL('assets/releases/',root)),[release]);
 for(const kind of ['wood','spacer','guru'])await fs.access(new URL(`assets/releases/${release}/processed-v1/img/bead-${kind}-v2.webp`,root));
 await fs.access(new URL(`assets/releases/${release}/processed-v1/img/share-qr.png`,root));
-for(const id of ['short-light','curly-dark','curly-medium','bun-light','bun-dark','ponytail-medium'])for(const frame of [1,2,3])await fs.access(new URL(`assets/releases/${release}/processed-v1/img/visitor-${id}-mo-${frame}-v1.webp`,root));
+for(const id of ['short-light','curly-dark','curly-medium','bun-light','bun-dark','ponytail-medium'])await fs.access(new URL(`assets/releases/${release}/processed-v1/img/visitor-${id}-mo-base-v2.webp`,root));
+for(const name of ['hall-cushion-v2.webp','mo-low-table-v2.webp','mo-v6.webp','mo-mallet.webp'])await fs.access(new URL(`assets/releases/${release}/processed-v1/img/${name}`,root));
 for(const id of ['short-light','curly-dark','curly-medium','bun-light','bun-dark','ponytail-medium'])for(const frame of [1,2,3])await fs.access(new URL(`assets/releases/${release}/processed-v1/img/visitor-${id}-beads-side-${frame}-v1.webp`,root));
 for(const id of ['short-light','curly-dark','curly-medium','bun-light','bun-dark','ponytail-medium'])await fs.access(new URL(`assets/releases/${release}/processed-v1/img/visitor-${id}-stand.webp`,root));
 for(const id of ['short-light','curly-dark','curly-medium','bun-light','bun-dark','ponytail-medium'])for(const pose of ['sit','beads']){
@@ -21,7 +22,7 @@ for(const id of ['short-light','curly-dark','curly-medium','bun-light','bun-dark
  await assert.rejects(fs.access(new URL(`assets/releases/${release}/processed-v1/img/visitor-${id}-${pose}.webp`,root)),`${id} ${pose} original excluded from package`);
 }
 for(const pace of ['4-6','4-4','5-7'])for(const ext of ['mp3','m4a'])await fs.access(new URL(`assets/releases/${release}/audio/breath-${pace}.${ext}`,root));
-for(const old of ['mo.webp','mo-mallet.webp'])await assert.rejects(fs.access(new URL(`assets/releases/${release}/processed-v1/img/${old}`,root)),old+' removed');
+await assert.rejects(fs.access(new URL(`assets/releases/${release}/processed-v1/img/mo.webp`,root)),'old combined wooden fish removed');
 for(const name of ['og-share-vi.webp','og-share-en.webp']){const file=new URL(`assets/share/${name}`,root);assert((await fs.stat(file)).size<=200000,name+' max 200KB')}
 const festivalNames=['flower-dao.svg','flower-mai.svg','lantern.svg','moon.svg','petal-dao.svg','petal-mai.svg','pot-dao.svg','pot-mai.svg'];
 for(const name of festivalNames)await fs.access(new URL(`assets/releases/${release}/festival/${name}`,root));

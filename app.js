@@ -16,7 +16,7 @@ const event=(name,params)=>analytics?.event(name,params);
 function completed(activity,ms,n){event('activity_complete',{activity,duration_bucket:ms<60000?'<1m':ms<180000?'1-3m':ms<=600000?'3-10m':'>10m',count_bucket:n>=108?'108+':n>=54?'54-107':n>=27?'27-53':n>1?'2-26':'1'})}
 const $=s=>document.querySelector(s);
 const reduced=matchMedia('(prefers-reduced-motion: reduce)');
-const state={view:'entry',lang:'vi',visitor:null,period:'day',layout:null,busy:false,activity:null,incense:null,result:null,bowTarget:3,sitMinutes:3,wood:0,moFrame:1,breathGuide:true,breathPattern:'4-6',bead:0,beadRound:1,beadDirection:1,beadHand:'right',beadFrame:1};
+const state={view:'entry',lang:'vi',visitor:null,period:'day',layout:null,busy:false,activity:null,incense:null,result:null,bowTarget:3,sitMinutes:1,sitOptionsOpen:false,wood:0,moFrame:1,breathGuide:false,breathPattern:'4-6',bead:0,beadRound:1,beadDirection:1,beadHand:'right',beadFrame:1};
 const images=new Map(),tinted=new Map();
 let beadCleanup=null,pendingView=null,choiceToken=0,choiceFront=0;
 let transitionId=0,drawFrame=0,lastFocus=null,shareBlob=null,shareURL=null;
@@ -43,7 +43,8 @@ const actionIcons={
 const read=(key,fallback)=>{try{return JSON.parse(localStorage.getItem(key))??fallback;}catch{return fallback;}};
 const write=(key,value)=>{try{localStorage.setItem(key,JSON.stringify(value));}catch{/* Private browsing still permits a complete visit. */}};
 const breathPatterns={'4-6':[4,6],'4-4':[4,4],'5-7':[5,7]};
-state.breathGuide=read('ct-breath-guide',true)!==false;
+state.sitMinutes=[1,3,5,10].includes(read('ct-sit-minutes',1))?read('ct-sit-minutes',1):1;
+state.breathGuide=read('ct-breath-guide',false)===true;
 state.breathPattern=breathPatterns[read('ct-breath-pattern','4-6')]?read('ct-breath-pattern','4-6'):'4-6';
 
 export function breathFrame(now,start,pattern='4-6'){
@@ -62,7 +63,8 @@ export function periodNow(date=new Date(),periods=state.layout?.periods??{dawn:"
 }
 export function placement(layout,id,pose){
   if(pose==='stand')return {x:193,y:1018,w:240,h:360};
-  if(pose.startsWith('bow-')||pose.startsWith('mo-')||pose.startsWith('beads-side-')){
+  if(pose==='mo-base-v2'||pose.startsWith('beads-side-'))return {x:350,y:838,w:397,h:397};
+  if(pose.startsWith('bow-')){
     const s=layout['hall-side'],scale=s.bowCanvasWidth/s.sourceCanvas[0];
     return {x:s.foot[0]-s.anchor[0]*scale,y:s.foot[1]-s.anchor[1]*scale-(pose.startsWith('bow-')?0:55),w:s.sourceCanvas[0]*scale,h:s.sourceCanvas[1]*scale};
   }
@@ -77,9 +79,9 @@ function image(name){
   return images.get(name);
 }
 function sceneName(view=state.view){return ['incense','bow','mo','beads'].includes(view)?'hall-side':['sit','choose'].includes(view)?'courtyard':'hall-front';}
-function sceneFile(view=state.view,period=state.period){return view==='incense'?`scene-vn-hall-side-incense-patch-${period}.webp`:`scene-vn-${sceneName(view)}-${period}.webp`;}
+function sceneFile(view=state.view,period=state.period){return view==='incense'?`scene-vn-hall-side-incense-patch-${period}.webp`:['mo','beads'].includes(view)?`scene-vn-hall-side-floor-${period}.webp`:`scene-vn-${sceneName(view)}-${period}.webp`;}
 const incensePoses=['inc-walk-1','inc-walk-2','inc-hold','inc-light','inc-vai-1','inc-vai-2','inc-plant-1','inc-end'];
-function poses(view){return view==='morning'?['stand']:view==='bow'?['bow-1','bow-2','bow-3']:view==='incense'?incensePoses:view==='mo'?['mo-1-v1','mo-2-v1','mo-3-v1']:view==='sit'?['sit']:view==='beads'?['beads-side-1-v1','beads-side-2-v1','beads-side-3-v1']:[];}
+function poses(view){return view==='morning'?['stand']:view==='bow'?['bow-1','bow-2','bow-3']:view==='incense'?incensePoses:view==='mo'?['mo-base-v2']:view==='sit'?['sit']:view==='beads'?['beads-side-1-v1','beads-side-2-v1','beads-side-3-v1']:[];}
 const morning=createMorning({event});
 const artFile=(visitor,pose)=>`visitor-${visitor}-${pose}${pose.startsWith('inc-')?'-v1':pose==='sit'||pose==='beads'?'-nocushion':''}.webp`;
 async function prepare(view,period){
@@ -98,14 +100,17 @@ async function prepare(view,period){
     }
     art[pose]=tinted.get(key);
   }
-  return {scene,art,view,missing};
+  const props={},toneProp=async name=>{const key=`prop:${name}:${period}`;if(!tinted.has(key)){const im=await image(name),c=document.createElement('canvas');c.width=im.width;c.height=im.height;const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(im,0,0);const data=x.getImageData(0,0,c.width,c.height),tone=state.layout.toneRGB[period],extra=period==='night'?.9:1;for(let i=0;i<data.data.length;i+=4)for(let j=0;j<3;j++)data.data[i+j]*=tone[j]*extra;x.putImageData(data,0,0);tinted.set(key,c);}return tinted.get(key);};
+  if(['mo','beads'].includes(view))props.cushion=await toneProp('hall-cushion-v2.webp');
+  if(view==='mo')for(const name of ['mo-low-table-v2.webp','mo-v6.webp','mo-mallet.webp'])props[name]=await toneProp(name);
+  return {scene,art,props,view,missing};
 }
 let renderAssets=null;
 function paint(now=performance.now()){
   if(!renderAssets||renderAssets.view!==state.view)return;
   ctx.clearRect(0,0,941,1672);ctx.drawImage(renderAssets.scene,0,0,941,1672);
   const available=poses(state.view);if(!available.length)return;
-  let pose=state.view==='mo'?`mo-${state.moFrame}-v1`:state.view==='beads'?`beads-side-${state.beadFrame}-v1`:state.view==='incense'?incenseVisual(now,state.incense,reduced.matches).pose:available[0],previous=null,mix=1;
+  let pose=state.view==='mo'?'mo-base-v2':state.view==='beads'?`beads-side-${state.beadFrame}-v1`:state.view==='incense'?incenseVisual(now,state.incense,reduced.matches).pose:available[0],previous=null,mix=1;
   const a=state.activity;
   if(state.view==='bow'&&a?.bowStart!==null&&a?.bowStart!==undefined){
     const frame=bowFrame(now-a.bowStart,reduced.matches);pose=`bow-${frame.to}`;previous=`bow-${frame.from}`;mix=frame.mix;
@@ -125,6 +130,14 @@ function paint(now=performance.now()){
     const frame=breathFrame(now,a.breathStarted,state.breathPattern);updateBreathCue(frame.phase);
     if(!reduced.matches){const dw=pos.w*(frame.scale-1),dh=pos.h*(frame.scale-1);pos.x-=dw/2;pos.y-=dh;pos.w+=dw;pos.h+=dh;}
   }
+  const drawProp=(im,x,y,w,h)=>ctx.drawImage(im,x,y,w,h);
+  if(['mo','beads'].includes(state.view))drawProp(renderAssets.props.cushion,484,1163,282,129);
+  if(state.view==='mo'){
+    drawProp(renderAssets.props['mo-low-table-v2.webp'],285,1140,259,117);
+    drawProp(renderAssets.props['mo-v6.webp'],426,1053,124,124);
+    const mallet=renderAssets.props['mo-mallet.webp'],lift=state.moFrame===2,x=lift?493:500,y=1030,w=110,h=105,angle=(lift?25:5)*Math.PI/180,pivotX=w*.88,pivotY=h*.86;
+    ctx.save();ctx.translate(x+pivotX,y+pivotY);ctx.rotate(angle);ctx.drawImage(mallet,-pivotX,-pivotY,w,h);ctx.restore();
+  }
   if(previous&&mix<1&&renderAssets.art[previous]){ctx.globalAlpha=1-mix;ctx.drawImage(renderAssets.art[previous],pos.x,pos.y,pos.w,pos.h);}
   ctx.globalAlpha=mix;ctx.drawImage(renderAssets.art[pose],pos.x,pos.y,pos.w,pos.h);ctx.globalAlpha=1;
   if(state.view==='incense'&&state.incense?.planted){
@@ -141,7 +154,7 @@ function stopActivity(){stopWoodAuto();stopWoodMotion();stopBeadMotion();clearTi
 function prefetch(view){
  const visitor=state.visitor,period=state.period;
  const run=()=>{if(state.visitor!==visitor||state.period!==period||state.view!==view)return;
-  const names=['bow-1','bow-2','bow-3','sit','beads','beads-side-1-v1','beads-side-2-v1','beads-side-3-v1','mo-1-v1','mo-2-v1','mo-3-v1'].map(p=>artFile(visitor,p));
+  const names=['bow-1','bow-2','bow-3','sit','beads','beads-side-1-v1','beads-side-2-v1','beads-side-3-v1','mo-base-v2'].map(p=>artFile(visitor,p));
   if(view==='home')names.push(...['incense','sit','mo'].map(v=>sceneFile(v,period)));
   if(view==='choose')names.push(...state.layout.v1_scope.visitors.map(id=>`visitor-${id}-choose-v1.webp`));
   names.forEach(name=>void image(name));
@@ -243,12 +256,14 @@ function render(){
   }else if(state.view==='sit'){
     const a=state.activity;
     const sitBack=morning.isActive()?`<button type="button" class="text-button morning-skip-step" data-action="morning-skip-step" data-step="sit">${t('morningSkipStep')}</button>`:button('back','home','back-button');
-    $('#controls').innerHTML=`<div class="stack"><p class="timer" id="timer" role="timer">${formatTime(a?remaining(a):state.sitMinutes*60000)}</p>${!a?`<div class="choice-row" aria-label="${t('duration')}">${[1,3,5,10].map(n=>`<button data-minutes="${n}" aria-pressed="${state.sitMinutes===n}">${n} ${t('minutes')}</button>`).join('')}</div>`:''}<div class="row">${!a?button('start','sit-start','primary'):button(a.running?'pause':'resume','pause','primary')}${a?button('finish','finish'):''}${a?button('wood','wood'):''}</div><p class="section-label" id="wood-count" ${!a?'hidden':''}>${t('woodCount')}: ${state.wood}</p><div class="breath-controls"><button type="button" data-action="breath-toggle" aria-pressed="${state.breathGuide}">${t('breathGuide')}</button><div class="choice-row" aria-label="${t('breathPace')}">${Object.keys(breathPatterns).map(k=>`<button data-breath="${k}" aria-pressed="${state.breathPattern===k}" aria-label="${t('breathPattern',{pattern:k.replace('-', ' / ')})}">${k.replace('-', ' / ')}</button>`).join('')}</div></div><div class="row"><label class="ambient-label">${t('ambient')}</label><div class="choice-row ambient-options">${['none','forest','rain'].map(k=>`<button data-ambient="${k}" aria-pressed="${audio.ambientKind===k}">${t(k)}</button>`).join('')}</div></div>${sitBack}</div>`;
+    const summary=t('sitSummary',{minutes:state.sitMinutes,ambient:t(audio.ambientKind),breath:t(state.breathGuide?'breathOn':'breathOff')});
+    const options=!a&&state.sitOptionsOpen?`<div class="sit-options"><div class="choice-row" aria-label="${t('duration')}">${[1,3,5,10].map(n=>`<button data-minutes="${n}" aria-pressed="${state.sitMinutes===n}">${n} ${t('minutes')}</button>`).join('')}</div><div class="breath-controls"><button type="button" data-action="breath-toggle" aria-pressed="${state.breathGuide}">${t('breathGuide')}</button><div class="choice-row" aria-label="${t('breathPace')}">${Object.keys(breathPatterns).map(k=>`<button data-breath="${k}" aria-pressed="${state.breathPattern===k}">${k.replace('-', ' / ')}</button>`).join('')}</div></div><div class="row"><div class="choice-row ambient-options">${['none','forest','rain'].map(k=>`<button data-ambient="${k}" aria-pressed="${audio.ambientKind===k}">${t(k)}</button>`).join('')}</div></div></div>`:'';
+    $('#controls').innerHTML=`<div class="stack sit-main"><p class="timer" id="timer" role="timer">${formatTime(a?remaining(a):state.sitMinutes*60000)}</p>${!a?button('start','sit-start','primary'):''}<p class="sit-summary">${summary}</p>${!a?button('sitOptions','sit-options','',`aria-expanded="${state.sitOptionsOpen}"`):`<div class="row">${button(a.running?'pause':'resume','pause','primary')}${button('finish','finish')}${button('wood','wood')}</div><p class="section-label" id="wood-count">${t('woodCount')}: ${state.wood}</p>`}${options}${sitBack}</div>`;
   }else if(state.view==='mo'){
     $('#controls').innerHTML=`<div class="stack"><p id="daily-wood" class="count">${t('dailyWood',{count:dailyWood()})}</p><p id="wood-message" role="status">${woodSession>=108?t('wood108'):''}</p><div class="row">${button(woodAuto?'woodStop':'woodAuto','wood-auto','primary',`aria-pressed="${!!woodAuto}"`)}${button('back','home')}</div></div>`;
   }else if(state.view==='beads'){
     $('#controls').innerHTML=`<div class="beads-area"><button class="bead-control" id="bead-control" data-action="bead" aria-label="${escapeHTML(t('beadAction'))}"><span class="bead-thread" aria-hidden="true"></span><span class="thumb-point" aria-hidden="true"></span><span class="bead-chevrons" aria-hidden="true"><svg viewBox="0 0 28 54"><path d="m7 10 7 7 7-7M7 25l7 7 7-7M7 40l7 7 7-7"/></svg></span><span class="bead-guide" aria-hidden="true"><svg viewBox="0 0 32 56"><path d="M12 27V14a3 3 0 0 1 6 0v9-6a3 3 0 0 1 6 0v14c0 9-4 15-11 15-5 0-8-3-10-8l-2-6a3 3 0 0 1 5-2l3 4M16 49v6m-4-4 4 4 4-4"/></svg><b>${escapeHTML(t('beadSwipe'))}</b></span><span class="bead-track" aria-hidden="true">${Array.from({length:13},()=>'<i class="strand-bead"></i>').join('')}</span></button></div><div class="bead-summary"><span id="bead-count" aria-hidden="true">${Math.min(108,state.bead)} / 108</span><span id="bead-status" class="sr-only" role="status" aria-live="polite">${Math.min(108,Math.max(0,beadAnnounced))} / 108</span><button type="button" data-action="bead-hand" aria-label="${escapeHTML(t('switchHand')+' · '+t(state.beadHand==='left'?'currentLeft':'currentRight'))}"><svg class="hand-arrows" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8h18M7 4 3 8l4 4m14 4H3m14-4 4 4-4 4"/></svg>${t('switchHand')}</button></div>${button('back','home','back-button')}`;
-    $('.stage').append($('.beads-area'));beadCleanup=mountBeads($('#bead-control'),{step:bead,count:state.bead,reduced:reduced.matches,left:state.beadHand==='left',direction:state.beadDirection});updateBeadCount(state.bead===0);
+    $('.stage').append($('.beads-area'));beadCleanup=mountBeads($('#bead-control'),{step:bead,count:state.bead,reduced:reduced.matches,left:false,direction:state.beadDirection});updateBeadCount(state.bead===0);
   }
   $('#more-toggle').hidden=false;$('#more-toggle').setAttribute('aria-label',t('more'));
   if(familyEnabled)$('#memorial').textContent=t('familyAltar');
@@ -275,8 +290,8 @@ function fitScene(){
   $('#stage-note').style.bottom=state.view==='sit'?`${box.bottom-controls.top+8}px`:'';
   if(state.view==='choose'){const overlay=$('#entry-overlay'),pos=placement(state.layout,state.visitor,'sit');overlay.style.top='0';overlay.style.bottom='0';const person=$('.choice-person');if(person)person.style.cssText=`inset:auto;left:${(box.width-941*scale)/2+pos.x*scale-20}px;top:${sceneTop+pos.y*scale}px;width:${pos.w*scale}px;height:${pos.h*scale}px;max-width:none;margin:0`;}
   if(state.view==='mo'){
-    const sceneLeft=(box.width-941*scale)/2,width=Math.max(48,150*scale),height=Math.max(48,165*scale);
-    $('#wood-prop').style.cssText=`left:${sceneLeft+575*scale}px;top:${sceneTop+1080*scale}px;width:${width}px;height:${height}px`;
+    const sceneLeft=(box.width-941*scale)/2;
+    $('#wood-prop').style.cssText=`left:${sceneLeft+285*scale}px;top:${sceneTop+1035*scale}px;width:${285*scale}px;height:${230*scale}px`;
   }
 }
 new ResizeObserver(()=>{fitScene();paint();}).observe($('#app'));
@@ -384,6 +399,7 @@ function bead(){
 }
 
 export const audio=createTempleAudio({onChange:updateSoundUI,onError:()=>showSoundHint('soundUnavailable',6000),volume:()=>Number($('#volume').value)/100});
+audio.ambientKind=['none','forest','rain'].includes(read('ct-sit-ambient','none'))?read('ct-sit-ambient','none'):'none';
 let hintTimer=0,woodAuto=null,woodSession=0,woodMotionTimer=0,finishTimer=0,incenseReadyTimer=0,woodQueue=[];
 function updateBreathCue(phase){const cue=$('#stage-note');if(!cue)return;const active=state.view==='sit'&&state.activity?.running&&state.breathGuide;if(!active){if(cue.dataset.breath)cue.textContent='';delete cue.dataset.breath;return;}const next=phase??breathFrame(performance.now(),state.activity.breathStarted,state.breathPattern).phase;cue.dataset.breath=next;cue.textContent=t(next==='inhale'?'inhale':'exhale');}
 function startBreathing(fade=.2){if(state.view!=='sit'||!state.activity?.running||!state.breathGuide)return;state.activity.breathStarted=performance.now();updateBreathCue('inhale');void audio.breathing(state.breathPattern,.5,fade);animation();}
@@ -498,9 +514,9 @@ async function shareFile(){
 document.addEventListener('click',async e=>{
   const b=e.target.closest('button');if(!b||b.disabled)return;
   if(b.dataset.target){state.bowTarget=Number(b.dataset.target);stopActivity();render();paint();return;}
-  if(b.dataset.ambient){audio.ambientKind=b.dataset.ambient;if(state.activity?.running)void audio.ambient(b.dataset.ambient);render();return;}
+  if(b.dataset.ambient){audio.ambientKind=b.dataset.ambient;write('ct-sit-ambient',audio.ambientKind);if(state.activity?.running)void audio.ambient(b.dataset.ambient);render();return;}
   if(b.dataset.breath){state.breathPattern=breathPatterns[b.dataset.breath]?b.dataset.breath:'4-6';write('ct-breath-pattern',state.breathPattern);if(state.activity?.running)startBreathing(.15);render();return;}
-  if(b.dataset.minutes){state.sitMinutes=Number(b.dataset.minutes);render();return;}
+  if(b.dataset.minutes){state.sitMinutes=Number(b.dataset.minutes);write('ct-sit-minutes',state.sitMinutes);render();return;}
   const action=b.dataset.action;if(!action)return;
   switch(action){
     case 'more':openMore();break;
@@ -523,7 +539,8 @@ document.addEventListener('click',async e=>{
     case 'incense-done':{const a=state.activity;if(a?.kind==='incense')complete('incense',Math.round(performance.now()-a.startedMonotonic));break;}
     case 'bow-once':bowOnce();break;
     case 'auto':if(!state.activity){bowOnce();state.activity.auto=true;}else{state.activity.auto=!state.activity.auto;if(state.activity.auto&&state.activity.bowStart==null)bowOnce();}syncBowControls();break;
-    case 'sit-start':event('activity_start',{activity:'sit'});state.activity={kind:'sit',running:true,deadline:Date.now()+state.sitMinutes*60000,left:state.sitMinutes*60000,total:state.sitMinutes*60000,breathStarted:performance.now(),breathFading:false};audio.ambient(audio.ambientKind);startBreathing();render();animation();break;
+    case 'sit-options':state.sitOptionsOpen=!state.sitOptionsOpen;render();break;
+    case 'sit-start':state.sitOptionsOpen=false;event('activity_start',{activity:'sit'});state.activity={kind:'sit',running:true,deadline:Date.now()+state.sitMinutes*60000,left:state.sitMinutes*60000,total:state.sitMinutes*60000,breathStarted:performance.now(),breathFading:false};audio.ambient(audio.ambientKind);startBreathing();render();animation();break;
     case 'pause':{const a=state.activity;if(!a||a.finishing)break;if(a.running){a.left=remaining(a);a.running=false;const kind=audio.ambientKind;audio.ambient('none');audio.ambientKind=kind;audio.stopBreathing(.2);updateBreathCue();}else{a.deadline=Date.now()+a.left;a.running=true;a.breathFading=false;audio.ambient(audio.ambientKind);startBreathing();}render();animation();break;}
     case 'finish':finishSit();break;
     case 'breath-toggle':state.breathGuide=!state.breathGuide;write('ct-breath-guide',state.breathGuide);if(state.breathGuide)startBreathing();else{audio.stopBreathing(.2);updateBreathCue();}render();animation();break;

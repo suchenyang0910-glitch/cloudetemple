@@ -62,3 +62,19 @@ user identified the gray-blue mismatch. No third-party artwork was introduced.
 
 **Ignition sound**: Generated locally from filtered brown noise with FFmpeg
 (`anoisesrc`, 0.38 seconds); original project output with no third-party sample.
+
+## Four-fix wooden-fish and cushion-free hall artwork
+
+**Files**: `visitor-*-mo-base-v2.webp`, `mo-low-table-v2.webp`, `mo-v6.webp`,
+`hall-cushion-v2.webp`, and `scene-vn-hall-side-floor-*.webp` (full and mobile).
+
+**Source and process**: Original Chùa Mây visitor, wooden-fish, cushion, and
+hall-side artwork. OpenAI ImageGen was used in edit mode to remove the baked
+mallet/instrument from the six kneeling visitors and to remove the unused hall
+cushion while preserving identity, pose, composition, and time-of-day light.
+The low table, wooden fish, and red pad are the user-approved v5 review assets;
+the existing original mallet remains a separate runtime layer. No third-party
+artwork was introduced. Prompts required a transparent isolated adult visitor,
+unchanged identity/clothing/pose, a closed gripping hand, and no added object;
+scene prompts required removal of only the cushion and preservation of all
+altar, Buddha, lighting, and perspective details.
