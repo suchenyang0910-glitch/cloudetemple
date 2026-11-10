@@ -7,7 +7,7 @@ import {onRequest} from '../functions/api/waitlist.js';
 const root=fileURLToPath(new URL('../',import.meta.url)),store=new Map();
 const env={WAITLIST_SECRET:'local-preview-only-not-a-production-secret',WAITLIST:{async get(k){const r=store.get(k);return r&&r.until>Date.now()?r.value:null;},async put(k,v,o){store.set(k,{value:v,until:Date.now()+o.expirationTtl*1000});}}};
 const mime={'.html':'text/html; charset=utf-8','.css':'text/css','.js':'text/javascript','.json':'application/json','.webp':'image/webp','.png':'image/png','.m4a':'audio/mp4','.mp3':'audio/mpeg','.woff2':'font/woff2','.txt':'text/plain; charset=utf-8'};
-const allowed=new Set(['index.html','styles.css','app.js','config.js','i18n.js','telegram.js','audio.js','audio-debug.js','resources.js','beads.js','bow.js','referrals.js','morning.js','festival.js','gioi-thieu.html','quyen-rieng-tu.html','dieu-khoan.html','family.html','family.css','family.js','family-analytics.js','family-i18n.js','family-consent.js','calendar-presale.html','calendar-presale.css','calendar-presale.js','dev-outbox.html','dev-outbox.js','admin.html','admin.css','admin.js']);
+const allowed=new Set(['index.html','preload.js','styles.css','app.js','config.js','i18n.js','telegram.js','audio.js','audio-debug.js','analytics.js','resources.js','beads.js','bow.js','incense.js','referrals.js','morning.js','festival.js','gioi-thieu.html','quyen-rieng-tu.html','dieu-khoan.html','family.html','family.css','family.js','family-analytics.js','family-i18n.js','family-consent.js','calendar-presale.html','calendar-presale.css','calendar-presale.js','dev-outbox.html','dev-outbox.js','admin.html','admin.css','admin.js']);
 const server=http.createServer(async(req,res)=>{
   try{
     const url=new URL(req.url,'http://127.0.0.1');

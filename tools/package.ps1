@@ -25,7 +25,7 @@ New-Item -ItemType Directory -Path $imageOutput -Force | Out-Null
 Copy-Item -LiteralPath (Join-Path $projectRoot 'assets/processed-v1/layout-v1.json') -Destination (Join-Path $outputRoot 'assets/processed-v1/layout-v1.json') -Force
 Get-ChildItem -LiteralPath (Join-Path $projectRoot 'assets/processed-v1/img') -Filter 'scene-vn-*.webp' | Copy-Item -Destination $imageOutput -Force
 foreach ($id in @('short-light','curly-dark','curly-medium','bun-light','bun-dark','ponytail-medium')) {
-  foreach ($pose in @('bow-1','bow-2','bow-3','choose-v1','mo-1-v1','mo-2-v1','mo-3-v1','beads-side-1-v1','beads-side-2-v1','beads-side-3-v1')) { Copy-Item -LiteralPath (Join-Path $projectRoot "assets/processed-v1/img/visitor-$id-$pose.webp") -Destination $imageOutput -Force }
+  foreach ($pose in @('bow-1','bow-2','bow-3','choose-v1','mo-base-v2','beads-side-1-v1','beads-side-2-v1','beads-side-3-v1')) { Copy-Item -LiteralPath (Join-Path $projectRoot "assets/processed-v1/img/visitor-$id-$pose.webp") -Destination $imageOutput -Force }
   foreach ($pose in @('walk-1','walk-2','hold','light','vai-1','vai-2','plant-1','end')) { Copy-Item -LiteralPath (Join-Path $projectRoot "assets/processed-v1/img/visitor-$id-inc-$pose-v1.webp") -Destination $imageOutput -Force }
   Copy-Item -LiteralPath (Join-Path $projectRoot "assets/processed-v1/img/visitor-$id-stand.webp") -Destination $imageOutput -Force
   foreach ($pose in @('sit','beads')) { Copy-Item -LiteralPath (Join-Path $projectRoot "assets/processed-v1/img/visitor-$id-$pose-nocushion.webp") -Destination $imageOutput -Force }
@@ -38,7 +38,7 @@ foreach ($sound in @('bell-v2','keisu-v2','mo','bead-v1','ignite-v1','ambient-co
   foreach ($ext in @('mp3','m4a')) { Copy-Item -LiteralPath (Join-Path $projectRoot "assets/audio/$sound.$ext") -Destination $audioOutput }
 }
 foreach ($name in @('LICENSES.md','measurements.json','measurements-v2.json')) { Copy-Item -LiteralPath (Join-Path $projectRoot "assets/audio/$name") -Destination $audioOutput }
-foreach ($name in @('bead-wood-v2.webp','bead-spacer-v2.webp','bead-guru-v2.webp','share-qr.png')) { Copy-Item -LiteralPath (Join-Path $projectRoot "assets/processed-v1/img/$name") -Destination $imageOutput -Force }
+foreach ($name in @('bead-wood-v2.webp','bead-spacer-v2.webp','bead-guru-v2.webp','hall-cushion-v2.webp','mo-low-table-v2.webp','mo-v6.webp','mo-mallet.webp','share-qr.png')) { Copy-Item -LiteralPath (Join-Path $projectRoot "assets/processed-v1/img/$name") -Destination $imageOutput -Force }
 Copy-Item -LiteralPath (Join-Path $projectRoot 'assets/processed-v1/mobile') -Destination (Join-Path $outputRoot 'assets/processed-v1') -Recurse -Force
 Copy-Item -LiteralPath (Join-Path $projectRoot 'assets/fonts') -Destination (Join-Path $outputRoot 'assets') -Recurse
 Copy-Item -LiteralPath (Join-Path $projectRoot 'assets/share') -Destination (Join-Path $outputRoot 'assets') -Recurse
