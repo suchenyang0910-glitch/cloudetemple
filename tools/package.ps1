@@ -1,5 +1,9 @@
-param([ValidateSet('production','staging')][string]$Environment='production')
+param(
+  [ValidateSet('production','staging')][string]$Environment='production',
+  [switch]$IncludeFamilyCandidate
+)
 $ErrorActionPreference = 'Stop'
+if($IncludeFamilyCandidate -and $Environment -ne 'production'){throw 'Family candidate is production-only'}
 $projectRoot = Split-Path -Parent $PSScriptRoot
 $outputRoot = Join-Path $projectRoot 'dist'
 $archiveRoot = Join-Path $projectRoot ('_archive/package-' + [DateTime]::UtcNow.ToString('yyyyMMdd-HHmmss-fff'))
@@ -46,12 +50,15 @@ $html=[IO.File]::ReadAllText($index)
 $banner=[IO.File]::ReadAllText((Join-Path $projectRoot 'analytics-choice.html'))
 $html=$html.Replace('</main>',$banner+'</main>')
 [IO.File]::WriteAllText($index,$html,[Text.UTF8Encoding]::new($false))
+if($Environment -eq 'staging' -or $IncludeFamilyCandidate){
+  foreach ($name in @('family.html','family.css','family.js','family-analytics.js','family-i18n.js')) { Copy-Item -LiteralPath (Join-Path $projectRoot $name) -Destination $outputRoot -Force }
+  Copy-Item -LiteralPath (Join-Path $projectRoot 'assets/family') -Destination (Join-Path $outputRoot 'assets') -Recurse -Force
+}
 if($Environment -eq 'staging'){
-  foreach ($name in @('family.html','family.css','family.js','family-analytics.js','family-i18n.js','dev-outbox.js')) { Copy-Item -LiteralPath (Join-Path $projectRoot $name) -Destination $outputRoot -Force }
+  Copy-Item -LiteralPath (Join-Path $projectRoot 'dev-outbox.js') -Destination $outputRoot -Force
   $devOutput=Join-Path $outputRoot 'dev'
   New-Item -ItemType Directory -Path $devOutput -Force | Out-Null
   Copy-Item -LiteralPath (Join-Path $projectRoot 'dev-outbox.html') -Destination (Join-Path $devOutput 'outbox.html') -Force
-  Copy-Item -LiteralPath (Join-Path $projectRoot 'assets/family') -Destination (Join-Path $outputRoot 'assets') -Recurse -Force
   Copy-Item -LiteralPath (Join-Path $projectRoot 'audio-debug.js') -Destination $debugOutput -Force
   $html=[IO.File]::ReadAllText($index).Replace('</body>','<script type="module" src="audio-debug.js"></script></body>')
   [IO.File]::WriteAllText($index,$html,[Text.UTF8Encoding]::new($false))
@@ -66,5 +73,7 @@ $configSource=[IO.File]::ReadAllText($config).Replace('__CT_BEAD_GURU_RULE__',$(
 [IO.File]::WriteAllText($config,$configSource,[Text.UTF8Encoding]::new($false))
 & node (Join-Path $PSScriptRoot 'version-assets.mjs')
 if($LASTEXITCODE){throw 'Versioning failed'}
-& node (Join-Path $projectRoot 'tests/package-check.mjs') "--$Environment"
+$checkArgs=@("--$Environment")
+if($IncludeFamilyCandidate){$checkArgs+='--family-candidate'}
+& node (Join-Path $projectRoot 'tests/package-check.mjs') $checkArgs
 if($LASTEXITCODE){throw 'Package assertions failed'}
