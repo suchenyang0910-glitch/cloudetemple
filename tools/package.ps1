@@ -11,7 +11,7 @@ if (Test-Path -LiteralPath $outputRoot) {
   Move-Item -LiteralPath $resolvedOutput -Destination (Join-Path $archiveRoot 'dist')
 }
 New-Item -ItemType Directory -Path $outputRoot -Force | Out-Null
-foreach ($name in @('index.html','preload.js','styles.css','app.js','config.js','i18n.js','telegram.js','audio.js','resources.js','beads.js','bow.js','referrals.js','morning.js','festival.js','gioi-thieu.html','quyen-rieng-tu.html','dieu-khoan.html','_headers','_routes.json','lang-chua.html','lang-chua.js','lang-chua.css','sw-lang-chua.js')) { Copy-Item -LiteralPath (Join-Path $projectRoot $name) -Destination (Join-Path $outputRoot $name) -Force }
+foreach ($name in @('index.html','preload.js','styles.css','app.js','config.js','i18n.js','telegram.js','audio.js','resources.js','beads.js','bow.js','referrals.js','morning.js','festival.js','gioi-thieu.html','quyen-rieng-tu.html','dieu-khoan.html','_headers','_routes.json','lang-chua.html','lang-chua.js','lang-chua.css')) { Copy-Item -LiteralPath (Join-Path $projectRoot $name) -Destination (Join-Path $outputRoot $name) -Force }
 # lang-chua support modules: copy to root with prefix so version-assets.mjs versions them
 foreach ($name in @('festival','rituals','card')) {
   Copy-Item -LiteralPath (Join-Path $projectRoot "js/$name.js") -Destination (Join-Path $outputRoot "lang-chua-$name.js") -Force
@@ -27,7 +27,8 @@ $appSource=[IO.File]::ReadAllText($appFile).Replace('__CT_FAMILY_ENABLED__',$(if
 $imageOutput = Join-Path $outputRoot 'assets/processed-v1/img'
 New-Item -ItemType Directory -Path $imageOutput -Force | Out-Null
 Copy-Item -LiteralPath (Join-Path $projectRoot 'assets/processed-v1/layout-v1.json') -Destination (Join-Path $outputRoot 'assets/processed-v1/layout-v1.json') -Force
-Get-ChildItem -LiteralPath (Join-Path $projectRoot 'assets/processed-v1/img') -Filter 'scene-vn-*.webp' | Copy-Item -Destination $imageOutput -Force
+Get-ChildItem -LiteralPath (Join-Path $projectRoot 'assets/processed-v1/img') -Filter 'scene-vn-*.webp'    | Copy-Item -Destination $imageOutput -Force
+Get-ChildItem -LiteralPath (Join-Path $projectRoot 'assets/processed-v1/img') -Filter 'scene-dilac-*.webp' | Copy-Item -Destination $imageOutput -Force
 foreach ($id in @('short-light','curly-dark','curly-medium','bun-light','bun-dark','ponytail-medium')) {
   foreach ($pose in @('bow-1','bow-2','bow-3','choose-v1','mo-1-v1','mo-2-v1','mo-3-v1','beads-side-1-v1','beads-side-2-v1','beads-side-3-v1')) { Copy-Item -LiteralPath (Join-Path $projectRoot "assets/processed-v1/img/visitor-$id-$pose.webp") -Destination $imageOutput -Force }
   Copy-Item -LiteralPath (Join-Path $projectRoot "assets/processed-v1/img/visitor-$id-stand.webp") -Destination $imageOutput -Force

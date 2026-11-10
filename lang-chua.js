@@ -202,7 +202,12 @@ function enterTemple(templeId) {
 }
 
 // ── Scene rendering ────────────────────────────────────────────────────────
-function sceneURL(_templeId, view, period) {
+function sceneURL(templeId, view, period) {
+  if (templeId === 'dilac') {
+    // Courtyard has no dusk image — fall back to day
+    const p = (view === 'courtyard' && period === 'dusk') ? 'day' : period;
+    return `/assets/processed-v1/img/scene-dilac-${view}-${p}${SCENE_EXT}`;
+  }
   return `/assets/processed-v1/img/scene-vn-${view}-${period}${SCENE_EXT}`;
 }
 
