@@ -32,7 +32,16 @@ CREATE TABLE IF NOT EXISTS deliveries(id TEXT PRIMARY KEY,user_id TEXT NOT NULL 
       provider,
       subject,
     );
-    if (found) return found;
+    if (found) {
+      if (email)
+        run(
+          "UPDATE identities SET email=? WHERE provider=? AND subject=?",
+          email,
+          provider,
+          subject,
+        );
+      return found;
+    }
     const id = randomUUID(),
       at = now();
     db.transaction(() => {
@@ -42,7 +51,7 @@ CREATE TABLE IF NOT EXISTS deliveries(id TEXT PRIMARY KEY,user_id TEXT NOT NULL 
         id,
         provider,
         subject,
-        provider === "email" ? email : null,
+        email || null,
         at,
       );
       run(
@@ -121,7 +130,7 @@ CREATE TABLE IF NOT EXISTS deliveries(id TEXT PRIMARY KEY,user_id TEXT NOT NULL 
     },
     sessionUser(hash) {
       return one(
-        "SELECT s.*,u.display_name,u.locale FROM sessions s JOIN users u ON u.id=s.user_id WHERE s.token_hash=? AND s.expires_at>? AND u.deleted_at IS NULL",
+        "SELECT s.*,u.display_name,u.locale,(SELECT email FROM identities WHERE user_id=u.id AND email IS NOT NULL ORDER BY CASE provider WHEN 'google' THEN 0 WHEN 'email' THEN 1 ELSE 2 END LIMIT 1) AS email FROM sessions s JOIN users u ON u.id=s.user_id WHERE s.token_hash=? AND s.expires_at>? AND u.deleted_at IS NULL",
         hash,
         Date.now(),
       );

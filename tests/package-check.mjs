@@ -60,7 +60,10 @@ if(process.argv.includes('--production')){
  for(const excluded of [...(familyCandidate?[]:['family']), 'family-consent','admin','presence','calendar-presale'])assert(!versioned.some(n=>n.startsWith(excluded+'.')),excluded+' excluded from production');
  const app=versioned.find(n=>n.startsWith('app.')&&n.endsWith('.js'));
  assert(app,'production app module');
- assert((await fs.readFile(new URL(app,root),'utf8')).match(/const familyEnabled\s*=\s*["']0["']\s*===\s*["']1["']/),'production family entry disabled');
+ const appSource=await fs.readFile(new URL(app,root),'utf8');
+ assert(appSource.includes("apiURL('/family/status')"),'family entry follows server status');
+ assert(!appSource.includes('__CT_FAMILY_ENABLED__'),'family entry is not fixed at build time');
+ if(familyCandidate){const familySource=await fs.readFile(new URL(`family.${release}.js`,root),'utf8');assert(familySource.includes('apiURL("/family" + path)')&&familySource.includes('credentials: "include"'),'family API uses credentialed API origin');}
 }
 if(process.argv.includes('--staging')){
  const analytics=versioned.find(n=>n.startsWith('analytics.'));
@@ -73,7 +76,8 @@ if(process.argv.includes('--staging')){
  const familyApp=versioned.find(n=>n.startsWith('family.')&&n.endsWith('.js'));
  assert(familyApp,'staging family app');
  assert(versioned.some(n=>n.startsWith('family-i18n.')&&n.endsWith('.js')),'staging family copy dictionary');
- assert((await fs.readFile(new URL(versioned.find(n=>n.startsWith('app.')),root),'utf8')).match(/const familyEnabled\s*=\s*["']1["']\s*===\s*["']1["']/));
+ const appSource=await fs.readFile(new URL(versioned.find(n=>n.startsWith('app.')),root),'utf8');
+ assert(appSource.includes("apiURL('/family/status')")&&!appSource.includes('__CT_FAMILY_ENABLED__'));
 }
 assert((await fs.readFile(new URL('index.html',root),'utf8')).includes('id="ga-choice"'),'analytics consent rendered');
 const manifest=JSON.parse(await fs.readFile(new URL(`../deploy/package-${release}.json`,root)));

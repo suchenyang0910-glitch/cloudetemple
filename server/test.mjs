@@ -21,7 +21,7 @@ test('production CORS isolates allowed origins; unset denies cross-origin',async
   const f=await fixture(t,config(envFor(list)));
   for(const origin of ['https://h5.chuamay.org','https://miniapp.chuamay.org','https://staging.chuamay.org','http://localhost:8788','https://evil.test','null']){
    const r=await fetch(f.base+'/waitlist',{method:'OPTIONS',headers:{Origin:origin}}),allowed=!!list&&['https://h5.chuamay.org','https://miniapp.chuamay.org'].includes(origin);
-   assert.equal(r.status,allowed?204:403);assert.equal(r.headers.get('Access-Control-Allow-Origin'),allowed?origin:null);
+   assert.equal(r.status,allowed?204:403);assert.equal(r.headers.get('Access-Control-Allow-Origin'),allowed?origin:null);assert.equal(r.headers.get('Access-Control-Allow-Credentials'),allowed?'true':null);
   }
   assert.equal((await fetch(f.base+'/healthz')).status,200);
   const r=await fetch(f.base+'/waitlist',{method:'POST',headers:{'Content-Type':'application/json','Sec-Fetch-Site':'same-origin'},body:'{}'});
@@ -53,7 +53,7 @@ test('disabled Telegram needs only HASH_SECRET and leaves registration available
  assert.equal(f.sent.length,0);assert.equal((await f.post(valid())).status,201);
 });
 test('outbox mail provider is rejected outside staging',()=>{
- const env={TELEGRAM_ENABLED:'0',HASH_SECRET:settings.hashSecret,CHUAMAY_ENV:'production',MAIL_PROVIDER:'outbox'};
+ const env={TELEGRAM_ENABLED:'0',HASH_SECRET:settings.hashSecret,CHUAMAY_ENV:'production',MAIL_PROVIDER:'outbox',FAMILY_ENABLED:'0'};
  assert.throws(()=>config(env),/Outbox is staging-only/);
  assert.equal(config({...env,CHUAMAY_ENV:'staging'}).mailProvider,'outbox');
 });
@@ -61,7 +61,9 @@ test('family defaults closed in production and requires an explicit switch',()=>
  const env={TELEGRAM_ENABLED:'0',HASH_SECRET:settings.hashSecret};
  assert.equal(config({...env,CHUAMAY_ENV:'production'}).familyEnabled,false);
  assert.equal(config({...env,CHUAMAY_ENV:'production',FAMILY_ENABLED:'0'}).familyEnabled,false);
- assert.equal(config({...env,CHUAMAY_ENV:'production',FAMILY_ENABLED:'1'}).familyEnabled,true);
- assert.equal(config({...env,CHUAMAY_ENV:'staging',FAMILY_ENABLED:'1'}).familyEnabled,true);
+ assert.equal(config({...env,CHUAMAY_ENV:'production',FAMILY_ENABLED:'1',FAMILY_ALLOWLIST:'first@example.com,second@example.com'}).familyEnabled,true);
+ assert.equal(config({...env,CHUAMAY_ENV:'staging',FAMILY_ENABLED:'1',FAMILY_ALLOWLIST:'first@example.com,second@example.com'}).familyEnabled,true);
+ assert.throws(()=>config({...env,CHUAMAY_ENV:'production',FAMILY_ENABLED:'1'}),/FAMILY_ALLOWLIST/);
+ assert.throws(()=>config({...env,CHUAMAY_ENV:'production',FAMILY_ENABLED:'1',FAMILY_ALLOWLIST:'bad'}),/FAMILY_ALLOWLIST/);
  assert.throws(()=>config({...env,CHUAMAY_ENV:'staging',FAMILY_ENABLED:'yes'}),/FAMILY_ENABLED/);
 });

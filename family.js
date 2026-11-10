@@ -1,5 +1,6 @@
 import { familyEvent } from "./family-analytics.js";
 import { familyText as t, FAMILY_COPY } from "./family-i18n.js";
+import { apiURL } from "./telegram.js";
 const $ = (s) => document.querySelector(s),
   screen = $("#screen"),
   status = $("#status"),
@@ -64,8 +65,8 @@ const demoTablets = [
   },
 ];
 async function api(path, options = {}) {
-  const r = await fetch("/api/family" + path, {
-      credentials: "same-origin",
+  const r = await fetch(apiURL("/family" + path), {
+      credentials: "include",
       ...options,
       headers: {
         "Content-Type": "application/json",
@@ -128,7 +129,7 @@ function captureInvite() {
 }
 function login() {
   const invite = pendingInvite();
-  screen.innerHTML = `<section class="login"><h2>${t("login_title")}</h2>${invite ? `<p>${t("invite_after_login")}</p>` : ""}<p>${t("login_privacy")} ${t("native_pending")}</p><form id="email-login"><input name="email" type="email" autocomplete="email" maxlength="254" placeholder="${t("email_placeholder")}" required><button class="primary">${t("send_code")}</button></form><form id="code-form" hidden><input name="code" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="${t("code_placeholder")}" required><button class="primary">${t("sign_in")}</button></form>${embedded() ? `<p class="muted">${t("open_browser_google")}</p>` : `<a class="google" href="/api/auth/google/start">${t("google_sign_in")}</a>`}<a href="/?telegram=1" class="muted">${t("open_telegram")}</a></section>`;
+  screen.innerHTML = `<section class="login"><h2>${t("login_title")}</h2>${invite ? `<p>${t("invite_after_login")}</p>` : ""}<p>${t("login_privacy")} ${t("native_pending")}</p><form id="email-login"><input name="email" type="email" autocomplete="email" maxlength="254" placeholder="${t("email_placeholder")}" required><button class="primary">${t("send_code")}</button></form><form id="code-form" hidden><input name="code" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="${t("code_placeholder")}" required><button class="primary">${t("sign_in")}</button></form>${embedded() ? `<p class="muted">${t("open_browser_google")}</p>` : `<a class="google" href="${apiURL("/auth/google/start")}">${t("google_sign_in")}</a>`}<a href="/?telegram=1" class="muted">${t("open_telegram")}</a></section>`;
   const first = $("#email-login"),
     codes = $("#code-form");
   const google = $(".google");

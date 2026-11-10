@@ -9,6 +9,7 @@ import { hash } from "./security.mjs";
 import { familyServerText } from "./family-i18n.mjs";
 const settings = {
   telegramEnabled: false,
+  familyAllowlist: new Set(["demo@example.com", "member@example.com"]),
   origins: new Set(["https://staging.chuamay.org"]),
   hashSecret: "x".repeat(64),
   environment: "staging",
@@ -18,14 +19,14 @@ const settings = {
   lunarLeapRule: "regular-month",
   trustLocal: false,
 };
-async function fixture() {
+async function fixture(options = settings) {
   const store = openStore(":memory:"),
     family = openFamilyStore(store.db),
     server = createServer(
-      settings,
+      options,
       store,
       async () => {},
-      createFamilyApi(settings, family),
+      createFamilyApi(options, family),
     );
   await new Promise((r) => server.listen(0, "127.0.0.1", r));
   const base = `http://127.0.0.1:${server.address().port}`;
@@ -34,13 +35,13 @@ async function fixture() {
     store,
     family,
     server,
-    request: (path, options = {}) =>
+    request: (path, requestOptions = {}) =>
       fetch(base + path, {
-        ...options,
+        ...requestOptions,
         headers: {
-          Origin: "https://staging.chuamay.org",
+          Origin: options.origins.values().next().value,
           "Content-Type": "application/json",
-          ...options.headers,
+          ...requestOptions.headers,
         },
       }),
   };
@@ -72,6 +73,12 @@ test("email code stays in protected outbox and session CRUD enforces CSRF", asyn
     assert.equal(r.status, 200);
     const data = await r.json(),
       cookie = r.headers.get("set-cookie").split(";")[0];
+    r = await f.request("/family/status", {
+      method: "GET",
+      headers: { Cookie: cookie },
+    });
+    assert.equal(r.status, 200);
+    assert.equal((await r.json()).enabled, true);
     r = await f.request("/family/tablets", {
       method: "POST",
       headers: { Cookie: cookie },
@@ -213,6 +220,62 @@ test("email code stays in protected outbox and session CRUD enforces CSRF", asyn
     f.store.close();
   }
 });
+
+test("allowlist hides status and login from other accounts", async () => {
+  const f = await fixture();
+  try {
+    let r = await f.request("/family/status", { method: "GET" });
+    assert.equal(r.status, 404);
+    r = await f.request("/family/auth/email/start", {
+      method: "POST",
+      body: JSON.stringify({ email: "outside@example.com" }),
+    });
+    assert.equal(r.status, 404);
+    assert.equal(listOutbox(f.family.db).length, 0);
+  } finally {
+    await new Promise((r) => f.server.close(r));
+    f.store.close();
+  }
+});
+test("production session cookie is shared safely across Chua May subdomains", async () => {
+  const options = {
+      ...settings,
+      environment: "production",
+      origins: new Set([
+        "https://h5.chuamay.org",
+        "https://miniapp.chuamay.org",
+      ]),
+      familyUrl: "https://h5.chuamay.org/family.html",
+    },
+    f = await fixture(options),
+    email = "demo@example.com",
+    code = "654321";
+  try {
+    f.family.saveCode({
+      subject: hash(options.hashSecret, email),
+      email,
+      codeHash: hash(options.hashSecret, code),
+      expires: Date.now() + 60_000,
+      ipHash: "test",
+    });
+    const r = await f.request("/family/auth/email/verify", {
+      method: "POST",
+      body: JSON.stringify({ email, code }),
+    });
+    assert.equal(r.status, 200);
+    const cookie = r.headers.get("set-cookie");
+    for (const value of [
+      "Domain=.chuamay.org",
+      "HttpOnly",
+      "Secure",
+      "SameSite=Lax",
+    ])
+      assert(cookie.includes(value), value);
+  } finally {
+    await new Promise((r) => f.server.close(r));
+    f.store.close();
+  }
+});
 test("member privacy, removal, expiry and invite revocation are enforced", () => {
   const store = openStore(":memory:"),
     f = openFamilyStore(store.db);
@@ -267,18 +330,30 @@ test("member privacy, removal, expiry and invite revocation are enforced", () =>
     store.close();
   }
 });
+test("existing Google identity refreshes its allowlist email", () => {
+  const store = openStore(":memory:"),
+    family = openFamilyStore(store.db);
+  try {
+    const first = family.userFor("google", "subject", "", "First");
+    family.userFor("google", "subject", "demo@example.com", "First");
+    family.session("session", first.id, Date.now() + 60_000, "ua", "csrf");
+    assert.equal(family.sessionUser("session").email, "demo@example.com");
+  } finally {
+    store.close();
+  }
+});
 
 test("email login is rate limited and ICS is a private three-year feed", async () => {
   const f = await fixture();
   try {
     let r = await f.request("/family/auth/email/start", {
       method: "POST",
-      body: JSON.stringify({ email: "rate@example.com" }),
+      body: JSON.stringify({ email: "demo@example.com" }),
     });
     assert.equal(r.status, 201);
     r = await f.request("/family/auth/email/start", {
       method: "POST",
-      body: JSON.stringify({ email: "rate@example.com" }),
+      body: JSON.stringify({ email: "demo@example.com" }),
     });
     assert.equal(r.status, 429);
     const owner = f.family.userFor("email", "calendar", "calendar@example.com");
@@ -354,7 +429,7 @@ test("every family write requires allowed Origin and JSON", async () => {
     let r = await fetch(f.base + "/family/auth/email/start", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: "origin@example.com" }),
+      body: JSON.stringify({ email: "demo@example.com" }),
     });
     assert.equal(r.status, 403);
     r = await fetch(f.base + "/family/auth/email/start", {
@@ -363,12 +438,12 @@ test("every family write requires allowed Origin and JSON", async () => {
         Origin: "https://staging.chuamay.org",
         "Content-Type": "text/plain",
       },
-      body: JSON.stringify({ email: "origin@example.com" }),
+      body: JSON.stringify({ email: "demo@example.com" }),
     });
     assert.equal(r.status, 415);
     r = await f.request("/family/auth/email/start", {
       method: "POST",
-      body: JSON.stringify({ email: "origin@example.com" }),
+      body: JSON.stringify({ email: "demo@example.com" }),
     });
     assert.equal(r.status, 201);
   } finally {

@@ -137,9 +137,10 @@ function tabletInput(v) {
   };
 }
 export function createFamilyApi(settings, family) {
+  const allowed = (email) => settings.familyAllowlist.has(String(email || "").trim().toLowerCase());
   const oauthRedirect = (res, reason) => {
     res.writeHead(302, {
-      Location: `/family.html?auth=${encodeURIComponent(reason)}`,
+      Location: `${settings.familyUrl}?auth=${encodeURIComponent(reason)}`,
       "Cache-Control": "no-store",
     });
     res.end();
@@ -197,6 +198,8 @@ export function createFamilyApi(settings, family) {
       const language = familyServerLanguage(req),
         user = session(req),
         write = !["GET", "HEAD"].includes(req.method);
+      if (user && !allowed(user.email))
+        return json(res, 404, { ok: false, error: "not_found" }), true;
       if (write) {
         const origin = req.headers.origin;
         if (!origin || !settings.origins?.has(origin))
@@ -215,6 +218,10 @@ export function createFamilyApi(settings, family) {
         const { handleOutbox } = await import("./outbox-staging.mjs");
         if (handleOutbox(req, res, route, family.db)) return true;
       }
+      if (route === "/family/status" && req.method === "GET")
+        return user
+          ? (json(res, 200, { ok: true, enabled: true }), true)
+          : (json(res, 404, { ok: false, error: "not_found" }), true);
       if (route === "/family/auth/email/start" && req.method === "POST") {
         const v = await body(req),
           email = String(v.email || "")
@@ -222,6 +229,8 @@ export function createFamilyApi(settings, family) {
             .toLowerCase();
         if (!validEmail(email))
           return json(res, 400, { ok: false, error: "invalid" }), true;
+        if (!allowed(email))
+          return json(res, 404, { ok: false, error: "not_found" }), true;
         const subject = hash(settings.hashSecret, email),
           ip = hash(settings.hashSecret, clientIP(req, settings.trustLocal));
         if (
@@ -253,6 +262,8 @@ export function createFamilyApi(settings, family) {
           code = String(v.code || "");
         if (!validEmail(email) || !/^\d{6}$/.test(code))
           return json(res, 400, { ok: false, error: "invalid" }), true;
+        if (!allowed(email))
+          return json(res, 404, { ok: false, error: "not_found" }), true;
         const subject = hash(settings.hashSecret, email),
           record = family.takeCode(subject, hash(settings.hashSecret, code));
         if (!record) return json(res, 401, { ok: false, error: "code" }), true;
@@ -273,6 +284,8 @@ export function createFamilyApi(settings, family) {
         );
       }
       if (route === "/family/auth/telegram" && req.method === "POST") {
+        if (settings.familyAllowlist.size)
+          return json(res, 404, { ok: false, error: "not_found" }), true;
         if (!settings.telegramEnabled)
           return (
             json(res, 503, { ok: false, error: "telegram_disabled" }), true
@@ -363,21 +376,25 @@ export function createFamilyApi(settings, family) {
         const profile = await ur.json();
         if (!profile.email_verified || !profile.sub)
           return oauthRedirect(res, "google_failed");
+        const email = String(profile.email || "").trim().toLowerCase();
+        if (!allowed(email)) return oauthRedirect(res, "not_found");
         const account = family.userFor(
           "google",
           hash(settings.hashSecret, String(profile.sub)),
-          "",
+          email,
           String(profile.name || "").slice(0, 60),
         );
         issue(res, account, req);
         res.writeHead(302, {
-          Location: "/family.html",
+          Location: settings.familyUrl,
           "Cache-Control": "no-store",
         });
         res.end();
         return true;
       }
       if (route === "/family/session" && req.method === "GET") {
+        if (!user)
+          return json(res, 404, { ok: false, error: "not_found" }), true;
         let anti = null;
         if (user) {
           anti = token(18);
