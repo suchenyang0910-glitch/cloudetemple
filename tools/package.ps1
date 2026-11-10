@@ -67,6 +67,12 @@ if($Environment -eq 'staging'){
   $source=[IO.File]::ReadAllText($analytics).Replace('const debug={debug_mode:true};','const debug={};')
   if($source.Contains('debug_mode')){throw 'Production analytics still contains debug_mode'}
   [IO.File]::WriteAllText($analytics,$source,[Text.UTF8Encoding]::new($false))
+  if($IncludeFamilyCandidate){
+    $familyAnalytics=Join-Path $outputRoot 'family-analytics.js'
+    $familySource=[IO.File]::ReadAllText($familyAnalytics).Replace('{debug_mode:true,send_page_view:false','{send_page_view:false').Replace(',debug_mode:true','').Replace('{debug_mode:true}','{}')
+    if($familySource.Contains('debug_mode')){throw 'Production family analytics still contains debug_mode'}
+    [IO.File]::WriteAllText($familyAnalytics,$familySource,[Text.UTF8Encoding]::new($false))
+  }
 }
 $config=Join-Path $outputRoot 'config.js'
 $configSource=[IO.File]::ReadAllText($config).Replace('__CT_BEAD_GURU_RULE__',$(if($Environment -eq 'staging'){'turn-back'}else{'pass-through'}))
