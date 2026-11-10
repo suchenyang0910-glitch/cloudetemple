@@ -53,3 +53,8 @@
 
 - staging：真实 R2/restic 备份成功；恢复成功；SQLite `integrity_check=ok`；家族表 `4/4`；耗时 10 秒。
 - production：只读恢复最近 snapshot 成功；SQLite `integrity_check=ok`；家族表 `0/4`。未修改 production 数据、配置或 release。
+
+## 最新准备演练（2026-11-10）
+
+- staging：新备份与恢复通过，`integrity_check=ok`、家族表 `4/4`；详见 `FAMILY-PRODUCTION-READINESS-20261110.md`。
+- production：新备份只读恢复后仍为 `0/4`；迁移只在恢复副本演练，120 ms 后为 `4/4` 且完整性正常。在线 production 未迁移、未改配置、未改 release。
