@@ -65,16 +65,20 @@ user identified the gray-blue mismatch. No third-party artwork was introduced.
 
 ## Four-fix wooden-fish and cushion-free hall artwork
 
-**Files**: `visitor-*-mo-base-v2.webp`, `mo-low-table-v2.webp`, `mo-v6.webp`,
+**Files**: `visitor-*-mo-{1,2,3}-v3.webp`, `mo-low-table-v2.webp`, `mo-v6.webp`,
 `hall-cushion-v2.webp`, and `scene-vn-hall-side-floor-*.webp` (full and mobile).
 
 **Source and process**: Original Chùa Mây visitor, wooden-fish, cushion, and
 hall-side artwork. OpenAI ImageGen was used in edit mode to remove the baked
 mallet/instrument from the six kneeling visitors and to remove the unused hall
 cushion while preserving identity, pose, composition, and time-of-day light.
-The low table, wooden fish, and red pad are the user-approved v5 review assets;
-the existing original mallet remains a separate runtime layer. No third-party
-artwork was introduced. Prompts required a transparent isolated adult visitor,
-unchanged identity/clothing/pose, a closed gripping hand, and no added object;
-scene prompts required removal of only the cushion and preservation of all
-altar, Buddha, lighting, and perspective details.
+The low table, wooden fish, and red pad are the user-approved v5 review assets.
+After iPhone testing exposed drift between the hand and the separate mallet
+layer, the existing original mallet was composited behind each closed gripping
+hand at the approved impact point. Frames 1 and 3 are identical contact frames;
+frame 2 rotates the same mallet ten degrees about the grip for a small lift.
+This deterministic local edit is recorded in `tools/build_mo_mallet_frames.py`;
+no new generated or third-party artwork was introduced. The original ImageGen
+prompts required a transparent isolated adult visitor, unchanged identity,
+clothing and pose, and a closed gripping hand; scene prompts removed only the
+cushion while preserving altar, Buddha, lighting, and perspective details.
