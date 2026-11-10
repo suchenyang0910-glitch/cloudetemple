@@ -36,7 +36,7 @@ export function config(env){
   const mini=env.MINIAPP_URL||'https://miniapp.chuamay.org';if(!['https://miniapp.chuamay.org','https://staging.chuamay.org'].includes(new URL(mini).origin))throw Error('Invalid Mini App origin');
   const environment=env.CHUAMAY_ENV||'production';if(!['staging','production'].includes(environment))throw Error('Invalid CHUAMAY_ENV');
   const familyFlag=env.FAMILY_ENABLED??(environment==='staging'?'1':'0');if(!['0','1'].includes(familyFlag))throw Error('Invalid FAMILY_ENABLED');
-  const familyEnabled=familyFlag==='1';if(environment==='production'&&familyEnabled)throw Error('Family pilot is staging-only');
+  const familyEnabled=familyFlag==='1';
   const mailProvider=env.MAIL_PROVIDER||(environment==='staging'?'outbox':'disabled');if(!['outbox','resend','ses','disabled'].includes(mailProvider))throw Error('Invalid MAIL_PROVIDER');
   if(environment==='production'&&mailProvider==='outbox')throw Error('Outbox is staging-only');
   const adminFlag=env.ADMIN_ENABLED??'0';if(!['0','1'].includes(adminFlag))throw Error('Invalid ADMIN_ENABLED');
