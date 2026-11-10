@@ -422,6 +422,8 @@ export function createFamilyApi(settings, family) {
         return json(res, 200, { ok: true }), true;
       }
       if (route === "/family/invites/info" && req.method === "POST") {
+        if (!user)
+          return json(res, 404, { ok: false, error: "not_found" }), true;
         const v = await body(req),
           i = family.inviteInfo(
             hash(settings.hashSecret, String(v.token || "")),

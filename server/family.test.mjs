@@ -241,6 +241,11 @@ test("allowlist hides status and login from other accounts", async () => {
       body: JSON.stringify({ email: "outside@example.com" }),
     });
     assert.equal(r.status, 404);
+    r = await f.request("/family/invites/info", {
+      method: "POST",
+      body: JSON.stringify({ token: "unknown" }),
+    });
+    assert.equal(r.status, 404);
     assert.equal(listOutbox(f.family.db).length, 0);
   } finally {
     await new Promise((r) => f.server.close(r));
