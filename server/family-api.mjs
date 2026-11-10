@@ -139,6 +139,8 @@ function tabletInput(v) {
 }
 export function createFamilyApi(settings, family) {
   const allowed = (email) => settings.familyAllowlist.has(String(email || "").trim().toLowerCase());
+  const cookieDomain =
+    settings.environment === "production" ? "; Domain=.chuamay.org" : "";
   const oauthRedirect = (res, reason) => {
     res.writeHead(302, {
       Location: `${settings.familyUrl}?auth=${encodeURIComponent(reason)}`,
@@ -184,11 +186,9 @@ export function createFamilyApi(settings, family) {
       ua(req),
       hash(settings.hashSecret, anti),
     );
-    const domain =
-      settings.environment === "production" ? "; Domain=.chuamay.org" : "";
     res.setHeader(
       "Set-Cookie",
-      `ct_session=${raw}; Path=/; Max-Age=${max}; HttpOnly; Secure; SameSite=Lax${domain}`,
+      `ct_session=${raw}; Path=/; Max-Age=${max}; HttpOnly; Secure; SameSite=Lax${cookieDomain}`,
     );
     return anti;
   };
@@ -417,7 +417,7 @@ export function createFamilyApi(settings, family) {
         if (user) family.logout(user.tokenHash);
         res.setHeader(
           "Set-Cookie",
-          "ct_session=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=Lax",
+          `ct_session=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=Lax${cookieDomain}`,
         );
         return json(res, 200, { ok: true }), true;
       }
@@ -749,7 +749,7 @@ export function createFamilyApi(settings, family) {
         family.deleteUser(user.user_id);
         res.setHeader(
           "Set-Cookie",
-          "ct_session=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=Lax",
+          `ct_session=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=Lax${cookieDomain}`,
         );
         return json(res, 200, { ok: true }), true;
       }

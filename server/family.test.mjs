@@ -278,7 +278,8 @@ test("production session cookie is shared safely across Chua May subdomains", as
       body: JSON.stringify({ email, code }),
     });
     assert.equal(r.status, 200);
-    const cookie = r.headers.get("set-cookie");
+    const login = await r.json(),
+      cookie = r.headers.get("set-cookie");
     for (const value of [
       "Domain=.chuamay.org",
       "HttpOnly",
@@ -315,6 +316,41 @@ test("production session cookie is shared safely across Chua May subdomains", as
       ).status,
       403,
     );
+    const logout = await f.request("/family/logout", {
+      method: "POST",
+      headers: { Cookie: sessionCookie, "X-CSRF-Token": login.csrf },
+      body: "{}",
+    });
+    assert.equal(logout.status, 200);
+    for (const value of ["Max-Age=0", "Domain=.chuamay.org"])
+      assert(logout.headers.get("set-cookie").includes(value), value);
+
+    const secondCode = "654322";
+    f.family.saveCode({
+      subject: hash(options.hashSecret, email),
+      email,
+      codeHash: hash(options.hashSecret, secondCode),
+      expires: Date.now() + 60_000,
+      ipHash: "test",
+    });
+    const second = await f.request("/family/auth/email/verify", {
+        method: "POST",
+        body: JSON.stringify({ email, code: secondCode }),
+      }),
+      secondLogin = await second.json(),
+      secondCookie = second.headers.get("set-cookie").split(";", 1)[0],
+      deleted = await f.request("/family/account", {
+        method: "DELETE",
+        headers: {
+          Cookie: secondCookie,
+          "X-CSRF-Token": secondLogin.csrf,
+        },
+        body: "{}",
+      });
+    assert.equal(second.status, 200);
+    assert.equal(deleted.status, 200);
+    for (const value of ["Max-Age=0", "Domain=.chuamay.org"])
+      assert(deleted.headers.get("set-cookie").includes(value), value);
   } finally {
     await new Promise((r) => f.server.close(r));
     f.store.close();

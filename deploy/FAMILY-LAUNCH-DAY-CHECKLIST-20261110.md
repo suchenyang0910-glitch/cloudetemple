@@ -18,7 +18,7 @@
 3. 对在线库运行只读检查：`integrity_check=ok`、家族核心表 `4/4`。
 4. 用 production 参数打包；确认 `FAMILY_ENABLED=0`、无 debug、母珠规则为 `pass-through`、家族资源齐全。
 5. 部署候选但暂不改开关；确认 API health、h5、miniapp 与现有首版流程正常。
-6. 确认 production env 的 `FAMILY_ALLOWLIST` 只包含获准内测的两个 Google 邮箱；不要把邮箱写入代码、日志或交付截图。
+6. 只从本机 `E:\cloudtemple\chuamay-certs\family-allowlist.txt` 逐行读取获准内测的两个 Google 邮箱，生成 production env 的 `FAMILY_ALLOWLIST`；不要读取 `admin-emails.txt`，也不要把邮箱写入代码、日志或交付截图。
 
 ## 开启
 
