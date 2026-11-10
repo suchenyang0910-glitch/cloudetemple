@@ -99,7 +99,8 @@ def main():
                     click(page, "continue"); settled(page, "home")
                     for activity in ACTIVITIES:
                         click(page, activity); settled(page, activity)
-                        assert page.locator("#scene").get_attribute("data-cushion-policy") == "scene"
+                        expected_cushion = "hidden" if activity == "incense" else "scene"
+                        assert page.locator("#scene").get_attribute("data-cushion-policy") == expected_cushion
                         assert page.locator("#scene").get_attribute("data-visitor") == visitor
                         cells.append((f"{activity} · {visitor}", page.screenshot()))
                         click(page, "home"); settled(page, "home")
