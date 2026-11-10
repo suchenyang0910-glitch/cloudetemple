@@ -1,6 +1,6 @@
 # 家族牌位正式开启当天操作清单
 
-状态：候选准备材料。执行前必须再次取得用户明确批准。
+状态：双账号灰度候选准备材料。执行前必须再次取得用户明确批准。
 
 ## 已知基线
 
@@ -18,14 +18,16 @@
 3. 对在线库运行只读检查：`integrity_check=ok`、家族核心表 `4/4`。
 4. 用 production 参数打包；确认 `FAMILY_ENABLED=0`、无 debug、母珠规则为 `pass-through`、家族资源齐全。
 5. 部署候选但暂不改开关；确认 API health、h5、miniapp 与现有首版流程正常。
+6. 确认 production env 的 `FAMILY_ALLOWLIST` 只包含获准内测的两个 Google 邮箱；不要把邮箱写入代码、日志或交付截图。
 
 ## 开启
 
 1. 备份 `/etc/chuamay/production.env`，保持属主与权限不变。
-2. 只把 `FAMILY_ENABLED=0` 改为 `FAMILY_ENABLED=1`，不改其他配置。
+2. 只把 `FAMILY_ENABLED=0` 改为 `FAMILY_ENABLED=1`；`FAMILY_ALLOWLIST` 保持两人，不改其他配置。
 3. 运行 secret 权限闸门。
 4. 重启 `chuamay-api@production`，最多等待 30 秒确认 `/healthz=200`。
-5. 确认 h5、miniapp、`family.html` 和 family session API 正常；提醒 timer 仍保持关闭。
+5. 确认 h5、miniapp 会从 `api.chuamay.org/family/status` 读取开关，未登录或名单外账号看不到入口且 family API 返回 404。
+6. 确认登录 Cookie 为 `Domain=.chuamay.org; Secure; HttpOnly; SameSite=Lax`，h5、miniapp 和 Telegram WebView 共用会话；提醒 timer 仍保持关闭。
 
 ## 手机验收路径
 
@@ -46,8 +48,8 @@
 
 1. 停止并禁用 production reminder timer；即使它尚未启用也要确认 inactive。
 2. 备份 env，只把 `FAMILY_ENABLED=1` 改回 `0`。
-3. 运行权限闸门并重启 API，确认 `/healthz=200`，family API 不再可用。
-4. 将 h5、miniapp 和 API release 回滚到 `f3e77aa876ae`；确认 L1 念珠、L2 上香及首版流程正常。
+3. 运行权限闸门并重启 API，确认 `/healthz=200`，family API 不再可用；h5、miniapp 无需重新部署，入口会自动消失。
+4. 只有候选代码本身异常时，才将 h5、miniapp 和 API release 回滚到 `f3e77aa876ae`；确认 L1 念珠、L2 上香及首版流程正常。
 5. 保留数据库和 Restic 快照，不删除家族表或用户数据，不用旧备份直接覆盖在线库。
 6. 若发生数据错误，先隔离写入、导出审计证据，再决定是否从指定 snapshot 恢复。
 
