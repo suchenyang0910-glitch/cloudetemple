@@ -23,7 +23,7 @@ export class BeadMotion {
 
 export function beadArc(width,height,offset,left=false,config=beadMotionConfig){
  const radius=width*config.arcRadius,angle=offset/radius;
- const x=width*config.laneRight+radius*(1-Math.cos(angle));
+ const x=width*config.laneRight-radius*(1-Math.cos(angle));
  return {x,y:height*.65+radius*Math.sin(angle),angle:-angle*180/Math.PI};
 }
 
@@ -37,7 +37,7 @@ export function mountBeads(el,{step,count=0,reduced=false,left=false,direction=1
  const area=el.parentElement;
  for(const kind of ['wood','spacer','guru'])area.style.setProperty(`--bead-${kind}`,`url("${assetURL(`processed-v1/img/bead-${kind}-v2.webp`)}")`);
  let width=area.clientWidth,height=area.clientHeight;
- model.pitch=Math.max(48,Math.min(58,width*.142))+6;
+ model.pitch=beadMotionConfig.beadPitch;
  model.count=count;model.position=count*model.pitch;
  let raf=0,disposed=false,down=null,animationStart=0,from=model.position,to=model.position;
  const draw=position=>{
@@ -49,11 +49,11 @@ export function mountBeads(el,{step,count=0,reduced=false,left=false,direction=1
    node.className='strand-bead'+(physical===109?' guru':[27,54,81].includes(number)?' spacer':'');
    node.dataset.number=number;
    node.style.transform=`translate(${x}px,${y}px) translate(-50%,-50%) rotate(${angle}deg) scale(${1+near*.07})`;
-   const half=(model.pitch-6)*.76;
+   const half=beadMotionConfig.beadDiameter*.76;
    node.style.opacity=String(Math.max(0,Math.min(1,(y-half-100)/35,(height+20-y)/45,(Math.min(x,width-x)-half+16)/8)));
   });
  };
- const resize=new ResizeObserver(()=>{width=area.clientWidth;height=area.clientHeight;const size=model.pitch-6,heading=document.querySelector('.scene-heading'),top=Math.max(100,heading.getBoundingClientRect().bottom-area.getBoundingClientRect().top+8);area.style.setProperty('--bead-size',size+'px');area.style.setProperty('--bead-touch-top',top+'px');const p=beadArc(width,height,0,left),r=width*beadMotionConfig.arcRadius;el.querySelector('.thumb-point').style.cssText=`left:${p.x}px;top:${p.y}px`;guide.style.cssText=`left:${p.x}px;top:${p.y-86}px`;chevrons.style.cssText=`left:${p.x}px;top:${p.y+76}px`;el.querySelector('.bead-thread').style.cssText=`width:${r*2}px;height:${r*2}px;left:${left?p.x-r*2:p.x}px;top:${p.y-r}px`;draw(model.position);});resize.observe(area);resize.observe(document.querySelector('.scene-heading'));
+ const resize=new ResizeObserver(()=>{width=area.clientWidth;height=area.clientHeight;const heading=document.querySelector('.scene-heading'),top=Math.max(100,heading.getBoundingClientRect().bottom-area.getBoundingClientRect().top+8);area.style.setProperty('--bead-size',beadMotionConfig.beadDiameter+'px');area.style.setProperty('--bead-touch-top',top+'px');const p=beadArc(width,height,0,left),r=width*beadMotionConfig.arcRadius;el.querySelector('.thumb-point').style.cssText=`left:${p.x}px;top:${p.y}px`;guide.style.cssText=`left:${Math.max(52,p.x-64)}px;top:${p.y-64}px`;chevrons.style.cssText=`left:${p.x}px;top:${p.y+52}px`;el.querySelector('.bead-thread').style.cssText=`width:${r*2}px;height:${r*2}px;left:${left?p.x-r*2:p.x}px;top:${p.y-r}px`;draw(model.position);});resize.observe(area);resize.observe(document.querySelector('.scene-heading'));
  const frame=now=>{
   if(disposed)return;
   if(model.active&&!reduced){model.frame(now);draw(model.position);}
