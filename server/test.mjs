@@ -57,11 +57,11 @@ test('outbox mail provider is rejected outside staging',()=>{
  assert.throws(()=>config(env),/Outbox is staging-only/);
  assert.equal(config({...env,CHUAMAY_ENV:'staging'}).mailProvider,'outbox');
 });
-test('family pilot is enabled only by the staging switch',()=>{
+test('family defaults closed in production and requires an explicit switch',()=>{
  const env={TELEGRAM_ENABLED:'0',HASH_SECRET:settings.hashSecret};
  assert.equal(config({...env,CHUAMAY_ENV:'production'}).familyEnabled,false);
  assert.equal(config({...env,CHUAMAY_ENV:'production',FAMILY_ENABLED:'0'}).familyEnabled,false);
+ assert.equal(config({...env,CHUAMAY_ENV:'production',FAMILY_ENABLED:'1'}).familyEnabled,true);
  assert.equal(config({...env,CHUAMAY_ENV:'staging',FAMILY_ENABLED:'1'}).familyEnabled,true);
- assert.throws(()=>config({...env,CHUAMAY_ENV:'production',FAMILY_ENABLED:'1'}),/staging-only/);
  assert.throws(()=>config({...env,CHUAMAY_ENV:'staging',FAMILY_ENABLED:'yes'}),/FAMILY_ENABLED/);
 });
