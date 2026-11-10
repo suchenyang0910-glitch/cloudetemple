@@ -7,6 +7,7 @@ import {copy,reflections,shareCopy} from './i18n.js';
 import {apiURL,initTelegram,inTelegram,initData,telegramBack,telegramAppearance,haptic,telegramShare,telegramStory,telegramStartParam} from './telegram.js';
 import {createMorning} from './morning.js';
 import {getFestivalPeriod,createNewYearBell,hasForbiddenWord,readFlower,writeFlower} from './festival.js';
+import {incenseConfig,incenseVisual,incensePhaseDone} from './incense.js';
 
 let analytics,woodStarted;
 let festivalPeriod=getFestivalPeriod(),newYearBell;
@@ -15,7 +16,7 @@ const event=(name,params)=>analytics?.event(name,params);
 function completed(activity,ms,n){event('activity_complete',{activity,duration_bucket:ms<60000?'<1m':ms<180000?'1-3m':ms<=600000?'3-10m':'>10m',count_bucket:n>=108?'108+':n>=54?'54-107':n>=27?'27-53':n>1?'2-26':'1'})}
 const $=s=>document.querySelector(s);
 const reduced=matchMedia('(prefers-reduced-motion: reduce)');
-const state={view:'entry',lang:'vi',visitor:null,period:'day',layout:null,busy:false,activity:null,result:null,bowTarget:3,sitMinutes:3,wood:0,moFrame:1,breathGuide:true,breathPattern:'4-6',bead:0,beadRound:1,beadDirection:1,beadHand:'right',beadFrame:1};
+const state={view:'entry',lang:'vi',visitor:null,period:'day',layout:null,busy:false,activity:null,incense:null,result:null,bowTarget:3,sitMinutes:3,wood:0,moFrame:1,breathGuide:true,breathPattern:'4-6',bead:0,beadRound:1,beadDirection:1,beadHand:'right',beadFrame:1};
 const images=new Map(),tinted=new Map();
 let beadCleanup=null,pendingView=null,choiceToken=0,choiceFront=0;
 let transitionId=0,drawFrame=0,lastFocus=null,shareBlob=null,shareURL=null;
@@ -76,10 +77,11 @@ function image(name){
   return images.get(name);
 }
 function sceneName(view=state.view){return ['incense','bow','mo','beads'].includes(view)?'hall-side':['sit','choose'].includes(view)?'courtyard':'hall-front';}
-function sceneFile(view=state.view,period=state.period){return `scene-vn-${sceneName(view)}-${period}.webp`;}
-function poses(view){return view==='morning'?['stand']:view==='bow'?['bow-1','bow-2','bow-3']:view==='incense'?['bow-1']:view==='mo'?['mo-1-v1','mo-2-v1','mo-3-v1']:view==='sit'?['sit']:view==='beads'?['beads-side-1-v1','beads-side-2-v1','beads-side-3-v1']:[];}
+function sceneFile(view=state.view,period=state.period){return view==='incense'?`scene-vn-hall-side-incense-patch-${period}.webp`:`scene-vn-${sceneName(view)}-${period}.webp`;}
+const incensePoses=['inc-walk-1','inc-walk-2','inc-hold','inc-light','inc-vai-1','inc-vai-2','inc-plant-1','inc-end'];
+function poses(view){return view==='morning'?['stand']:view==='bow'?['bow-1','bow-2','bow-3']:view==='incense'?incensePoses:view==='mo'?['mo-1-v1','mo-2-v1','mo-3-v1']:view==='sit'?['sit']:view==='beads'?['beads-side-1-v1','beads-side-2-v1','beads-side-3-v1']:[];}
 const morning=createMorning({event});
-const artFile=(visitor,pose)=>`visitor-${visitor}-${pose}${pose==='sit'||pose==='beads'?'-nocushion':''}.webp`;
+const artFile=(visitor,pose)=>`visitor-${visitor}-${pose}${pose.startsWith('inc-')?'-v1':pose==='sit'||pose==='beads'?'-nocushion':''}.webp`;
 async function prepare(view,period){
   const visitor=state.visitor;
   const scene=await image(sceneFile(view,period));
@@ -91,7 +93,7 @@ async function prepare(view,period){
       const im=await image(name),c=document.createElement('canvas');c.width=im.width;c.height=im.height;
       const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(im,0,0);
       const data=x.getImageData(0,0,c.width,c.height),tone=state.layout.toneRGB[period];
-      for(let i=0;i<data.data.length;i+=4){for(let j=0;j<3;j++)data.data[i+j]*=tone[j]*(['mo','beads'].includes(view)&&period==='night'?.9:1);}
+      for(let i=0;i<data.data.length;i+=4){for(let j=0;j<3;j++)data.data[i+j]*=tone[j]*(['mo','beads','incense'].includes(view)&&period==='night'?.9:1);}
       x.putImageData(data,0,0);if(!im.placeholder)tinted.set(key,c);else {missing=true;art[pose]=c;continue;}
     }
     art[pose]=tinted.get(key);
@@ -103,18 +105,20 @@ function paint(now=performance.now()){
   if(!renderAssets||renderAssets.view!==state.view)return;
   ctx.clearRect(0,0,941,1672);ctx.drawImage(renderAssets.scene,0,0,941,1672);
   const available=poses(state.view);if(!available.length)return;
-  let pose=state.view==='mo'?`mo-${state.moFrame}-v1`:state.view==='beads'?`beads-side-${state.beadFrame}-v1`:available[0],previous=null,mix=1;
+  let pose=state.view==='mo'?`mo-${state.moFrame}-v1`:state.view==='beads'?`beads-side-${state.beadFrame}-v1`:state.view==='incense'?incenseVisual(now,state.incense,reduced.matches).pose:available[0],previous=null,mix=1;
   const a=state.activity;
   if(state.view==='bow'&&a?.bowStart!==null&&a?.bowStart!==undefined){
     const frame=bowFrame(now-a.bowStart,reduced.matches);pose=`bow-${frame.to}`;previous=`bow-${frame.from}`;mix=frame.mix;
   }
-  const pos=placement(state.layout,state.visitor,pose),s=state.layout;
-  canvas.dataset.cushionPolicy='scene';canvas.dataset.pose=pose;canvas.dataset.visitor=state.visitor;
+  const visual=state.view==='incense'?incenseVisual(now,state.incense,reduced.matches):null;
+  const pos=visual?{x:visual.footX-380*(391/560),y:visual.footY-930*(671/960),w:391,h:671}:placement(state.layout,state.visitor,pose),s=state.layout;
+  canvas.dataset.cushionPolicy=state.view==='incense'?'hidden':'scene';canvas.dataset.pose=pose;canvas.dataset.visitor=state.visitor;
   if(sceneName()==='courtyard'){const box=$('.stage').getBoundingClientRect(),space=$('#controls').getBoundingClientRect().top-$('.scene-heading').getBoundingClientRect().bottom-48;const factor=Math.max(.3,Math.min(.72,space/(pos.h*(parseFloat($('.stage').style.getPropertyValue('--scene-width'))||box.width)/941))); pos.x=s.courtyard.x+(pos.x-s.courtyard.x)*factor;pos.y=s.courtyard.bottom+(pos.y-s.courtyard.bottom)*factor;pos.w*=factor;pos.h*=factor;}
   const shift=0;
   pos.x+=shift;
   ctx.save();ctx.fillStyle='rgba(34,27,19,.10)';ctx.filter='blur(7px)';ctx.beginPath();
   if(sceneName()==='courtyard')ctx.ellipse(s.courtyard.x+shift,s.courtyard.bottom-3,s.courtyard.cushionWidth*.45,12,0,0,Math.PI*2);
+  else if(state.view==='incense')ctx.ellipse(visual.footX-28,visual.footY-2,62,7,0,0,Math.PI*2);
   else ctx.ellipse(s['hall-side'].foot[0]-65,s['hall-side'].foot[1]-2,70,7,0,0,Math.PI*2);
   ctx.fill();ctx.restore();
   if(state.view==='sit'&&a?.running&&state.breathGuide){
@@ -123,13 +127,17 @@ function paint(now=performance.now()){
   }
   if(previous&&mix<1&&renderAssets.art[previous]){ctx.globalAlpha=1-mix;ctx.drawImage(renderAssets.art[previous],pos.x,pos.y,pos.w,pos.h);}
   ctx.globalAlpha=mix;ctx.drawImage(renderAssets.art[pose],pos.x,pos.y,pos.w,pos.h);ctx.globalAlpha=1;
+  if(state.view==='incense'&&state.incense?.planted){
+    ctx.save();ctx.strokeStyle='#6b3b25';ctx.lineWidth=3;for(const dx of [-8,0,8]){ctx.beginPath();ctx.moveTo(288+dx,872);ctx.lineTo(288+dx,798);ctx.stroke();ctx.fillStyle='#df6d32';ctx.beginPath();ctx.arc(288+dx,798,3.5,0,Math.PI*2);ctx.fill();if(!reduced.matches){ctx.strokeStyle='rgba(100,89,76,.42)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(288+dx,793);ctx.bezierCurveTo(276+dx,770,300+dx,748,286+dx,724);ctx.stroke();ctx.strokeStyle='#6b3b25';ctx.lineWidth=3;}}
+    ctx.restore();
+  }
 }
-function animation(){cancelAnimationFrame(drawFrame);const run=()=>{const now=performance.now();advanceBow(now);paint(now);if((state.view==='bow'&&state.activity?.bowStart!=null)||(state.view==='sit'&&state.activity?.running&&state.breathGuide&&!reduced.matches))drawFrame=requestAnimationFrame(run);};run();}
+function animation(){cancelAnimationFrame(drawFrame);const run=()=>{const now=performance.now();advanceBow(now);advanceIncense(now);paint(now);if((state.view==='bow'&&state.activity?.bowStart!=null)||(state.view==='sit'&&state.activity?.running&&state.breathGuide&&!reduced.matches)||(state.view==='incense'&&state.incense&&!reduced.matches))drawFrame=requestAnimationFrame(run);};run();}
 function fx(){
-  const f=state.layout.fx_hall_side,lit=state.view==='incense'&&state.activity?.running,bowing=state.view==='bow';
-  $('#effects').innerHTML=`${bowing?`<ellipse class="halo-pulse" cx="${f.halo_center[0]}" cy="${f.halo_center[1]}" rx="92" ry="112" fill="#ffe2a6" opacity=".07"/>`:''}${lit?[-10,0,10].map((dx,i)=>`<circle class="fire" cx="${f.incense_tips[0]+dx}" cy="${f.incense_tips[1]}" r="4"/><path class="smoke" style="animation-delay:-${i*2}s" d="M${f.incense_tips[0]+dx} ${f.incense_tips[1]-5} c-18 -40 30 -65 3 -100 s23 -65 8 -95"/>`).join(''):''}`;
+  const f=state.layout.fx_hall_side,bowing=state.view==='bow';
+  $('#effects').innerHTML=bowing?`<ellipse class="halo-pulse" cx="${f.halo_center[0]}" cy="${f.halo_center[1]}" rx="92" ry="112" fill="#ffe2a6" opacity=".07"/>`:'';
 }
-function stopActivity(){stopWoodAuto();stopWoodMotion();stopBeadMotion();clearTimeout(finishTimer);clearTimeout(incenseReadyTimer);beadCleanup?.();beadCleanup=null;state.activity=null;cancelAnimationFrame(drawFrame);audio.ambient('none',1,2);audio.stopBreathing(2);updateBreathCue();}
+function stopActivity(){stopWoodAuto();stopWoodMotion();stopBeadMotion();clearTimeout(finishTimer);clearTimeout(incenseReadyTimer);beadCleanup?.();beadCleanup=null;state.activity=null;state.incense=null;cancelAnimationFrame(drawFrame);audio.ambient('none',1,2);audio.stopBreathing(2);updateBreathCue();}
 function prefetch(view){
  const visitor=state.visitor,period=state.period;
  const run=()=>{if(state.visitor!==visitor||state.period!==period||state.view!==view)return;
@@ -147,6 +155,7 @@ async function navigate(view,{keepResult=false}={}){
  const old=renderAssets?canvas.cloneNode():null;
  if(old){old.id='scene-old';old.className='scene-surface';old.setAttribute('aria-hidden','true');old.style.cssText=`width:${canvas.getBoundingClientRect().width}px;top:${canvas.offsetTop}px`;old.getContext('2d').drawImage(canvas,0,0);canvas.before(old);}
  if(state.view!==view)analytics?.view(view);state.view=view;state.period=periodNow();if(!keepResult)state.result=null;
+  if(view==='incense')state.incense={phase:'waiting',phaseStarted:performance.now(),auto:read('ct-incense-auto',false)===true,planted:false,strikes:0};
   if(view==='mo')woodSession=0;if(view==='beads'){state.bead=0;state.beadRound=1;state.beadDirection=1;state.beadFrame=1;beadAnnounced=-1;}if(view==='sit')state.wood=0;
  render();$('#app').setAttribute('aria-busy','true');canvas.style.opacity='0';
  finishBoot();
@@ -162,6 +171,7 @@ async function navigate(view,{keepResult=false}={}){
   if(assets.missing){$('#notice').textContent=t('imageUnavailable');$('#controls').insertAdjacentHTML('beforeend',button('retry','retry'));}
   if(['home','choose'].includes(view))prefetch(view);
   if(view==='beads'&&audio.enabled)void audio.load('bead-v1').catch(()=>{});
+  if(view==='incense'&&audio.enabled)void audio.load('ignite-v1').catch(()=>{});
  }catch{if(token===transitionId){$('#notice').textContent=t('loadError');$('#controls').insertAdjacentHTML('beforeend',button('retry','retry'));canvas.style.opacity='1';}}
  finally{clearTimeout(timer);if(token===transitionId){pendingView=null;state.busy=false;$('#loading').hidden=true;$('#app').setAttribute('aria-busy','false');}else old?.remove();}
 }
@@ -220,9 +230,12 @@ function render(){
     $('#controls').innerHTML=`<div class="completion"><p>${reflections[state.result.reflection][state.lang]}</p>${state.result.kind==='beads'?button('beadAgain','bead-again','primary'):''}<div class="row">${button('shareAction','share','primary')}${button('download','download')}</div><p id="share-status" role="status"></p>${button('back','home','back-button')}</div>`;
     $('#subtitle').textContent=t('completed');
   }else if(state.view==='incense'){
-    const earlyOk=state.activity&&(performance.now()-state.activity.startedMonotonic>=20000);
+    const journey=state.incense,earlyOk=journey?.phase==='standing'&&state.activity&&performance.now()-state.activity.startedMonotonic>=incenseConfig.earlyMs&&performance.now()-journey.standStarted>=incenseConfig.standMinMs;
+    const phaseKey={waiting:'incenseWalking',walking:'incenseWalking','ready-light':'incenseReadyLight',lighting:'incenseLighting','ready-vai':'incenseReadyBow',bowing:'incenseBowing','ready-plant':'incenseReadyPlant',planting:'incensePlanting',standing:'incenseStanding'}[journey?.phase]||'incenseWalking';
+    const primaryKey=journey?.phase==='ready-light'?'incenseLightNow':journey?.phase==='ready-vai'?'incenseBowThree':journey?.phase==='ready-plant'?'incensePlantNow':earlyOk?'incenseDone':phaseKey;
+    const enabled=['ready-light','ready-vai','ready-plant'].includes(journey?.phase)||earlyOk;
     const morningSkipBtn=morning.isActive()?`<button type="button" class="text-button morning-skip-step" data-action="morning-skip-step" data-step="incense">${t('morningSkipStep')}</button>`:'';
-    $('#controls').innerHTML=`<div class="stack"><div id="incense-status" class="section-label"></div><div class="incense-stick" aria-hidden="true"><span id="incense-progress"></span></div><div class="row">${button('light','light','primary',state.activity?'disabled':'')}${earlyOk?button('incenseDone','incense-done'):''}${morning.isActive()?morningSkipBtn:button('back','home')}</div></div>`;
+    $('#controls').innerHTML=`<div class="stack"><div id="incense-status" class="section-label">${t(phaseKey)}</div><div class="incense-stick" aria-hidden="true"><span id="incense-progress"></span></div><div class="row">${button(primaryKey,'light','primary',enabled?'':'disabled')}${button(journey?.auto?'incenseAutoOn':'incenseAuto','incense-auto','',`aria-pressed="${!!journey?.auto}"`)}</div>${morning.isActive()?morningSkipBtn:button('back','home','back-button')}</div>`;
   }else if(state.view==='bow'){
     const a=state.activity;
     const bowBack=morning.isActive()?`<button type="button" class="text-button morning-skip-step" data-action="morning-skip-step" data-step="bow">${t('morningSkipStep')}</button>`:button('back','home','back-button');
@@ -269,13 +282,40 @@ function fitScene(){
 new ResizeObserver(()=>{fitScene();paint();}).observe($('#app'));
 new ResizeObserver(fitScene).observe($('#controls'));
 function formatTime(ms){const seconds=Math.ceil(Math.max(0,ms)/1000);return `${Math.floor(seconds/60).toString().padStart(2,'0')}:${(seconds%60).toString().padStart(2,'0')}`;}
+function setIncensePhase(phase,now=performance.now()){
+ const j=state.incense;if(!j)return;j.phase=phase;j.phaseStarted=now;if(phase.startsWith('ready-'))j.readySince=now;if(phase==='standing')j.standStarted=now;render();
+}
+function startIncenseStep(now=performance.now()){
+ const j=state.incense;if(!j)return;
+ if(j.phase==='ready-light'){
+  event('activity_start',{activity:'incense'});state.activity={kind:'incense',running:true,startedMonotonic:now,started:Date.now()};j.ignited=false;setIncensePhase('lighting',now);void audio.load('ignite-v1').catch(()=>{});void audio.ambient('forest',.6,2);
+ }else if(j.phase==='ready-vai'){j.strikes=0;setIncensePhase('bowing',now);}
+ else if(j.phase==='ready-plant')setIncensePhase('planting',now);
+ else if(j.phase==='standing'&&state.activity&&now-state.activity.startedMonotonic>=incenseConfig.earlyMs&&now-j.standStarted>=incenseConfig.standMinMs)complete('incense',Math.round(now-state.activity.startedMonotonic));
+}
+function advanceIncense(now){
+ const j=state.incense;if(state.view!=='incense'||!j)return;
+ const elapsed=now-j.phaseStarted;
+ if(j.phase==='lighting'&&!j.ignited&&elapsed>=incenseConfig.igniteAt){j.ignited=true;audio.strike('ignite-v1',.7);feedback('soft');}
+ if(j.phase==='bowing'){
+  const cycle=reduced.matches?incenseConfig.reducedVaiMs:incenseConfig.vaiCycleMs,strike=reduced.matches?cycle*.45:incenseConfig.vaiStrikeAt;
+  const due=Math.min(incenseConfig.vaiCount,Math.max(0,Math.floor((elapsed-strike)/cycle)+1));
+  while(j.strikes<due){j.strikes++;audio.strike('keisu',.55);feedback('soft');}
+ }
+ if(j.phase==='planting'&&!j.planted&&elapsed>=incenseConfig.plantAt){j.planted=true;audio.strike('keisu',.35);feedback('soft');}
+ if(incensePhaseDone(now,j,reduced.matches)){
+  const next={waiting:'walking',walking:'ready-light',lighting:'ready-vai',bowing:'ready-plant',planting:'standing'}[j.phase];if(next)setIncensePhase(next,now);
+ }
+ if(j.auto&&j.phase.startsWith('ready-')&&now-j.readySince>=incenseConfig.autoGap)startIncenseStep(now);
+ if(j.auto&&j.phase==='standing'&&state.activity&&now-state.activity.startedMonotonic>=incenseConfig.earlyMs&&now-j.standStarted>=incenseConfig.standMinMs)complete('incense',Math.round(now-state.activity.startedMonotonic));
+}
 function remaining(a){
   if(a.kind==='incense'){const elapsed=performance.now()-a.startedMonotonic;return Math.max(0,Math.min(60000,Number.isFinite(elapsed)?60000-elapsed:0));}
   return a.running?Math.max(0,a.deadline-Date.now()):a.left;
 }
 function updateCounters(){
   const a=state.activity;
-  if(state.view==='incense'&&a){const left=remaining(a);if($('#incense-progress'))$('#incense-progress').style.transform=`scaleY(${left/60000})`;if($('#incense-status'))$('#incense-status').textContent=`${t('burning')} · ${formatTime(left)}`;}
+  if(state.view==='incense'&&a){const left=remaining(a);if($('#incense-progress'))$('#incense-progress').style.transform=`scaleY(${left/60000})`;const status=$('#incense-status');if(status)status.textContent=`${status.textContent.split(' · ')[0]} · ${formatTime(left)}`;}
   if(state.view==='sit'&&a&&$('#timer'))$('#timer').textContent=formatTime(remaining(a));
 }
 function complete(kind,elapsed=0,countOverride){
@@ -477,7 +517,8 @@ document.addEventListener('click',async e=>{
     case 'reenter':await navigate('entry');break;
     case 'retry-choice':images.delete(`visitor-${state.visitor}-choose-v1.webp`);b.remove();void showChoice();break;
     case 'retry':images.clear();tinted.clear();await navigate(state.view);break;
-    case 'light':if(!state.activity){event('activity_start',{activity:'incense'});state.activity={kind:'incense',running:true,startedMonotonic:performance.now(),started:Date.now()};audio.strike('keisu',.6);feedback('soft');void audio.ambient('forest',.6,2);render();incenseReadyTimer=setTimeout(render,20000);}break;
+    case 'light':startIncenseStep();animation();break;
+    case 'incense-auto':if(state.incense){state.incense.auto=!state.incense.auto;write('ct-incense-auto',state.incense.auto);state.incense.readySince=performance.now();render();animation();}break;
     case 'incense-done':{const a=state.activity;if(a?.kind==='incense')complete('incense',Math.round(performance.now()-a.startedMonotonic));break;}
     case 'bow-once':bowOnce();break;
     case 'auto':if(!state.activity){bowOnce();state.activity.auto=true;}else{state.activity.auto=!state.activity.auto;if(state.activity.auto&&state.activity.bowStart==null)bowOnce();}syncBowControls();break;
@@ -523,8 +564,9 @@ let periodUpdating=false;
 async function tick(){
   if(!state.layout||state.busy)return;
   const a=state.activity,now=Date.now();
+  if(state.view==='incense'){advanceIncense(performance.now());if(reduced.matches)paint();}
   if(a?.kind==='sit'&&a.running&&remaining(a)<=2000&&!a.breathFading){a.breathFading=true;audio.stopBreathing(2);}
-  if(a?.running&&remaining(a)<=0){if(a.kind==='incense')complete('incense',60000);if(a.kind==='sit')complete('sit',a.total);}
+  if(a?.running&&remaining(a)<=0){if(a.kind==='incense'&&state.incense?.phase==='standing')complete('incense',60000);if(a.kind==='sit')complete('sit',a.total);}
   updateCounters();updateBreathCue();if(state.view==='mo'&&$('#daily-wood'))$('#daily-wood').textContent=t('dailyWood',{count:dailyWood()});
   const nextFestival=getFestivalPeriod();if(nextFestival?.id!==festivalPeriod?.id){festivalPeriod=nextFestival;render();}
   if(newYearBell&&audio.enabled&&!document.hidden)newYearBell.arm(true);

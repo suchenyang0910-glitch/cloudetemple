@@ -11,7 +11,7 @@ if (Test-Path -LiteralPath $outputRoot) {
   Move-Item -LiteralPath $resolvedOutput -Destination (Join-Path $archiveRoot 'dist')
 }
 New-Item -ItemType Directory -Path $outputRoot -Force | Out-Null
-foreach ($name in @('index.html','preload.js','styles.css','app.js','config.js','i18n.js','telegram.js','audio.js','resources.js','beads.js','bow.js','morning.js','festival.js','gioi-thieu.html','quyen-rieng-tu.html','dieu-khoan.html','_headers','_routes.json')) { Copy-Item -LiteralPath (Join-Path $projectRoot $name) -Destination (Join-Path $outputRoot $name) -Force }
+foreach ($name in @('index.html','preload.js','styles.css','app.js','config.js','i18n.js','telegram.js','audio.js','resources.js','beads.js','bow.js','incense.js','morning.js','festival.js','gioi-thieu.html','quyen-rieng-tu.html','dieu-khoan.html','_headers','_routes.json')) { Copy-Item -LiteralPath (Join-Path $projectRoot $name) -Destination (Join-Path $outputRoot $name) -Force }
 Copy-Item -Path (Join-Path $projectRoot 'static/*') -Destination $outputRoot -Recurse -Force
 $appFile=Join-Path $outputRoot 'app.js'
 $appSource=[IO.File]::ReadAllText($appFile).Replace('__CT_FAMILY_ENABLED__',$(if($Environment -eq 'staging'){'1'}else{'0'}))
@@ -22,6 +22,7 @@ Copy-Item -LiteralPath (Join-Path $projectRoot 'assets/processed-v1/layout-v1.js
 Get-ChildItem -LiteralPath (Join-Path $projectRoot 'assets/processed-v1/img') -Filter 'scene-vn-*.webp' | Copy-Item -Destination $imageOutput -Force
 foreach ($id in @('short-light','curly-dark','curly-medium','bun-light','bun-dark','ponytail-medium')) {
   foreach ($pose in @('bow-1','bow-2','bow-3','choose-v1','mo-1-v1','mo-2-v1','mo-3-v1','beads-side-1-v1','beads-side-2-v1','beads-side-3-v1')) { Copy-Item -LiteralPath (Join-Path $projectRoot "assets/processed-v1/img/visitor-$id-$pose.webp") -Destination $imageOutput -Force }
+  foreach ($pose in @('walk-1','walk-2','hold','light','vai-1','vai-2','plant-1','end')) { Copy-Item -LiteralPath (Join-Path $projectRoot "assets/processed-v1/img/visitor-$id-inc-$pose-v1.webp") -Destination $imageOutput -Force }
   Copy-Item -LiteralPath (Join-Path $projectRoot "assets/processed-v1/img/visitor-$id-stand.webp") -Destination $imageOutput -Force
   foreach ($pose in @('sit','beads')) { Copy-Item -LiteralPath (Join-Path $projectRoot "assets/processed-v1/img/visitor-$id-$pose-nocushion.webp") -Destination $imageOutput -Force }
 }
@@ -29,7 +30,7 @@ Write-Output 'Static files packaged in dist. Deploy with Wrangler from project r
 
 $audioOutput = Join-Path $outputRoot 'assets/audio'
 New-Item -ItemType Directory -Path $audioOutput -Force | Out-Null
-foreach ($sound in @('bell-v2','keisu-v2','mo','bead-v1','ambient-courtyard','ambient-rain','breath-4-6','breath-4-4','breath-5-7')) {
+foreach ($sound in @('bell-v2','keisu-v2','mo','bead-v1','ignite-v1','ambient-courtyard','ambient-rain','breath-4-6','breath-4-4','breath-5-7')) {
   foreach ($ext in @('mp3','m4a')) { Copy-Item -LiteralPath (Join-Path $projectRoot "assets/audio/$sound.$ext") -Destination $audioOutput }
 }
 foreach ($name in @('LICENSES.md','measurements.json','measurements-v2.json')) { Copy-Item -LiteralPath (Join-Path $projectRoot "assets/audio/$name") -Destination $audioOutput }
