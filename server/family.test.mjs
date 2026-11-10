@@ -271,6 +271,35 @@ test("production session cookie is shared safely across Chua May subdomains", as
       "SameSite=Lax",
     ])
       assert(cookie.includes(value), value);
+    const sessionCookie = cookie.split(";", 1)[0];
+    for (const origin of [
+      "https://h5.chuamay.org",
+      "https://miniapp.chuamay.org",
+    ]) {
+      const status = await f.request("/family/status", {
+        headers: {
+          Cookie: sessionCookie,
+          Origin: origin,
+          "User-Agent": origin.includes("miniapp")
+            ? "Telegram-iOS family pilot"
+            : "Safari family pilot",
+        },
+      });
+      assert.equal(status.status, 200, origin);
+      assert.equal(status.headers.get("access-control-allow-origin"), origin);
+      assert.equal(status.headers.get("access-control-allow-credentials"), "true");
+    }
+    assert.equal(
+      (
+        await f.request("/family/status", {
+          headers: {
+            Cookie: sessionCookie,
+            Origin: "https://staging.chuamay.org",
+          },
+        })
+      ).status,
+      403,
+    );
   } finally {
     await new Promise((r) => f.server.close(r));
     f.store.close();
