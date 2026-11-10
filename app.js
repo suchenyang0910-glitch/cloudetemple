@@ -307,6 +307,7 @@ function advanceIncense(now){
   const next={waiting:'walking',walking:'ready-light',lighting:'ready-vai',bowing:'ready-plant',planting:'standing'}[j.phase];if(next)setIncensePhase(next,now);
  }
  if(j.auto&&j.phase.startsWith('ready-')&&now-j.readySince>=incenseConfig.autoGap)startIncenseStep(now);
+ if(!j.auto&&!j.earlyShown&&j.phase==='standing'&&state.activity&&now-state.activity.startedMonotonic>=incenseConfig.earlyMs&&now-j.standStarted>=incenseConfig.standMinMs){j.earlyShown=true;render();}
  if(j.auto&&j.phase==='standing'&&state.activity&&now-state.activity.startedMonotonic>=incenseConfig.earlyMs&&now-j.standStarted>=incenseConfig.standMinMs)complete('incense',Math.round(now-state.activity.startedMonotonic));
 }
 function remaining(a){
