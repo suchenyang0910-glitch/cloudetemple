@@ -17,7 +17,7 @@ with sync_playwright() as pw:
  for distance,expected in [(1.6,2),(1.4,1)]:
   if distance==1.4:click('home');click('beads')
   p.evaluate("()=>{window.cues=[];haptics=[];testAudio.observe=e=>{if(e.event==='play')cues.push(e)}}")
-  pitch=393*.142+6;x,y=310,260
+  pitch=30;thumb=p.locator('.thumb-point').bounding_box();x,y=thumb['x']+thumb['width']/2,thumb['y']+thumb['height']/2
   p.mouse.move(x,y);p.mouse.down()
   for i in range(1,33):p.mouse.move(x,y+distance*pitch*i/32);p.wait_for_timeout(20)
   assert p.locator('#bead-count').inner_text().startswith('1 /')

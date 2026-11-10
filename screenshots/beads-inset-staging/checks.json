@@ -1,0 +1,54 @@
+[
+  {
+    "size": [
+      375,
+      548
+    ],
+    "outerGap": 29.16,
+    "personGap": 22.47,
+    "ring": [
+      299,
+      367
+    ],
+    "arrowGap": 2.96
+  },
+  {
+    "size": [
+      390,
+      844
+    ],
+    "outerGap": 29.16,
+    "personGap": 25.56,
+    "ring": [
+      314,
+      382
+    ],
+    "arrowGap": 8.72
+  },
+  {
+    "size": [
+      393,
+      659
+    ],
+    "outerGap": 29.16,
+    "personGap": 26.18,
+    "ring": [
+      317,
+      385
+    ],
+    "arrowGap": 8.72
+  },
+  {
+    "size": [
+      430,
+      932
+    ],
+    "outerGap": 29.16,
+    "personGap": 33.81,
+    "ring": [
+      354,
+      422
+    ],
+    "arrowGap": 8.75
+  }
+]
