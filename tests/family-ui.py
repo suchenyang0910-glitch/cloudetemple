@@ -75,7 +75,10 @@ with sync_playwright() as p:
     assert 'hết hạn' in page.locator('#status').inner_text() and not errors,errors
 
     state.update(authenticated=True,accepted=False,force401=False,consent=False,created=False)
+    page.evaluate("sessionStorage.removeItem('ct-family-invite')")
     page.goto(live+'?flow=consent')
+    page.locator('#new, #email-login').first.wait_for()
+    assert page.locator('#new').count(),page.locator('#screen').inner_text()
     page.locator('#new').click();page.locator('#consent-agree').wait_for()
     assert page.locator('#consent-continue').is_disabled()
     page.locator('#consent-agree').check();page.locator('#consent-continue').click()
