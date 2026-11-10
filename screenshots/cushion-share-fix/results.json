@@ -2,27 +2,27 @@
   "matrices": [
     {
       "matrix": "matrix-375x548-day.jpg",
-      "pixelDifference": 0.00442
+      "pixelDifference": 0.00107
     },
     {
       "matrix": "matrix-375x548-night.jpg",
-      "pixelDifference": 0.0012
+      "pixelDifference": 0.00024
     },
     {
       "matrix": "matrix-393x659-day.jpg",
-      "pixelDifference": 0.0004
+      "pixelDifference": 0.00033
     },
     {
       "matrix": "matrix-393x659-night.jpg",
-      "pixelDifference": 0.0005
+      "pixelDifference": 0.00046
     },
     {
       "matrix": "matrix-iphone15-telegram-day.jpg",
-      "pixelDifference": 0.00267
+      "pixelDifference": 0.0027
     },
     {
       "matrix": "matrix-iphone15-telegram-night.jpg",
-      "pixelDifference": 0.00221
+      "pixelDifference": 0.00224
     },
     {
       "matrix": "share-cards-five-activities.jpg",
