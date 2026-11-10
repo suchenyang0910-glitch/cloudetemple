@@ -89,7 +89,7 @@ def main():
                     )
                     page = context.new_page()
                     page.add_init_script(
-                        f"localStorage.setItem('ct-muted','true');localStorage.setItem('ct-analytics','no');localStorage.setItem('ct-visitor',JSON.stringify('{visitor}'));"
+                        f"localStorage.setItem('ct-muted','true');localStorage.setItem('ct-analytics','no');localStorage.setItem('ct-morning-seen','true');localStorage.setItem('ct-visitor',JSON.stringify('{visitor}'));"
                     )
                     page.clock.install(time=datetime.fromisoformat(when))
                     page.goto(args.base + ("?telegram=1" if "telegram" in size_name else ""))
