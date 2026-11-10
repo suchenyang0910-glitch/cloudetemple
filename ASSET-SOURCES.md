@@ -53,3 +53,19 @@ identical. The three frames share a 600 x 600 canvas and the woodfish placement
 anchor; head, ground line, and body alignment were checked against the matching
 `mo-1-v1` frame. The v3 alignment sheets and metrics were reviewed and approved
 by the user on 2026-11-09. No third-party artwork was introduced.
+
+## L2 incense ritual visitors, scene variants, and ignition sound
+
+**Files**: `assets/processed-v1/img/visitor-*-inc-*-v1.webp`,
+`assets/processed-v1/img/scene-vn-hall-side-incense-patch-*.webp`, and
+`assets/audio/ignite-v1.{mp3,m4a}`.
+
+**Source**: The 48 visitor frames are the user-approved L2 review frames. The
+four incense-only hall variants were edited from the project's original
+hall-side scenes with OpenAI ImageGen: remove the baked incense/smoke and the
+unused cushion, preserve the altar, Buddha, lighting, and composition. The
+altar support color was separately matched to the adjacent warm wood after the
+user identified the gray-blue mismatch. No third-party artwork was introduced.
+
+**Ignition sound**: Generated locally from filtered brown noise with FFmpeg
+(`anoisesrc`, 0.38 seconds); original project output with no third-party sample.
