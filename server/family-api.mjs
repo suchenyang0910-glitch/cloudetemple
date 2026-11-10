@@ -157,9 +157,12 @@ function tabletInput(v) {
 export function createFamilyApi(settings, family, dependencies = {}) {
   const calendarPdf = dependencies.calendarPdf || createFamilyCalendarPdf;
   const metric = dependencies.metric || (() => {});
+  const allowed = (email) => settings.familyAllowlist.has(String(email || "").trim().toLowerCase());
+  const cookieDomain =
+    settings.environment === "production" ? "; Domain=.chuamay.org" : "";
   const oauthRedirect = (res, reason) => {
     res.writeHead(302, {
-      Location: `/family.html?auth=${encodeURIComponent(reason)}`,
+      Location: `${settings.familyUrl}?auth=${encodeURIComponent(reason)}`,
       "Cache-Control": "no-store",
     });
     res.end();
@@ -202,11 +205,9 @@ export function createFamilyApi(settings, family, dependencies = {}) {
       ua(req),
       hash(settings.hashSecret, anti),
     );
-    const domain =
-      settings.environment === "production" ? "; Domain=.chuamay.org" : "";
     res.setHeader(
       "Set-Cookie",
-      `ct_session=${raw}; Path=/; Max-Age=${max}; HttpOnly; Secure; SameSite=Lax${domain}`,
+      `ct_session=${raw}; Path=/; Max-Age=${max}; HttpOnly; Secure; SameSite=Lax${cookieDomain}`,
     );
     return anti;
   };
@@ -217,6 +218,8 @@ export function createFamilyApi(settings, family, dependencies = {}) {
       const language = familyServerLanguage(req),
         user = session(req),
         write = !["GET", "HEAD"].includes(req.method);
+      if (user && !allowed(user.email))
+        return json(res, 404, { ok: false, error: "not_found" }), true;
       if (write) {
         const origin = req.headers.origin;
         if (!origin || !settings.origins?.has(origin))
@@ -235,6 +238,10 @@ export function createFamilyApi(settings, family, dependencies = {}) {
         const { handleOutbox } = await import("./outbox-staging.mjs");
         if (handleOutbox(req, res, route, family.db)) return true;
       }
+      if (route === "/family/status" && req.method === "GET")
+        return user
+          ? (json(res, 200, { ok: true, enabled: true }), true)
+          : (json(res, 404, { ok: false, error: "not_found" }), true);
       if (route === "/family/auth/email/start" && req.method === "POST") {
         const v = await body(req),
           email = String(v.email || "")
@@ -242,6 +249,8 @@ export function createFamilyApi(settings, family, dependencies = {}) {
             .toLowerCase();
         if (!validEmail(email))
           return json(res, 400, { ok: false, error: "invalid" }), true;
+        if (!allowed(email))
+          return json(res, 404, { ok: false, error: "not_found" }), true;
         const subject = hash(settings.hashSecret, email),
           ip = hash(settings.hashSecret, clientIP(req, settings.trustLocal));
         if (
@@ -273,6 +282,8 @@ export function createFamilyApi(settings, family, dependencies = {}) {
           code = String(v.code || "");
         if (!validEmail(email) || !/^\d{6}$/.test(code))
           return json(res, 400, { ok: false, error: "invalid" }), true;
+        if (!allowed(email))
+          return json(res, 404, { ok: false, error: "not_found" }), true;
         const subject = hash(settings.hashSecret, email),
           record = family.takeCode(subject, hash(settings.hashSecret, code));
         if (!record) return json(res, 401, { ok: false, error: "code" }), true;
@@ -294,6 +305,8 @@ export function createFamilyApi(settings, family, dependencies = {}) {
         );
       }
       if (route === "/family/auth/telegram" && req.method === "POST") {
+        if (settings.familyAllowlist.size)
+          return json(res, 404, { ok: false, error: "not_found" }), true;
         if (!settings.telegramEnabled)
           return (
             json(res, 503, { ok: false, error: "telegram_disabled" }), true
@@ -381,24 +394,28 @@ export function createFamilyApi(settings, family, dependencies = {}) {
           { headers: { Authorization: `Bearer ${td.access_token}` } },
         );
         if (!ur.ok) return oauthRedirect(res, "google_failed");
-        const profile = await ur.json();
-        if (!profile.email_verified || !profile.sub)
+        const profile = await ur.json(),
+          email = String(profile.email || "").trim().toLowerCase();
+        if (profile.email_verified !== true || !profile.sub || !validEmail(email))
           return oauthRedirect(res, "google_failed");
+        if (!allowed(email)) return oauthRedirect(res, "not_found");
         const account = family.userFor(
           "google",
           hash(settings.hashSecret, String(profile.sub)),
-          "",
+          email,
           String(profile.name || "").slice(0, 60),
         );
         issue(res, account, req);
         res.writeHead(302, {
-          Location: "/family.html",
+          Location: settings.familyUrl,
           "Cache-Control": "no-store",
         });
         res.end();
         return true;
       }
       if (route === "/family/session" && req.method === "GET") {
+        if (!user)
+          return json(res, 404, { ok: false, error: "not_found" }), true;
         let anti = null;
         if (user) {
           anti = token(18);
@@ -420,11 +437,13 @@ export function createFamilyApi(settings, family, dependencies = {}) {
         if (user) family.logout(user.tokenHash);
         res.setHeader(
           "Set-Cookie",
-          "ct_session=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=Lax",
+          `ct_session=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=Lax${cookieDomain}`,
         );
         return json(res, 200, { ok: true }), true;
       }
       if (route === "/family/invites/info" && req.method === "POST") {
+        if (!user)
+          return json(res, 404, { ok: false, error: "not_found" }), true;
         const v = await body(req),
           i = family.inviteInfo(
             hash(settings.hashSecret, String(v.token || "")),
@@ -794,7 +813,7 @@ export function createFamilyApi(settings, family, dependencies = {}) {
         family.deleteUser(user.user_id);
         res.setHeader(
           "Set-Cookie",
-          "ct_session=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=Lax",
+          `ct_session=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=Lax${cookieDomain}`,
         );
         return json(res, 200, { ok: true }), true;
       }

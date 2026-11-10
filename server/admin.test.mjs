@@ -136,7 +136,7 @@ test("declined referral records only a click; daily binding cap and account merg
 });
 
 test("admin and referral switches default off in production and fail closed", () => {
-  const base = { TELEGRAM_ENABLED: "0", HASH_SECRET: "x".repeat(64), CHUAMAY_ENV: "production" };
+  const base = { TELEGRAM_ENABLED: "0", HASH_SECRET: "x".repeat(64), CHUAMAY_ENV: "production", FAMILY_ENABLED: "0" };
   assert.equal(config(base).adminEnabled, false); assert.equal(config(base).referralsEnabled, false);
   assert.equal(config(base).presenceEnabled, false);
   assert.equal(config({ ...base, CALENDAR_PREORDER_PRICE: "150000", CALENDAR_PREORDER_DEADLINE: "2026-12-20", CALENDAR_PAYMENT_BANK: "Bank", CALENDAR_PAYMENT_NAME: "Name", CALENDAR_PAYMENT_ACCOUNT: "0000" }).calendarPresale.open, false);

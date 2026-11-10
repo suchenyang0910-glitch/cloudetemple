@@ -19,7 +19,12 @@ export async function initTelegram(onBack,onSettings){
 }
 export const inTelegram=()=>!!app;
 export const initData=()=>app?.initData||'';
-export const telegramStartParam=()=>/^[a-z0-9_-]{1,64}$/.test(app?.initDataUnsafe?.start_param||'')?app.initDataUnsafe.start_param:'';
+export const telegramStartParam=()=>{
+ const sdk=app?.initDataUnsafe?.start_param||'';
+ if(/^[a-z0-9_-]{1,64}$/.test(sdk))return sdk;
+ const query=new URLSearchParams(location.search).get('startapp')||'';
+ return ['staging.chuamay.org','localhost'].includes(location.hostname)&&/^[a-z0-9_-]{1,64}$/.test(query)?query:'';
+};
 export function telegramBack(show){if(app)app.BackButton[show?'show':'hide']();}
 export function haptic(kind){if(!app)return false;try{app.HapticFeedback?.impactOccurred(kind);}catch{}return true;}
 export function telegramShare(text,source='s_tg_forward'){

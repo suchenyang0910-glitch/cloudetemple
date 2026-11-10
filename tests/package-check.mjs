@@ -60,7 +60,10 @@ if(process.argv.includes('--production')){
  for(const excluded of [...(familyCandidate?[]:['family']), 'family-consent','admin','presence','calendar-presale'])assert(!versioned.some(n=>n.startsWith(excluded+'.')),excluded+' excluded from production');
  const app=versioned.find(n=>n.startsWith('app.')&&n.endsWith('.js'));
  assert(app,'production app module');
- assert((await fs.readFile(new URL(app,root),'utf8')).match(/const familyEnabled\s*=\s*["']0["']\s*===\s*["']1["']/),'production family entry disabled');
+ const appSource=await fs.readFile(new URL(app,root),'utf8');
+ assert(appSource.includes("apiURL('/family/status')"),'family entry follows server status');
+ assert(!appSource.includes('__CT_FAMILY_ENABLED__'),'family entry is not fixed at build time');
+ if(familyCandidate){const familySource=await fs.readFile(new URL(`family.${release}.js`,root),'utf8');assert(familySource.includes('apiURL("/family" + path)')&&familySource.includes('credentials: "include"'),'family API uses credentialed API origin');}
  assert((await fs.readFile(new URL(app,root),'utf8')).match(/const referralsEnabled\s*=\s*["']0["']\s*===\s*["']1["']/),'production referrals disabled');
  assert((await fs.readFile(new URL(app,root),'utf8')).match(/const presenceEnabled\s*=\s*["']0["']\s*===\s*["']1["']/),'production presence disabled');
 }
@@ -80,7 +83,9 @@ if(process.argv.includes('--staging')){
   const familyConsentText=await fs.readFile(new URL(familyConsent,root),'utf8');assert(familyConsentText.includes('v2 · 2026-11-07')&&!familyConsentText.includes('Chờ người bản ngữ xác nhận'),'native-language review marker removed');assert(familyConsentText.includes('公开上线前需律师确认'),'internal legal review marker retained');
   assert(versioned.some(n=>n.startsWith('calendar-presale.')&&n.endsWith('.js')),'staging calendar presale app');
   const presale=await fs.readFile(new URL('calendar-presale.html',root),'utf8');assert(presale.includes('noindex,nofollow')&&presale.includes('Sắp mở')===false,'staging presale is private and runtime-configured');
- assert((await fs.readFile(new URL(versioned.find(n=>n.startsWith('app.')),root),'utf8')).match(/const familyEnabled\s*=\s*["']1["']\s*===\s*["']1["']/));
+ const appSource=await fs.readFile(new URL(versioned.find(n=>n.startsWith('app.')),root),'utf8');
+ assert(appSource.includes("apiURL('/family/status')")&&!appSource.includes('__CT_FAMILY_ENABLED__'));
+ assert(appSource.includes("telegramStartParam()==='family'")&&appSource.includes("/family.html?telegram=1"),'Telegram family start parameter opens the family login page');
  assert((await fs.readFile(new URL(versioned.find(n=>n.startsWith('app.')),root),'utf8')).match(/const referralsEnabled\s*=\s*["']1["']\s*===\s*["']1["']/));
  assert((await fs.readFile(new URL(versioned.find(n=>n.startsWith('app.')),root),'utf8')).match(/const presenceEnabled\s*=\s*["']1["']\s*===\s*["']1["']/));
  for(const name of ['admin.html','admin.css','presence.css','admin.js'])await fs.access(new URL(name.replace(/\.(css|js)$/,`.${release}.$1`),root));

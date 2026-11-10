@@ -12,7 +12,7 @@ import {incenseConfig,incenseVisual,incensePhaseDone} from './incense.js';
 
 let analytics,woodStarted,referrals;
 let festivalPeriod=getFestivalPeriod(),newYearBell;
-const familyEnabled='__CT_FAMILY_ENABLED__'==='1';
+let familyEnabled=false;
 const referralsEnabled='__CT_REFERRALS_ENABLED__'==='1';
 const presenceEnabled='__CT_PRESENCE_ENABLED__'==='1';
 const event=(name,params)=>{analytics?.event(name,params);if(name==='activity_complete')referrals?.event('activity_complete',params.activity);if(name==='share_channel')referrals?.event('share');};
@@ -588,13 +588,15 @@ let resolveLayout;const layoutReady=new Promise(resolve=>resolveLayout=resolve);
 async function init(){
   startPresence();
   state.period=periodNow();document.documentElement.lang=state.lang;$('#language').value=state.lang;document.body.dataset.period=state.period;$('#eyebrow').textContent=t(state.period);$('#subtitle').textContent=t('tagline');updateSoundUI();
+  const familyReady=fetch(apiURL('/family/status'),{credentials:'include',signal:AbortSignal.timeout(3000)}).then(async response=>{familyEnabled=response.ok&&(await response.json()).enabled===true;}).catch(()=>{familyEnabled=false;});
   await initTelegram(()=>{if($('#more-menu').open)$('#more-menu').close();else if($('#modal').open)closeModal();else navigate(state.view==='choose'?'entry':'home');},openMore);
+  if(telegramStartParam()==='family'){location.replace('/family.html?telegram=1');return;}
   enableImageDebug(inTelegram());
   if(['staging.chuamay.org','h5.chuamay.org','miniapp.chuamay.org'].includes(location.hostname))void import('./analytics.js').then(({setupAnalytics})=>{
     analytics=setupAnalytics(inTelegram,{...launchAttribution,startParam:telegramStartParam()});window.addEventListener('ct-image-failure',e=>event('image_load_failed',e.detail));
   }).catch(()=>{/* A statistics module failure must not interrupt the visit. */});
   window.addEventListener('ct-analytics-choice',()=>void referrals.sync());void referrals.sync();
-  try{const response=await fetch(assetURL('processed-v1/layout-v1.json'),{credentials:'omit'});if(!response.ok)throw new Error('layout');state.layout=await response.json();const saved=read('ct-visitor',null);state.visitor=state.layout.v1_scope.visitors.includes(saved)?saved:state.layout.v1_scope.visitors[Math.floor(Math.random()*6)];state.period=periodNow();resolveLayout();
+  try{const response=await fetch(assetURL('processed-v1/layout-v1.json'),{credentials:'omit'});if(!response.ok)throw new Error('layout');state.layout=await response.json();await familyReady;const saved=read('ct-visitor',null);state.visitor=state.layout.v1_scope.visitors.includes(saved)?saved:state.layout.v1_scope.visitors[Math.floor(Math.random()*6)];state.period=periodNow();resolveLayout();
   const ring=(count,newYear=false)=>{if(state.view==='sit'&&state.activity?.running){audio.strike('bell',.22);return;}if(newYear)showNewYearBanner();for(let i=0;i<count;i++)setTimeout(()=>audio.strike('bell',.6),i*1500);};
   newYearBell=createNewYearBell({onBell:count=>ring(count),onNewYear:count=>{launchLanterns();ring(count,true);}});if(!transitionId)await navigate('entry');if(!read('ct-sound-hint-seen',false)){write('ct-sound-hint-seen',true);showSoundHint('soundFirstHint',5000);}}
   catch{finishBoot();$('#loading').hidden=true;$('#notice').textContent=t('loadError');$('#controls').innerHTML=button('retry','reload');$('#controls').onclick=e=>{if(e.target.dataset.action==='reload')location.reload();};$('#app').setAttribute('aria-busy','false');}

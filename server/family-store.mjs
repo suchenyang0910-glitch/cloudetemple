@@ -1,4 +1,15 @@
 import { randomUUID } from "node:crypto";
+export function identityDuplicateSummary(db) {
+  const rows = db
+    .prepare(
+      "SELECT count(DISTINCT user_id) users FROM identities WHERE email IS NOT NULL AND trim(email)<>'' GROUP BY lower(trim(email)) HAVING count(DISTINCT user_id)>1",
+    )
+    .all();
+  return {
+    duplicateEmails: rows.length,
+    duplicateUsers: rows.reduce((total, row) => total + row.users, 0),
+  };
+}
 export function openFamilyStore(db, { demo = true } = {}) {
   const demoFlag = demo ? 1 : 0;
   db.pragma("foreign_keys = ON");
@@ -31,14 +42,43 @@ CREATE TABLE IF NOT EXISTS membership_interests(id TEXT PRIMARY KEY,name TEXT NO
     all = (sql, ...p) => db.prepare(sql).all(...p),
     run = (sql, ...p) => db.prepare(sql).run(...p);
   const userFor = (provider, subject, email = "", display = "") => {
+    email = String(email || "").trim().toLowerCase();
     const found = one(
       "SELECT u.* FROM users u JOIN identities i ON i.user_id=u.id WHERE i.provider=? AND i.subject=?",
       provider,
       subject,
     );
-    if (found) return found;
+    if (found) {
+      if (email)
+        run(
+          "UPDATE identities SET email=? WHERE provider=? AND subject=?",
+          email,
+          provider,
+          subject,
+        );
+      return found;
+    }
+    const emailUsers = email
+      ? all(
+          "SELECT DISTINCT u.* FROM users u JOIN identities i ON i.user_id=u.id WHERE lower(i.email)=? AND u.deleted_at IS NULL",
+          email,
+        )
+      : [];
+    if (emailUsers.length > 1) throw Error("duplicate_identity");
     const id = randomUUID(),
       at = now();
+    if (emailUsers.length === 1) {
+      run(
+        "INSERT INTO identities(user_id,provider,subject,email,created_at,demo) VALUES(?,?,?,?,?,?)",
+        emailUsers[0].id,
+        provider,
+        subject,
+        email,
+        at,
+        demoFlag,
+      );
+      return emailUsers[0];
+    }
     db.transaction(() => {
       run(
         "INSERT INTO users VALUES(?,?,?,?,?,?)",
@@ -54,7 +94,7 @@ CREATE TABLE IF NOT EXISTS membership_interests(id TEXT PRIMARY KEY,name TEXT NO
         id,
         provider,
         subject,
-        provider === "email" ? email : null,
+        email || null,
         at,
         demoFlag,
       );
@@ -138,7 +178,7 @@ CREATE TABLE IF NOT EXISTS membership_interests(id TEXT PRIMARY KEY,name TEXT NO
     },
     sessionUser(hash) {
       return one(
-        "SELECT s.*,u.display_name,u.locale FROM sessions s JOIN users u ON u.id=s.user_id WHERE s.token_hash=? AND s.expires_at>? AND u.deleted_at IS NULL",
+        "SELECT s.*,u.display_name,u.locale,(SELECT email FROM identities WHERE user_id=u.id AND email IS NOT NULL ORDER BY CASE provider WHEN 'google' THEN 0 WHEN 'email' THEN 1 ELSE 2 END LIMIT 1) AS email FROM sessions s JOIN users u ON u.id=s.user_id WHERE s.token_hash=? AND s.expires_at>? AND u.deleted_at IS NULL",
         hash,
         Date.now(),
       );

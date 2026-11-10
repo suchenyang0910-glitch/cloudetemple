@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { openStore } from "./store.mjs";
-import { openFamilyStore } from "./family-store.mjs";
+import { identityDuplicateSummary, openFamilyStore } from "./family-store.mjs";
 import { createFamilyApi } from "./family-api.mjs";
 import { createServer } from "./app.mjs";
 import { listOutbox } from "./outbox-staging.mjs";
@@ -9,6 +9,7 @@ import { hash } from "./security.mjs";
 import { familyServerText } from "./family-i18n.mjs";
 const settings = {
   telegramEnabled: false,
+  familyAllowlist: { size: 1, has: () => true },
   origins: new Set(["https://staging.chuamay.org"]),
   hashSecret: "x".repeat(64),
   environment: "staging",
@@ -316,10 +317,11 @@ test("email code stays in protected outbox and session CRUD enforces CSRF", asyn
 });
 test("successful Google OAuth creates a session without an email code", async (t) => {
   const nativeFetch = globalThis.fetch;
+  let emailVerified = true;
   globalThis.fetch = async (input, init) => {
     const url = String(input);
     if (url === "https://oauth2.googleapis.com/token") return new Response(JSON.stringify({ access_token: "test-token" }), { status: 200, headers: { "Content-Type": "application/json" } });
-    if (url === "https://openidconnect.googleapis.com/v1/userinfo") return new Response(JSON.stringify({ sub: "google-subject", email_verified: true, name: "Người thân" }), { status: 200, headers: { "Content-Type": "application/json" } });
+    if (url === "https://openidconnect.googleapis.com/v1/userinfo") return new Response(JSON.stringify({ sub: "google-subject", email: "relative@example.com", email_verified: emailVerified, name: "Người thân" }), { status: 200, headers: { "Content-Type": "application/json" } });
     return nativeFetch(input, init);
   };
   t.after(() => { globalThis.fetch = nativeFetch; });
@@ -329,14 +331,57 @@ test("successful Google OAuth creates a session without an email code", async (t
     assert.equal(r.status, 302);
     const oauthCookie = r.headers.get("set-cookie").split(";", 1)[0], state = new URL(r.headers.get("location")).searchParams.get("state");
     r = await f.request(`/auth/google/callback?state=${encodeURIComponent(state)}&code=ok`, { redirect: "manual", headers: { Cookie: oauthCookie } });
-    assert.equal(r.status, 302); assert.equal(r.headers.get("location"), "/family.html");
+    assert.equal(r.status, 302); assert.equal(r.headers.get("location"), "https://staging.chuamay.org/family.html");
     const sessionCookie = r.headers.get("set-cookie").split(";", 1)[0];
     r = await f.request("/family/session", { headers: { Cookie: sessionCookie } });
     assert.equal((await r.json()).authenticated, true);
     assert.equal(f.family.db.prepare("SELECT count(*) n FROM email_codes").get().n, 0);
+    assert.equal(f.family.db.prepare("SELECT email FROM identities WHERE provider='google'").get().email, "relative@example.com");
+    emailVerified = "true";
+    r = await f.request("/auth/google/start", { redirect: "manual" });
+    const rejectedCookie = r.headers.get("set-cookie").split(";", 1)[0], rejectedState = new URL(r.headers.get("location")).searchParams.get("state");
+    r = await f.request(`/auth/google/callback?state=${encodeURIComponent(rejectedState)}&code=ok`, { redirect: "manual", headers: { Cookie: rejectedCookie } });
+    assert.match(r.headers.get("location"), /auth=google_failed$/);
   } finally {
     await new Promise((resolve) => f.server.close(resolve));
     f.store.close();
+  }
+});
+test("allowlist hides family status and email login from other accounts", async () => {
+  const f = await fixture({}, { familyAllowlist: new Set(["allowed@example.com"]) });
+  try {
+    assert.equal((await f.request("/family/status", { method: "GET" })).status, 404);
+    let response = await f.request("/family/auth/email/start", {
+      method: "POST",
+      body: JSON.stringify({ email: "outside@example.com" }),
+    });
+    assert.equal(response.status, 404);
+    assert.equal(listOutbox(f.family.db).length, 0);
+    response = await f.request("/family/auth/email/start", {
+      method: "POST",
+      body: JSON.stringify({ email: "ALLOWED@example.com" }),
+    });
+    assert.equal(response.status, 201);
+    assert.equal(listOutbox(f.family.db).length, 1);
+  } finally {
+    await new Promise((resolve) => f.server.close(resolve));
+    f.store.close();
+  }
+});
+test("verified email identities share one user and duplicate checks do not merge old rows", () => {
+  const store = openStore(":memory:"),
+    family = openFamilyStore(store.db),
+    emailUser = family.userFor("email", "email-subject", "Relative@Example.com", "Relative"),
+    googleUser = family.userFor("google", "google-subject", "relative@example.com", "Relative");
+  try {
+    assert.equal(googleUser.id, emailUser.id);
+    assert.equal(store.db.prepare("SELECT count(*) n FROM identities WHERE user_id=?").get(emailUser.id).n, 2);
+    const other = family.userFor("email", "other-subject", "other@example.com", "Other");
+    store.db.prepare("UPDATE identities SET email='relative@example.com' WHERE user_id=?").run(other.id);
+    assert.deepEqual(identityDuplicateSummary(store.db), { duplicateEmails: 1, duplicateUsers: 2 });
+    assert.equal(store.db.prepare("SELECT count(*) n FROM users").get().n, 2);
+  } finally {
+    store.close();
   }
 });
 test("member privacy, removal, expiry and invite revocation are enforced", () => {

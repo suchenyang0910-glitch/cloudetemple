@@ -10,7 +10,7 @@ export function createServer(settings,store,send=async(method,body)=>{const r=aw
       const route=new URL(req.url,'http://localhost').pathname,origin=req.headers.origin;
       if(route==='/healthz'&&req.method==='GET')return reply(200,null,settings.telegramEnabled===false?{telegram:'disabled'}:{});
       if(origin&&!settings.origins?.has(origin))return reply(403,'origin');
-      if(origin){res.setHeader('Access-Control-Allow-Origin',origin);res.setHeader('Vary','Origin');}
+      if(origin){res.setHeader('Access-Control-Allow-Origin',origin);res.setHeader('Access-Control-Allow-Credentials','true');res.setHeader('Vary','Origin');}
       if(settings.telegramEnabled===false&&route.startsWith('/telegram/'))return reply(503,'telegram_disabled');
       if(req.method==='OPTIONS'){if(!origin)return reply(403,'origin');res.setHeader('Access-Control-Allow-Methods','GET, POST, PATCH, PUT, DELETE, OPTIONS');res.setHeader('Access-Control-Allow-Headers','Content-Type, X-CSRF-Token, Idempotency-Key');return reply(204);}
       if(await family(req,res,route))return;
