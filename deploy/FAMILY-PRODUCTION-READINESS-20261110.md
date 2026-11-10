@@ -1,6 +1,6 @@
 # 家族牌位正式上线准备演练（2026-11-10）
 
-结论：**数据库迁移与配置已准备好，功能仍未开启**。正式环境仍为 `c51d8d2f3277`，`FAMILY_ENABLED=0`；家族候选尚未部署，提醒任务未启用。
+结论：**数据库迁移与配置已准备好，功能仍未开启**。正式环境为 `f3e77aa876ae`（L1 念珠 + L2 上香），`FAMILY_ENABLED=0`；家族候选尚未部署，提醒任务未启用。
 
 ## 已实测
 
@@ -13,7 +13,7 @@
 - production 在线迁移前备份：snapshot `4e005b32`；恢复库 `integrity_check=ok`、家族表 `0/4`。
 - 用户批准后在 `FAMILY_ENABLED=0` 下迁移在线 production 数据库：150 ms，迁移后 `integrity_check=ok`、家族表 `4/4`。
 - production 在线迁移后备份：snapshot `5fbf7b5e`；恢复库 `integrity_check=ok`、家族表 `4/4`。
-- 线上复核：production API health、h5、miniapp 均为 HTTP 200；production release 仍为 `c51d8d2f3277`。
+- 线上复核：production API health、h5、miniapp 均为 HTTP 200；production release 为 `f3e77aa876ae`。
 
 ## 开启前缺口
 

@@ -4,7 +4,7 @@
 
 ## 已知基线
 
-- 当前正式 release：`c51d8d2f3277`。
+- 当前正式 release／家族上线回滚目标：`f3e77aa876ae`（L1 念珠 + L2 上香）。
 - 正式数据库已在 `FAMILY_ENABLED=0` 下迁移，核心家族表 `4/4`。
 - 迁移前 Restic snapshot：`4e005b32`，恢复校验 `integrity_check=ok`、家族表 `0/4`。
 - 迁移后 Restic snapshot：`5fbf7b5e`，恢复校验 `integrity_check=ok`、家族表 `4/4`。
@@ -47,7 +47,7 @@
 1. 停止并禁用 production reminder timer；即使它尚未启用也要确认 inactive。
 2. 备份 env，只把 `FAMILY_ENABLED=1` 改回 `0`。
 3. 运行权限闸门并重启 API，确认 `/healthz=200`，family API 不再可用。
-4. 将 h5、miniapp 和 API release 回滚到开启前记录的 release；确认首版流程正常。
+4. 将 h5、miniapp 和 API release 回滚到 `f3e77aa876ae`；确认 L1 念珠、L2 上香及首版流程正常。
 5. 保留数据库和 Restic 快照，不删除家族表或用户数据，不用旧备份直接覆盖在线库。
 6. 若发生数据错误，先隔离写入、导出审计证据，再决定是否从指定 snapshot 恢复。
 
