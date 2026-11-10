@@ -71,7 +71,7 @@ export function periodNow(date=new Date(),periods=state.layout?.periods??{dawn:"
 }
 export function placement(layout,id,pose){
   if(pose==='stand')return {x:193,y:1018,w:240,h:360};
-  if(pose==='mo-base-v2'||pose.startsWith('beads-side-'))return {x:350,y:838,w:397,h:397};
+  if(pose.startsWith('mo-')||pose.startsWith('beads-side-'))return {x:350,y:838,w:397,h:397};
   if(pose.startsWith('bow-')){
     const s=layout['hall-side'],scale=s.bowCanvasWidth/s.sourceCanvas[0];
     return {x:s.foot[0]-s.anchor[0]*scale,y:s.foot[1]-s.anchor[1]*scale-(pose.startsWith('bow-')?0:55),w:s.sourceCanvas[0]*scale,h:s.sourceCanvas[1]*scale};
@@ -89,7 +89,7 @@ function image(name){
 function sceneName(view=state.view){return ['incense','bow','mo','beads'].includes(view)?'hall-side':['sit','choose'].includes(view)?'courtyard':'hall-front';}
 function sceneFile(view=state.view,period=state.period){return view==='incense'?`scene-vn-hall-side-incense-patch-${period}.webp`:['mo','beads'].includes(view)?`scene-vn-hall-side-floor-${period}.webp`:`scene-vn-${sceneName(view)}-${period}.webp`;}
 const incensePoses=['inc-walk-1','inc-walk-2','inc-hold','inc-light','inc-vai-1','inc-vai-2','inc-plant-1','inc-end'];
-function poses(view){return view==='morning'?['stand']:view==='bow'?['bow-1','bow-2','bow-3']:view==='incense'?incensePoses:view==='mo'?['mo-base-v2']:view==='sit'?['sit']:view==='beads'?['beads-side-1-v1','beads-side-2-v1','beads-side-3-v1']:[];}
+function poses(view){return view==='morning'?['stand']:view==='bow'?['bow-1','bow-2','bow-3']:view==='incense'?incensePoses:view==='mo'?['mo-1-v3','mo-2-v3','mo-3-v3']:view==='sit'?['sit']:view==='beads'?['beads-side-1-v1','beads-side-2-v1','beads-side-3-v1']:[];}
 const morning=createMorning({event});
 const artFile=(visitor,pose)=>`visitor-${visitor}-${pose}${pose.startsWith('inc-')?'-v1':pose==='sit'||pose==='beads'?'-nocushion':''}.webp`;
 async function prepare(view,period){
@@ -110,7 +110,7 @@ async function prepare(view,period){
   }
   const props={},toneProp=async name=>{const key=`prop:${name}:${period}`;if(!tinted.has(key)){const im=await image(name),c=document.createElement('canvas');c.width=im.width;c.height=im.height;const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(im,0,0);const data=x.getImageData(0,0,c.width,c.height),tone=state.layout.toneRGB[period],extra=period==='night'?.9:1;for(let i=0;i<data.data.length;i+=4)for(let j=0;j<3;j++)data.data[i+j]*=tone[j]*extra;x.putImageData(data,0,0);tinted.set(key,c);}return tinted.get(key);};
   if(['mo','beads'].includes(view))props.cushion=await toneProp('hall-cushion-v2.webp');
-  if(view==='mo')for(const name of ['mo-low-table-v2.webp','mo-v6.webp','mo-mallet.webp'])props[name]=await toneProp(name);
+  if(view==='mo')for(const name of ['mo-low-table-v2.webp','mo-v6.webp'])props[name]=await toneProp(name);
   return {scene,art,props,view,missing};
 }
 let renderAssets=null;
@@ -118,7 +118,7 @@ function paint(now=performance.now()){
   if(!renderAssets||renderAssets.view!==state.view)return;
   ctx.clearRect(0,0,941,1672);ctx.drawImage(renderAssets.scene,0,0,941,1672);
   const available=poses(state.view);if(!available.length)return;
-  let pose=state.view==='mo'?'mo-base-v2':state.view==='beads'?`beads-side-${state.beadFrame}-v1`:state.view==='incense'?incenseVisual(now,state.incense,reduced.matches).pose:available[0],previous=null,mix=1;
+  let pose=state.view==='mo'?`mo-${state.moFrame}-v3`:state.view==='beads'?`beads-side-${state.beadFrame}-v1`:state.view==='incense'?incenseVisual(now,state.incense,reduced.matches).pose:available[0],previous=null,mix=1;
   const a=state.activity;
   if(state.view==='bow'&&a?.bowStart!==null&&a?.bowStart!==undefined){
     const frame=bowFrame(now-a.bowStart,reduced.matches);pose=`bow-${frame.to}`;previous=`bow-${frame.from}`;mix=frame.mix;
@@ -143,8 +143,6 @@ function paint(now=performance.now()){
   if(state.view==='mo'){
     drawProp(renderAssets.props['mo-low-table-v2.webp'],285,1140,259,117);
     drawProp(renderAssets.props['mo-v6.webp'],426,1053,124,124);
-    const mallet=renderAssets.props['mo-mallet.webp'],lift=state.moFrame===2,x=lift?493:500,y=1030,w=110,h=105,angle=(lift?25:5)*Math.PI/180,pivotX=w*.88,pivotY=h*.86;
-    ctx.save();ctx.translate(x+pivotX,y+pivotY);ctx.rotate(angle);ctx.drawImage(mallet,-pivotX,-pivotY,w,h);ctx.restore();
   }
   if(previous&&mix<1&&renderAssets.art[previous]){ctx.globalAlpha=1-mix;ctx.drawImage(renderAssets.art[previous],pos.x,pos.y,pos.w,pos.h);}
   ctx.globalAlpha=mix;ctx.drawImage(renderAssets.art[pose],pos.x,pos.y,pos.w,pos.h);ctx.globalAlpha=1;
@@ -162,7 +160,7 @@ function stopActivity(){stopWoodAuto();stopWoodMotion();stopBeadMotion();clearTi
 function prefetch(view){
  const visitor=state.visitor,period=state.period;
  const run=()=>{if(state.visitor!==visitor||state.period!==period||state.view!==view)return;
-  const names=['bow-1','bow-2','bow-3','sit','beads','beads-side-1-v1','beads-side-2-v1','beads-side-3-v1','mo-base-v2'].map(p=>artFile(visitor,p));
+  const names=['bow-1','bow-2','bow-3','sit','beads','beads-side-1-v1','beads-side-2-v1','beads-side-3-v1','mo-1-v3','mo-2-v3','mo-3-v3'].map(p=>artFile(visitor,p));
   if(view==='home')names.push(...['incense','sit','mo'].map(v=>sceneFile(v,period)));
   if(view==='choose')names.push(...state.layout.v1_scope.visitors.map(id=>`visitor-${id}-choose-v1.webp`));
   names.forEach(name=>void image(name));
