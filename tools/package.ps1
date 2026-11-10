@@ -11,15 +11,7 @@ if (Test-Path -LiteralPath $outputRoot) {
   Move-Item -LiteralPath $resolvedOutput -Destination (Join-Path $archiveRoot 'dist')
 }
 New-Item -ItemType Directory -Path $outputRoot -Force | Out-Null
-foreach ($name in @('index.html','preload.js','styles.css','app.js','config.js','i18n.js','telegram.js','audio.js','resources.js','beads.js','bow.js','referrals.js','morning.js','festival.js','gioi-thieu.html','quyen-rieng-tu.html','dieu-khoan.html','_headers','_routes.json','lang-chua.html','lang-chua.js','lang-chua.css','sw-lang-chua.js')) { Copy-Item -LiteralPath (Join-Path $projectRoot $name) -Destination (Join-Path $outputRoot $name) -Force }
-# lang-chua support modules: copy to root with prefix so version-assets.mjs versions them
-foreach ($name in @('festival','rituals','card')) {
-  Copy-Item -LiteralPath (Join-Path $projectRoot "js/$name.js") -Destination (Join-Path $outputRoot "lang-chua-$name.js") -Force
-}
-# festival calendar data
-$dataOutput = Join-Path $outputRoot 'data'
-New-Item -ItemType Directory -Path $dataOutput -Force | Out-Null
-Copy-Item -LiteralPath (Join-Path $projectRoot 'data/festival-calendar.json') -Destination $dataOutput -Force
+foreach ($name in @('index.html','preload.js','styles.css','app.js','config.js','i18n.js','telegram.js','audio.js','resources.js','beads.js','bow.js','referrals.js','morning.js','festival.js','gioi-thieu.html','quyen-rieng-tu.html','dieu-khoan.html','_headers','_routes.json')) { Copy-Item -LiteralPath (Join-Path $projectRoot $name) -Destination (Join-Path $outputRoot $name) -Force }
 Copy-Item -Path (Join-Path $projectRoot 'static/*') -Destination $outputRoot -Recurse -Force
 $appFile=Join-Path $outputRoot 'app.js'
 $appSource=[IO.File]::ReadAllText($appFile).Replace('__CT_FAMILY_ENABLED__',$(if($Environment -eq 'staging'){'1'}else{'0'})).Replace('__CT_REFERRALS_ENABLED__',$(if($Environment -eq 'staging'){'1'}else{'0'})).Replace('__CT_PRESENCE_ENABLED__',$(if($Environment -eq 'staging'){'1'}else{'0'}))
