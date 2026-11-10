@@ -30,3 +30,5 @@ deploy/*.tmp
 
 audio/raw/
 tools/*.tmp.py
+scenes/*.png
+scenes/dilac-courtyard-dusk.webp

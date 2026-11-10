@@ -14,6 +14,9 @@ import { createTempleAudio } from '/audio.js';
 const audio = createTempleAudio();
 let _audioEnabled = false;
 let _pendingRain = false;
+
+// ── Weather sync — opt-in, default OFF ────────────────────────────────────
+let _weatherEnabled = false;
 function enableAudioOnce() {
   if (_audioEnabled) return;
   _audioEnabled = true;
@@ -21,11 +24,8 @@ function enableAudioOnce() {
   if (_pendingRain) startRainSound();
 }
 
-// ── Service Worker registration ────────────────────────────────────────────
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/sw-lang-chua.js', { scope: '/' })
-    .catch(() => {}); // non-fatal
-}
+// ── Service Worker — disabled for v1 (scope + cache bugs; see sw-lang-chua.js) ──
+// TODO v2: fix scope ('/lang-chua'), cache name versioning, SHELL_ASSETS paths
 
 // ── Temple registry ────────────────────────────────────────────────────────
 const TEMPLES = {
@@ -110,13 +110,14 @@ async function fetchWeather() {
 async function boot() {
   applyDeviceTier();
   await initFestival();             // sets body[data-festival]
-  fetchWeather();                   // sets body[data-weather] — non-blocking
+  if (_weatherEnabled) fetchWeather(); // opt-in only; toggle via weather-sync-btn
   applyMyTempleHighlight();
   wireMapCards();
   wirePeriodTabs();
   wireViewTabs();
   wireRitualList();
   wireNav();
+  wireSettings();
   wireGreetingCard();
   wireMyTemplePrompt();
   handleDeepLink();                 // Path A: ?temple=dilac
@@ -430,6 +431,31 @@ function wireNav() {
   });
   document.getElementById('back-btn').addEventListener('click', () => {
     showView('map'); updateNavActive('map');
+  });
+  document.getElementById('nav-settings').addEventListener('click', openSettingsPanel);
+  document.getElementById('settings-btn')?.addEventListener('click', openSettingsPanel);
+}
+
+// ── Settings panel ─────────────────────────────────────────────────────────
+function openSettingsPanel() {
+  document.getElementById('settings-panel').setAttribute('aria-hidden', 'false');
+  document.getElementById('settings-backdrop').classList.add('visible');
+}
+
+function closeSettingsPanel() {
+  document.getElementById('settings-panel').setAttribute('aria-hidden', 'true');
+  document.getElementById('settings-backdrop').classList.remove('visible');
+}
+
+function wireSettings() {
+  document.getElementById('settings-close-btn').addEventListener('click', closeSettingsPanel);
+  document.getElementById('settings-backdrop').addEventListener('click', closeSettingsPanel);
+  const toggle = document.getElementById('weather-sync-toggle');
+  toggle.addEventListener('change', () => {
+    _weatherEnabled = toggle.checked;
+    toggle.setAttribute('aria-checked', String(toggle.checked));
+    if (_weatherEnabled) fetchWeather();
+    else { document.body.dataset.weather = ''; stopRainSound(); }
   });
 }
 

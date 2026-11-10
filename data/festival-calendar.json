@@ -1,18 +1,15 @@
 {
   "_note": "Fallback calendar. Timezone: UTC+7 (Vietnam Standard Time). Verification status per date — see _verification. Cultural advisor must confirm ritual names, language, and any dates marked 'advisor'.",
   "_verification": {
-    "2027-01-29_ong-tao":  "astronomical — 腊月23 = Jan-2027 new moon (Jan 7 UTC+7) + 22 days; corrected from erroneous 2027-01-27",
+    "2027-01-30_ong-tao":  "astronomical — 腊月23; 2027腊月 only 29 days (new moon Jan 8 UTC+7, +22 days = Jan 30); Giao thừa=2027-02-05 confirmed; corrected from erroneous 2027-01-29",
     "2027-02-05_tat-nien": "astronomical — day before Mùng 1",
     "2027-02-06_mung1":    "astronomical — CNY 2027 confirmed (丁未 Year of the Goat; 2026-02-17 + 354 days)",
     "2027-02-07_mung2":    "astronomical — Mùng 1 + 1",
     "2027-02-08_mung3":    "astronomical — Mùng 1 + 2",
     "2027-02-20_ram":      "astronomical — Mùng 1 + 14 (Rằm tháng Giêng)"
   },
-  "2026": [
-    { "festival": "ong-tao",  "temple": "chuamay", "start": "2027-01-29", "end": "2027-01-29" }
-  ],
   "2027": [
-    { "festival": "ong-tao",  "temple": "chuamay", "start": "2027-01-29", "end": "2027-01-29" },
+    { "festival": "ong-tao",  "temple": "chuamay", "start": "2027-01-30", "end": "2027-01-30" },
     { "festival": "tat-nien", "temple": "chuamay", "start": "2027-02-05", "end": "2027-02-05" },
     { "festival": "mung1",    "temple": "dilac",   "start": "2027-02-06", "end": "2027-02-06" },
     { "festival": "mung2",    "temple": "dilac",   "start": "2027-02-07", "end": "2027-02-07" },

@@ -151,6 +151,9 @@
       <button class="period-tab" data-period="night">🌙 Ban đêm</button>
     </div>
 
+    <!-- Weather sync opt-in — default OFF; tap to fetch live HCMC rain data -->
+    <button id="weather-sync-btn" aria-label="Đồng bộ thời tiết 天气同步" aria-pressed="false">🌦 Thời tiết</button>
+
     <!-- Ritual list -->
     <div id="ritual-list">
       <button class="ritual-btn" data-ritual="incense">
@@ -231,6 +234,25 @@
   <button id="my-temple-yes">设为</button>
   <button id="my-temple-skip">跳过</button>
 </div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     SETTINGS PANEL
+════════════════════════════════════════════════════════════════ -->
+<div id="settings-panel" class="bottom-sheet" aria-hidden="true">
+  <div class="sheet-drag-handle"></div>
+  <div id="settings-panel-content">
+    <h2>Cài đặt · 设置</h2>
+    <label id="weather-sync-label" class="settings-row">
+      <span class="settings-row-text">
+        <strong>Thời tiết thực · 实时天气</strong>
+        <small>Đồng bộ thời tiết TP.HCM (mặc định tắt) · 同步胡志明市天气（默认关闭）</small>
+      </span>
+      <input type="checkbox" id="weather-sync-toggle" role="switch" aria-checked="false">
+    </label>
+    <button id="settings-close-btn" aria-label="Đóng">✕</button>
+  </div>
+</div>
+<div id="settings-backdrop" class="backdrop"></div>
 
 <script type="module" src="/lang-chua.js"></script>
 </body>
