@@ -19,13 +19,9 @@ and added here before staging deployment.
 
 ## Festival layer decorations (I2 · Tết 2027)
 
-**Status**: Logic layer implemented; visual asset integration pending CGS-06 (Art Director) sign-off.
+**Status**: Logic and reviewed visual layer implemented.
 
-The CSS framework uses `body[data-festival]` and `body[data-flower]`; the New Year effect reuses inline original geometry. Planned artwork targets are `assets/festival/lantern-red.svg`, `flower-mai.svg`, `flower-dao.svg`, and `moon-ram.svg`.
-
-All new SVG/PNG festival decoration assets must be:
-- Original (drawn in-house) OR
-- CC0 / CC-BY sourced, with source URL and author recorded in this file
+The eight files under `assets/festival/` are original in-repository SVG illustrations: lantern, hoa mai, hoa đào, moon, two petals and two flower pots. They were drawn for Chùa Mây and do not incorporate external images, fonts or third-party artwork. The New Year rising-lantern effect uses original inline geometry.
 
 **New Year bell**: Reuses the existing CC0 `assets/audio/bell-v2` recording. No new third-party audio is introduced.
 
