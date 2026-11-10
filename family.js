@@ -1,5 +1,6 @@
 import { familyEvent } from "./family-analytics.js";
 import { familyText as t, FAMILY_COPY } from "./family-i18n.js";
+import { FAMILY_CONSENT_COPY, FAMILY_CONSENT_VERSION } from "./family-consent.js";
 import { apiURL } from "./telegram.js";
 const $ = (s) => document.querySelector(s),
   screen = $("#screen"),
@@ -175,8 +176,28 @@ async function list() {
   screen
     .querySelectorAll("[data-id]")
     .forEach((b) => (b.onclick = () => showTablet(b.dataset.id)));
-  $("#new").onclick = () => form();
+  $("#new").onclick = () => consentThenForm();
   location.hash = "list";
+}
+async function consentThenForm() {
+  if (demo) return form();
+  const state = await api("/consent");
+  if (state.accepted) return form();
+  screen.innerHTML = `<section class="consent"><h2>${FAMILY_CONSENT_COPY.title}</h2><p class="review">${FAMILY_CONSENT_COPY.review}</p><div lang="vi">${FAMILY_CONSENT_COPY.vi.map((item) => `<p>${esc(item)}</p>`).join("")}</div><details lang="zh"><summary>中文对照</summary>${FAMILY_CONSENT_COPY.zh.map((item) => `<p>${esc(item)}</p>`).join("")}</details><label><input id="consent-agree" type="checkbox"> ${FAMILY_CONSENT_COPY.agree}</label><button class="primary" id="consent-continue" disabled>${FAMILY_CONSENT_COPY.continue}</button><button id="consent-cancel">${FAMILY_CONSENT_COPY.cancel}</button></section>`;
+  const agree = $("#consent-agree"), proceed = $("#consent-continue");
+  agree.onchange = () => { proceed.disabled = !agree.checked; };
+  proceed.onclick = async () => {
+    proceed.disabled = true;
+    try {
+      await api("/consent", { method: "POST", body: JSON.stringify({ agree: true, version: FAMILY_CONSENT_VERSION }) });
+      form();
+    } catch {
+      proceed.disabled = false;
+      note(t("retry_later"));
+    }
+  };
+  $("#consent-cancel").onclick = list;
+  location.hash = "consent";
 }
 function plaque(t) {
   const name = esc(t.full_name.normalize("NFC")),

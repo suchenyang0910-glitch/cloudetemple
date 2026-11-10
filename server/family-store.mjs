@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
-export function openFamilyStore(db) {
+export function openFamilyStore(db, { demo = true } = {}) {
+  const demoFlag = demo ? 1 : 0;
   db.pragma("foreign_keys = ON");
   db.exec(`
 CREATE TABLE IF NOT EXISTS users(id TEXT PRIMARY KEY,display_name TEXT NOT NULL DEFAULT '',locale TEXT NOT NULL DEFAULT 'vi',created_at TEXT NOT NULL,deleted_at TEXT,demo INTEGER NOT NULL DEFAULT 1);
@@ -13,7 +14,8 @@ CREATE TABLE IF NOT EXISTS tablet_members(tablet_id TEXT NOT NULL REFERENCES tab
 CREATE TABLE IF NOT EXISTS invites(id TEXT PRIMARY KEY,tablet_id TEXT NOT NULL REFERENCES tablets(id) ON DELETE CASCADE,token_hash TEXT NOT NULL UNIQUE,created_by TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,expires_at INTEGER NOT NULL,revoked_at TEXT,uses INTEGER NOT NULL DEFAULT 0,max_uses INTEGER NOT NULL DEFAULT 20,created_at TEXT NOT NULL,demo INTEGER NOT NULL DEFAULT 1);
 CREATE TABLE IF NOT EXISTS offerings(id TEXT PRIMARY KEY,tablet_id TEXT NOT NULL REFERENCES tablets(id) ON DELETE CASCADE,user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,kind TEXT NOT NULL CHECK(kind IN('incense','flower','fruit','tea')),at TEXT NOT NULL,created_at TEXT NOT NULL,demo INTEGER NOT NULL DEFAULT 1);
 CREATE TABLE IF NOT EXISTS reminder_prefs(user_id TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,email_on INTEGER NOT NULL DEFAULT 0,telegram_on INTEGER NOT NULL DEFAULT 0,telegram_chat_id TEXT,ics_token TEXT,festival_on INTEGER NOT NULL DEFAULT 1,created_at TEXT NOT NULL,demo INTEGER NOT NULL DEFAULT 1);
-CREATE TABLE IF NOT EXISTS deliveries(id TEXT PRIMARY KEY,user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,tablet_id TEXT,kind TEXT NOT NULL,due_date TEXT NOT NULL,channel TEXT NOT NULL,sent_at TEXT,status TEXT NOT NULL,attempts INTEGER NOT NULL DEFAULT 0,created_at TEXT NOT NULL,dedupe_key TEXT UNIQUE,demo INTEGER NOT NULL DEFAULT 1);`);
+CREATE TABLE IF NOT EXISTS deliveries(id TEXT PRIMARY KEY,user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,tablet_id TEXT,kind TEXT NOT NULL,due_date TEXT NOT NULL,channel TEXT NOT NULL,sent_at TEXT,status TEXT NOT NULL,attempts INTEGER NOT NULL DEFAULT 0,created_at TEXT NOT NULL,dedupe_key TEXT UNIQUE,demo INTEGER NOT NULL DEFAULT 1);
+CREATE TABLE IF NOT EXISTS family_consents(user_id TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,version TEXT NOT NULL,consented_at TEXT NOT NULL,demo INTEGER NOT NULL DEFAULT 1);`);
   const deliveryColumns = db.prepare("PRAGMA table_info(deliveries)").all();
   if (!deliveryColumns.some((column) => column.name === "dedupe_key")) {
     db.exec("ALTER TABLE deliveries ADD COLUMN dedupe_key TEXT");
@@ -45,19 +47,21 @@ CREATE TABLE IF NOT EXISTS deliveries(id TEXT PRIMARY KEY,user_id TEXT NOT NULL 
     const id = randomUUID(),
       at = now();
     db.transaction(() => {
-      run("INSERT INTO users VALUES(?,?,?,?,?,1)", id, display, "vi", at, null);
+      run("INSERT INTO users VALUES(?,?,?,?,?,?)", id, display, "vi", at, null, demoFlag);
       run(
-        "INSERT INTO identities(user_id,provider,subject,email,created_at,demo) VALUES(?,?,?,?,?,1)",
+        "INSERT INTO identities(user_id,provider,subject,email,created_at,demo) VALUES(?,?,?,?,?,?)",
         id,
         provider,
         subject,
         email || null,
         at,
+        demoFlag,
       );
       run(
-        "INSERT INTO reminder_prefs(user_id,created_at,demo) VALUES(?,?,1)",
+        "INSERT INTO reminder_prefs(user_id,created_at,demo) VALUES(?,?,?)",
         id,
         at,
+        demoFlag,
       );
     })();
     return one("SELECT * FROM users WHERE id=?", id);
@@ -80,7 +84,7 @@ CREATE TABLE IF NOT EXISTS deliveries(id TEXT PRIMARY KEY,user_id TEXT NOT NULL 
     },
     saveCode(record) {
       run(
-        "INSERT OR REPLACE INTO email_codes VALUES(?,?,?,?,?,?,?,1)",
+        "INSERT OR REPLACE INTO email_codes VALUES(?,?,?,?,?,?,?,?)",
         record.subject,
         record.email,
         record.codeHash,
@@ -88,6 +92,7 @@ CREATE TABLE IF NOT EXISTS deliveries(id TEXT PRIMARY KEY,user_id TEXT NOT NULL 
         0,
         record.ipHash,
         now(),
+        demoFlag,
       );
     },
     takeCode(subject, codeHash) {
@@ -105,11 +110,12 @@ CREATE TABLE IF NOT EXISTS deliveries(id TEXT PRIMARY KEY,user_id TEXT NOT NULL 
     },
     saveState(hash, verifier, expires) {
       run(
-        "INSERT OR REPLACE INTO oauth_states VALUES(?,?,?,?,1)",
+        "INSERT OR REPLACE INTO oauth_states VALUES(?,?,?,?,?)",
         hash,
         verifier,
         expires,
         now(),
+        demoFlag,
       );
     },
     takeState(hash) {
@@ -119,13 +125,14 @@ CREATE TABLE IF NOT EXISTS deliveries(id TEXT PRIMARY KEY,user_id TEXT NOT NULL 
     },
     session(hash, user, expires, ua, csrfHash) {
       run(
-        "INSERT INTO sessions VALUES(?,?,?,?,?,?,1)",
+        "INSERT INTO sessions VALUES(?,?,?,?,?,?,?)",
         hash,
         user,
         expires,
         ua,
         csrfHash,
         now(),
+        demoFlag,
       );
     },
     sessionUser(hash) {
@@ -145,6 +152,14 @@ CREATE TABLE IF NOT EXISTS deliveries(id TEXT PRIMARY KEY,user_id TEXT NOT NULL 
     logout(hash) {
       run("DELETE FROM sessions WHERE token_hash=?", hash);
     },
+    consent(user) {
+      return one("SELECT version,consented_at FROM family_consents WHERE user_id=?", user) || null;
+    },
+    acceptConsent(user, version) {
+      const at = now();
+      run("INSERT INTO family_consents VALUES(?,?,?,?) ON CONFLICT(user_id) DO UPDATE SET version=excluded.version,consented_at=excluded.consented_at", user, version, at, demoFlag);
+      return { version, consented_at: at };
+    },
     listTablets(user) {
       return all(
         "SELECT t.*,m.role FROM tablets t JOIN tablet_members m ON m.tablet_id=t.id WHERE m.user_id=? ORDER BY t.created_at",
@@ -158,7 +173,7 @@ CREATE TABLE IF NOT EXISTS deliveries(id TEXT PRIMARY KEY,user_id TEXT NOT NULL 
         at = now();
       db.transaction(() => {
         run(
-          "INSERT INTO tablets VALUES(?,?,?,?,?,?,?,?,?,?,?,1)",
+          "INSERT INTO tablets VALUES(?,?,?,?,?,?,?,?,?,?,?,?)",
           id,
           user,
           v.honorific,
@@ -170,12 +185,14 @@ CREATE TABLE IF NOT EXISTS deliveries(id TEXT PRIMARY KEY,user_id TEXT NOT NULL 
           v.leap ? 1 : 0,
           v.note,
           at,
+          demoFlag,
         );
         run(
-          "INSERT INTO tablet_members VALUES(?,?, 'owner',?,1)",
+          "INSERT INTO tablet_members VALUES(?,?, 'owner',?,?)",
           id,
           user,
           at,
+          demoFlag,
         );
       })();
       return member(user, id);
@@ -207,13 +224,14 @@ CREATE TABLE IF NOT EXISTS deliveries(id TEXT PRIMARY KEY,user_id TEXT NOT NULL 
       if (!member(user, id)) return null;
       const at = now();
       run(
-        "INSERT INTO offerings VALUES(?,?,?,?,?,?,1)",
+        "INSERT INTO offerings VALUES(?,?,?,?,?,?,?)",
         randomUUID(),
         id,
         user,
         kind,
         at,
         at,
+        demoFlag,
       );
       return one(
         "SELECT count(DISTINCT user_id) n FROM offerings WHERE tablet_id=? AND at>=date('now','localtime')",
@@ -225,7 +243,7 @@ CREATE TABLE IF NOT EXISTS deliveries(id TEXT PRIMARY KEY,user_id TEXT NOT NULL 
       if (!m || m.role !== "owner") return null;
       const invite = randomUUID();
       run(
-        "INSERT INTO invites VALUES(?,?,?,?,?,?,?,?,?,1)",
+        "INSERT INTO invites VALUES(?,?,?,?,?,?,?,?,?,?)",
         invite,
         id,
         hash,
@@ -235,6 +253,7 @@ CREATE TABLE IF NOT EXISTS deliveries(id TEXT PRIMARY KEY,user_id TEXT NOT NULL 
         0,
         maxUses,
         now(),
+        demoFlag,
       );
       return invite;
     },
@@ -258,10 +277,11 @@ CREATE TABLE IF NOT EXISTS deliveries(id TEXT PRIMARY KEY,user_id TEXT NOT NULL 
           );
           if (claimed.changes !== 1) return null;
           run(
-            "INSERT INTO tablet_members VALUES(?,?,'family',?,1)",
+            "INSERT INTO tablet_members VALUES(?,?,'family',?,?)",
             i.tablet_id,
             user,
             now(),
+            demoFlag,
           );
           return member(user, i.tablet_id);
         })
@@ -338,6 +358,7 @@ CREATE TABLE IF NOT EXISTS deliveries(id TEXT PRIMARY KEY,user_id TEXT NOT NULL 
           user,
         ),
         reminders: this.prefs(user),
+        consent: this.consent(user),
       };
     },
     deleteUser(user) {

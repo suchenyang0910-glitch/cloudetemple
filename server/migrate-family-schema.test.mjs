@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import Database from "better-sqlite3";
+import { openFamilyStore } from "./family-store.mjs";
 import {
   inspectFamilySchema,
   migrateFamilySchema,
@@ -24,6 +25,8 @@ test("family schema migration is complete, idempotent, and preserves existing da
     });
     assert.deepEqual(second, first);
     assert.equal(db.prepare("SELECT value FROM existing_marker").pluck().get(), "kept");
+    assert.equal(db.prepare("SELECT count(*) FROM sqlite_master WHERE type='table' AND name='family_consents'").pluck().get(), 1);
+    assert.equal(openFamilyStore(db, { demo: false }).userFor("email", "real", "real@example.test").demo, 0);
   } finally {
     db.close();
   }

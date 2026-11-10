@@ -79,6 +79,15 @@ test("email code stays in protected outbox and session CRUD enforces CSRF", asyn
     });
     assert.equal(r.status, 200);
     assert.equal((await r.json()).enabled, true);
+    r = await f.request("/family/consent", { headers: { Cookie: cookie } });
+    assert.equal(r.status, 200);
+    assert.equal((await r.json()).accepted, false);
+    r = await f.request("/family/consent", {
+      method: "POST",
+      headers: { Cookie: cookie, "X-CSRF-Token": data.csrf },
+      body: JSON.stringify({ agree: true, version: "pilot-2026-11-07-v2" }),
+    });
+    assert.equal(r.status, 200);
     r = await f.request("/family/tablets", {
       method: "POST",
       headers: { Cookie: cookie },
@@ -190,6 +199,7 @@ test("email code stays in protected outbox and session CRUD enforces CSRF", asyn
     const exported = await r.json();
     assert.equal(exported.data.tablets.length, 1);
     assert.equal(exported.data.offerings.length, 1);
+    assert.equal(exported.data.consent.version, "pilot-2026-11-07-v2");
     r = await f.request("/family/reminders", {
       method: "PUT",
       headers: { Cookie: cookie, "X-CSRF-Token": data.csrf },

@@ -57,6 +57,7 @@ const validEmail = (v) =>
   typeof v === "string" &&
   v.length <= 254 &&
   /^[^\s@<>]+@[^\s@<>.]+(?:\.[^\s@<>.]+)+$/.test(v);
+const CONSENT_VERSION = "pilot-2026-11-07-v2";
 const validSolarDate = ({ day, month, year }) => {
   if (![day, month, year].every(Number.isInteger) || year < 1900 || year > 2100)
     return false;
@@ -548,6 +549,16 @@ export function createFamilyApi(settings, family) {
         return true;
       }
       if (!user) return json(res, 401, { ok: false, error: "auth" }), true;
+      if (route === "/family/consent" && req.method === "GET") {
+        const consent = family.consent(user.user_id);
+        return json(res, 200, { ok: true, accepted: consent?.version === CONSENT_VERSION, consent, version: CONSENT_VERSION }), true;
+      }
+      if (route === "/family/consent" && req.method === "POST") {
+        const value = await body(req);
+        if (value.agree !== true || value.version !== CONSENT_VERSION)
+          return json(res, 400, { ok: false, error: "consent" }), true;
+        return json(res, 200, { ok: true, consent: family.acceptConsent(user.user_id, CONSENT_VERSION) }), true;
+      }
       if (route === "/family/tablets" && req.method === "GET")
         return (
           json(res, 200, {
@@ -557,6 +568,8 @@ export function createFamilyApi(settings, family) {
           true
         );
       if (route === "/family/tablets" && req.method === "POST") {
+        if (family.consent(user.user_id)?.version !== CONSENT_VERSION)
+          return json(res, 428, { ok: false, error: "consent_required", version: CONSENT_VERSION }), true;
         const v = tabletInput(await body(req)),
           created = family.createTablet(user.user_id, v);
         return json(res, 201, { ok: true, tablet: created }), true;

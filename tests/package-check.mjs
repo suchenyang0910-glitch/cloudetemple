@@ -44,7 +44,7 @@ if(process.argv.includes('--production')){
  assert(!files.some(n=>/^audio-debug(\.|$)/.test(n)));
  assert(!files.some(n=>/^dev-outbox(\.|$)/.test(n)),'production excludes outbox');
  if(familyCandidate){
-  for(const name of ['family.html',`family.${release}.js`,`family.${release}.css`,`family-analytics.${release}.js`,`family-i18n.${release}.js`])await fs.access(new URL(name,root));
+  for(const name of ['family.html',`family.${release}.js`,`family.${release}.css`,`family-analytics.${release}.js`,`family-i18n.${release}.js`,`family-consent.${release}.js`])await fs.access(new URL(name,root));
   await fs.access(new URL(`assets/releases/${release}/family`,root));
  }else{
   assert(!files.some(n=>/^family(\.|-)/.test(n)),'production excludes family pilot');
@@ -57,7 +57,7 @@ if(process.argv.includes('--production')){
  assert((await fs.readFile(new URL(analytics,root),'utf8')).includes('const debug={}'),'production analytics has no debug fields');
  assert((await fs.readFile(new URL(`config.${release}.js`,root),'utf8')).includes("'pass-through'"),'production guru rule');
  assert(versioned.includes(`preload.${release}.js`),'scene preload is external and versioned');
- for(const excluded of [...(familyCandidate?[]:['family']), 'family-consent','admin','presence','calendar-presale'])assert(!versioned.some(n=>n.startsWith(excluded+'.')),excluded+' excluded from production');
+ for(const excluded of [...(familyCandidate?[]:['family','family-consent']), 'admin','presence','calendar-presale'])assert(!versioned.some(n=>n.startsWith(excluded+'.')),excluded+' excluded from production');
  const app=versioned.find(n=>n.startsWith('app.')&&n.endsWith('.js'));
  assert(app,'production app module');
  const appSource=await fs.readFile(new URL(app,root),'utf8');

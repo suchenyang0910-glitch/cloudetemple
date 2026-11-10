@@ -26,7 +26,7 @@ with sync_playwright() as p:
         results.append({'width':width,'height':height,'screenshots':8,'errors':errors})
         page.close()
 
-    state={'authenticated':False,'accepted':False,'force401':False}
+    state={'authenticated':False,'accepted':False,'force401':False,'consent':False,'created':False}
     page=browser.new_page(viewport={'width':393,'height':659})
     errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
     tablet={'id':'33333333-3333-4333-8333-333333333333','honorific':'Bà ngoại','full_name':'Nguyễn Hoa','death_lunar_day':12,'death_lunar_month':3,'role':'family'}
@@ -37,10 +37,15 @@ with sync_playwright() as p:
         elif path.endswith('/invites/info'):body={'ok':True,'invite':{'inviter':'Nguyễn An','honorific':'Bà ngoại','fullName':'Nguyễn Hoa'}}
         elif path.endswith('/auth/email/start'):body={'ok':True}
         elif path.endswith('/auth/email/verify'):state['authenticated']=True;body={'ok':True,'csrf':'csrf-test'}
+        elif path.endswith('/consent'):
+            if route.request.method=='POST':state['consent']=True
+            body={'ok':True,'accepted':state['consent'],'version':'pilot-2026-11-07-v2'}
         elif path.endswith('/invites/accept'):
             if state['force401']:status=401;body={'ok':False,'error':'unauthorized'}
             else:state['accepted']=True;body={'ok':True,'tablet':tablet}
-        elif path.endswith('/tablets'):body={'ok':True,'tablets':[tablet] if state['accepted'] else []}
+        elif path.endswith('/tablets'):
+            if route.request.method=='POST':state['created']=True;body={'ok':True,'tablet':tablet}
+            else:body={'ok':True,'tablets':[tablet] if state['accepted'] or state['created'] else []}
         else:status=404;body={'ok':False,'error':'not_found'}
         route.fulfill(status=status,content_type='application/json',body=json.dumps(body))
     page.route('**/api/family/**',family_api)
@@ -68,6 +73,15 @@ with sync_playwright() as p:
     page.locator('#accept').wait_for();assert page.get_by_text('Nguyễn An mời bạn').is_visible()
     state['force401']=True;page.locator('#accept').click();page.locator('#email-login').wait_for()
     assert 'hết hạn' in page.locator('#status').inner_text() and not errors,errors
+
+    state.update(authenticated=True,accepted=False,force401=False,consent=False,created=False)
+    page.goto(live+'?flow=consent')
+    page.locator('#new').click();page.locator('#consent-agree').wait_for()
+    assert page.locator('#consent-continue').is_disabled()
+    page.locator('#consent-agree').check();page.locator('#consent-continue').click()
+    page.locator('#tablet-form').wait_for();page.locator('[name=fullName]').fill('Nguyễn Hoa')
+    page.locator('#tablet-form').evaluate('f=>f.requestSubmit()');page.locator('.card').wait_for()
+    assert state['consent'] and state['created']
     page.close()
     browser.close()
-print({'passed':True,'viewports':results,'inviteAuth':['email-accept','google-resume','401-recovery'],'files':len(list(OUT.glob('*.png')))})
+print({'passed':True,'viewports':results,'inviteAuth':['email-accept','google-resume','401-recovery'],'consentCreate':True,'files':len(list(OUT.glob('*.png')))})

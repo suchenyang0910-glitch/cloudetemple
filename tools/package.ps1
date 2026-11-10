@@ -51,7 +51,7 @@ $banner=[IO.File]::ReadAllText((Join-Path $projectRoot 'analytics-choice.html'))
 $html=$html.Replace('</main>',$banner+'</main>')
 [IO.File]::WriteAllText($index,$html,[Text.UTF8Encoding]::new($false))
 if($Environment -eq 'staging' -or $IncludeFamilyCandidate){
-  foreach ($name in @('family.html','family.css','family.js','family-analytics.js','family-i18n.js')) { Copy-Item -LiteralPath (Join-Path $projectRoot $name) -Destination $outputRoot -Force }
+  foreach ($name in @('family.html','family.css','family.js','family-analytics.js','family-i18n.js','family-consent.js')) { Copy-Item -LiteralPath (Join-Path $projectRoot $name) -Destination $outputRoot -Force }
   Copy-Item -LiteralPath (Join-Path $projectRoot 'assets/family') -Destination (Join-Path $outputRoot 'assets') -Recurse -Force
 }
 if($Environment -eq 'staging'){
