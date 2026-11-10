@@ -62,6 +62,7 @@ if(process.argv.includes('--production')){
  assert(app,'production app module');
  const appSource=await fs.readFile(new URL(app,root),'utf8');
  assert(appSource.includes("apiURL('/family/status')"),'family entry follows server status');
+ assert(appSource.includes("telegramStartParam()==='family'")&&appSource.includes("/family.html?telegram=1"),'Telegram family start parameter opens the family login page');
  assert(!appSource.includes('__CT_FAMILY_ENABLED__'),'family entry is not fixed at build time');
  if(familyCandidate){const familySource=await fs.readFile(new URL(`family.${release}.js`,root),'utf8');assert(familySource.includes('apiURL("/family" + path)')&&familySource.includes('credentials: "include"'),'family API uses credentialed API origin');}
 }
@@ -78,6 +79,7 @@ if(process.argv.includes('--staging')){
  assert(versioned.some(n=>n.startsWith('family-i18n.')&&n.endsWith('.js')),'staging family copy dictionary');
  const appSource=await fs.readFile(new URL(versioned.find(n=>n.startsWith('app.')),root),'utf8');
  assert(appSource.includes("apiURL('/family/status')")&&!appSource.includes('__CT_FAMILY_ENABLED__'));
+ assert(appSource.includes("telegramStartParam()==='family'")&&appSource.includes("/family.html?telegram=1"));
 }
 assert((await fs.readFile(new URL('index.html',root),'utf8')).includes('id="ga-choice"'),'analytics consent rendered');
 const manifest=JSON.parse(await fs.readFile(new URL(`../deploy/package-${release}.json`,root)));

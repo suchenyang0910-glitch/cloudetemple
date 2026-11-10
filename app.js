@@ -579,6 +579,7 @@ async function init(){
   state.period=periodNow();document.documentElement.lang=state.lang;$('#language').value=state.lang;document.body.dataset.period=state.period;$('#eyebrow').textContent=t(state.period);$('#subtitle').textContent=t('tagline');updateSoundUI();
   const familyReady=fetch(apiURL('/family/status'),{credentials:'include',signal:AbortSignal.timeout(3000)}).then(async response=>{familyEnabled=response.ok&&(await response.json()).enabled===true;}).catch(()=>{familyEnabled=false;});
   await initTelegram(()=>{if($('#more-menu').open)$('#more-menu').close();else if($('#modal').open)closeModal();else navigate(state.view==='choose'?'entry':'home');},openMore);
+  if(telegramStartParam()==='family'){location.replace('/family.html?telegram=1');return;}
   enableImageDebug(inTelegram());
   if(['staging.chuamay.org','h5.chuamay.org','miniapp.chuamay.org'].includes(location.hostname))void import('./analytics.js').then(({setupAnalytics})=>{
     analytics=setupAnalytics(inTelegram,{...launchAttribution,startParam:telegramStartParam()});window.addEventListener('ct-image-failure',e=>event('image_load_failed',e.detail));

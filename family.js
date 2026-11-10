@@ -147,7 +147,11 @@ function login() {
       note(t("code_valid"));
     } catch (err) {
       note(
-        err.message === "rate_limit" ? t("retry_later") : t("send_code_failed"),
+        err.message === "not_found"
+          ? t("not_open")
+          : err.message === "rate_limit"
+            ? t("retry_later")
+            : t("send_code_failed"),
       );
     }
   };
@@ -474,7 +478,9 @@ async function init() {
       login();
       if (authError)
         note(
-          authError === "google_unavailable"
+          authError === "not_found"
+            ? t("not_open")
+            : authError === "google_unavailable"
             ? t("google_unavailable")
             : t("google_failed"),
         );

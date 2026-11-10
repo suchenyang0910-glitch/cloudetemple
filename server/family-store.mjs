@@ -1,4 +1,15 @@
 import { randomUUID } from "node:crypto";
+export function identityDuplicateSummary(db) {
+  const rows = db
+    .prepare(
+      "SELECT count(DISTINCT user_id) users FROM identities WHERE email IS NOT NULL AND trim(email)<>'' GROUP BY lower(trim(email)) HAVING count(DISTINCT user_id)>1",
+    )
+    .all();
+  return {
+    duplicateEmails: rows.length,
+    duplicateUsers: rows.reduce((total, row) => total + row.users, 0),
+  };
+}
 export function openFamilyStore(db, { demo = true } = {}) {
   const demoFlag = demo ? 1 : 0;
   db.pragma("foreign_keys = ON");
@@ -29,6 +40,7 @@ CREATE TABLE IF NOT EXISTS family_consents(user_id TEXT PRIMARY KEY REFERENCES u
     all = (sql, ...p) => db.prepare(sql).all(...p),
     run = (sql, ...p) => db.prepare(sql).run(...p);
   const userFor = (provider, subject, email = "", display = "") => {
+    email = String(email || "").trim().toLowerCase();
     const found = one(
       "SELECT u.* FROM users u JOIN identities i ON i.user_id=u.id WHERE i.provider=? AND i.subject=?",
       provider,
@@ -44,8 +56,27 @@ CREATE TABLE IF NOT EXISTS family_consents(user_id TEXT PRIMARY KEY REFERENCES u
         );
       return found;
     }
+    const emailUsers = email
+      ? all(
+          "SELECT DISTINCT u.* FROM users u JOIN identities i ON i.user_id=u.id WHERE lower(i.email)=? AND u.deleted_at IS NULL",
+          email,
+        )
+      : [];
+    if (emailUsers.length > 1) throw Error("duplicate_identity");
     const id = randomUUID(),
       at = now();
+    if (emailUsers.length === 1) {
+      run(
+        "INSERT INTO identities(user_id,provider,subject,email,created_at,demo) VALUES(?,?,?,?,?,?)",
+        emailUsers[0].id,
+        provider,
+        subject,
+        email,
+        at,
+        demoFlag,
+      );
+      return emailUsers[0];
+    }
     db.transaction(() => {
       run("INSERT INTO users VALUES(?,?,?,?,?,?)", id, display, "vi", at, null, demoFlag);
       run(

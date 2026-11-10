@@ -374,10 +374,10 @@ export function createFamilyApi(settings, family) {
           { headers: { Authorization: `Bearer ${td.access_token}` } },
         );
         if (!ur.ok) return oauthRedirect(res, "google_failed");
-        const profile = await ur.json();
-        if (!profile.email_verified || !profile.sub)
+        const profile = await ur.json(),
+          email = String(profile.email || "").trim().toLowerCase();
+        if (profile.email_verified !== true || !profile.sub || !validEmail(email))
           return oauthRedirect(res, "google_failed");
-        const email = String(profile.email || "").trim().toLowerCase();
         if (!allowed(email)) return oauthRedirect(res, "not_found");
         const account = family.userFor(
           "google",

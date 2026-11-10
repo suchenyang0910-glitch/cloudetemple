@@ -21,6 +21,7 @@ export const FAMILY_COPY = Object.freeze({
   code_valid: "Mã có hiệu lực trong 10 phút.",
   retry_later: "Vui lòng thử lại sau.",
   send_code_failed: "Không thể gửi mã.",
+  not_open: "Tính năng chưa mở.",
   code_invalid: "Mã không đúng hoặc đã hết hạn.",
   relatives: "Người thân",
   demo_only: "Chỉ dùng dữ liệu hư cấu cho tới khi sao lưu được diễn tập.",

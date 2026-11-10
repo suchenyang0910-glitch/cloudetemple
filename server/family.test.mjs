@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { openStore } from "./store.mjs";
-import { openFamilyStore } from "./family-store.mjs";
+import { identityDuplicateSummary, openFamilyStore } from "./family-store.mjs";
 import { createFamilyApi } from "./family-api.mjs";
 import { createServer } from "./app.mjs";
 import { listOutbox } from "./outbox-staging.mjs";
@@ -418,6 +418,76 @@ test("existing Google identity refreshes its allowlist email", () => {
     family.userFor("google", "subject", "demo@example.com", "First");
     family.session("session", first.id, Date.now() + 60_000, "ua", "csrf");
     assert.equal(family.sessionUser("session").email, "demo@example.com");
+  } finally {
+    store.close();
+  }
+});
+test("Google login accepts only a boolean verified email", async (t) => {
+  const nativeFetch = globalThis.fetch;
+  let emailVerified = true;
+  globalThis.fetch = async (input, init) => {
+    const url = String(input);
+    if (url === "https://oauth2.googleapis.com/token")
+      return new Response(JSON.stringify({ access_token: "test-token" }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    if (url === "https://openidconnect.googleapis.com/v1/userinfo")
+      return new Response(
+        JSON.stringify({
+          sub: "google-subject",
+          email: "demo@example.com",
+          email_verified: emailVerified,
+          name: "Người thân",
+        }),
+        { status: 200, headers: { "Content-Type": "application/json" } },
+      );
+    return nativeFetch(input, init);
+  };
+  t.after(() => {
+    globalThis.fetch = nativeFetch;
+  });
+  const f = await fixture({
+    ...settings,
+    googleId: "client",
+    googleSecret: "secret",
+    googleRedirect: "https://staging.chuamay.org/api/auth/google/callback",
+  });
+  try {
+    let response = await f.request("/auth/google/start", { redirect: "manual" });
+    let oauthCookie = response.headers.get("set-cookie").split(";", 1)[0],
+      state = new URL(response.headers.get("location")).searchParams.get("state");
+    response = await f.request(
+      `/auth/google/callback?state=${encodeURIComponent(state)}&code=ok`,
+      { redirect: "manual", headers: { Cookie: oauthCookie } },
+    );
+    assert.equal(response.headers.get("location"), settings.familyUrl);
+    emailVerified = "true";
+    response = await f.request("/auth/google/start", { redirect: "manual" });
+    oauthCookie = response.headers.get("set-cookie").split(";", 1)[0];
+    state = new URL(response.headers.get("location")).searchParams.get("state");
+    response = await f.request(
+      `/auth/google/callback?state=${encodeURIComponent(state)}&code=ok`,
+      { redirect: "manual", headers: { Cookie: oauthCookie } },
+    );
+    assert.match(response.headers.get("location"), /auth=google_failed$/);
+  } finally {
+    await new Promise((resolve) => f.server.close(resolve));
+    f.store.close();
+  }
+});
+test("verified email identities share one user and duplicate checks do not merge old rows", () => {
+  const store = openStore(":memory:"),
+    family = openFamilyStore(store.db),
+    emailUser = family.userFor("email", "email-subject", "Relative@Example.com", "Relative"),
+    googleUser = family.userFor("google", "google-subject", "relative@example.com", "Relative");
+  try {
+    assert.equal(googleUser.id, emailUser.id);
+    assert.equal(store.db.prepare("SELECT count(*) n FROM identities WHERE user_id=?").get(emailUser.id).n, 2);
+    const other = family.userFor("email", "other-subject", "other@example.com", "Other");
+    store.db.prepare("UPDATE identities SET email='relative@example.com' WHERE user_id=?").run(other.id);
+    assert.deepEqual(identityDuplicateSummary(store.db), { duplicateEmails: 1, duplicateUsers: 2 });
+    assert.equal(store.db.prepare("SELECT count(*) n FROM users").get().n, 2);
   } finally {
     store.close();
   }
