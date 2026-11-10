@@ -10,7 +10,7 @@ export function createTempleAudio({onChange=()=>{},onError=()=>{},volume=()=>.8}
     try{if(navigator.audioSession)navigator.audioSession.type='playback';}catch{}
     const Context=window.AudioContext||window.webkitAudioContext;if(!Context)throw Error('audio');
     this.context??=new Context();this.context.onstatechange=()=>{this.observe({event:'state',state:this.context.state});onChange();};if(!this.master){this.master=this.context.createGain();this.master.connect(this.context.destination);}
-    for(const name of ['bell','keisu','mo','bead-v1'])if(!this.native.has(name)){const el=new Audio();el.preload='none';el.src=assetURL(`audio/${soundFile(name)}.mp3`);this.native.set(name,el);}
+    for(const name of ['bell','keisu','mo','bead-v1','ignite-v1'])if(!this.native.has(name)){const el=new Audio();el.preload='none';el.src=assetURL(`audio/${soundFile(name)}.mp3`);this.native.set(name,el);}
     this.volume();const resumed=this.context.resume();
     // Start a silent frame inside the original click stack, before any network await.
     const unlock=this.context.createBufferSource();unlock.buffer=this.context.createBuffer(1,1,this.context.sampleRate);unlock.connect(this.master);unlock.onended=()=>unlock.disconnect();unlock.start();
