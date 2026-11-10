@@ -20,11 +20,13 @@ console.log('Bead motion: slow / capped catch-up / release / reverse / horizonta
 const edge=new BeadMotion(()=>{throw Error('edge counted');});edge.begin(390,100,393);edge.move(390,400);edge.frame(0);assert(!edge.active);
 for(const width of [360,375,390,393,430])for(let offset=-240;offset<=240;offset+=10){
  const right=beadArc(width,600,offset),left=beadArc(width,600,offset,true),r=width*beadMotionConfig.arcRadius;
- assert.deepEqual(right,left,'hand switch must not move the strand');assert(right.x>=width*.89-1e-8&&right.x<=width*.969,'strand stays at the right edge');
- assert(Math.abs(Math.hypot(right.x-(width*beadMotionConfig.laneRight-r),right.y-600*.65)-r)<1e-8);
+ const center=width-beadMotionConfig.rightGap-beadMotionConfig.beadDiameter/2;
+ assert.deepEqual(right,left,'hand switch must not move the strand');assert(right.x<=center,'strand arcs inward from its safe right edge');
+ assert(Math.abs(Math.hypot(right.x-(center-r),right.y-600*.65)-r)<1e-8);
 }
 assert.equal(beadMotionConfig.beadDiameter,24);assert.equal(beadMotionConfig.beadPitch,30);
-assert(beadArc(393,659,0).x-beadMotionConfig.beadDiameter/2>393*.93,'visual strand leaves room beside the visitor');
+for(const width of [375,390,393,430])assert.equal(width-(beadArc(width,659,0).x+beadMotionConfig.beadDiameter/2),30,'outer bead edge keeps the safe gap');
+assert(beadMotionConfig.touchWidth>=56,'strand touch target is at least 56px wide');
 const loop=new BeadMotion(()=>{});for(let n=0;n<109;n++)assert(loop.tap(n*100));assert.equal(loop.count,109);
 
 for(const [w,h] of [[375,548],[393,659],[375,667],[390,844],[393,852],[430,932]])assert(Math.abs(beadArc(w,h,0).y/h-.65)<1e-9);

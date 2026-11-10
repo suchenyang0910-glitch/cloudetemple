@@ -5,14 +5,14 @@
       "count": 2,
       "decodedBeadSounds": 2,
       "hapticCalls": 2,
-      "snapErrorPx": 0.01287841796875
+      "snapErrorPx": 0.003082275390625
     },
     {
       "drag": 1.4,
       "count": 1,
       "decodedBeadSounds": 1,
       "hapticCalls": 1,
-      "snapErrorPx": 0.01287841796875
+      "snapErrorPx": 0.003082275390625
     }
   ],
   "errors": [],
