@@ -40,6 +40,9 @@ for(const name of festivalNames)assert(css.includes(`assets/releases/${release}/
 const fontURLs=[...css.matchAll(/url\((assets\/[^)]+\.woff2)\)/g)].map(m=>m[1]);assert.equal(fontURLs.length,6);
 for(const url of fontURLs){assert(url.includes(`/releases/${release}/fonts/`));await fs.access(new URL(url,root));}
 assert((await fs.readFile(new URL(`assets/releases/${release}/fonts/OFL-v1.txt`,root),'utf8')).includes('SIL OPEN FONT LICENSE'));
+const familyAppName=versioned.find(n=>n.startsWith('family.')&&n.endsWith('.js'));
+const familyVisibleText=(await Promise.all(['family.html',familyAppName,`family-i18n.${release}.js`,`family-consent.${release}.js`].map(name=>fs.readFile(new URL(name,root),'utf8')))).join('\n');
+assert(!/chờ người bản ngữ|待母语|native[- ]speaker review/i.test(familyVisibleText),'family UI has no pending native-language review marker');
 const mobile=JSON.parse(await fs.readFile(new URL(`assets/releases/${release}/processed-v1/mobile/measurements.json`,root)));
 assert.equal(mobile.length,12);assert(mobile.every(x=>x.mobile<=120000&&x.width===720));
 if(process.argv.includes('--production')){
