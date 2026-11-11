@@ -86,6 +86,7 @@ function createBillboard(temple) {
       );
       veil.position.set(0, BILL_H / 2, .10);
       group.add(veil);
+      group.userData.veil = veil; // map mode hides this for clearer overhead view
     }
   } else {
     // namtong — no exterior yet; gray silhouette Sprite auto-billboards
@@ -104,18 +105,40 @@ function createBillboard(temple) {
 // ── Flora clusters (Sprites, auto-billboard, scattered between temples) ───────
 
 const FLORA_PLACEMENTS = [
-  { x:  4.5, z:  5.0, s: 1.10 },   // chuamay ↔ quanam
-  { x: -4.5, z:  5.0, s: 0.90 },   // chuamay ↔ namtong
-  { x:  5.0, z: -2.5, s: 1.00 },   // dilac ↔ quanam
-  { x: -5.0, z: -2.5, s: 1.20 },   // dilac ↔ lienchi
-  { x:  8.0, z: -4.5, s: 0.85 },   // quanam ↔ duocsu
-  { x: -8.0, z: -4.5, s: 0.95 },   // lienchi ↔ diatang
-  { x:  2.5, z:-10.0, s: 1.05 },   // south path
-  { x: -2.5, z:-10.0, s: 0.80 },
-  { x: 12.0, z:  2.0, s: 1.00 },   // east edge
-  { x:-12.0, z:  2.0, s: 0.95 },   // west edge
-  { x: 11.0, z: -6.0, s: 0.90 },   // southeast
-  { x:-11.0, z: -6.0, s: 1.10 },   // southwest
+  // flanking arrival path (spawn z=14 → chuamay door z=11)
+  { x:  3.5, z: 12.5, s: 1.00 },
+  { x: -3.5, z: 12.5, s: 0.90 },
+  // sides of chuamay (door at 0,11; keep clear)
+  { x:  4.5, z:  9.0, s: 1.10 },
+  { x: -4.5, z:  9.0, s: 0.95 },
+  // between chuamay and namtong (namtong at -10,8)
+  { x: -6.5, z:  7.0, s: 0.85 },
+  // between chuamay and quanam (quanam at 11,2)
+  { x:  6.0, z:  5.0, s: 1.05 },
+  // right of center corridor (dilac at 3,0; quanam at 11,2)
+  { x:  7.5, z:  1.0, s: 0.80 },
+  // left of center corridor (lienchi at -11,2)
+  { x: -7.0, z:  1.5, s: 0.90 },
+  // south of dilac, toward diatang (diatang at 0,-10)
+  { x:  2.0, z: -4.0, s: 0.85 },
+  { x: -2.0, z: -4.0, s: 1.00 },
+  // east edge (between quanam and duocsu)
+  { x: 14.0, z:  0.0, s: 0.95 },
+  { x: 14.0, z: -4.5, s: 1.10 },
+  // west edge (south of lienchi)
+  { x:-14.0, z:  0.0, s: 1.05 },
+  { x:-14.0, z: -5.0, s: 0.90 },
+  // sides of diatang
+  { x:  4.5, z:-10.5, s: 0.80 },
+  { x: -4.5, z:-10.5, s: 0.95 },
+  // near duocsu (at 11,-8)
+  { x: 13.5, z: -9.5, s: 1.00 },
+  // near namtong left flank (at -10,8)
+  { x:-12.5, z:  5.5, s: 0.85 },
+  // approach to duocsu from south
+  { x:  5.5, z: -7.0, s: 0.90 },
+  // approach to diatang from west
+  { x: -5.5, z: -7.0, s: 1.00 },
 ];
 
 function createFlora(scene) {

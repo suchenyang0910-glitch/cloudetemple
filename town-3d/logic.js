@@ -1,7 +1,7 @@
 export const COMING_SOON_LABEL = 'Sắp mở cửa';
 export const TRIGGER_DISTANCE = 1.5;
 export const SPAWN = Object.freeze({ x: 0, z: 14 });
-export const WALK_BOUNDS = Object.freeze({ minX: -14, maxX: 14, minZ: -12, maxZ: 18 });
+export const WALK_BOUNDS = Object.freeze({ minX: -16, maxX: 16, minZ: -15, maxZ: 19 });
 export const SIDE_HALL_LAYOUT = Object.freeze({
   buddha: Object.freeze({ x: 0, z: -5 }), altar: Object.freeze({ x: 0, z: -3.4 }),
   malletTable: Object.freeze({ x: 0, z: -1.9 }), person: Object.freeze({ x: 0, z: 0 }),
@@ -9,12 +9,12 @@ export const SIDE_HALL_LAYOUT = Object.freeze({
 });
 export const TEMPLES = Object.freeze([
   { id: 'chuamay', name: 'Chùa Mây', x: 0, z: 8, status: 'open' },
-  { id: 'dilac', name: 'Chùa Di Lặc', x: 0, z: 0, status: 'coming_soon' }, // blocked: main app not yet reading ?temple=dilac
-  { id: 'quanam', name: 'Chùa Quan Âm', x: 8, z: 0, status: 'coming_soon' },
-  { id: 'lienchi', name: 'Chùa Liên Trì', x: -8, z: 0, status: 'coming_soon' },
-  { id: 'diatang', name: 'Chùa Địa Tạng', x: 0, z: -8, status: 'coming_soon' },
-  { id: 'duocsu', name: 'Chùa Dược Sư', x: 8, z: -8, status: 'coming_soon' },
-  { id: 'namtong', name: 'Khu phố Nam Tông', x: -8, z: 8, status: 'coming_soon' }
+  { id: 'dilac', name: 'Chùa Di Lặc', x: 3, z: 0, status: 'coming_soon' }, // blocked: main app not yet reading ?temple=dilac
+  { id: 'quanam', name: 'Chùa Quan Âm', x: 11, z: 2, status: 'coming_soon' },
+  { id: 'lienchi', name: 'Chùa Liên Trì', x: -11, z: 2, status: 'coming_soon' },
+  { id: 'diatang', name: 'Chùa Địa Tạng', x: 0, z: -10, status: 'coming_soon' },
+  { id: 'duocsu', name: 'Chùa Dược Sư', x: 11, z: -8, status: 'coming_soon' },
+  { id: 'namtong', name: 'Khu phố Nam Tông', x: -10, z: 8, status: 'coming_soon' }
 ]);
 export const TEMPLE_IDS = Object.freeze(TEMPLES.map(t => t.id));
 export const activityUrl = id => isOpen(id) ? `index.html?temple=${id}` : null;

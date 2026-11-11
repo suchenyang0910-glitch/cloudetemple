@@ -149,7 +149,8 @@ function updateLabels() {
         let blocked = false;
         for (let j = 0; j < i; j++) {
           const br = billRects.get(sorted[j].id);
-          if (br && rectsOverlap(lRect, br)) { blocked = true; break; }
+          // Block only if label center is literally inside a closer billboard — not just nearby
+          if (br && sx >= br.left && sx <= br.right && sy >= br.top && sy <= br.bottom) { blocked = true; break; }
         }
         if (blocked) continue;
         for (const pr of placedRects) {
@@ -177,6 +178,8 @@ function updateLabels() {
 function updateBillboards() {
   const cam = world.camera;
   for (const b of world.billboards) {
+    // Map mode: hide fog veil so coming-soon temples are clearly readable from above
+    if (b.userData.veil) b.userData.veil.visible = !mapMode;
     if (!b.userData.autoRotate) continue; // Sprites auto-billboard; skip them
     if (mapMode) {
       // Full lookAt so overhead camera sees the painting, not an edge
