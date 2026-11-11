@@ -29,8 +29,8 @@ const ground = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
 const hit = new THREE.Vector3();
 // Pulled back enough to show ≥3 temples at once at FOV 58°.
 const CAMERA_OFFSET = new THREE.Vector3(1.6, 13, 14);
-const MAP_CAM_POS = new THREE.Vector3(0, 42, 3);  // overview position for Bản đồ button
-const MAP_CAM_TARGET = new THREE.Vector3(0, 0, 3);
+const MAP_CAM_POS = new THREE.Vector3(0, 55, 2);  // higher = temples spread out more in screen space
+const MAP_CAM_TARGET = new THREE.Vector3(0, 0, 2);
 let mapMode = false;
 
 function initLabels() {
@@ -101,26 +101,51 @@ function updateLabels() {
   }
 
   const visible = new Set();
+  const finalPos = new Map();
+  const LHW = 76; // label half-width for clamping (px)
 
   if (mapMode) {
-    // Map mode: show all that land on screen (no occlusion check)
+    // Map mode: show all 7, push-down to prevent overlap (never hide)
+    const LH = 38; // approx label height at map-mode font (13px + 11px + gap)
+    const placements = [];
     for (const t of sorted) {
       const { sx, sy, behind } = sp.get(t.id);
-      if (!behind && sy >= 72 && sy <= innerHeight - 40) visible.add(t.id);
+      if (!behind) placements.push({ id: t.id, sx, sy });
+    }
+    placements.sort((a, b) => a.sy - b.sy); // top-of-screen first
+    const placed = [];
+    for (const p of placements) {
+      let sx = Math.max(LHW + 12, Math.min(innerWidth - LHW - 12, p.sx));
+      let sy = p.sy;
+      for (let attempt = 0; attempt < 10; attempt++) {
+        const r = { left: sx - LHW, right: sx + LHW, top: sy - 4, bottom: sy + LH };
+        const conflict = placed.find(q => rectsOverlap(r, q));
+        if (!conflict) break;
+        sy = conflict.bottom + 4;
+      }
+      sy = Math.max(72, Math.min(innerHeight - 12, sy));
+      placed.push({ left: sx - LHW, right: sx + LHW, top: sy - 4, bottom: sy + LH });
+      visible.add(p.id);
+      finalPos.set(p.id, { sx, sy });
     }
   } else {
-    // Normal mode: nearest first, up to 3; skip if occluded by a closer billboard
-    // or overlapping an already-placed label; nearest temple is ALWAYS shown.
+    // Normal mode: nearest first, up to 3; nearest is ALWAYS shown (clamp to screen).
+    // Others: hidden if occluded by closer billboard or overlapping placed label.
     const placedRects = [];
     for (let i = 0; i < sorted.length && visible.size < 3; i++) {
       const t = sorted[i];
-      const { sx, sy, behind } = sp.get(t.id);
-      if (behind || sy < 72 || sy > innerHeight - 40) continue;
-
-      // Approx label bounding rect (center-top of text block)
-      const lRect = { left: sx - 72, right: sx + 72, top: sy - 4, bottom: sy + 42 };
-
-      if (i > 0) {  // nearest is always shown; check the rest
+      const { sx: rawSx, sy: rawSy, behind } = sp.get(t.id);
+      if (behind) continue;
+      // Clamp sx for all; nearest clamps sy, others skip if off-screen
+      const sx = Math.max(LHW + 12, Math.min(innerWidth - LHW - 12, rawSx));
+      let sy = rawSy;
+      if (i === 0) {
+        sy = Math.max(72, Math.min(innerHeight - 40, sy));
+      } else {
+        if (sy < 72 || sy > innerHeight - 40) continue;
+      }
+      const lRect = { left: sx - LHW, right: sx + LHW, top: sy - 4, bottom: sy + 42 };
+      if (i > 0) {
         let blocked = false;
         for (let j = 0; j < i; j++) {
           const br = billRects.get(sorted[j].id);
@@ -132,9 +157,9 @@ function updateLabels() {
         }
         if (blocked) continue;
       }
-
       placedRects.push(lRect);
       visible.add(t.id);
+      finalPos.set(t.id, { sx, sy });
     }
   }
 
@@ -142,10 +167,10 @@ function updateLabels() {
   for (const t of TEMPLES) {
     const div = labelDivs[t.id]; if (!div) continue;
     if (!visible.has(t.id)) { div.style.display = 'none'; continue; }
-    const { sx, sy } = sp.get(t.id);
+    const pos = finalPos.get(t.id);
     div.style.display = '';
-    div.style.left = `${sx}px`;
-    div.style.top  = `${sy}px`;
+    div.style.left = `${pos.sx}px`;
+    div.style.top  = `${pos.sy}px`;
   }
 }
 
@@ -267,6 +292,7 @@ function toggleMap() {
   const btn = document.getElementById('map-toggle');
   btn.textContent = mapMode ? 'Đóng' : 'Bản đồ';
   btn.setAttribute('aria-pressed', String(mapMode));
+  labelsEl.classList.toggle('map-mode', mapMode); // smaller font in map mode
 }
 
 function updateCamera(delta) {
