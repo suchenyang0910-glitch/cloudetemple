@@ -30,7 +30,7 @@ html,
 body {
   margin: 0;
   font-size: 15px;
-  background: var(--line);
+  background: #dfd9ce;
   color: var(--ink);
   font-family: BV, system-ui, sans-serif;
 }
