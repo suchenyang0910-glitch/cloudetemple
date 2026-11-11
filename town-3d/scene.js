@@ -78,6 +78,7 @@ function createBillboard(temple) {
     );
     board.position.set(0, BILL_H / 2, .05);
     group.add(board);
+    if (!isOpen) group.userData.board = board; // map mode restores full opacity on this
     // Coming-soon: add a soft foggy veil (semi-transparent cool plane in front)
     if (!isOpen) {
       const veil = new THREE.Mesh(
@@ -104,41 +105,46 @@ function createBillboard(temple) {
 
 // ── Flora clusters (Sprites, auto-billboard, scattered between temples) ───────
 
+// Temple positions (R10): chuamay(0,8) quanam(7,10) namtong(-7,10)
+//   dilac(5,-1) lienchi(-5,-1) diatang(0,-9) duocsu(7,-7)
 const FLORA_PLACEMENTS = [
-  // flanking arrival path (spawn z=14 → chuamay door z=11)
-  { x:  3.5, z: 12.5, s: 1.00 },
-  { x: -3.5, z: 12.5, s: 0.90 },
-  // sides of chuamay (door at 0,11; keep clear)
-  { x:  4.5, z:  9.0, s: 1.10 },
-  { x: -4.5, z:  9.0, s: 0.95 },
-  // between chuamay and namtong (namtong at -10,8)
-  { x: -6.5, z:  7.0, s: 0.85 },
-  // between chuamay and quanam (quanam at 11,2)
-  { x:  6.0, z:  5.0, s: 1.05 },
-  // right of center corridor (dilac at 3,0; quanam at 11,2)
-  { x:  7.5, z:  1.0, s: 0.80 },
-  // left of center corridor (lienchi at -11,2)
-  { x: -7.0, z:  1.5, s: 0.90 },
-  // south of dilac, toward diatang (diatang at 0,-10)
-  { x:  2.0, z: -4.0, s: 0.85 },
-  { x: -2.0, z: -4.0, s: 1.00 },
-  // east edge (between quanam and duocsu)
-  { x: 14.0, z:  0.0, s: 0.95 },
-  { x: 14.0, z: -4.5, s: 1.10 },
-  // west edge (south of lienchi)
-  { x:-14.0, z:  0.0, s: 1.05 },
-  { x:-14.0, z: -5.0, s: 0.90 },
-  // sides of diatang
-  { x:  4.5, z:-10.5, s: 0.80 },
-  { x: -4.5, z:-10.5, s: 0.95 },
-  // near duocsu (at 11,-8)
-  { x: 13.5, z: -9.5, s: 1.00 },
-  // near namtong left flank (at -10,8)
-  { x:-12.5, z:  5.5, s: 0.85 },
-  // approach to duocsu from south
-  { x:  5.5, z: -7.0, s: 0.90 },
-  // approach to diatang from west
-  { x: -5.5, z: -7.0, s: 1.00 },
+  // between arrival path and quanam/namtong front temples
+  { x:  3.0, z: 12.0, s: 1.00 },   // right of path near spawn
+  { x: -3.0, z: 12.0, s: 0.90 },   // left of path near spawn
+  // between quanam (7,10) and chuamay (0,8)
+  { x:  4.0, z:  9.5, s: 1.10 },
+  // between namtong (-7,10) and chuamay (0,8)
+  { x: -4.0, z:  9.5, s: 0.95 },
+  // outside quanam (right side)
+  { x:  9.5, z:  9.5, s: 0.85 },
+  // outside namtong (left side)
+  { x: -9.5, z:  9.5, s: 1.00 },
+  // between quanam (7,10) and dilac (5,-1) — right side mid
+  { x:  8.5, z:  4.5, s: 0.80 },
+  // between namtong (-7,10) and lienchi (-5,-1) — left side mid
+  { x: -8.5, z:  4.5, s: 0.90 },
+  // between chuamay (0,8) and dilac (5,-1) — center right
+  { x:  2.5, z:  3.0, s: 1.05 },
+  // between chuamay (0,8) and lienchi (-5,-1) — center left
+  { x: -2.5, z:  3.0, s: 0.85 },
+  // between dilac (5,-1) and duocsu (7,-7) — right back corridor
+  { x:  8.0, z: -3.5, s: 0.95 },
+  // between lienchi (-5,-1) and diatang (0,-9) — left back corridor
+  { x: -6.5, z: -4.5, s: 1.00 },
+  // sides of diatang (0,-9)
+  { x:  4.0, z: -9.5, s: 0.80 },
+  { x: -4.0, z: -9.5, s: 0.95 },
+  // near duocsu (7,-7)
+  { x:  9.5, z: -8.0, s: 0.90 },
+  // far east edge
+  { x: 12.0, z:  3.0, s: 1.05 },
+  // far west edge
+  { x:-12.0, z:  3.0, s: 0.95 },
+  // south path edges
+  { x:  3.0, z: -6.0, s: 0.80 },
+  { x: -3.0, z: -6.0, s: 1.10 },
+  // deep south marker
+  { x:  0.0, z:-12.5, s: 0.90 },
 ];
 
 function createFlora(scene) {

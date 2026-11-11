@@ -149,8 +149,8 @@ function updateLabels() {
         let blocked = false;
         for (let j = 0; j < i; j++) {
           const br = billRects.get(sorted[j].id);
-          // Block only if label center is literally inside a closer billboard — not just nearby
-          if (br && sx >= br.left && sx <= br.right && sy >= br.top && sy <= br.bottom) { blocked = true; break; }
+          // Use rawSx: a clamped label whose actual projection is off-screen cannot be behind the billboard
+          if (br && rawSx >= br.left && rawSx <= br.right && sy >= br.top && sy <= br.bottom) { blocked = true; break; }
         }
         if (blocked) continue;
         for (const pr of placedRects) {
@@ -178,8 +178,14 @@ function updateLabels() {
 function updateBillboards() {
   const cam = world.camera;
   for (const b of world.billboards) {
-    // Map mode: hide fog veil so coming-soon temples are clearly readable from above
+    // Map mode: remove fog veil and restore full opacity for overhead readability
     if (b.userData.veil) b.userData.veil.visible = !mapMode;
+    if (b.userData.board) {
+      const m = b.userData.board.material;
+      m.opacity = mapMode ? 1 : 0.82;
+      m.color.set(mapMode ? 0xffffff : 0xa8b0be);
+      m.needsUpdate = true;
+    }
     if (!b.userData.autoRotate) continue; // Sprites auto-billboard; skip them
     if (mapMode) {
       // Full lookAt so overhead camera sees the painting, not an edge
@@ -295,7 +301,11 @@ function toggleMap() {
   const btn = document.getElementById('map-toggle');
   btn.textContent = mapMode ? 'Đóng' : 'Bản đồ';
   btn.setAttribute('aria-pressed', String(mapMode));
-  labelsEl.classList.toggle('map-mode', mapMode); // smaller font in map mode
+  labelsEl.classList.toggle('map-mode', mapMode);
+  // Map camera is at y=55; billboards are ~49 units away → inside near=30 fog.
+  // Push fog far so all 7 temples appear full-color from above.
+  world.scene.fog.near = mapMode ? 200 : 30;
+  world.scene.fog.far  = mapMode ? 400 : 65;
 }
 
 function updateCamera(delta) {

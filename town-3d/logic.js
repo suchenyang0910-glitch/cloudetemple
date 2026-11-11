@@ -7,14 +7,17 @@ export const SIDE_HALL_LAYOUT = Object.freeze({
   malletTable: Object.freeze({ x: 0, z: -1.9 }), person: Object.freeze({ x: 0, z: 0 }),
   beads: Object.freeze({ x: 1.2, z: 0 })
 });
+// Portrait layout (393×659, horizontal FOV ≈ 36°):
+//   chuamay  center; quanam RIGHT-FRONT (NDC+0.77); namtong LEFT-FRONT (NDC-0.77)
+//   dilac/lienchi flanking center-back; diatang far back; duocsu right-back
 export const TEMPLES = Object.freeze([
-  { id: 'chuamay', name: 'Chùa Mây', x: 0, z: 8, status: 'open' },
-  { id: 'dilac', name: 'Chùa Di Lặc', x: 3, z: 0, status: 'coming_soon' }, // blocked: main app not yet reading ?temple=dilac
-  { id: 'quanam', name: 'Chùa Quan Âm', x: 11, z: 2, status: 'coming_soon' },
-  { id: 'lienchi', name: 'Chùa Liên Trì', x: -11, z: 2, status: 'coming_soon' },
-  { id: 'diatang', name: 'Chùa Địa Tạng', x: 0, z: -10, status: 'coming_soon' },
-  { id: 'duocsu', name: 'Chùa Dược Sư', x: 11, z: -8, status: 'coming_soon' },
-  { id: 'namtong', name: 'Khu phố Nam Tông', x: -10, z: 8, status: 'coming_soon' }
+  { id: 'chuamay', name: 'Chùa Mây', x:  0, z:  8, status: 'open' },
+  { id: 'quanam',  name: 'Chùa Quan Âm', x:  7, z: 10, status: 'coming_soon' },
+  { id: 'namtong', name: 'Khu phố Nam Tông', x: -7, z: 10, status: 'coming_soon' },
+  { id: 'dilac',   name: 'Chùa Di Lặc', x:  5, z: -1, status: 'coming_soon' }, // blocked: main app not yet reading ?temple=dilac
+  { id: 'lienchi', name: 'Chùa Liên Trì', x: -5, z: -1, status: 'coming_soon' },
+  { id: 'diatang', name: 'Chùa Địa Tạng', x:  0, z: -9, status: 'coming_soon' },
+  { id: 'duocsu',  name: 'Chùa Dược Sư', x:  7, z: -7, status: 'coming_soon' }
 ]);
 export const TEMPLE_IDS = Object.freeze(TEMPLES.map(t => t.id));
 export const activityUrl = id => isOpen(id) ? `index.html?temple=${id}` : null;
