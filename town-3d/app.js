@@ -93,8 +93,9 @@ function updateLabels() {
   const sp = new Map(), billRects = new Map();
   for (const t of sorted) {
     // Map mode: project from ground level so label sits at temple map position
-    // Normal mode: project above billboard top
-    const wy = mapMode ? 0.5 : (t.status === 'open' ? 13 : 6.5);
+    // Normal mode: open temples label at top of billboard; coming-soon projected below
+    // the central temple's billboard bottom (~sy=348 at spawn), so labels appear in ground zone
+    const wy = mapMode ? 0.5 : (t.status === 'open' ? 13 : -5);
     const v = _pt.set(t.x, wy, t.z).project(cam);
     sp.set(t.id, { sx: v.x * halfW + halfW, sy: -v.y * halfH + halfH, behind: v.z > 1 });
     billRects.set(t.id, billboardScreenRect(t, cam, halfW, halfH));
@@ -147,10 +148,11 @@ function updateLabels() {
       const lRect = { left: sx - LHW, right: sx + LHW, top: sy - 4, bottom: sy + 42 };
       if (i > 0) {
         let blocked = false;
-        for (let j = 0; j < i; j++) {
-          const br = billRects.get(sorted[j].id);
-          // Use rawSx: a clamped label whose actual projection is off-screen cannot be behind the billboard
-          if (br && rawSx >= br.left && rawSx <= br.right && sy >= br.top && sy <= br.bottom) { blocked = true; break; }
+        // Hide if label rect overlaps ANY other billboard — prevents text on buildings
+        for (const t2 of sorted) {
+          if (t2.id === t.id) continue;
+          const br = billRects.get(t2.id);
+          if (br && rectsOverlap(lRect, br)) { blocked = true; break; }
         }
         if (blocked) continue;
         for (const pr of placedRects) {

@@ -105,45 +105,45 @@ function createBillboard(temple) {
 
 // ── Flora clusters (Sprites, auto-billboard, scattered between temples) ───────
 
-// Temple positions (R10): chuamay(0,8) quanam(7,10) namtong(-7,10)
+// Temple positions (R11): chuamay(0,8) quanam(13,4) namtong(-13,4)
 //   dilac(5,-1) lienchi(-5,-1) diatang(0,-9) duocsu(7,-7)
 const FLORA_PLACEMENTS = [
-  // between arrival path and quanam/namtong front temples
-  { x:  3.0, z: 12.0, s: 1.00 },   // right of path near spawn
-  { x: -3.0, z: 12.0, s: 0.90 },   // left of path near spawn
-  // between quanam (7,10) and chuamay (0,8)
-  { x:  4.0, z:  9.5, s: 1.10 },
-  // between namtong (-7,10) and chuamay (0,8)
-  { x: -4.0, z:  9.5, s: 0.95 },
-  // outside quanam (right side)
-  { x:  9.5, z:  9.5, s: 0.85 },
-  // outside namtong (left side)
-  { x: -9.5, z:  9.5, s: 1.00 },
-  // between quanam (7,10) and dilac (5,-1) — right side mid
-  { x:  8.5, z:  4.5, s: 0.80 },
-  // between namtong (-7,10) and lienchi (-5,-1) — left side mid
-  { x: -8.5, z:  4.5, s: 0.90 },
-  // between chuamay (0,8) and dilac (5,-1) — center right
+  // near arrival path
+  { x:  3.0, z: 12.0, s: 1.00 },
+  { x: -3.0, z: 12.0, s: 0.90 },
+  // between chuamay and quanam — gap at x=6,z=6 separates them visually
+  { x:  6.0, z:  6.5, s: 1.10 },
+  // between chuamay and namtong
+  { x: -6.0, z:  6.5, s: 0.95 },
+  // outside quanam (right wall)
+  { x: 15.0, z:  4.0, s: 0.85 },
+  // outside namtong (left wall)
+  { x:-15.0, z:  4.0, s: 1.00 },
+  // between quanam and dilac
+  { x: 10.0, z:  1.5, s: 0.80 },
+  // between namtong and lienchi
+  { x:-10.0, z:  1.5, s: 0.90 },
+  // center right, chuamay to dilac
   { x:  2.5, z:  3.0, s: 1.05 },
-  // between chuamay (0,8) and lienchi (-5,-1) — center left
+  // center left, chuamay to lienchi
   { x: -2.5, z:  3.0, s: 0.85 },
-  // between dilac (5,-1) and duocsu (7,-7) — right back corridor
+  // between dilac and duocsu
   { x:  8.0, z: -3.5, s: 0.95 },
-  // between lienchi (-5,-1) and diatang (0,-9) — left back corridor
+  // between lienchi and diatang
   { x: -6.5, z: -4.5, s: 1.00 },
-  // sides of diatang (0,-9)
+  // sides of diatang
   { x:  4.0, z: -9.5, s: 0.80 },
   { x: -4.0, z: -9.5, s: 0.95 },
-  // near duocsu (7,-7)
+  // near duocsu
   { x:  9.5, z: -8.0, s: 0.90 },
-  // far east edge
-  { x: 12.0, z:  3.0, s: 1.05 },
-  // far west edge
-  { x:-12.0, z:  3.0, s: 0.95 },
-  // south path edges
+  // far east gap — between quanam and boundary
+  { x: 11.5, z:  7.0, s: 1.05 },
+  // far west gap
+  { x:-11.5, z:  7.0, s: 0.95 },
+  // south path
   { x:  3.0, z: -6.0, s: 0.80 },
   { x: -3.0, z: -6.0, s: 1.10 },
-  // deep south marker
+  // deep south
   { x:  0.0, z:-12.5, s: 0.90 },
 ];
 

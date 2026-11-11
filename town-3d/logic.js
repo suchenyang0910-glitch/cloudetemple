@@ -8,12 +8,12 @@ export const SIDE_HALL_LAYOUT = Object.freeze({
   beads: Object.freeze({ x: 1.2, z: 0 })
 });
 // Portrait layout (393×659, horizontal FOV ≈ 36°):
-//   chuamay  center; quanam RIGHT-FRONT (NDC+0.77); namtong LEFT-FRONT (NDC-0.77)
-//   dilac/lienchi flanking center-back; diatang far back; duocsu right-back
+//   chuamay  center; quanam far-right (x=13,z=4); namtong far-left (x=-13,z=4)
+//   separated enough that their billboards don't overlap chuamay on screen
 export const TEMPLES = Object.freeze([
   { id: 'chuamay', name: 'Chùa Mây', x:  0, z:  8, status: 'open' },
-  { id: 'quanam',  name: 'Chùa Quan Âm', x:  7, z: 10, status: 'coming_soon' },
-  { id: 'namtong', name: 'Khu phố Nam Tông', x: -7, z: 10, status: 'coming_soon' },
+  { id: 'quanam',  name: 'Chùa Quan Âm', x: 13, z:  4, status: 'coming_soon' },
+  { id: 'namtong', name: 'Khu phố Nam Tông', x: -13, z:  4, status: 'coming_soon' },
   { id: 'dilac',   name: 'Chùa Di Lặc', x:  5, z: -1, status: 'coming_soon' }, // blocked: main app not yet reading ?temple=dilac
   { id: 'lienchi', name: 'Chùa Liên Trì', x: -5, z: -1, status: 'coming_soon' },
   { id: 'diatang', name: 'Chùa Địa Tạng', x:  0, z: -9, status: 'coming_soon' },
