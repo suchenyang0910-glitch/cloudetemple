@@ -116,7 +116,7 @@ function updateLabels() {
 
       // Place label just above the projected top; clamp x to avoid edge clipping
       const sx = Math.max(LHW + 12, Math.min(innerWidth - LHW - 12, rawSx));
-      const sy = Math.max(16, rawSy - 8);
+      const sy = Math.max(72, rawSy - 8);
       if (sy > innerHeight - 46) continue;
 
       const lRect = { left: sx - LHW, right: sx + LHW, top: sy - 4, bottom: sy + 42 };
