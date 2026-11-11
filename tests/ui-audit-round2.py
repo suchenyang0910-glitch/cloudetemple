@@ -140,6 +140,7 @@ try:
                 if action == "sit":
                     click(page, "sit-options")
                     shot("sit-options")
+                    click(page, "sit-options")
                 click(page, "home")
                 settle(page)
 
