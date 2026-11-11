@@ -1,0 +1,36 @@
+export const COMING_SOON_LABEL = 'Sắp mở cửa';
+export const TRIGGER_DISTANCE = 1.5;
+export const SPAWN = Object.freeze({ x: 0, z: 14 });
+export const WALK_BOUNDS = Object.freeze({ minX: -14, maxX: 14, minZ: -12, maxZ: 18 });
+export const SIDE_HALL_LAYOUT = Object.freeze({
+  buddha: Object.freeze({ x: 0, z: -5 }), altar: Object.freeze({ x: 0, z: -3.4 }),
+  malletTable: Object.freeze({ x: 0, z: -1.9 }), person: Object.freeze({ x: 0, z: 0 }),
+  beads: Object.freeze({ x: 1.2, z: 0 })
+});
+export const TEMPLES = Object.freeze([
+  { id: 'chuamay', name: 'Chùa Mây', x: 0, z: 8, status: 'open' },
+  { id: 'dilac', name: 'Chùa Di Lặc', x: 0, z: 0, status: 'coming_soon' }, // blocked: main app not yet reading ?temple=dilac
+  { id: 'quanam', name: 'Chùa Quan Âm', x: 8, z: 0, status: 'coming_soon' },
+  { id: 'lienchi', name: 'Chùa Liên Trì', x: -8, z: 0, status: 'coming_soon' },
+  { id: 'diatang', name: 'Chùa Địa Tạng', x: 0, z: -8, status: 'coming_soon' },
+  { id: 'duocsu', name: 'Chùa Dược Sư', x: 8, z: -8, status: 'coming_soon' },
+  { id: 'namtong', name: 'Khu phố Nam Tông', x: -8, z: 8, status: 'coming_soon' }
+]);
+export const TEMPLE_IDS = Object.freeze(TEMPLES.map(t => t.id));
+export const activityUrl = id => isOpen(id) ? `index.html?temple=${id}` : null;
+export const isOpen = id => TEMPLES.some(t => t.id === id && t.status === 'open');
+export const doorPoint = temple => ({ x: temple.x, z: temple.z + 3 });
+export function nearestTemple(x, z) {
+  let best = null;
+  for (const temple of TEMPLES) {
+    const door = doorPoint(temple), distance = Math.hypot(x - door.x, z - door.z);
+    if (distance <= TRIGGER_DISTANCE && (!best || distance < best.distance)) {
+      best = { ...temple, distance, url: activityUrl(temple.id) };
+    }
+  }
+  return best;
+}
+export function canOccupy(x, z, radius = .34) {
+  return x >= WALK_BOUNDS.minX + radius && x <= WALK_BOUNDS.maxX - radius && z >= WALK_BOUNDS.minZ + radius && z <= WALK_BOUNDS.maxZ - radius && !TEMPLES.some(t => Math.hypot(x - t.x, z - t.z) < 2.2);
+}
+export function facingBuddhaYaw(temple, x, z) { return Math.atan2(temple.x - x, temple.z - z); }

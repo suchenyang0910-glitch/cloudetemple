@@ -1,0 +1,9 @@
+{
+  "name": "chuamay-town-3d",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "serve": "node tools/serve.mjs",
+    "test": "node --test tests/town.test.mjs"
+  }
+}

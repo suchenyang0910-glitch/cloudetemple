@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+  <meta name="theme-color" content="#d9d3c6">
+  <title>Tiểu trấn Chùa Mây · 3D</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main id="app" aria-label="Tiểu trấn bảy ngôi chùa">
+    <canvas id="scene" aria-label="Bản đồ tiểu trấn 3D với bảy ngôi chùa"></canvas>
+
+    <header class="title">
+      <p>TIỂU TRẤN CHÙA MÂY</p>
+      <div class="title-right">
+        <button id="map-toggle" class="mapbtn" aria-pressed="false">Bản đồ</button>
+        <a href="../index.html" class="link2d">Bản 2D</a>
+      </div>
+    </header>
+
+    <section id="temple-panel" class="panel" aria-live="polite" hidden>
+      <h2 id="temple-name"></h2>
+      <p id="temple-state"></p>
+      <a id="temple-enter" class="enter" href="#" hidden>Vào chùa</a>
+    </section>
+
+    <div class="hint" id="walk-hint"><span>Chạm nền để đi</span><span>Giữ và kéo để đi tiếp</span></div>
+
+    <div id="status" class="status" role="status">Đang mở tiểu trấn…</div>
+    <div id="fallback" class="fallback" hidden>
+      <h2>Thiết bị chưa mở được không gian 3D</h2>
+      <p>Bản 2D của Chùa Mây vẫn dùng được trên thiết bị này.</p>
+      <a class="enter" href="../index.html">Mở bản 2D</a>
+    </div>
+  </main>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
