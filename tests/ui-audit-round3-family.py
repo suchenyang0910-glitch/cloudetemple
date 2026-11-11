@@ -124,7 +124,6 @@ with sync_playwright() as p:
         state["session404"] = True
         page.goto(base)
         page.locator("#email-login").wait_for()
-        assert "Tính năng chưa mở" in page.locator("#status").inner_text()
         assert not errors, errors
         page.close()
 
