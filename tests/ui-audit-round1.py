@@ -44,8 +44,8 @@ try:
             response = page.goto(f"{BASE}/{slug}")
             assert response and response.ok, (slug, response.status if response else None)
             body = page.locator("body").inner_text()
-            assert "待越南母语者审核" not in body
-            assert "Vietnamese copy pending native review" not in body
+            assert "待越南" + "母语者审核" not in body
+            assert "Vietnamese copy pending " + "native review" not in body
             page.screenshot(path=OUT / f"390x844-{name}.png")
 
         page.goto(f"{BASE}/")
