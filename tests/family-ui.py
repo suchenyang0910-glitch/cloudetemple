@@ -1,11 +1,13 @@
 from pathlib import Path
 import json
+import os
 from urllib.parse import urlparse
 from playwright.sync_api import sync_playwright
 
 OUT=Path(__file__).resolve().parents[1]/'screenshots'/'family-v2'
 OUT.mkdir(parents=True,exist_ok=True)
-BASE='http://127.0.0.1:8788/family.html?demo=1'
+ORIGIN=os.environ.get('BASE_URL','http://127.0.0.1:8788')
+BASE=ORIGIN+'/family.html?demo=1'
 results=[]
 with sync_playwright() as p:
     browser=p.chromium.launch(headless=True)
@@ -50,7 +52,24 @@ with sync_playwright() as p:
         route.fulfill(status=status,content_type='application/json',body=json.dumps(body))
     page.route('**/api/family/**',family_api)
 
-    live='http://127.0.0.1:8788/family.html'
+    live=ORIGIN+'/family.html'
+    page.goto(live)
+    assert page.locator('.google').is_visible()
+    assert page.get_by_text('Mở trong Telegram').is_visible()
+    assert 'chờ người bản ngữ' not in page.locator('#screen').inner_text().lower()
+    page.goto(live+'?telegram=1')
+    assert page.locator('.google').count()==0
+    assert page.get_by_text('Mở trong Telegram').count()==0
+    assert page.locator('#email-login').is_visible()
+
+    telegram_context=browser.new_context(viewport={'width':393,'height':659},user_agent='Telegram iOS WebView')
+    telegram_page=telegram_context.new_page();telegram_page.route('**/api/family/**',family_api)
+    telegram_page.goto(live)
+    assert telegram_page.locator('.google').count()==0
+    assert telegram_page.get_by_text('Mở trong Telegram').count()==0
+    assert telegram_page.locator('#email-login').is_visible()
+    telegram_context.close()
+
     page.goto(live+'#invite=email-token')
     page.get_by_text('Nguyễn An mời bạn').wait_for()
     assert '#invite=' not in page.url and 'invite=' not in page.url

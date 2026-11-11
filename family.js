@@ -105,8 +105,14 @@ document.addEventListener(
   true,
 );
 function embedded() {
-  return /Telegram|FBAN|FBAV|Zalo|Instagram|Messenger/i.test(
+  return telegramEmbedded() || /FBAN|FBAV|Zalo|Instagram|Messenger/i.test(
     navigator.userAgent,
+  );
+}
+function telegramEmbedded() {
+  return (
+    new URLSearchParams(location.search).get("telegram") === "1" ||
+    /Telegram/i.test(navigator.userAgent)
   );
 }
 function rememberInvite(raw) {
@@ -141,9 +147,19 @@ function captureInvite() {
   return pendingInvite();
 }
 function login() {
-  const invite = pendingInvite();
+  const invite = pendingInvite(),
+    telegram = telegramEmbedded(),
+    webview = embedded(),
+    googleChoice = telegram
+      ? ""
+      : webview
+        ? `<p class="muted">${t("open_browser_google")}</p>`
+        : `<a class="google" href="${apiURL("/auth/google/start")}">${t("google_sign_in")}</a><p class="muted">${t("email_alternative")}</p>`,
+    telegramChoice = telegram
+      ? ""
+      : `<a href="/?telegram=1" class="muted">${t("open_telegram")}</a>`;
   $("#period").textContent = "";
-  screen.innerHTML = `<section class="login"><h2>${t("login_title")}</h2>${invite ? `<p>${t("invite_after_login")}</p>` : ""}<p>${t("login_privacy")}</p>${embedded() ? `<p class="muted">${t("open_browser_google")}</p>` : `<a class="google" href="${apiURL("/auth/google/start")}">${t("google_sign_in")}</a><p class="muted">${t("email_alternative")}</p>`}<form id="email-login"><input name="email" type="email" autocomplete="email" maxlength="254" placeholder="${t("email_placeholder")}" required><button class="primary">${t("send_code")}</button></form><form id="code-form" hidden><input name="code" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="${t("code_placeholder")}" required><button class="primary">${t("sign_in")}</button></form><a href="/?telegram=1" class="muted">${t("open_telegram")}</a></section>`;
+  screen.innerHTML = `<section class="login"><h2>${t("login_title")}</h2>${invite ? `<p>${t("invite_after_login")}</p>` : ""}<p>${t("login_privacy")}</p>${googleChoice}<form id="email-login"><input name="email" type="email" autocomplete="email" maxlength="254" placeholder="${t("email_placeholder")}" required><button class="primary">${t("send_code")}</button></form><form id="code-form" hidden><input name="code" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="${t("code_placeholder")}" required><button class="primary">${t("sign_in")}</button></form>${telegramChoice}</section>`;
   const first = $("#email-login"),
     codes = $("#code-form");
   const google = $(".google");
