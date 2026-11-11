@@ -41,12 +41,6 @@ function createGround(scene) {
   groundMesh.rotation.x = -Math.PI / 2;
   groundMesh.position.set(0, -.01, (WALK_BOUNDS.maxZ + WALK_BOUNDS.minZ) / 2);
   groundMesh.receiveShadow = true; scene.add(groundMesh);
-  // central courtyard plaza (lighter, cleaner stone — the "hub" area)
-  const plaza = new THREE.Mesh(
-    new THREE.PlaneGeometry(10, 10),
-    new THREE.MeshToonMaterial({ color: 0xc0c8b8 })
-  );
-  plaza.rotation.x = -Math.PI / 2; plaza.position.set(0, .004, 2); scene.add(plaza);
 }
 
 // ── Coming-soon billboard canvas (gray ink silhouette) ────────────────────────
@@ -91,10 +85,12 @@ function createBillboard(temple) {
   group.userData.templeId = temple.id;
 
   if (temple.status === 'open') {
-    // 1024×1536 exterior image; height = 4.3× visitor size (2.8 units); bottom edge at y=0
+    // 1024×1536 exterior; height ≈ 4.3× visitor (2.8 units); bottom edge at y=0
+    // autoRotate=true: app.js does Y-axis rotation in normal mode, lookAt in map mode
+    group.userData.autoRotate = true;
     const tex = loader.load('./assets/exterior-chuamay-day.webp');
     tex.colorSpace = THREE.SRGBColorSpace;
-    const billW = 8, billH = 8 * (1536 / 1024); // ≈ 12 units tall
+    const billW = 8, billH = 8 * (1536 / 1024); // ≈ 12 units
     const board = new THREE.Mesh(
       new THREE.PlaneGeometry(billW, billH),
       new THREE.MeshBasicMaterial({ map: tex, transparent: true, alphaTest: .02, side: THREE.FrontSide })
@@ -102,12 +98,14 @@ function createBillboard(temple) {
     board.position.set(0, billH / 2, .05);
     group.add(board);
   } else {
-    // coming-soon: silhouette only, no backing card, bottom at y=0
-    const board = new THREE.Mesh(
-      new THREE.PlaneGeometry(4, 5.6),
-      new THREE.MeshBasicMaterial({ map: comingSoonTex(), transparent: true, side: THREE.FrontSide })
+    // coming-soon: THREE.Sprite — auto-billboards spherically, never skews or tilts
+    group.userData.autoRotate = false;
+    const sprite = new THREE.Sprite(
+      new THREE.SpriteMaterial({ map: comingSoonTex(), transparent: true, depthWrite: false })
     );
-    board.position.set(0, 2.8, .05); group.add(board);
+    sprite.scale.set(4, 5.6, 1);
+    sprite.position.set(0, 2.8, 0); // center at 2.8 → bottom edge at y=0
+    group.add(sprite);
   }
 
   return group;

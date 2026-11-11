@@ -48,16 +48,27 @@ function initLabels() {
 const _ndcPt = new THREE.Vector3();
 function updateLabels() {
   const halfW = innerWidth / 2; const halfH = innerHeight / 2;
+  const vx = world.visitor.position.x, vz = world.visitor.position.z;
+  // Normal mode: show only the 3 nearest temples to avoid overlap.
+  // Map mode: show all 7.
+  let visibleIds;
+  if (mapMode) {
+    visibleIds = new Set(TEMPLES.map(t => t.id));
+  } else {
+    visibleIds = new Set(
+      TEMPLES.map(t => ({ id: t.id, d: Math.hypot(t.x - vx, t.z - vz) }))
+        .sort((a, b) => a.d - b.d).slice(0, 3).map(s => s.id)
+    );
+  }
   for (const t of TEMPLES) {
     const div = labelDivs[t.id]; if (!div) continue;
-    // Project a point just above billboard top (open: 12-unit board; coming-soon: 5.6-unit)
+    if (!visibleIds.has(t.id)) { div.style.display = 'none'; continue; }
+    // Project just above billboard top (open ≈ 12 units; coming-soon 5.6 units)
     _ndcPt.set(t.x, t.status === 'open' ? 13 : 6.5, t.z);
     _ndcPt.project(world.camera);
-    // Behind camera: hide
     if (_ndcPt.z > 1) { div.style.display = 'none'; continue; }
     const sx = (_ndcPt.x * halfW) + halfW;
     const sy = -(_ndcPt.y * halfH) + halfH;
-    // Clamp below header (72px) and above bottom (40px)
     if (sy < 72 || sy > innerHeight - 40) { div.style.display = 'none'; continue; }
     div.style.display = '';
     div.style.left = `${sx}px`;
@@ -68,9 +79,16 @@ function updateLabels() {
 function updateBillboards() {
   const cam = world.camera;
   for (const b of world.billboards) {
-    const dx = cam.position.x - b.position.x;
-    const dz = cam.position.z - b.position.z;
-    b.rotation.y = Math.atan2(dx, dz);
+    if (!b.userData.autoRotate) continue; // Sprites auto-billboard; skip them
+    if (mapMode) {
+      // Full lookAt so overhead camera sees the painting, not an edge
+      b.lookAt(cam.position);
+    } else {
+      // Y-axis only: billboard stays vertical, rotates to face camera on horizontal plane
+      const dx = cam.position.x - b.position.x;
+      const dz = cam.position.z - b.position.z;
+      b.rotation.set(0, Math.atan2(dx, dz), 0);
+    }
   }
 }
 
