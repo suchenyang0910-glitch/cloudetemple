@@ -267,6 +267,17 @@ h1 {
   justify-content: center;
   gap: 12px;
 }
+.login .google {
+  display: grid;
+  place-items: center;
+  min-height: 44px;
+  border: 1px solid #e8dcc53d;
+  border-radius: 9px;
+  background: #66503e;
+  color: #fff7e9;
+  padding: 9px 12px;
+  text-decoration: none;
+}
 .login form,
 .form form,
 .account {

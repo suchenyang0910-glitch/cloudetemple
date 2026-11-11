@@ -1,4 +1,4 @@
-// Vietnamese pilot copy. Every value remains pending native-speaker review.
+// Vietnamese family copy reviewed by a native speaker on 2026-11-07.
 export const FAMILY_COPY = Object.freeze({
   period_dawn: "Sớm mai",
   period_day: "Ban ngày",
@@ -10,7 +10,6 @@ export const FAMILY_COPY = Object.freeze({
   account_aria: "Tài khoản",
   login_title: "Giữ gìn ký ức gia đình",
   login_privacy: "Tên và ngày giỗ chỉ những người được mời mới xem được.",
-  native_pending: "Bản dịch tiếng Việt đang chờ người bản ngữ duyệt.",
   email_placeholder: "Email",
   send_code: "Gửi mã 6 số",
   code_placeholder: "Mã xác nhận",
