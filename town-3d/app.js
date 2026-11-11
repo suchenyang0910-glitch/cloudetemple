@@ -45,35 +45,9 @@ function initLabels() {
   }
 }
 
-// ── Label occlusion helpers ───────────────────────────────────────────────────
+// ── Label helpers ─────────────────────────────────────────────────────────────
 
-const _camDir = new THREE.Vector3();
-const _camRt  = new THREE.Vector3();
-const _pt     = new THREE.Vector3();
-
-// Returns the screen-space bounding rect of a billboard (accounting for camera orientation).
-function billboardScreenRect(t, cam, halfW, halfH) {
-  const isOpen = t.status === 'open';
-  const hw = isOpen ? 4.4 : 2.3;   // world half-width
-  const h  = isOpen ? 12.5 : 5.9;  // world height
-
-  // Billboard faces camera on Y-axis; its width-direction = camera right
-  cam.getWorldDirection(_camDir);
-  _camRt.crossVectors(new THREE.Vector3(0, 1, 0), _camDir).normalize();
-
-  const rp = new THREE.Vector3(t.x + hw * _camRt.x, h / 2, t.z + hw * _camRt.z).project(cam);
-  const lp = new THREE.Vector3(t.x - hw * _camRt.x, h / 2, t.z - hw * _camRt.z).project(cam);
-  const tp = new THREE.Vector3(t.x, h,   t.z).project(cam);
-  const bp = new THREE.Vector3(t.x, 0,   t.z).project(cam);
-  if (rp.z > 1 && lp.z > 1) return null;
-
-  return {
-    left:   Math.min(lp.x, rp.x) * halfW + halfW - 6,
-    right:  Math.max(lp.x, rp.x) * halfW + halfW + 6,
-    top:    -Math.max(tp.y, bp.y) * halfH + halfH - 6,
-    bottom: -Math.min(tp.y, bp.y) * halfH + halfH + 6,
-  };
-}
+const _pt = new THREE.Vector3();
 
 function rectsOverlap(a, b) {
   return a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
@@ -82,38 +56,25 @@ function rectsOverlap(a, b) {
 function updateLabels() {
   const halfW = innerWidth / 2, halfH = innerHeight / 2;
   const cam = world.camera;
-  const vx = world.visitor.position.x, vz = world.visitor.position.z;
-
-  // Sort nearest-to-visitor first
-  const sorted = [...TEMPLES].sort((a, b) =>
-    Math.hypot(a.x - vx, a.z - vz) - Math.hypot(b.x - vx, b.z - vz)
-  );
-
-  // Precompute screen positions and billboard rects for all temples
-  const sp = new Map(), billRects = new Map();
-  for (const t of sorted) {
-    // Map mode: project from ground level so label sits at temple map position
-    // Normal mode: open temples label at top of billboard; coming-soon projected below
-    // the central temple's billboard bottom (~sy=348 at spawn), so labels appear in ground zone
-    const wy = mapMode ? 0.5 : (t.status === 'open' ? 13 : -5);
-    const v = _pt.set(t.x, wy, t.z).project(cam);
-    sp.set(t.id, { sx: v.x * halfW + halfW, sy: -v.y * halfH + halfH, behind: v.z > 1 });
-    billRects.set(t.id, billboardScreenRect(t, cam, halfW, halfH));
-  }
 
   const visible = new Set();
   const finalPos = new Map();
-  const LHW = 76; // label half-width for clamping (px)
+  const LHW = 76; // label half-width (px)
 
   if (mapMode) {
     // Map mode: show all 7, push-down to prevent overlap (never hide)
-    const LH = 38; // approx label height at map-mode font (13px + 11px + gap)
+    const vx = world.visitor.position.x, vz = world.visitor.position.z;
+    const sorted = [...TEMPLES].sort((a, b) =>
+      Math.hypot(a.x - vx, a.z - vz) - Math.hypot(b.x - vx, b.z - vz)
+    );
+    const LH = 38;
     const placements = [];
     for (const t of sorted) {
-      const { sx, sy, behind } = sp.get(t.id);
-      if (!behind) placements.push({ id: t.id, sx, sy });
+      const v = _pt.set(t.x, 0.5, t.z).project(cam);
+      if (v.z > 1) continue;
+      placements.push({ id: t.id, sx: v.x * halfW + halfW, sy: -v.y * halfH + halfH });
     }
-    placements.sort((a, b) => a.sy - b.sy); // top-of-screen first
+    placements.sort((a, b) => a.sy - b.sy);
     const placed = [];
     for (const p of placements) {
       let sx = Math.max(LHW + 12, Math.min(innerWidth - LHW - 12, p.sx));
@@ -130,36 +91,44 @@ function updateLabels() {
       finalPos.set(p.id, { sx, sy });
     }
   } else {
-    // Normal mode: nearest first, up to 3; nearest is ALWAYS shown (clamp to screen).
-    // Others: hidden if occluded by closer billboard or overlapping placed label.
+    // Normal mode: label shown ONLY when the temple's billboard top is inside the viewport.
+    // No fallback positioning — if the top is off-screen the label is hidden.
+    const BILL_TOP = 12; // must match BILL_H in scene.js (8 * 1536/1024)
+
+    // Visitor bounding rect for overlap guard
+    const vp = world.visitor.position;
+    _pt.set(vp.x, 2.8, vp.z).project(cam);
+    const visSx = _pt.x * halfW + halfW;
+    const visTop = -_pt.y * halfH + halfH;
+    _pt.set(vp.x, 0, vp.z).project(cam);
+    const visBot = -_pt.y * halfH + halfH;
+    const visRect = { left: visSx - 24, right: visSx + 24, top: visTop, bottom: visBot };
+
     const placedRects = [];
-    for (let i = 0; i < sorted.length && visible.size < 3; i++) {
-      const t = sorted[i];
-      const { sx: rawSx, sy: rawSy, behind } = sp.get(t.id);
-      if (behind) continue;
-      // Clamp sx for all; nearest clamps sy, others skip if off-screen
+    for (const t of TEMPLES) {
+      // Project the top of this temple's billboard
+      _pt.set(t.x, BILL_TOP, t.z).project(cam);
+      // Skip if behind clip plane or billboard top is outside the NDC square
+      if (_pt.z > 1 || _pt.x < -1 || _pt.x > 1 || _pt.y < -1 || _pt.y > 1) continue;
+
+      const rawSx = _pt.x * halfW + halfW;
+      const rawSy = -_pt.y * halfH + halfH;
+
+      // Place label just above the projected top; clamp x to avoid edge clipping
       const sx = Math.max(LHW + 12, Math.min(innerWidth - LHW - 12, rawSx));
-      let sy = rawSy;
-      if (i === 0) {
-        sy = Math.max(72, Math.min(innerHeight - 40, sy));
-      } else {
-        if (sy < 72 || sy > innerHeight - 40) continue;
-      }
+      const sy = Math.max(16, rawSy - 8);
+      if (sy > innerHeight - 46) continue;
+
       const lRect = { left: sx - LHW, right: sx + LHW, top: sy - 4, bottom: sy + 42 };
-      if (i > 0) {
-        let blocked = false;
-        // Hide if label rect overlaps ANY other billboard — prevents text on buildings
-        for (const t2 of sorted) {
-          if (t2.id === t.id) continue;
-          const br = billRects.get(t2.id);
-          if (br && rectsOverlap(lRect, br)) { blocked = true; break; }
-        }
-        if (blocked) continue;
-        for (const pr of placedRects) {
-          if (rectsOverlap(lRect, pr)) { blocked = true; break; }
-        }
-        if (blocked) continue;
+
+      if (rectsOverlap(lRect, visRect)) continue;
+
+      let blocked = false;
+      for (const pr of placedRects) {
+        if (rectsOverlap(lRect, pr)) { blocked = true; break; }
       }
+      if (blocked) continue;
+
       placedRects.push(lRect);
       visible.add(t.id);
       finalPos.set(t.id, { sx, sy });
