@@ -82,9 +82,8 @@ function comingSoonTex() {
 
 // ── Temple billboard ──────────────────────────────────────────────────────────
 // Each temple is a Y-axis-billboard (PlaneGeometry that app.js rotates to face
-// the camera each frame). Open temple uses existing courtyard artwork as
-// placeholder; coming-soon uses the gray silhouette canvas.
-// New exterior facade images (see art-brief-round3.md) will replace placeholders.
+// the camera each frame). Chùa Mây uses its transparent exterior cutout;
+// coming-soon temples use the gray silhouette canvas.
 
 function createBillboard(temple) {
   const group = new THREE.Group();
@@ -92,48 +91,24 @@ function createBillboard(temple) {
   group.userData.templeId = temple.id;
 
   if (temple.status === 'open') {
-    // ── Open temple: courtyard painting as placeholder ──
-    // scene-vn-courtyard-*.webp is 941×1672 portrait; show full image
-    const tex = loader.load('../assets/processed-v1/img/scene-vn-courtyard-day.webp');
+    // 1024×1536 exterior image; height = 4.3× visitor size (2.8 units); bottom edge at y=0
+    const tex = loader.load('./assets/exterior-chuamay-day.webp');
     tex.colorSpace = THREE.SRGBColorSpace;
-    // Billboard width 5 units → height = 5 * (1672/941) ≈ 8.88 units
-    const billH = 5 * (1672 / 941);
+    const billW = 8, billH = 8 * (1536 / 1024); // ≈ 12 units tall
     const board = new THREE.Mesh(
-      new THREE.PlaneGeometry(5, billH),
-      new THREE.MeshBasicMaterial({ map: tex, side: THREE.FrontSide })
+      new THREE.PlaneGeometry(billW, billH),
+      new THREE.MeshBasicMaterial({ map: tex, transparent: true, alphaTest: .02, side: THREE.FrontSide })
     );
     board.position.set(0, billH / 2, .05);
     group.add(board);
-    // Thin wood backing (gives depth, frames the painting)
-    const back = new THREE.Mesh(
-      new THREE.BoxGeometry(5.3, billH + .3, .18),
-      new THREE.MeshToonMaterial({ color: 0xd0b480 })
-    );
-    back.position.set(0, billH / 2, -.1); group.add(back);
-    // Warm point light in front of billboard (candle glow)
-    const glow = new THREE.PointLight(0xffd080, .85, 6, 2.2);
-    glow.position.set(0, 2.5, 1.2); group.add(glow);
   } else {
-    // ── Coming-soon: ink silhouette billboard ──
+    // coming-soon: silhouette only, no backing card, bottom at y=0
     const board = new THREE.Mesh(
       new THREE.PlaneGeometry(4, 5.6),
       new THREE.MeshBasicMaterial({ map: comingSoonTex(), transparent: true, side: THREE.FrontSide })
     );
     board.position.set(0, 2.8, .05); group.add(board);
-    // Faint backing
-    const back = new THREE.Mesh(
-      new THREE.BoxGeometry(4.3, 5.9, .12),
-      new THREE.MeshToonMaterial({ color: 0xe8dfc8, transparent: true, opacity: .55 })
-    );
-    back.position.set(0, 2.8, -.07); group.add(back);
   }
-
-  // Stone platform below the billboard (anchors it to the ground)
-  const platform = new THREE.Mesh(
-    new THREE.BoxGeometry(5.4, .28, 3.6),
-    new THREE.MeshToonMaterial({ color: 0xc2bcaf })
-  );
-  platform.position.set(0, .14, -.3); platform.receiveShadow = true; group.add(platform);
 
   return group;
 }

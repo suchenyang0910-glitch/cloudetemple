@@ -50,8 +50,8 @@ function updateLabels() {
   const halfW = innerWidth / 2; const halfH = innerHeight / 2;
   for (const t of TEMPLES) {
     const div = labelDivs[t.id]; if (!div) continue;
-    // Project a point ~billboard top in world space
-    _ndcPt.set(t.x, 9, t.z);
+    // Project a point just above billboard top (open: 12-unit board; coming-soon: 5.6-unit)
+    _ndcPt.set(t.x, t.status === 'open' ? 13 : 6.5, t.z);
     _ndcPt.project(world.camera);
     // Behind camera: hide
     if (_ndcPt.z > 1) { div.style.display = 'none'; continue; }
