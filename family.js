@@ -519,8 +519,8 @@ async function account() {
 }
 $("#account").onclick = account;
 async function init() {
+  const authError = new URLSearchParams(location.search).get("auth");
   try {
-    const authError = new URLSearchParams(location.search).get("auth");
     const invite = captureInvite();
     if (demo) {
       csrf = "demo";

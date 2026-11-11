@@ -62,7 +62,7 @@ with sync_playwright() as p:
     browser = p.chromium.launch(headless=True)
     report = {"mobile": [], "desktop": []}
     for width, height in SIZES:
-        state = {"authenticated": False, "tablets": []}
+        state = {"authenticated": False, "tablets": [], "session404": False}
         page = browser.new_page(viewport={"width": width, "height": height})
         errors = []
         page.on("pageerror", lambda error: errors.append(str(error)))
@@ -71,7 +71,7 @@ with sync_playwright() as p:
             path = urlparse(route.request.url).path
             body = {"ok": True}
             if path.endswith("/session"):
-                body = {"ok": True, "authenticated": state["authenticated"], "csrf": "csrf-test" if state["authenticated"] else ""}
+                body = {"ok": False, "error": "not_found"} if state["session404"] else {"ok": True, "authenticated": state["authenticated"], "csrf": "csrf-test" if state["authenticated"] else ""}
             elif path.endswith("/tablets"):
                 body = {"ok": True, "tablets": state["tablets"]}
             elif path.endswith("/auth/email/start"):
@@ -120,6 +120,12 @@ with sync_playwright() as p:
         assert page.get_by_text("Mở trong Telegram").count() == 0
         page.screenshot(path=OUT / f"{width}x{height}-06-telegram.png")
         report["mobile"].append({"state": "telegram", "size": [width, height], **assert_page(page, "telegram", errors)})
+
+        state["session404"] = True
+        page.goto(base)
+        page.locator("#email-login").wait_for()
+        assert "Tính năng chưa mở" in page.locator("#status").inner_text()
+        assert not errors, errors
         page.close()
 
     page = browser.new_page(viewport={"width": 1440, "height": 900})
