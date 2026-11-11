@@ -17,10 +17,11 @@ for(const [host,port,env,mini,api] of [['h5',8800,'production',false,false],['mi
   await fs.writeFile(`${destination}/${host}.conf`,`server {
   listen 127.0.0.1:${port};
   server_name ${host}.chuamay.org;
-  root /opt/chuamay/${env}/current/dist;
+  root /opt/chuamay/${env}/current/dist;${api?'':'\n  error_page 404 /404.html;'}
   ${headers}
   ${host==='staging'?'auth_basic "Chua May staging"; auth_basic_user_file /etc/chuamay/staging.htpasswd;\n  add_header X-Robots-Tag noindex always;':''}
-  ${api?`location / { ${proxy} }`:`location / { ${locationHeaders} add_header Cache-Control "no-cache" always; try_files $uri $uri.html $uri/ =404; }
+  ${api?`location / { ${proxy} }`:`location = /404.html { internal; }
+  location / { ${locationHeaders} add_header Cache-Control "no-cache" always; try_files $uri $uri.html $uri/ =404; }
   location ^~ /assets/ { auth_basic off; ${locationHeaders} add_header Cache-Control "public, max-age=31536000, immutable"; types { image/webp webp; image/png png; image/svg+xml svg; application/json json; text/plain txt md; audio/mp4 m4a; audio/mpeg mp3; font/woff2 woff2; } try_files $uri =404; }
   location ~ "^/[a-z0-9-]+\\.[a-f0-9]{12}\\.(js|css)$" { auth_basic off; ${locationHeaders} add_header Cache-Control "public, max-age=31536000, immutable"; try_files $uri =404; }`}
   ${host==='staging'?`location /api/ { ${proxy.replace('8791;','8791/;')} }

@@ -28,6 +28,7 @@
 4. 重启 `chuamay-api@production`，最多等待 30 秒确认 `/healthz=200`。
 5. 确认 h5、miniapp 会从 `api.chuamay.org/family/status` 读取开关，未登录或名单外账号看不到入口且 family API 返回 404。
 6. 确认登录 Cookie 为 `Domain=.chuamay.org; Secure; HttpOnly; SameSite=Lax`，h5、miniapp 和 Telegram WebView 共用会话；提醒 timer 仍保持关闭。
+7. 每次正式发布固定检查：`https://h5.chuamay.org/family.html` 返回 200；`https://miniapp.chuamay.org/family.html?telegram=1` 返回 200；`https://t.me/ChuaMayBot/chuamay?startapp=family` 在 Telegram 中进入家族登录页。
 
 ## 手机验收路径
 

@@ -2,10 +2,10 @@ import fs from 'node:fs/promises';
 import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
 const root=new URL('../dist/',import.meta.url),{release}=JSON.parse(await fs.readFile(new URL('release.json',root)));
-const familyCandidate=process.argv.includes('--family-candidate');
 const home=await fs.readFile(new URL('index.html',root),'utf8');assert(home.includes('property="og:image"')&&home.includes('class="home-content"')&&home.includes('application/ld+json'),'home metadata and prerendered copy');assert(!/<script(?![^>]*(?:src=|type="application\/ld\+json"))[^>]*>/i.test(home),'no executable inline script under strict CSP');
 const about=await fs.readFile(new URL('gioi-thieu.html',root),'utf8');assert(about.includes('Hồ Ngọc Đức công bố')&&about.includes('calrules.html'),'lunar algorithm attribution');
 const files=await fs.readdir(root),pattern=new RegExp(`\\.${release}\\.(js|css)$`),versioned=files.filter(n=>pattern.test(n));
+await fs.access(new URL('404.html',root));
 for(const name of ['morning','festival'])assert(versioned.includes(`${name}.${release}.js`),`${name} module packaged and versioned`);
 const analyticsName=versioned.find(n=>n.startsWith('analytics.')),analyticsText=await fs.readFile(new URL(analyticsName,root),'utf8');assert(analyticsText.includes('campaign_content')&&analyticsText.includes("endsWith('_a_'+name)"),'anonymous activity attribution allowlist');
 assert(files.filter(n=>/\.(js|css)$/.test(n)).every(n=>pattern.test(n)),'only current hashed JS/CSS');
@@ -44,29 +44,23 @@ const mobile=JSON.parse(await fs.readFile(new URL(`assets/releases/${release}/pr
 assert.equal(mobile.length,12);assert(mobile.every(x=>x.mobile<=120000&&x.width===720));
 if(process.argv.includes('--production')){
  assert(!files.some(n=>/^audio-debug(\.|$)/.test(n)));
-  assert(!files.some(n=>/^(calendar-presale|dev-outbox)(\.|$)/.test(n)),'production excludes presale and outbox');
- if(familyCandidate){
-  for(const name of ['family.html',`family.${release}.js`,`family.${release}.css`,`family-analytics.${release}.js`,`family-i18n.${release}.js`])await fs.access(new URL(name,root));
-  await fs.access(new URL(`assets/releases/${release}/family`,root));
- }else{
-  assert(!files.some(n=>/^family(\.|-)/.test(n)),'production excludes family pilot');
-  await assert.rejects(fs.access(new URL('family.html',root)),'production family page is unreachable');
-  await assert.rejects(fs.access(new URL(`assets/releases/${release}/family`,root)),'production family assets are absent');
- }
+ assert(!files.some(n=>/^(calendar-presale|dev-outbox)(\.|$)/.test(n)),'production excludes presale and outbox');
+ for(const name of ['family.html',`family.${release}.js`,`family.${release}.css`,`family-analytics.${release}.js`,`family-i18n.${release}.js`,`family-consent.${release}.js`])await fs.access(new URL(name,root));
+ await fs.access(new URL(`assets/releases/${release}/family`,root));
  for(const name of files){const item=new URL(name,root);if((await fs.stat(item)).isFile())assert(!(await fs.readFile(item)).includes(Buffer.from('debug_mode')),name+' contains debug_mode');}
  const analytics=versioned.find(n=>n.startsWith('analytics.'));
  assert(analytics,'production analytics module');
  assert((await fs.readFile(new URL(analytics,root),'utf8')).includes('const debug={}'),'production analytics has no debug fields');
  assert((await fs.readFile(new URL(`config.${release}.js`,root),'utf8')).includes("'pass-through'"),'production guru rule');
  assert(versioned.includes(`preload.${release}.js`),'scene preload is external and versioned');
- for(const excluded of [...(familyCandidate?[]:['family']), 'family-consent','admin','presence','calendar-presale'])assert(!versioned.some(n=>n.startsWith(excluded+'.')),excluded+' excluded from production');
+ for(const excluded of ['admin','presence','calendar-presale'])assert(!versioned.some(n=>n.startsWith(excluded+'.')),excluded+' excluded from production');
  const app=versioned.find(n=>n.startsWith('app.')&&n.endsWith('.js'));
  assert(app,'production app module');
  const appSource=await fs.readFile(new URL(app,root),'utf8');
  assert(appSource.includes("apiURL('/family/status')"),'family entry follows server status');
  assert(appSource.includes("telegramStartParam()==='family'")&&appSource.includes("/family.html?telegram=1"),'Telegram family start parameter opens the family login page');
  assert(!appSource.includes('__CT_FAMILY_ENABLED__'),'family entry is not fixed at build time');
- if(familyCandidate){const familySource=await fs.readFile(new URL(`family.${release}.js`,root),'utf8');assert(familySource.includes('apiURL("/family" + path)')&&familySource.includes('credentials: "include"'),'family API uses credentialed API origin');}
+ const familySource=await fs.readFile(new URL(`family.${release}.js`,root),'utf8');assert(familySource.includes('apiURL("/family" + path)')&&familySource.includes('credentials: "include"'),'family API uses credentialed API origin');
  assert((await fs.readFile(new URL(app,root),'utf8')).match(/const referralsEnabled\s*=\s*["']0["']\s*===\s*["']1["']/),'production referrals disabled');
  assert((await fs.readFile(new URL(app,root),'utf8')).match(/const presenceEnabled\s*=\s*["']0["']\s*===\s*["']1["']/),'production presence disabled');
 }
