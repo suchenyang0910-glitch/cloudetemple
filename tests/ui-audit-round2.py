@@ -10,6 +10,7 @@ from playwright.sync_api import sync_playwright
 ROOT = Path(__file__).resolve().parents[1]
 BASE = os.environ.get("CT_BASE", "http://127.0.0.1:8899").rstrip("/")
 LOCAL_STATIC = "CT_BASE" not in os.environ
+STATIC_DIR = Path(os.environ.get("CT_STATIC_DIR", ROOT / "dist"))
 OUT = ROOT / "screenshots" / "ui-audit-round2" / os.environ.get("CT_EVIDENCE_NAME", "local")
 OUT.mkdir(parents=True, exist_ok=True)
 SIZES = ((390, 844), (360, 640))
@@ -87,7 +88,7 @@ def prepare_context(browser, width, height, morning_seen=True):
 
 if "CT_BASE" not in os.environ:
     server = subprocess.Popen(
-        ["python", "-m", "http.server", "8899", "-d", str(ROOT / "dist")],
+        ["python", "-m", "http.server", "8899", "-d", str(STATIC_DIR)],
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
     )
