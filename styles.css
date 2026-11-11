@@ -583,8 +583,8 @@ body:is([data-view=incense],[data-view=bow],[data-view=sit],[data-view=mo],[data
 body[data-view=bow] .choice-row button{height:44px;min-height:44px}
 body[data-view=bow] .controls>.stack{gap:4px}
 .sit-main{position:relative;height:100%;justify-content:center}.sit-main .timer{min-height:62px;display:grid;place-items:center}
-.sit-options{position:absolute;left:0;right:0;bottom:calc(100% + 8px);z-index:7;padding:8px;background:var(--paper);box-shadow:0 8px 28px color-mix(in srgb,var(--warm-5) 20%,transparent)}
-.sit-options .choice-row,.sit-options .breath-controls{flex-wrap:nowrap}.sit-options .breath-controls,.sit-options .breath-controls .choice-row{gap:4px}.sit-options button{white-space:nowrap}
+.sit-options{position:relative;height:100%;display:flex;flex-direction:column;justify-content:center;gap:4px;padding:0 48px 0 0;background:var(--paper)}
+.sit-options .choice-row,.sit-options .breath-controls{display:flex;flex-wrap:nowrap;gap:4px;overflow-x:auto;scrollbar-width:none}.sit-options .choice-row::-webkit-scrollbar{display:none}.sit-options button{white-space:nowrap;flex:0 0 auto}.sit-options .choice-row button{min-width:72px}.sit-options .breath-controls>button{min-width:132px}.sit-options-close{position:absolute;right:0;top:0;width:44px;min-width:44px;padding:0!important;font-size:20px!important;z-index:1}
 .incense-stick>span{left:1px;right:auto;width:3px}.incense-stick>span::before{left:-1px}
 .bead-summary{height:48px;margin:0;display:grid;grid-template-columns:minmax(72px,1fr) auto;align-items:center}
 .bead-summary .bead-guide{position:static;width:auto;transform:none;color:var(--muted);text-shadow:none;filter:none;justify-content:center}
