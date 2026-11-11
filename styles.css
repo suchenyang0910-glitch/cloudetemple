@@ -594,5 +594,8 @@ body[data-hand=left] .bead-summary{direction:ltr}
 body[data-view=incense] .controls .row,body[data-view=bow] .controls .row,.sit-main>.row{display:grid;grid-template-columns:repeat(3,1fr)}
 body[data-view=incense] .controls .row:has(button:nth-child(2):last-child){grid-template-columns:repeat(2,1fr)}
 body[data-view=incense] .controls .row button,body[data-view=bow] .controls .row button,.sit-main>.row button{width:100%;min-width:0;white-space:normal;overflow-wrap:anywhere}
+body[data-view=sit] .sit-main>.row,body[data-view=incense] .controls .row:has(button:nth-child(3)){grid-template-columns:repeat(2,1fr)}
+body[data-view=sit] .sit-main>.row [data-action=home],body[data-view=incense] .controls .row:has(button:nth-child(3)) [data-action=home]{grid-column:1/-1}
+body:is([data-view=incense],[data-view=bow],[data-view=sit],[data-view=mo],[data-view=beads]) .controls button{padding-inline:4px;white-space:nowrap;overflow-wrap:normal}
 body[data-view=incense] .controls .row button,body[data-view=bow] .controls .row button{height:48px;min-height:48px;padding:4px;line-height:1.15}
 @media(max-height:700px){body:is([data-view=incense],[data-view=bow],[data-view=sit],[data-view=mo],[data-view=beads]) .controls{height:208px;min-height:208px}}
