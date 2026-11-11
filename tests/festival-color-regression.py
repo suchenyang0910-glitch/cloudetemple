@@ -26,8 +26,18 @@ def enter_home(page):
 
 
 def festival_styles(page):
-    return page.locator("#festival-layer *").evaluate_all(
-        """els=>els.filter(e=>e.getClientRects().length).map(e=>{const s=getComputedStyle(e);return {class:e.className,backgroundColor:s.backgroundColor,color:s.color,borderColor:s.borderColor,fill:s.fill,stroke:s.stroke,filter:s.filter,opacity:s.opacity}})"""
+    return page.evaluate(
+        r"""()=>{
+          const colors=e=>{const s=getComputedStyle(e),m=s.backgroundImage.match(/\/([^/\"]+\.svg)/);return {class:e.className,backgroundColor:s.backgroundColor,backgroundImage:m?m[1]:s.backgroundImage}};
+          const lantern=document.querySelector('#festival-layer .fes-l');
+          const thread=lantern?getComputedStyle(lantern,'::before').backgroundColor:null;
+          const banner=document.querySelector('.tet-banner');
+          const probe=document.createElement('p');probe.className='error-inline';document.body.append(probe);
+          const error=getComputedStyle(probe).color;probe.remove();
+          const bannerStyle=banner?getComputedStyle(banner):null;
+          const catalog=Object.fromEntries(['fes-l','fes-fl','fes-pot','fes-moon','fes-p','fes-g'].map(name=>[name,colors(document.querySelector('.'+name))]));
+          return {elements:[...document.querySelectorAll('#festival-layer *')].filter(e=>e.getClientRects().length).map(colors),catalog,thread,banner:bannerStyle?{backgroundColor:bannerStyle.backgroundColor,color:bannerStyle.color}:null,error};
+        }"""
     )
 
 
