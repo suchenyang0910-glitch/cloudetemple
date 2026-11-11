@@ -28,7 +28,7 @@ export function beadArc(width,height,offset,left=false,config=beadMotionConfig){
 }
 
 export function mountBeads(el,{step,count=0,reduced=false,left=false,direction=1}){
- const guide=el.querySelector('.bead-guide'),chevrons=el.querySelector('.bead-chevrons');
+ const guide=document.querySelector('.bead-guide'),chevrons=document.querySelector('.bead-chevrons');
  let guideTimer=0,demoTimer=0;
  const remember=()=>{try{localStorage.setItem('ct-bead-guide','true');}catch{}};
  const learned=()=>{try{return localStorage.getItem('ct-bead-guide')==='true';}catch{return false;}};
@@ -53,7 +53,7 @@ export function mountBeads(el,{step,count=0,reduced=false,left=false,direction=1
    node.style.opacity=String(Math.max(0,Math.min(1,(y-half-100)/35,(strandBottom-y)/18,(Math.min(x,width-x)-half+16)/8)));
   });
  };
- const resize=new ResizeObserver(()=>{width=area.clientWidth;height=area.clientHeight;const areaBox=area.getBoundingClientRect(),heading=document.querySelector('.scene-heading'),top=Math.max(100,heading.getBoundingClientRect().bottom-areaBox.top+8),controlTop=document.querySelector('.controls').getBoundingClientRect().top-areaBox.top;area.style.setProperty('--bead-size',beadMotionConfig.beadDiameter+'px');area.style.setProperty('--bead-touch-top',top+'px');const p=beadArc(width,height,0,left),r=width*beadMotionConfig.arcRadius,guideY=Math.min(p.y+88,controlTop-13);strandBottom=Math.min(controlTop-58,p.y+50);el.querySelector('.thumb-point').style.cssText=`left:${p.x}px;top:${p.y}px`;guide.style.cssText=`left:${Math.max(52,p.x-72)}px;top:${guideY}px`;chevrons.style.cssText=`left:${p.x}px;top:${Math.min(controlTop-29,p.y+78)}px`;el.querySelector('.bead-thread').style.cssText=`width:${r*2}px;height:${r*2}px;left:${left?p.x-r*2:p.x}px;top:${p.y-r}px`;draw(model.position);});resize.observe(area);resize.observe(document.querySelector('.scene-heading'));
+ const resize=new ResizeObserver(()=>{width=area.clientWidth;height=area.clientHeight;const areaBox=area.getBoundingClientRect(),heading=document.querySelector('.scene-heading'),top=Math.max(100,heading.getBoundingClientRect().bottom-areaBox.top+8),controlTop=document.querySelector('.controls').getBoundingClientRect().top-areaBox.top;area.style.setProperty('--bead-size',beadMotionConfig.beadDiameter+'px');area.style.setProperty('--bead-touch-top',top+'px');const p=beadArc(width,height,0,left),r=width*beadMotionConfig.arcRadius;strandBottom=Math.min(controlTop-58,p.y+50);el.querySelector('.thumb-point').style.cssText=`left:${p.x}px;top:${p.y}px`;el.querySelector('.bead-thread').style.cssText=`width:${r*2}px;height:${r*2}px;left:${left?p.x-r*2:p.x}px;top:${p.y-r}px`;draw(model.position);});resize.observe(area);resize.observe(document.querySelector('.scene-heading'));
  const frame=now=>{
   if(disposed)return;
   if(model.active&&!reduced){model.frame(now);draw(model.position);}
