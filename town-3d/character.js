@@ -7,6 +7,9 @@ const frames = Object.fromEntries(names.map(name => {
   texture.colorSpace = THREE.SRGBColorSpace;
   return [name, texture];
 }));
+const palmsBack = loader.load('./assets/visitor/palms-back.webp');
+palmsBack.colorSpace = THREE.SRGBColorSpace;
+frames['palms-back'] = palmsBack;
 function setFrame(visitor, name, flip = false) {
   const rig = visitor.userData.rig;
   if (rig.frame !== name || rig.flip !== flip) {
@@ -36,9 +39,7 @@ export function poseVisitor(visitor, state, phase = 0, reduced = false) {
     const step = reduced ? 1 : Math.floor(phase * 5.5) % 2 + 1;
     setFrame(visitor, rig.view === 'back' ? `walk-back-${step}` : rig.view === 'side' ? `walk-side-${step}` : 'stand-front', rig.view === 'side' && rig.flip);
   } else if (state === 'palms') {
-    // 在寺内必须面向佛像（背朝镜头）。'palms' 帧是正面，尚无背面合掌帧，
-    // 暂用 stand-back / stand-side 代替；待美术交付 palms-back.webp 后换回。
-    if (rig.view === 'back') setFrame(visitor, 'stand-back');
+    if (rig.view === 'back') setFrame(visitor, 'palms-back');
     else if (rig.view === 'side') setFrame(visitor, 'stand-side', rig.flip);
     else setFrame(visitor, 'palms', rig.flip); // front view (should not occur in-temple)
   }

@@ -1,6 +1,18 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
 import { TEMPLES, TEMPLE_IDS, TRIGGER_DISTANCE, SIDE_HALL_LAYOUT, SPAWN, activityUrl, isOpen, nearestTemple, doorPoint, canOccupy, facingBuddhaYaw } from '../logic.js';
+
+test('round 3 artwork replaces both P0 placeholders', async () => {
+  const [scene, character] = await Promise.all([
+    readFile(new URL('../scene.js', import.meta.url), 'utf8'),
+    readFile(new URL('../character.js', import.meta.url), 'utf8')
+  ]);
+  assert.match(scene, /\.\/assets\/exterior-chuamay-day\.webp/);
+  assert.doesNotMatch(scene, /scene-vn-courtyard-day\.webp/);
+  assert.match(character, /\.\/assets\/visitor\/palms-back\.webp/);
+  assert.match(character, /rig\.view === 'back'\) setFrame\(visitor, 'palms-back'\)/);
+});
 
 test('seven temple IDs exactly, in plan order', () => {
   assert.deepEqual(TEMPLES.map(t => t.id), ['chuamay', 'dilac', 'quanam', 'lienchi', 'diatang', 'duocsu', 'namtong']);
