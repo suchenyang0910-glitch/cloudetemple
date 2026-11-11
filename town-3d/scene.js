@@ -9,21 +9,22 @@ const loader = new THREE.TextureLoader();
 function organicStoneCanvas() {
   const cv = document.createElement('canvas'); cv.width = cv.height = 512;
   const ctx = cv.getContext('2d');
-  ctx.fillStyle = '#c4ba98'; ctx.fillRect(0, 0, 512, 512);
+  ctx.fillStyle = '#9ea89a'; ctx.fillRect(0, 0, 512, 512); // gray-green stone base
   // irregular stone shapes
   for (let i = 0; i < 55; i++) {
     const x = (i * 137 + 60) % 512, y = (i * 211 + 40) % 512;
     const rx = 26 + (i * 73) % 34, ry = 16 + (i * 51) % 24;
     const ang = (i * 29) % 180 * Math.PI / 180;
     ctx.save(); ctx.translate(x, y); ctx.rotate(ang);
-    ctx.fillStyle = `rgba(80,65,42,${0.035 + (i % 5) * 0.02})`;
+    ctx.fillStyle = `rgba(50,55,45,${0.035 + (i % 5) * 0.02})`;
     ctx.beginPath(); ctx.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2); ctx.fill();
-    ctx.strokeStyle = `rgba(78,62,40,0.09)`; ctx.lineWidth = .9;
+    ctx.strokeStyle = `rgba(48,54,42,0.09)`; ctx.lineWidth = .9;
     ctx.beginPath(); ctx.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2); ctx.stroke();
     ctx.restore();
   }
+  // grass-green micro-speckle
   for (let i = 0; i < 350; i++) {
-    ctx.fillStyle = `rgba(55,47,33,${0.015 + (i % 5) * 0.013})`; ctx.fillRect((i * 97) % 512, (i * 61) % 512, 2, 2);
+    ctx.fillStyle = `rgba(60,80,52,${0.015 + (i % 5) * 0.013})`; ctx.fillRect((i * 97) % 512, (i * 61) % 512, 2, 2);
   }
   const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace;
   t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(5, 7);
@@ -35,7 +36,7 @@ function createGround(scene) {
   const d = WALK_BOUNDS.maxZ - WALK_BOUNDS.minZ + 8;
   const groundMesh = new THREE.Mesh(
     new THREE.PlaneGeometry(w, d),
-    new THREE.MeshToonMaterial({ color: 0xf2ead8, map: organicStoneCanvas() })
+    new THREE.MeshToonMaterial({ color: 0xb4bdb0, map: organicStoneCanvas() })
   );
   groundMesh.rotation.x = -Math.PI / 2;
   groundMesh.position.set(0, -.01, (WALK_BOUNDS.maxZ + WALK_BOUNDS.minZ) / 2);
@@ -43,7 +44,7 @@ function createGround(scene) {
   // central courtyard plaza (lighter, cleaner stone — the "hub" area)
   const plaza = new THREE.Mesh(
     new THREE.PlaneGeometry(10, 10),
-    new THREE.MeshToonMaterial({ color: 0xd8d0bc })
+    new THREE.MeshToonMaterial({ color: 0xc0c8b8 })
   );
   plaza.rotation.x = -Math.PI / 2; plaza.position.set(0, .004, 2); scene.add(plaza);
 }
