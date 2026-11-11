@@ -45,34 +45,107 @@ function initLabels() {
   }
 }
 
-const _ndcPt = new THREE.Vector3();
+// ── Label occlusion helpers ───────────────────────────────────────────────────
+
+const _camDir = new THREE.Vector3();
+const _camRt  = new THREE.Vector3();
+const _pt     = new THREE.Vector3();
+
+// Returns the screen-space bounding rect of a billboard (accounting for camera orientation).
+function billboardScreenRect(t, cam, halfW, halfH) {
+  const isOpen = t.status === 'open';
+  const hw = isOpen ? 4.4 : 2.3;   // world half-width
+  const h  = isOpen ? 12.5 : 5.9;  // world height
+
+  // Billboard faces camera on Y-axis; its width-direction = camera right
+  cam.getWorldDirection(_camDir);
+  _camRt.crossVectors(new THREE.Vector3(0, 1, 0), _camDir).normalize();
+
+  const rp = new THREE.Vector3(t.x + hw * _camRt.x, h / 2, t.z + hw * _camRt.z).project(cam);
+  const lp = new THREE.Vector3(t.x - hw * _camRt.x, h / 2, t.z - hw * _camRt.z).project(cam);
+  const tp = new THREE.Vector3(t.x, h,   t.z).project(cam);
+  const bp = new THREE.Vector3(t.x, 0,   t.z).project(cam);
+  if (rp.z > 1 && lp.z > 1) return null;
+
+  return {
+    left:   Math.min(lp.x, rp.x) * halfW + halfW - 6,
+    right:  Math.max(lp.x, rp.x) * halfW + halfW + 6,
+    top:    -Math.max(tp.y, bp.y) * halfH + halfH - 6,
+    bottom: -Math.min(tp.y, bp.y) * halfH + halfH + 6,
+  };
+}
+
+function rectsOverlap(a, b) {
+  return a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+}
+
 function updateLabels() {
-  const halfW = innerWidth / 2; const halfH = innerHeight / 2;
+  const halfW = innerWidth / 2, halfH = innerHeight / 2;
+  const cam = world.camera;
   const vx = world.visitor.position.x, vz = world.visitor.position.z;
-  // Normal mode: show only the 3 nearest temples to avoid overlap.
-  // Map mode: show all 7.
-  let visibleIds;
-  if (mapMode) {
-    visibleIds = new Set(TEMPLES.map(t => t.id));
-  } else {
-    visibleIds = new Set(
-      TEMPLES.map(t => ({ id: t.id, d: Math.hypot(t.x - vx, t.z - vz) }))
-        .sort((a, b) => a.d - b.d).slice(0, 3).map(s => s.id)
-    );
+
+  // Sort nearest-to-visitor first
+  const sorted = [...TEMPLES].sort((a, b) =>
+    Math.hypot(a.x - vx, a.z - vz) - Math.hypot(b.x - vx, b.z - vz)
+  );
+
+  // Precompute screen positions and billboard rects for all temples
+  const sp = new Map(), billRects = new Map();
+  for (const t of sorted) {
+    // Map mode: project from ground level so label sits at temple map position
+    // Normal mode: project above billboard top
+    const wy = mapMode ? 0.5 : (t.status === 'open' ? 13 : 6.5);
+    const v = _pt.set(t.x, wy, t.z).project(cam);
+    sp.set(t.id, { sx: v.x * halfW + halfW, sy: -v.y * halfH + halfH, behind: v.z > 1 });
+    billRects.set(t.id, billboardScreenRect(t, cam, halfW, halfH));
   }
+
+  const visible = new Set();
+
+  if (mapMode) {
+    // Map mode: show all that land on screen (no occlusion check)
+    for (const t of sorted) {
+      const { sx, sy, behind } = sp.get(t.id);
+      if (!behind && sy >= 72 && sy <= innerHeight - 40) visible.add(t.id);
+    }
+  } else {
+    // Normal mode: nearest first, up to 3; skip if occluded by a closer billboard
+    // or overlapping an already-placed label; nearest temple is ALWAYS shown.
+    const placedRects = [];
+    for (let i = 0; i < sorted.length && visible.size < 3; i++) {
+      const t = sorted[i];
+      const { sx, sy, behind } = sp.get(t.id);
+      if (behind || sy < 72 || sy > innerHeight - 40) continue;
+
+      // Approx label bounding rect (center-top of text block)
+      const lRect = { left: sx - 72, right: sx + 72, top: sy - 4, bottom: sy + 42 };
+
+      if (i > 0) {  // nearest is always shown; check the rest
+        let blocked = false;
+        for (let j = 0; j < i; j++) {
+          const br = billRects.get(sorted[j].id);
+          if (br && rectsOverlap(lRect, br)) { blocked = true; break; }
+        }
+        if (blocked) continue;
+        for (const pr of placedRects) {
+          if (rectsOverlap(lRect, pr)) { blocked = true; break; }
+        }
+        if (blocked) continue;
+      }
+
+      placedRects.push(lRect);
+      visible.add(t.id);
+    }
+  }
+
+  // Apply positions and visibility
   for (const t of TEMPLES) {
     const div = labelDivs[t.id]; if (!div) continue;
-    if (!visibleIds.has(t.id)) { div.style.display = 'none'; continue; }
-    // Project just above billboard top (open ≈ 12 units; coming-soon 5.6 units)
-    _ndcPt.set(t.x, t.status === 'open' ? 13 : 6.5, t.z);
-    _ndcPt.project(world.camera);
-    if (_ndcPt.z > 1) { div.style.display = 'none'; continue; }
-    const sx = (_ndcPt.x * halfW) + halfW;
-    const sy = -(_ndcPt.y * halfH) + halfH;
-    if (sy < 72 || sy > innerHeight - 40) { div.style.display = 'none'; continue; }
+    if (!visible.has(t.id)) { div.style.display = 'none'; continue; }
+    const { sx, sy } = sp.get(t.id);
     div.style.display = '';
     div.style.left = `${sx}px`;
-    div.style.top = `${sy}px`;
+    div.style.top  = `${sy}px`;
   }
 }
 
