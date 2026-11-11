@@ -20,9 +20,13 @@
 html,
 body {
   margin: 0;
+  font-size: 15px;
   background: #1f1b17;
   color: #fff4e1;
   font-family: BV, system-ui, sans-serif;
+}
+html {
+  font-size: 16px;
 }
 button,
 input,
@@ -36,6 +40,7 @@ a {
   min-height: 44px;
 }
 button {
+  font-size: 15px;
   border: 1px solid #e8dcc53d;
   border-radius: 9px;
   background: #66503e;
@@ -43,6 +48,7 @@ button {
   padding: 9px 12px;
 }
 button.primary {
+  font-size: 17px;
   background: #936235;
 }
 button.text {
@@ -107,11 +113,11 @@ header div {
 }
 header small {
   display: block;
-  font-size: 9px;
-  letter-spacing: 1.4px;
+  font-size: 13px;
+  letter-spacing: 0.5px;
 }
 h1 {
-  font-size: 16px;
+  font-size: 24px;
   margin: 2px 0 0;
   font-weight: 500;
 }
@@ -170,19 +176,19 @@ h1 {
   justify-content: center;
   text-align: center;
   font:
-    400 max(12px, 3.2vw) / 1.15 Lora,
+    400 15px / 1.15 Lora,
     serif;
   color: #fff0ce;
   text-shadow: 0 1px 1px #342119;
 }
 .plaque-label b {
-  font-size: max(15px, 4vw);
+  font-size: 15px;
   font-weight: 700;
   overflow-wrap: normal;
   text-wrap: balance;
 }
 .plaque-label small {
-  font-size: max(11px, 2.9vw);
+  font-size: 13px;
 }
 .scene.lit:after {
   content: "";
@@ -224,7 +230,7 @@ h1 {
   grid-column: 1/-1;
   text-align: center;
   margin: 0;
-  font-size: 11px;
+  font-size: 13px;
 }
 .panel .wide {
   grid-column: 1/-1;
@@ -302,7 +308,7 @@ h1 {
   padding: 0;
 }
 .form label {
-  font-size: 12px;
+  font-size: 15px;
 }
 .form .row {
   display: grid;
@@ -310,7 +316,7 @@ h1 {
   gap: 8px;
 }
 .muted {
-  font-size: 11px;
+  font-size: 13px;
   color: #d5c7b5;
 }
 .skeleton {
