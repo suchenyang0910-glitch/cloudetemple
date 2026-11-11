@@ -105,8 +105,7 @@ try:
 
             def shot(name, allow_document_scroll=False):
                 metrics = assert_layout(page, name, allow_document_scroll)
-                if width == 390:
-                    page.screenshot(path=OUT / f"390x844-{name}.png")
+                page.screenshot(path=OUT / f"{width}x{height}-{name}.png")
                 results.append({"size": f"{width}x{height}", "page": name, **{k: metrics[k] for k in ("scrollWidth", "scrollHeight", "width", "height")}})
 
             page.goto(f"{BASE}/")
@@ -161,8 +160,7 @@ try:
             morning_page.locator("#ga-choice").evaluate("el=>{el.hidden=true;el.style.pointerEvents='none'}")
             metrics = assert_layout(morning_page, "morning")
             results.append({"size": f"{width}x{height}", "page": "morning", **{k: metrics[k] for k in ("scrollWidth", "scrollHeight", "width", "height")}})
-            if width == 390:
-                morning_page.screenshot(path=OUT / "390x844-morning.png")
+            morning_page.screenshot(path=OUT / f"{width}x{height}-morning.png")
             unexpected = [error for error in morning_errors if not (LOCAL_STATIC and "Failed to load resource" in error)]
             assert not unexpected, unexpected
             morning_context.close()
@@ -180,8 +178,7 @@ try:
                 assert response and response.ok, (slug, response.status if response else None)
                 shot_page = legal_page
                 metrics = assert_layout(shot_page, name, allow_document_scroll=True)
-                if width == 390:
-                    shot_page.screenshot(path=OUT / f"390x844-{name}.png")
+                shot_page.screenshot(path=OUT / f"{width}x{height}-{name}.png")
                 results.append({"size": f"{width}x{height}", "page": name, "documentScroll": True, **{k: metrics[k] for k in ("scrollWidth", "scrollHeight", "width", "height")}})
             unexpected = [error for error in legal_errors if not (LOCAL_STATIC and "Failed to load resource" in error)]
             assert not unexpected, unexpected
