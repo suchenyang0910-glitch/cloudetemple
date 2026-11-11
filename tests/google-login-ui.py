@@ -23,7 +23,7 @@ try:
       return page
     for width,height in [(375,548),(393,659),(393,852)]:
       page=open_page(width,height,name='google-login');assert page.locator('.google').is_visible();assert page.locator('.google').bounding_box()['y']<page.locator('#email-login').bounding_box()['y'];page.close()
-    page=open_page(393,659,user_agent='Telegram-iOS',name='embedded-login');assert page.locator('.google').count()==0;assert 'Safari' in page.locator('.login').inner_text();page.close()
+    page=open_page(393,659,user_agent='Telegram-iOS',name='embedded-login');assert page.locator('.google').count()==0;assert page.locator('#email-login').is_visible();page.close()
     page=open_page(393,659,authenticated=True,name='google-success');assert page.locator('#email-login').count()==0;assert page.locator('#new').is_visible();page.close()
     browser.close()
   print({'passed':True,'screenshots':len(list(OUT.glob('*.png')))})
