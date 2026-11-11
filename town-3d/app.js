@@ -1,7 +1,7 @@
 import * as THREE from '../prototype-3d/vendor/three.module.min.js';
 import { createTownWorld } from './scene.js';
 import { poseVisitor, updateView } from './character.js';
-import { canOccupy, nearestTemple, facingBuddhaYaw, COMING_SOON_LABEL } from './logic.js';
+import { TEMPLES, canOccupy, nearestTemple, facingBuddhaYaw, COMING_SOON_LABEL } from './logic.js';
 
 const ROOT_PREFIX = '../'; // town-3d/ lives one level below the 2D app (index.html).
 const canvas = document.querySelector('#scene');
@@ -12,7 +12,10 @@ const panelName = document.querySelector('#temple-name');
 const panelState = document.querySelector('#temple-state');
 const enterLink = document.querySelector('#temple-enter');
 const hint = document.querySelector('#walk-hint');
+const labelsEl = document.querySelector('#labels');
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+// label divs keyed by temple id — created once in initLabels()
+const labelDivs = {};
 
 let world;
 let target = null;
@@ -30,6 +33,47 @@ const MAP_CAM_POS = new THREE.Vector3(0, 42, 3);  // overview position for Bản
 const MAP_CAM_TARGET = new THREE.Vector3(0, 0, 3);
 let mapMode = false;
 
+function initLabels() {
+  for (const t of TEMPLES) {
+    const div = document.createElement('div');
+    div.className = 'temple-label';
+    div.dataset.id = t.id;
+    div.innerHTML = `<span class="label-name">${t.name}</span>` +
+      (t.status !== 'open' ? `<span class="label-status">${COMING_SOON_LABEL}</span>` : '');
+    labelsEl.appendChild(div);
+    labelDivs[t.id] = div;
+  }
+}
+
+const _ndcPt = new THREE.Vector3();
+function updateLabels() {
+  const halfW = innerWidth / 2; const halfH = innerHeight / 2;
+  for (const t of TEMPLES) {
+    const div = labelDivs[t.id]; if (!div) continue;
+    // Project a point ~billboard top in world space
+    _ndcPt.set(t.x, 9, t.z);
+    _ndcPt.project(world.camera);
+    // Behind camera: hide
+    if (_ndcPt.z > 1) { div.style.display = 'none'; continue; }
+    const sx = (_ndcPt.x * halfW) + halfW;
+    const sy = -(_ndcPt.y * halfH) + halfH;
+    // Clamp below header (72px) and above bottom (40px)
+    if (sy < 72 || sy > innerHeight - 40) { div.style.display = 'none'; continue; }
+    div.style.display = '';
+    div.style.left = `${sx}px`;
+    div.style.top = `${sy}px`;
+  }
+}
+
+function updateBillboards() {
+  const cam = world.camera;
+  for (const b of world.billboards) {
+    const dx = cam.position.x - b.position.x;
+    const dz = cam.position.z - b.position.z;
+    b.rotation.y = Math.atan2(dx, dz);
+  }
+}
+
 function boot() {
   try {
     if (new URLSearchParams(location.search).get('mode') === '2d') throw new Error('2d-requested');
@@ -37,6 +81,7 @@ function boot() {
     resize();
     addEventListener('resize', resize, { passive: true });
     bindControls();
+    initLabels();
     world.camera.position.copy(world.visitor.position).add(CAMERA_OFFSET);
     document.getElementById('map-toggle').addEventListener('click', toggleMap);
     status.classList.add('ready');
@@ -169,8 +214,10 @@ function frame(now) {
   previous = now;
   moveVisitor(delta, now);
   updateCamera(delta);
+  updateBillboards();
   updatePanel();
   world.render();
+  updateLabels();
   window.__TOWN_STATE__ = { x: world.visitor.position.x, z: world.visitor.position.z, walking, temple: current?.id || null, href: enterLink.getAttribute('href') };
   requestAnimationFrame(frame);
 }
