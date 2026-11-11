@@ -75,10 +75,12 @@ try:
         page.locator("[data-action=incense]").wait_for()
         if page.locator("#ga-choice").count():
             page.locator("#ga-choice").evaluate("el=>el.hidden=true")
-        page.wait_for_function(
-            "document.getElementById('sound-hint').hidden && !document.getElementById('audio-status').textContent.trim()",
-            timeout=6000,
-        )
+        page.locator("#sound-hint").wait_for(state="hidden", timeout=6000)
+        for _ in range(60):
+            if not page.locator("#audio-status").inner_text().strip():
+                break
+            page.wait_for_timeout(100)
+        assert not page.locator("#audio-status").inner_text().strip()
         page.locator("[data-action=more]").click()
         assert "Thử nghiệm theo lời mời" in page.locator("#more-menu").inner_text()
         page.screenshot(path=OUT / "390x844-more-menu.png")
