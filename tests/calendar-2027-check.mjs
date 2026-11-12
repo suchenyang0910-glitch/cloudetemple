@@ -5,6 +5,7 @@ const root=new URL('../',import.meta.url),html=await fs.readFile(new URL('lich-2
 assert(html.includes('Lịch 2027')&&html.includes('Cả năm')&&html.includes('Lưu ảnh')&&html.includes('Chia sẻ'));
 assert(app.includes("now.getFullYear()<2027?1:now.getMonth()+1"),'before 2027 starts at January');
 assert(app.includes("open(new URL(path(),location.href),'_blank','noopener')")&&app.includes('Nhấn giữ ảnh để lưu'),'Telegram opens original with long-press help');
+assert(app.includes("classList.toggle('overview',all)")&&await fs.readFile(new URL('calendar-2027.css',root),'utf8').then(css=>css.includes('.overview .calendar-sheet{display:block;overflow-x:auto')),'overview uses an isolated horizontal scroller');
 assert(mainApp.includes('class="calendar-entry"')&&mainApp.includes('href="/lich-2027.html"'),'home calendar entry');
 assert(!preload.includes('calendar-2027'),'home does not preload calendar images');
 for(let month=1;month<=12;month++)await fs.access(new URL(`assets/calendar-2027/calendar-2027-${String(month).padStart(2,'0')}.webp`,root));
