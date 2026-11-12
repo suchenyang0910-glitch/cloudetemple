@@ -49,4 +49,5 @@
 - `review/p34-calendar/calendar-2027-feb.webp`：2027 年 2 月含 Tết 手机壁纸样张。
 - `review/p34-calendar/calendar-2027-overview.webp`：全年总览样张。
 - P39 修订脚本：`tools/render-calendar-2027.mjs` 读取 `tools/calendar-2027-dates.json`，调用仓库已有的 Hồ Ngọc Đức UTC+7 算法，断言 24 个 mùng 1/rằm 日期后再用日期层排字，生成总览、2 月、9 月和 10 月图；AI 图只提供背景。
+- P44 版式修订：月图由脚本排出周一至周日完整格子、逐日公历/农历日、mùng 1 与 rằm 高亮；总览背景为 4×3 十二格。排字使用系统已有 `NotoSansSC-VF.ttf`（Noto Sans CJK，SIL Open Font License，可免费商用），不下载或安装新软件。
 - `*-background.webp` 和 SVG overlay 是生成/排版过程参考；所有图均为 Codex 内置 imagegen 或本地排版样张，external_source=none，generated=2026-11-12，status=review-only，未进入正式素材目录。
