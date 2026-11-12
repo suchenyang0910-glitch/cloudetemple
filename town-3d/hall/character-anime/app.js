@@ -6,7 +6,7 @@ const scene=new THREE.Scene(); scene.background=new THREE.Color(0xd7d0c2); scene
 const camera=new THREE.PerspectiveCamera(32,1,.1,40); camera.position.set(0,2.65,7.6); camera.lookAt(0,1.35,0);
 const floor=new THREE.Mesh(new THREE.PlaneGeometry(12,12),new THREE.MeshToonMaterial({color:0xc7b79e})); floor.rotation.x=-Math.PI/2; scene.add(floor);
 const back=new THREE.Mesh(new THREE.PlaneGeometry(12,6),new THREE.MeshToonMaterial({color:0xb7c4b5})); back.position.set(0,2,-1.5); scene.add(back);
-const paperTexture=new THREE.TextureLoader().load('../lab-character/assets/paper-bun-light.webp'); const paper=new THREE.Sprite(new THREE.SpriteMaterial({map:paperTexture,transparent:true,depthWrite:false})); paper.scale.set(1.55,2.32,1); paper.position.set(1.15,1.28,.05); scene.add(paper);
+const paperTexture=new THREE.TextureLoader().load('./assets/paper-bun-light.webp'); const paper=new THREE.Sprite(new THREE.SpriteMaterial({map:paperTexture,transparent:true,depthWrite:false})); paper.scale.set(1.55,2.32,1); paper.position.set(1.15,1.28,.05); scene.add(paper);
 const model=new THREE.Group(); model.position.x=-.95; scene.add(model); const skin=new THREE.MeshToonMaterial({color:0xb9785c}), shirt=new THREE.MeshToonMaterial({color:0xe5d6bd}), pants=new THREE.MeshToonMaterial({color:0x4c4039}), hair=new THREE.MeshToonMaterial({color:0x3e3836}), dark=new THREE.MeshBasicMaterial({color:0x241e1b});
 const outline=new THREE.LineBasicMaterial({color:0x2f2925,transparent:true,opacity:.85}); const parts={};
 function add(name,g,m,p){const x=new THREE.Mesh(g,m); x.position.set(...p); x.castShadow=false; model.add(x); const e=new THREE.LineSegments(new THREE.EdgesGeometry(g,.2),outline); x.add(e); parts[name]=x; return x;}
