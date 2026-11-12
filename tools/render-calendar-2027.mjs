@@ -7,6 +7,10 @@ import { lunarToSolar, solarToLunar } from "../server/lunar-hnd.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const spec = JSON.parse(fs.readFileSync(path.join(root, "tools/calendar-2027-dates.json"), "utf8"));
+const fontPath = "C:/Windows/Fonts/NotoSansSC-VF.ttf";
+const glyphCheck = spawnSync("powershell", ["-NoProfile", "-Command", `Add-Type -AssemblyName PresentationCore; $g = New-Object System.Windows.Media.GlyphTypeface([Uri]'file:///${fontPath}'); $s = 'Tháng Chạp'; foreach ($c in $s.ToCharArray()) { if (!$g.CharacterToGlyphMap.ContainsKey([int][char]$c)) { exit 1 } }; Write-Output 'GLYPH_ASSERT Tháng Chạp: OK'`], { encoding: "utf8" });
+if (glyphCheck.status !== 0) throw new Error("font glyph assertion failed for Tháng Chạp");
+console.log(glyphCheck.stdout.trim());
 const iso = ({ day, month, year }) => `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 const calculated = spec.expected.map((row) => ({
   ...row,
@@ -25,9 +29,8 @@ console.log(`ASSERT 2027 UTC+7: ${calculated.length * 2}/${calculated.length * 2
 const bg = path.join(root, "review/p34-calendar/calendar-2027-feb-background.webp");
 const overviewBg = path.join(root, "review/p34-calendar/calendar-2027-overview-background.webp");
 const outDir = path.join(root, "review/p34-calendar");
-const font = "C:/Windows/Fonts/NotoSansSC-VF.ttf";
 const esc = (s) => s.replaceAll("\\", "\\\\").replaceAll(":", "\\:").replaceAll("'", "\\'");
-const draw = (text, x, y, size, color = "38453f", box = true) => `drawtext=fontfile='C\\:/Windows/Fonts/NotoSansSC-VF.ttf':text='${esc(text)}':x=${x}:y=${y}:fontsize=${size}:fontcolor=${color}${box ? ":box=1:boxcolor=f7f1e7@0.82:boxborderw=8" : ""}`;
+const draw = (text, x, y, size, color = "2b241d", box = true) => `drawtext=fontfile='C\\:/Windows/Fonts/NotoSansSC-VF.ttf':text='${esc(text)}':x=${x}:y=${y}:fontsize=${size}:fontcolor=${color}:borderw=1:bordercolor=${color}${box ? ":box=1:boxcolor=f7f1e7@0.92:boxborderw=8" : ""}`;
 const run = (input, output, filters) => {
   const result = spawnSync("ffmpeg", ["-y", "-i", input, "-vf", filters.join(","), "-frames:v", "1", "-c:v", "libwebp", "-q:v", "78", output], { encoding: "utf8" });
   if (result.status !== 0) throw new Error(result.stderr || `ffmpeg failed for ${output}`);
@@ -43,10 +46,11 @@ const renderMonth = (month, outputName) => {
   const firstDate = `${spec.year}-${String(month).padStart(2, "0")}-01`;
   const expectedWeekday = { 2: 0, 9: 2, 10: 4 }[month];
   if (mondayIndex(spec.year, month, 1) !== expectedWeekday) throw new Error(`weekday assertion failed for ${firstDate}`);
-  const filters = [box(35, 420, 1010, 1330), draw(`${label(month)} · 2027`, 70, 450, 72, "25352f")];
+  const monthTitle = month === 2 ? "Tháng 2" : month === 9 ? "Tháng 9" : "Tháng 10";
+  const filters = [box(35, 420, 1010, 1050), draw(`${monthTitle} · 2027`, 70, 450, 72, "2b241d")];
   const first = mondayIndex(spec.year, month, 1);
   const count = daysInMonth(spec.year, month);
-  const cellW = 142, cellH = 185, left = 45, top = 565;
+  const cellW = 142, cellH = 150, left = 45, top = 565;
   const weekdays = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
   weekdays.forEach((name, col) => filters.push(draw(name, left + col * cellW + 48, top, 28, "25352f", false)));
   for (let day = 1; day <= count; day += 1) {
@@ -67,13 +71,13 @@ const renderMonth = (month, outputName) => {
 renderMonth(2, "calendar-2027-feb.webp");
 renderMonth(9, "calendar-2027-sep.webp");
 renderMonth(10, "calendar-2027-oct.webp");
-const overviewFilters = [draw("CHÙA MÂY · LỊCH 2027", 100, 70, 56, "25352f")];
+const overviewFilters = [draw("CHÙA MÂY · LỊCH 2027", 100, 70, 56, "2b241d")];
 calculated.forEach((row, i) => {
   const x = 90 + (i % 4) * 490;
   const y = 205 + Math.floor(i / 4) * 390;
   overviewFilters.push(box(x, y, 450, 320));
-  overviewFilters.push(draw(`${String(i + 1).padStart(2, "0")} · ${label(row.month)}`, x + 28, y + 52, 32, "25352f", false));
-  overviewFilters.push(draw(`Mùng 1 ${short(row.mùng1)}`, x + 28, y + 120, 24, "25352f", false));
-  overviewFilters.push(draw(`Rằm ${short(row.rằm)}`, x + 28, y + 170, 24, "25352f", false));
+  overviewFilters.push(draw(`${String(i + 1).padStart(2, "0")} · ${label(row.month)}`, x + 28, y + 52, 32, "2b241d", false));
+  overviewFilters.push(draw(`Mùng 1 ${short(row.mùng1)}`, x + 28, y + 120, 24, "5a4f44", false));
+  overviewFilters.push(draw(`Rằm ${short(row.rằm)}`, x + 28, y + 170, 24, "5a4f44", false));
 });
 run(overviewBg, path.join(outDir, "calendar-2027-overview.webp"), overviewFilters);
