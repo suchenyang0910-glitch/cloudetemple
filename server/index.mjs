@@ -6,6 +6,8 @@ import { createFamilyApi } from "./family-api.mjs";
 import { openMetricsStore } from "./metrics-store.mjs";
 import { createMetricsApi } from "./metrics-api.mjs";
 import { createAccessVerifier } from "./access-auth.mjs";
+import { openPetStore } from "./pet-store.mjs";
+import { createPetApi } from "./pet-api.mjs";
 let settings;
 try {
   settings = config(process.env);
@@ -33,8 +35,17 @@ const familyHandler =
       })()
     : async () => false;
 const access = settings.adminEnabled ? createAccessVerifier(settings) : { validate: async () => { throw Error("disabled"); } };
+const pet = openPetStore(store.db);
+const petHandler = createPetApi(settings, pet, {
+  verifyAdmin: (req) => settings.adminEnabled
+    ? access.validate(req.headers["cf-access-jwt-assertion"]).then(() => true, () => false)
+    : false,
+});
 const metricsHandler = createMetricsApi(settings, metrics, access, familyStore);
-const applicationHandler = async (req, res, route) => (await metricsHandler(req, res, route)) || familyHandler(req, res, route);
+const applicationHandler = async (req, res, route) => {
+  const petRoute = route === "/pet-garden" || route.startsWith("/pet-garden/") ? `/api${route}` : route;
+  return (await petHandler(req, res, petRoute)) || (await metricsHandler(req, res, route)) || familyHandler(req, res, route);
+};
 const server = createServer(settings, store, undefined, applicationHandler, (status) => { if (status >= 500) metrics.error(); });
 server.requestTimeout = 15000;
 server.headersTimeout = 10000;
