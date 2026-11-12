@@ -39,11 +39,13 @@ const verifyBound = (req) => {
   const raw = (req.headers.cookie || "").split(/;\s*/).find((part) => part.startsWith("ct_session="))?.slice(11);
   return raw && familyStore?.sessionUser(hash(settings.hashSecret, raw))?.id;
 };
-const { pet, handleAdmin: petAdminHandler, handlePublic: petHandler } = createPetModerationModule(settings, store.db, {
-  access,
-  adminOrigin: "https://adminchy-staging.chuamay.org",
-  verifyBound,
-});
+const { handleAdmin: petAdminHandler, handlePublic: petHandler } = settings.petEnabled
+  ? createPetModerationModule(settings, store.db, {
+      access,
+      adminOrigin: "https://adminchy-staging.chuamay.org",
+      verifyBound,
+    })
+  : { handleAdmin: async () => false, handlePublic: async () => false };
 const metricsHandler = createMetricsApi(settings, metrics, access, familyStore);
 const applicationHandler = async (req, res, route) => {
   const petRoute = route === "/pet-garden" || route.startsWith("/pet-garden/") ? `/api${route}` : route;

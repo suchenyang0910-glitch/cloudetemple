@@ -67,3 +67,10 @@ test('family defaults closed in production and requires an explicit switch',()=>
  assert.throws(()=>config({...env,CHUAMAY_ENV:'production',FAMILY_ENABLED:'1',FAMILY_ALLOWLIST:'bad'}),/FAMILY_ALLOWLIST/);
  assert.throws(()=>config({...env,CHUAMAY_ENV:'staging',FAMILY_ENABLED:'yes'}),/FAMILY_ENABLED/);
 });
+test('pet module defaults closed and requires a valid explicit switch',()=>{
+ const env={TELEGRAM_ENABLED:'0',HASH_SECRET:settings.hashSecret,FAMILY_ENABLED:'0'};
+ assert.equal(config({...env,CHUAMAY_ENV:'production'}).petEnabled,false);
+ assert.equal(config({...env,CHUAMAY_ENV:'staging'}).petEnabled,false);
+ assert.equal(config({...env,CHUAMAY_ENV:'staging',PET_ENABLED:'1'}).petEnabled,true);
+ assert.throws(()=>config({...env,CHUAMAY_ENV:'staging',PET_ENABLED:'yes'}),/PET_ENABLED/);
+});
