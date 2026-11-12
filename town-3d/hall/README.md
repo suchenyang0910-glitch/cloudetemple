@@ -1,5 +1,5 @@
-# Hall place stub
+# Hall layout lab
 
-[已验证事实] This directory is reserved for the future 3D hall interior. The four exports in `index.js` are empty for P16; no hall geometry, cushions, incense or artwork is implemented here.
+[已验证事实] `lab/` 是 P22 的独立试验页，使用占位几何测量 10×10、8×13（中轴走道）、12×9（中轴与两侧走道）三种坐垫阵列。它不修改 `town-3d/app.js`、`scene.js`、`logic.js`、`character.js` 或 `styles.css`。
 
-[用户决定] The hall owner may use the shared walking, camera, billboard and label helpers from `../shared.js`. Shared town files and the pet garden directory are outside this directory's scope; request shared-file changes through the queue.
+[假设] 占位佛像与佛台的尺寸用于筛选镜头范围，不代表最终美术比例。试验页中的每个方案固定提交 100 个 `InstancedMesh` 坐垫实例。
