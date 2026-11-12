@@ -102,9 +102,9 @@ function identify(req, settings, now, digest, verifyBound, input = {}) {
   return {ref: claimHash && 'browser:' + claimHash, kind: 'browser', browser, claimHash, suppliedClaim: scheme === 'claim'};
 }
 
-export function createPetApi(settings, pet, {clock = Date.now, verifyBound, verifyAdmin, approvedRules} = {}) {
+export function createPetApi(settings, pet, {clock = Date.now, verifyBound, verifyAdmin, approvedRules, moderation} = {}) {
   const digest = (scope, value) => hash(settings.hashSecret, JSON.stringify(['pet-garden', scope, value]));
-  const rules = approvedRules ?? draftRules;
+  const rules = approvedRules ?? moderation?.rules ?? draftRules;
   if (!rules.version || !Object.values(rules.entries).some(entries => entries.length))
     throw Error('Missing pet moderation rules');
   const bound = (identity) => requireValue(identity.ref && identity.kind !== 'browser', 401, 'bound_identity_required');
@@ -164,12 +164,23 @@ export function createPetApi(settings, pet, {clock = Date.now, verifyBound, veri
 
     if (method === 'POST' && area === 'memorials' && segments.length === 1) {
       rate(req, res, 'create', identity, now, 4, 12);
+      requireValue(!moderation?.isBanned(identity.ref), 403, 'pet_banned');
       if (identity.ref && pet.mine(identity.ref).length) return ok({code: 'coming_soon', message: 'Sắp mở'}, 409);
       requireValue(!identity.suppliedClaim, 401, 'identity');
       const data = memorialInput(input, today);
-      const decision = moderatePublicText(dataWithLocale(data, identity, input), rules);
-      if (decision) reject(422, 'moderation', decision);
-      requireValue(data.status !== 'visible' || approvedRules, 503, 'public_creation_closed');
+      const text = dataWithLocale(data, identity, input);
+      if (moderation && data.status === 'visible') {
+        requireValue(approvedRules, 503, 'public_creation_closed');
+        const decision = moderation.check(text);
+        if (decision) {
+          moderation.hold(decision.category, rules.version, now);
+          reject(422, 'moderation', decision);
+        }
+      } else if (!moderation) {
+        const decision = moderatePublicText(text, rules);
+        if (decision) reject(422, 'moderation', decision);
+        requireValue(data.status !== 'visible' || approvedRules, 503, 'public_creation_closed');
+      }
 
       const isBrowser = identity.kind === 'browser';
       const browser = isBrowser && (identity.browser ?? mint());
@@ -201,6 +212,7 @@ export function createPetApi(settings, pet, {clock = Date.now, verifyBound, veri
     if (method === 'POST' && action === 'claim' && segments.length === 3) {
       bound(identity);
       rate(req, res, 'claim', identity, now, 4, 12);
+      requireValue(!moderation?.isBanned(identity.ref), 403, 'pet_banned');
       requireValue(typeof input.claimToken === 'string' && tokenPattern.test(input.claimToken) &&
         pet.claim(id, digest('claim', input.claimToken), identity.ref, identity.kind, now), 409, 'claim_conflict');
       return ok({claimed: true});
