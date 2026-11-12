@@ -7,7 +7,7 @@ const period=hour=>hour>=5&&hour<8?'dawn':hour>=8&&hour<17?'day':hour>=17&&hour<
 const name=()=>all?'calendar-2027-overview.webp':`calendar-2027-${String(month).padStart(2,'0')}.webp`;
 const path=()=>`assets/calendar-2027/${name()}`;
 function render(){
- const src=path();image.src=src;save.href=src;save.download=name();label.textContent=all?'Cả năm':`${String(month).padStart(2,'0')} / 2027`;image.alt=label.textContent;monthLabel.textContent=label.textContent;overview.setAttribute('aria-pressed',String(all));previous.disabled=all||month===1;next.disabled=all||month===12;status.textContent='';
+ const src=path();image.src=src;save.href=src;save.download=name();label.textContent=all?'Cả năm':`${String(month).padStart(2,'0')} / 2027`;image.alt=label.textContent;monthLabel.textContent=label.textContent;document.body.classList.toggle('overview',all);overview.setAttribute('aria-pressed',String(all));previous.disabled=all||month===1;next.disabled=all||month===12;status.textContent='';
 }
 previous.onclick=()=>{if(month>1){all=false;month--;render();}};
 next.onclick=()=>{if(month<12){all=false;month++;render();}};
