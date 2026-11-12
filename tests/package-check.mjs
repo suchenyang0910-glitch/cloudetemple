@@ -27,6 +27,8 @@ await assert.rejects(fs.access(new URL(`assets/releases/${release}/processed-v1/
 for(const name of ['og-share-vi.webp','og-share-en.webp']){const file=new URL(`assets/share/${name}`,root);assert((await fs.stat(file)).size<=200000,name+' max 200KB')}
 const festivalNames=['flower-dao.svg','flower-mai.svg','lantern.svg','moon.svg','petal-dao.svg','petal-mai.svg','pot-dao.svg','pot-mai.svg'];
 for(const name of festivalNames)await fs.access(new URL(`assets/releases/${release}/festival/${name}`,root));
+for(const name of [...Array.from({length:12},(_,i)=>`calendar-2027-${String(i+1).padStart(2,'0')}.webp`),'calendar-2027-overview.webp'])await fs.access(new URL(`assets/releases/${release}/calendar-2027/${name}`,root));
+const calendarPage=await fs.readFile(new URL('lich-2027.html',root),'utf8');assert(calendarPage.includes(`calendar-2027.${release}.js`)&&calendarPage.includes(`calendar-2027.${release}.css`),'calendar page uses hashed app assets');
 for(const route of ['huong-dan/thap-huong','huong-dan/le-phat','huong-dan/lan-chuoi','huong-dan/go-mo','huong-dan/ngoi-yen','cau-hoi-thuong-gap'])for(const prefix of ['','en/']){const html=await fs.readFile(new URL(prefix+route+'/index.html',root),'utf8');assert(html.includes('name="robots" content="noindex,follow"'),prefix+route+' noindex');assert(!html.includes('待核'),prefix+route+' hides review markers');assert(!/<p>[htap]<\/p>/.test(html),prefix+route+' no orphan marker');assert(html.includes('application/ld+json'),prefix+route+' structured data')}
 for(const name of ['sitemap.xml','robots.txt','llms.txt'])await fs.access(new URL(name,root));
 const sitemap=await fs.readFile(new URL('sitemap.xml',root),'utf8');assert(sitemap.includes('xmlns:xhtml=')&&sitemap.includes('hreflang="en"'),'sitemap hreflang');
