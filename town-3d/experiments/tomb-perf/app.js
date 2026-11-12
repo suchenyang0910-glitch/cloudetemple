@@ -78,6 +78,7 @@ function measureDraw() {
   for (let index = 0; index < 200; index++) {
     const startedAt = performance.now();
     renderer.render(scene, camera);
+    renderer.getContext().finish();
     draws.push(performance.now() - startedAt);
   }
   draws.sort((left, right) => left - right);
@@ -89,9 +90,9 @@ function measureDraw() {
     medianDrawMs: percentile(draws, .5),
     p95DrawMs: percentile(draws, .95),
     sampleCount: draws.length,
-    note: 'swiftshader/浏览器指标，仅用于方案比较，不等于真机'
+    note: 'renderer.finish 强制同步；swiftshader/浏览器指标，仅用于方案比较，不等于真机'
   };
-  metricsEl.textContent = `绘制调用 ${lastSample.drawCalls} · 三角面 ${lastSample.triangles}\n纯绘制中位数 ${lastSample.medianDrawMs.toFixed(2)} ms · P95 ${lastSample.p95DrawMs.toFixed(2)} ms`;
+  metricsEl.textContent = `绘制调用 ${lastSample.drawCalls} · 三角面 ${lastSample.triangles}\n同步绘制中位数 ${lastSample.medianDrawMs.toFixed(2)} ms · P95 ${lastSample.p95DrawMs.toFixed(2)} ms`;
   window.__tombPerf = lastSample;
   return lastSample;
 }
