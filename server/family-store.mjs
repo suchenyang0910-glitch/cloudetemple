@@ -410,7 +410,7 @@ CREATE TABLE IF NOT EXISTS membership_interests(id TEXT PRIMARY KEY,name TEXT NO
     },
     createPreorder(user, value) {
       const id = randomUUID(), at = now();
-      run("INSERT INTO calendar_preorders VALUES(?,?,?,?,?,?,?,?,?,?)", id, user || null, value.contact, value.familyName, value.edition, JSON.stringify(value.anniversaries), value.address, "pending", at, demoFlag);
+      run("INSERT INTO calendar_preorders VALUES(?,?,?,?,?,?,?,?,?,?)", id, user || null, value.contact, value.familyName, value.edition, JSON.stringify(value.anniversaries), "", "pending", at, demoFlag);
       return { id, status: "pending" };
     },
     createInterest(value) {

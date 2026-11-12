@@ -60,6 +60,12 @@ export function openPetStore(db) {
   return {
     find,
     counts,
+    exportCounts: (id) => get(
+      "SELECT (SELECT count(*) FROM pet_invites WHERE memorial_id=?) AS inviteCount," +
+      " (SELECT count(*) FROM pet_members WHERE memorial_id=?) AS memberCount," +
+      " count(*) FILTER (WHERE kind='flower') AS flowers," +
+      " count(*) FILTER (WHERE kind='light') AS lights FROM pet_visits WHERE memorial_id=?", id, id, id
+    ),
     list: (district, cursor, limit) => all(
       "SELECT * FROM pet_memorials WHERE district_id=? AND public_status='visible' AND demo=0 AND id>? ORDER BY id LIMIT ?",
       district, cursor, limit
@@ -87,7 +93,7 @@ export function openPetStore(db) {
       if (get("SELECT 1 FROM pet_memorials WHERE owner_ref=?", owner)) return false;
       const memorial = find(id);
       if (memorial?.demo !== 0 || memorial.identity_kind !== 'browser' || memorial.browser_claim_hash !== claimHash) return false;
-      run("UPDATE pet_memorials SET owner_ref=?,identity_kind=?,updated_at=? WHERE id=?", owner, kind, now, id);
+      run("UPDATE pet_memorials SET owner_ref=?,identity_kind=?,browser_claim_hash=NULL,updated_at=? WHERE id=?", owner, kind, now, id);
       run("DELETE FROM pet_members WHERE memorial_id=? AND principal_ref=?", id, memorial.owner_ref);
       addMember(id, owner, 'owner', null, now);
       return true;
@@ -122,9 +128,10 @@ export function openPetStore(db) {
       const memorial = find(id);
       if (memorial?.public_status !== 'visible' || memorial.demo) return null;
       if (memorial.owner_ref !== ownerRef && run(
-        "INSERT OR IGNORE INTO pet_offerings(memorial_id,day,visitor_ref,kind) VALUES(?,?,?,?)", id, day, visitor, kind
+        "INSERT INTO pet_visits SELECT ?,?,?,?,? WHERE NOT EXISTS (" +
+        "SELECT 1 FROM pet_offerings WHERE memorial_id=? AND day=? AND visitor_ref=? AND kind=?)" +
+        " ON CONFLICT(memorial_id,day,visitor_ref,kind) DO NOTHING", id, day, visitor, kind, now, id, day, visitor, kind
       ).changes) {
-        run("INSERT INTO pet_visits VALUES(?,?,?,?,?)", id, day, visitor, kind, now);
         run("UPDATE pet_memorials SET last_qualifying_visit_at=? WHERE id=?", now, id);
       }
       return counts(id, day);
@@ -146,9 +153,10 @@ export function openPetStore(db) {
       return true;
     }),
     maintain: transaction((now, yearAgo) => {
-      run("DELETE FROM pet_rates WHERE bucket<?", Math.floor(now / 60000));
-      run("UPDATE pet_memorials SET public_status='wall',wall_at=?,updated_at=? WHERE public_status='visible'" +
-        " AND demo=0 AND coalesce(last_qualifying_visit_at,created_at)<=?", now, now, yearAgo);
+      const clearedRates = run("DELETE FROM pet_rates WHERE bucket<?", Math.floor(now / 60000)).changes;
+      const movedToWall = run("UPDATE pet_memorials SET public_status='wall',wall_at=?,updated_at=? WHERE public_status='visible'" +
+        " AND demo=0 AND coalesce(last_qualifying_visit_at,created_at)<=?", now, now, yearAgo).changes;
+      return {movedToWall, clearedRates};
     }),
     analytics: () => all("SELECT action,count(*) AS total FROM pet_analytics_events GROUP BY action ORDER BY action"),
     recordAnalytics: (event, now) => {

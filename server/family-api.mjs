@@ -72,8 +72,8 @@ function interestInput(value) {
 }
 function preorderInput(value) {
   const anniversaries = Array.isArray(value?.anniversaries) ? value.anniversaries.slice(0, 10).map((item) => ({ name: text(item?.name, 100), date: text(item?.date, 40) })) : [];
-  if (value?.agree !== true || !anniversaries.length || !["basic", "family"].includes(value?.edition)) throw Error("invalid");
-  return { contact: text(value.contact, 100), familyName: text(value.familyName, 100), edition: value.edition, anniversaries, address: text(value.address, 300) };
+  if (Object.hasOwn(value ?? {}, "address") || value?.agree !== true || !anniversaries.length || !["basic", "family"].includes(value?.edition)) throw Error("invalid");
+  return { contact: text(value.contact, 100), familyName: text(value.familyName, 100), edition: value.edition, anniversaries };
 }
 const validSolarDate = ({ day, month, year }) => {
   if (![day, month, year].every(Number.isInteger) || year < 1900 || year > 2100)

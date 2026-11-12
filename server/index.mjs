@@ -39,13 +39,31 @@ const verifyBound = (req) => {
   const raw = (req.headers.cookie || "").split(/;\s*/).find((part) => part.startsWith("ct_session="))?.slice(11);
   return raw && familyStore?.sessionUser(hash(settings.hashSecret, raw))?.id;
 };
-const { handleAdmin: petAdminHandler, handlePublic: petHandler } = settings.petEnabled
+const { pet, handleAdmin: petAdminHandler, handlePublic: petHandler } = settings.petEnabled
   ? createPetModerationModule(settings, store.db, {
       access,
       adminOrigin: "https://adminchy-staging.chuamay.org",
       verifyBound,
     })
   : { handleAdmin: async () => false, handlePublic: async () => false };
+let petMaintenance;
+const dayMs = 86400000;
+function schedulePetMaintenance() {
+  const bangkokOffset = 7 * 3600000;
+  const delay = dayMs - ((Date.now() + bangkokOffset) % dayMs);
+  petMaintenance = setTimeout(() => {
+    const now = Date.now();
+    try {
+      const {movedToWall, clearedRates} = pet.maintain(now, now - 365 * dayMs);
+      console.log(`Pet maintenance movedToWall=${movedToWall} clearedRates=${clearedRates}`);
+    } catch {
+      console.error("Pet maintenance failed");
+    }
+    schedulePetMaintenance();
+  }, delay);
+  petMaintenance.unref();
+}
+if (settings.petMaintenanceEnabled) schedulePetMaintenance();
 const metricsHandler = createMetricsApi(settings, metrics, access, familyStore);
 const applicationHandler = async (req, res, route) => {
   const petRoute = route === "/pet-garden" || route.startsWith("/pet-garden/") ? `/api${route}` : route;
@@ -64,6 +82,7 @@ process.on("SIGTERM", () =>
   server.close(() => {
     if (familyCleanup) clearInterval(familyCleanup);
     if (presenceSample) clearInterval(presenceSample);
+    if (petMaintenance) clearTimeout(petMaintenance);
     store.close();
     process.exit(0);
   }),

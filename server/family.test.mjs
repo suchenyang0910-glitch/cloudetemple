@@ -651,8 +651,17 @@ test("configured staging presale accepts at most ten manual anniversaries", asyn
   const f = await fixture(undefined, { calendarPresale });
   try {
     const anniversaries = Array.from({ length: 12 }, (_, index) => ({ name: `Người ${index + 1}`, date: `${index + 1}/3 âm lịch` }));
-    const response = await f.request("/family/presale/orders", { method: "POST", body: JSON.stringify({ edition: "basic", familyName: "Gia đình thử", contact: "zalo-test", anniversaries, address: "Địa chỉ thử", agree: true }) });
+    const order = { edition: "basic", familyName: "Gia đình thử", contact: "zalo-test", anniversaries, agree: true };
+    const submit = (value) => f.request("/family/presale/orders", { method: "POST", body: JSON.stringify(value) });
+    f.family.db.prepare("INSERT INTO calendar_preorders VALUES ('legacy',NULL,'test','test','basic','[]','Legacy address','pending','test',1)").run();
+    assert.equal((await submit({ ...order, address: "Địa chỉ thử" })).status, 400);
+    assert.equal(f.family.db.prepare("SELECT count(*) n FROM calendar_preorders").get().n, 1);
+    const response = await submit(order);
     assert.equal(response.status, 201);
-    assert.equal(JSON.parse(f.family.db.prepare("SELECT anniversaries_json FROM calendar_preorders").get().anniversaries_json).length, 10);
+    const { order: { id } } = await response.json();
+    const stored = f.family.db.prepare("SELECT anniversaries_json,address FROM calendar_preorders WHERE id=?").get(id);
+    assert.equal(JSON.parse(stored.anniversaries_json).length, 10);
+    assert.equal(stored.address, "");
+    assert.equal(f.family.db.prepare("SELECT address FROM calendar_preorders WHERE id='legacy'").get().address, "Legacy address");
   } finally { await new Promise((resolve) => f.server.close(resolve)); f.store.close(); }
 });

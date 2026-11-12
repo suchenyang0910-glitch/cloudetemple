@@ -73,4 +73,9 @@ test('pet module defaults closed and requires a valid explicit switch',()=>{
  assert.equal(config({...env,CHUAMAY_ENV:'staging'}).petEnabled,false);
  assert.equal(config({...env,CHUAMAY_ENV:'staging',PET_ENABLED:'1'}).petEnabled,true);
  assert.throws(()=>config({...env,CHUAMAY_ENV:'staging',PET_ENABLED:'yes'}),/PET_ENABLED/);
+ assert.equal(config({...env,CHUAMAY_ENV:'staging',PET_ENABLED:'1'}).petMaintenanceEnabled,true);
+ assert.equal(config({...env,CHUAMAY_ENV:'staging',PET_ENABLED:'1',PET_MAINTENANCE_ENABLED:'0'}).petMaintenanceEnabled,false);
+ assert.equal(config({...env,CHUAMAY_ENV:'staging',PET_ENABLED:'0'}).petMaintenanceEnabled,false);
+ assert.equal(config({...env,CHUAMAY_ENV:'production',PET_ENABLED:'1'}).petMaintenanceEnabled,false);
+ assert.throws(()=>config({...env,PET_MAINTENANCE_ENABLED:'yes'}),/PET_MAINTENANCE_ENABLED/);
 });
