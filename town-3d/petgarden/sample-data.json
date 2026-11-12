@@ -1,0 +1,9 @@
+{
+  "items": [
+    { "id": "sample-cat", "petName": "样例猫", "speciesCode": "cat", "bornYear": 2016, "diedYear": 2025, "epitaph": "谢谢一路相伴。", "districtId": "garden-01", "rowNo": 2, "columnNo": 2 },
+    { "id": "sample-dog", "petName": "样例犬", "speciesCode": "dog", "bornYear": 2014, "diedYear": 2024, "epitaph": "安静地记得你。", "districtId": "garden-01", "rowNo": 2, "columnNo": 5 },
+    { "id": "sample-rabbit", "petName": "样例兔", "speciesCode": "rabbit", "bornYear": 2019, "diedYear": 2025, "epitaph": "小小的脚印还在。", "districtId": "garden-01", "rowNo": 5, "columnNo": 3 },
+    { "id": "sample-bird", "petName": "样例鸟", "speciesCode": "bird", "bornYear": 2017, "diedYear": 2023, "epitaph": "愿回忆轻轻停留。", "districtId": "garden-01", "rowNo": 6, "columnNo": 6 }
+  ],
+  "nextCursor": null
+}
