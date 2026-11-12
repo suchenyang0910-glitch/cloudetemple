@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1920" viewBox="0 0 1080 1920">
+  <style>text{font-family:Arial,sans-serif;fill:#38453f} .title{font-size:58px;font-weight:700;letter-spacing:3px}.sub{font-size:30px}.day{font-size:34px}.mark{fill:#9b5c54;font-weight:700}</style>
+  <rect x="70" y="90" width="940" height="500" rx="34" fill="#f7f1e7" fill-opacity=".88"/>
+  <text x="110" y="170" class="title">THÁNG 2 · 2027</text><text x="110" y="220" class="sub">Tết Đinh Mùi · UTC+7 · Âm lịch Việt Nam</text>
+  <text x="110" y="285" class="sub mark">Mùng 1 Tết: 06/02 · Rằm tháng Giêng: 20/02</text>
+  <text x="110" y="360" class="day">T2   T3   T4   T5   T6   T7   CN</text>
+  <text x="110" y="420" class="day">                     1   2   3   4   5   6</text>
+  <text x="110" y="480" class="day">7   8   9  10  11  12  13</text>
+  <text x="110" y="540" class="day">14  15  16  17  18  19  20</text>
+  <text x="110" y="600" class="day">21  22  23  24  25  26  27  28</text>
+  <text x="110" y="1810" class="sub">云寺 / Chùa Mây · 免费分享素材 · 不需登录</text>
+</svg>

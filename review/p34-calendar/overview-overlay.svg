@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2048" height="1440" viewBox="0 0 2048 1440">
+  <style>text{font-family:Arial,sans-serif;fill:#38453f}.title{font-size:54px;font-weight:700}.m{font-size:28px}.small{font-size:21px}.mark{fill:#9b5c54;font-weight:700}</style>
+  <rect x="80" y="70" width="1888" height="130" rx="28" fill="#f7f1e7" fill-opacity=".9"/><text x="120" y="150" class="title">CHÙA MÂY · LỊCH 2027 · ÂM LỊCH VIỆT NAM (UTC+7)</text>
+  <g fill="#f7f1e7" fill-opacity=".86">
+    <rect x="100" y="270" width="440" height="270" rx="20"/><rect x="575" y="270" width="440" height="270" rx="20"/><rect x="1050" y="270" width="440" height="270" rx="20"/><rect x="1525" y="270" width="440" height="270" rx="20"/>
+    <rect x="100" y="575" width="440" height="270" rx="20"/><rect x="575" y="575" width="440" height="270" rx="20"/><rect x="1050" y="575" width="440" height="270" rx="20"/><rect x="1525" y="575" width="440" height="270" rx="20"/>
+    <rect x="100" y="880" width="440" height="270" rx="20"/><rect x="575" y="880" width="440" height="270" rx="20"/><rect x="1050" y="880" width="440" height="270" rx="20"/><rect x="1525" y="880" width="440" height="270" rx="20"/>
+  </g>
+  <g class="m"><text x="125" y="325">01 · Tháng Giêng</text><text x="125" y="380" class="small">Mùng 1 06/02 · Rằm 20/02</text><text x="600" y="325">02 · Tháng 2</text><text x="600" y="380" class="small">Mùng 1 08/03 · Rằm 22/03</text><text x="1075" y="325">03 · Tháng 3</text><text x="1075" y="380" class="small">Mùng 1 07/04 · Rằm 21/04</text><text x="1550" y="325">04 · Tháng 4</text><text x="1550" y="380" class="small">Mùng 1 06/05 · Rằm 20/05</text>
+  <text x="125" y="630">05 · Tháng 5</text><text x="125" y="685" class="small">Mùng 1 05/06 · Rằm 19/06</text><text x="600" y="630">06 · Tháng 6</text><text x="600" y="685" class="small">Mùng 1 04/07 · Rằm 18/07</text><text x="1075" y="630">07 · Tháng 7</text><text x="1075" y="685" class="small">Mùng 1 02/08 · Rằm 16/08</text><text x="1550" y="630">08 · Tháng 8</text><text x="1550" y="685" class="small">Mùng 1 01/09 · Rằm 15/09</text>
+  <text x="125" y="935">09 · Tháng 9</text><text x="125" y="990" class="small">Mùng 1 30/09 · Rằm 14/10</text><text x="600" y="935">10 · Tháng 10</text><text x="600" y="990" class="small">Mùng 1 29/10 · Rằm 12/11</text><text x="1075" y="935">11 · Tháng 11</text><text x="1075" y="990" class="small">Mùng 1 28/11 · Rằm 12/12</text><text x="1550" y="935">12 · Tháng Chạp</text><text x="1550" y="990" class="small">Mùng 1 28/12 · Rằm 11/01/2028</text></g>
+  <text x="110" y="1280" class="small">Tết: 06/02/2027 · 仅作日历信息，不提供功效或保证</text>
+</svg>
