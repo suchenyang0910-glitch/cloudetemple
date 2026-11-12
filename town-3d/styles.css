@@ -37,7 +37,8 @@ body { color: var(--ink); overscroll-behavior: none; }
 .map-card.is-coming { opacity: .52; cursor: default; }
 .map-card.is-current { outline: 3px solid #a66b36; outline-offset: 1px; }
 .map-card-image { min-height: 0; display: block; border-radius: 3px; background: center / cover no-repeat #d1c8b8; }
-.map-card-image.is-placeholder { background-image: linear-gradient(135deg, #b9b1a3, #e2dbcf); }
+.map-card-image.is-placeholder { position: relative; overflow: hidden; background: linear-gradient(135deg, #b9b1a3, #e2dbcf); }
+.map-card-image.is-placeholder::after { content: ""; position: absolute; left: 25%; right: 25%; bottom: 8%; height: 62%; background: #a9a091; clip-path: polygon(0 28%, 50% 0, 100% 28%, 86% 28%, 86% 100%, 14% 100%, 14% 28%); }
 .map-card-name { display: block; min-height: 2.15em; font-size: clamp(9px, 2.8vw, 12px); font-weight: 600; line-height: 1.08; }
 .map-card small { position: absolute; top: 3px; right: 3px; padding: 1px 3px; border-radius: 3px; background: rgb(74 65 53 / .72); color: #fffaf1; font-size: 8px; }
 
