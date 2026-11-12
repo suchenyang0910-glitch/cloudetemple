@@ -24,8 +24,6 @@ let farStones;
 let closeCount = 0;
 let target = null;
 let view = 'overview';
-let sampleFrames = 0;
-let sampleStart = performance.now();
 let lastSample = null;
 
 function resize() {
@@ -69,7 +67,34 @@ function createArray(count) {
   resetSample();
 }
 
-function resetSample() { sampleFrames = 0; sampleStart = performance.now(); lastSample = null; }
+function resetSample() { lastSample = null; }
+
+function percentile(values, ratio) {
+  return values[Math.min(values.length - 1, Math.ceil(values.length * ratio) - 1)];
+}
+
+function measureDraw() {
+  const draws = [];
+  for (let index = 0; index < 200; index++) {
+    const startedAt = performance.now();
+    renderer.render(scene, camera);
+    draws.push(performance.now() - startedAt);
+  }
+  draws.sort((left, right) => left - right);
+  const info = renderer.info;
+  lastSample = {
+    count: Number(countEl.value),
+    drawCalls: info.render.calls,
+    triangles: info.render.triangles,
+    medianDrawMs: percentile(draws, .5),
+    p95DrawMs: percentile(draws, .95),
+    sampleCount: draws.length,
+    note: 'swiftshader/浏览器指标，仅用于方案比较，不等于真机'
+  };
+  metricsEl.textContent = `绘制调用 ${lastSample.drawCalls} · 三角面 ${lastSample.triangles}\n纯绘制中位数 ${lastSample.medianDrawMs.toFixed(2)} ms · P95 ${lastSample.p95DrawMs.toFixed(2)} ms`;
+  window.__tombPerf = lastSample;
+  return lastSample;
+}
 
 function createWorld() {
   const ground = new THREE.Mesh(new THREE.PlaneGeometry(90, 120), new THREE.MeshLambertMaterial({ color: 0xb4b49e }));
@@ -114,24 +139,10 @@ function updateLabels() {
   label.style.left = `${(p.x + 1) * 50}%`; label.style.top = `${(1 - p.y) * 50}%`; labelsEl.append(label);
 }
 
-function updateMetrics() {
-  sampleFrames++;
-  if (sampleFrames < 120) return;
-  const elapsed = performance.now() - sampleStart;
-  const info = renderer.info;
-  const resources = performance.getEntriesByType('resource');
-  const transferBytes = resources.reduce((sum, entry) => sum + (entry.transferSize || entry.encodedBodySize || 0), 0);
-  lastSample = { count: Number(countEl.value), drawCalls: info.render.calls, triangles: info.render.triangles, avgFrameMs: elapsed / sampleFrames, transferBytes, note: 'swiftshader/浏览器指标，仅用于方案比较，不等于真机' };
-  metricsEl.textContent = `绘制调用 ${lastSample.drawCalls} · 三角面 ${lastSample.triangles}\n平均帧时 ${lastSample.avgFrameMs.toFixed(2)} ms · 首屏传输 ${lastSample.transferBytes} B`;
-  window.__tombPerf = lastSample;
-  resetSample();
-}
-
 function frame() {
   const delta = Math.min(clock.getDelta(), .05);
   updateVisitor(delta);
   renderer.render(scene, camera);
-  updateMetrics();
   requestAnimationFrame(frame);
 }
 
@@ -145,4 +156,5 @@ document.querySelector('#close').addEventListener('click', () => setView('close'
 canvas.addEventListener('pointerdown', (event) => { pointer.down = true; pointer.moved = false; pointer.x = event.clientX; pointer.y = event.clientY; canvas.setPointerCapture(event.pointerId); });
 canvas.addEventListener('pointermove', (event) => { if (!pointer.down) return; const dx = event.clientX - pointer.x; pointer.x = event.clientX; pointer.steer = Math.max(-1, Math.min(1, dx / 80)); pointer.moved = pointer.moved || Math.abs(dx) > 2; });
 canvas.addEventListener('pointerup', (event) => { if (!pointer.moved) moveToPointer(event); pointer.down = false; pointer.moved = false; pointer.steer = 0; canvas.releasePointerCapture(event.pointerId); });
+window.__tombPerfRunDrawBenchmark = measureDraw;
 requestAnimationFrame(frame);
