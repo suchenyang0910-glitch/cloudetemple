@@ -32,7 +32,7 @@ const ground = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
 const hit = new THREE.Vector3();
 // Pulled back enough to show ≥3 temples at once at FOV 58°.
 const CAMERA_OFFSET = new THREE.Vector3(1.6, 13, 14);
-const MAP_CAM_POS = new THREE.Vector3(0, 58, 2);  // top-down enough to keep each label beside its building
+const MAP_CAM_POS = new THREE.Vector3(0, 80, 2);  // pull back so every billboard and label clears the phone edges
 const MAP_CAM_TARGET = new THREE.Vector3(0, 0, 2);
 let mapMode = false;
 

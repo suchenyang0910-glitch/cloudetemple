@@ -68,7 +68,7 @@ export function updateLabels({ world, temples, labelDivs, mapMode }) {
   const visible = new Set(), finalPos = new Map(), LHW = 76;
   if (mapMode) {
     for (const t of temples) {
-      const v = _pt.set(t.x, 12.5, t.z).project(cam);
+      const v = _pt.set(t.x, 0, t.z).project(cam);
       if (v.z > 1) continue;
       const sx = Math.max(50, Math.min(innerWidth - 50, v.x * halfW + halfW));
       const sy = Math.max(64, Math.min(innerHeight - 96, -v.y * halfH + halfH));
