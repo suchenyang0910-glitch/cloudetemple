@@ -1,7 +1,7 @@
 import * as THREE from '../../prototype-3d/vendor/three.module.min.js';
 import { VRMLoaderPlugin } from './character-vrm/vendor/three-vrm.module.js';
 import { GLTFLoader } from './character-vrm/vendor/GLTFLoader.js';
-import { POSES, walkPose, applyPose } from './character-vrm/visitor-poses.js';
+import { POSES, walkPose, applyPose as applyPoseData } from './character-vrm/visitor-poses.js';
 
 const canvas = document.querySelector('#scene'), stateEl = document.querySelector('#state'), status = document.querySelector('#status'), fpsEl = document.querySelector('#fps');
 const useVrm = new URLSearchParams(location.search).get('visitor') === 'vrm';
@@ -10,6 +10,16 @@ const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPrefer
 scene.add(new THREE.HemisphereLight(0xfff1d5, 0x66725f, 2.5)); const sun = new THREE.DirectionalLight(0xffead0, 2.2); sun.position.set(-8, 14, 10); scene.add(sun);
 const camera = new THREE.PerspectiveCamera(43, 1, .1, 70), loader = new THREE.TextureLoader(), world = new THREE.Group(); scene.add(world);
 const visitor = new THREE.Group(); world.add(visitor); const personSprite = new THREE.Sprite(new THREE.SpriteMaterial({ transparent: true, depthWrite: false })); personSprite.scale.set(1.5, 2.25, 1); personSprite.position.y = 1.12; visitor.add(personSprite);
+let poseState = null;
+function applyPose(THREE, vrm, pose) {
+  if (!Object.values(POSES).includes(pose)) return applyPoseData(THREE, vrm, pose);
+  const get = n => vrm.humanoid.getNormalizedBoneNode(n), names = ['hips','spine','chest','upperChest','neck','head','leftUpperArm','leftLowerArm','leftHand','rightUpperArm','rightLowerArm','rightHand','leftUpperLeg','leftLowerLeg','rightUpperLeg','rightLowerLeg','leftShoulder','rightShoulder','leftFoot','rightFoot'];
+  if (poseState?.pose === pose) { if (!poseState.done) { const t = Math.min(1, (performance.now() - poseState.start) / 350), e = t * t * (3 - 2 * t); for (const n of names) { const b = get(n), a = poseState.from[n], z = poseState.to[n]; if (b && a && z) b.quaternion.slerpQuaternions(a, z, e); } const h = get('hips'); if (h && poseState.fromHip && poseState.toHip) h.position.lerpVectors(poseState.fromHip, poseState.toHip, e); vrm.update(0); poseState.done = t >= 1; } else applyPoseData(THREE, vrm, pose); return;
+  }
+  const from = {}, fromHip = get('hips')?.position.clone(); for (const n of names) { const b = get(n); if (b) from[n] = b.quaternion.clone(); }
+  applyPoseData(THREE, vrm, pose); const to = {}, toHip = get('hips')?.position.clone(); for (const n of names) { const b = get(n); if (b) to[n] = b.quaternion.clone(); }
+  for (const n of names) { const b = get(n); if (b && from[n]) b.quaternion.copy(from[n]); } if (fromHip && get('hips')) get('hips').position.copy(fromHip); vrm.update(0); poseState = { pose, from, to, fromHip, toHip, start: performance.now(), done: false };
+}
 let vrmVisitor = null; let vrmPoseName = 'stand'; let bowStep = 0; const vrmLoader = new GLTFLoader(); vrmLoader.register(parser => new VRMLoaderPlugin(parser)); if (useVrm) vrmLoader.load('./assets/visitor-01.vrm', gltf => { vrmVisitor = gltf.userData.vrm; vrmVisitor.scene.rotation.y = 0; vrmVisitor.scene.scale.setScalar(1.35); world.add(vrmVisitor.scene); personSprite.visible = false; applyPose(THREE, vrmVisitor, POSES.stand); }, undefined, () => setState('VRM visitor failed to load; paper visitor remains'));
 const positions = []; for (let row = 1; row <= 13; row++) for (let col = 1; col <= 8; col++) { if (row >= 12 && (col === 1 || col === 8)) continue; positions.push({ x: col <= 4 ? 1.99 + (col - 1) * 1.1 : 7.91 + (col - 5) * 1.1, z: 14.5 - (row - 1), row }); }
 const cushionMap = loader.load('./assets/hall-chuamay-cushion.webp'); const cushion = new THREE.InstancedMesh(new THREE.CylinderGeometry(.36, .4, .12, 16), new THREE.MeshToonMaterial({ color: 0xffffff, map: cushionMap, transparent: true }), 100); const dummy = new THREE.Object3D(); positions.forEach((p, i) => { dummy.position.set(p.x, .08, p.z); dummy.updateMatrix(); cushion.setMatrixAt(i, dummy.matrix); }); cushion.instanceMatrix.needsUpdate = true; world.add(cushion);
