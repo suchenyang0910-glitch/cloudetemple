@@ -4,12 +4,16 @@ import { DETAIL_DISTANCE, canOccupyMemorials, normalizeMemorial } from './data.j
 let active;
 const ASSETS = './assets/';
 
-function stone(index) {
+function stone(index, speciesCode) {
   const group = new THREE.Group();
   const base = new THREE.Mesh(new THREE.BoxGeometry(1.25, .25, .75), new THREE.MeshLambertMaterial({ color: 0x75695d }));
   const texture = new THREE.TextureLoader().load(`${ASSETS}memorial-stone-${'abc'[index % 3]}.webp`);
   const face = new THREE.Mesh(new THREE.PlaneGeometry(.95, 1.3), new THREE.MeshBasicMaterial({ map: texture, transparent: true }));
-  base.position.y = .125; face.position.set(0, .82, -.25); group.add(base, face);
+  const iconTexture = new THREE.TextureLoader().load(`${ASSETS}species-icons.webp`);
+  const speciesIndex = { cat: 0, dog: 1, rabbit: 2, bird: 3 }[speciesCode] ?? 4;
+  iconTexture.repeat.set(.2, 1); iconTexture.offset.x = speciesIndex * .2;
+  const icon = new THREE.Mesh(new THREE.PlaneGeometry(.22, .45), new THREE.MeshBasicMaterial({ map: iconTexture, transparent: true }));
+  base.position.y = .125; face.position.set(0, .82, -.25); icon.position.set(-.28, .82, -.27); group.add(base, face, icon);
   return group;
 }
 
@@ -40,7 +44,7 @@ export async function mountPetGarden(scene, { dataUrl = '/api/pet-garden/memoria
   const memorials = await loadMemorials(dataUrl);
   const meshes = new Map();
   for (const [index, memorial] of memorials.entries()) {
-    const mesh = stone(index); mesh.position.set(memorial.worldX, 0, memorial.worldZ); mesh.userData.memorial = memorial;
+    const mesh = stone(index, memorial.speciesCode); mesh.position.set(memorial.worldX, 0, memorial.worldZ); mesh.userData.memorial = memorial;
     meshes.set(memorial.id, mesh); root.add(mesh);
   }
   root.add(imagePlane('walkway.webp', 18, 4, 0, 0));
