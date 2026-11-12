@@ -13,6 +13,6 @@ window.setPose=(name,t=0)=>{const p=name==='walk'?walkPose(t):POSES[name];applyP
   const P=n=>vrm.humanoid.getNormalizedBoneNode(n).getWorldPosition(new THREE.Vector3());const L=P('leftHand'),R=P('rightHand'),H=P('hips'),HD=P('head');
   renderer.render(scene,camera);return {hands:+L.distanceTo(R).toFixed(3),handY:+((L.y+R.y)/2).toFixed(3),handZ:+((L.z+R.z)/2).toFixed(3),hipsY:+H.y.toFixed(3),headY:+HD.y.toFixed(3),headZ:+HD.z.toFixed(3)};};
 const loader=new GLTFLoader();loader.register(p=>new VRMLoaderPlugin(p));
-loader.load('./assets/visitor-01.vrm',g=>{vrm=g.userData.vrm;scene.add(vrm.scene);vrm.scene.traverse(o=>o.frustumCulled=false);setView('front');window.ready=true;window.info={meta:vrm.meta?.metaVersion};setPose('stand');},undefined,e=>{window.err=String(e)});
+loader.load('./assets/visitor-ponytail-medium.vrm',g=>{vrm=g.userData.vrm;scene.add(vrm.scene);vrm.scene.traverse(o=>o.frustumCulled=false);setView('front');window.ready=true;window.info={meta:vrm.meta?.metaVersion};setPose('stand');},undefined,e=>{window.err=String(e)});
 
 const poseMap={idle:'stand',walk:'walk',palms:'palms',incense:'incense',kneel:'kneel',sit:'sit'}; const rawSetPose=window.setPose; window.setPose=(name,t=0)=>rawSetPose(poseMap[name]||name,t); for (const b of document.querySelectorAll('[data-pose]')) b.onclick=()=>window.ready&&window.setPose(b.dataset.pose); document.querySelector('#front').onclick=()=>window.setView('front'); document.querySelector('#side').onclick=()=>window.setView('side'); document.querySelector('#rear').onclick=()=>window.setView('rear');
