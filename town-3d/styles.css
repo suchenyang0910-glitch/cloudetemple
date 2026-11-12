@@ -23,6 +23,10 @@ body { color: var(--ink); overscroll-behavior: none; }
 /* Map mode: smaller font so 7 labels fit without collision */
 .labels-layer.map-mode .label-name { font-size: 13px; font-weight: 600; }
 .labels-layer.map-mode .label-status { font-size: 11px; }
+.labels-layer.map-mode .temple-label { width: 118px; padding: 4px 3px; border: 1px solid rgb(74 65 53 / .28); border-radius: 5px; background: rgb(242 237 226 / .9); text-align: center; }
+.labels-layer.map-mode .temple-label.is-open { border-color: #604b38; background: rgb(255 247 226 / .97); }
+.labels-layer.map-mode .label-name { white-space: normal; line-height: 1.15; }
+.labels-layer.map-mode .label-status { display: none; }
 
 .panel { position: absolute; left: 14px; right: 14px; bottom: max(18px, env(safe-area-inset-bottom)); padding: 12px; text-align: center; border: 1px solid var(--line); background: var(--glass); box-shadow: 0 12px 36px rgb(40 32 22 / .2); }
 .panel h2 { margin: 0 0 4px; font-size: 17px; font-weight: 600; }

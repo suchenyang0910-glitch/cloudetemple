@@ -32,14 +32,14 @@ const ground = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
 const hit = new THREE.Vector3();
 // Pulled back enough to show ≥3 temples at once at FOV 58°.
 const CAMERA_OFFSET = new THREE.Vector3(1.6, 13, 14);
-const MAP_CAM_POS = new THREE.Vector3(0, 55, 2);  // higher = temples spread out more in screen space
+const MAP_CAM_POS = new THREE.Vector3(0, 82, 2);  // wide enough to keep the west pet garden inside the phone viewport
 const MAP_CAM_TARGET = new THREE.Vector3(0, 0, 2);
 let mapMode = false;
 
 function initLabels() {
   for (const t of TEMPLES) {
     const div = document.createElement('div');
-    div.className = 'temple-label';
+    div.className = `temple-label ${t.status === 'open' ? 'is-open' : 'is-coming'}`;
     div.dataset.id = t.id;
       div.innerHTML = `<span class="label-name">${t.mapName || t.name}</span>` +
       (t.status !== 'open' ? `<span class="label-status">${COMING_SOON_LABEL}</span>` : '');
