@@ -4,18 +4,21 @@ import { mountPetGarden } from './index.js';
 const canvas = document.querySelector('#scene');
 const detail = document.querySelector('#detail');
 const actions = document.querySelector('.actions');
+const fpsEl = document.querySelector('#fps');
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance' });
 const scene = new THREE.Scene(); scene.background = new THREE.Color(0x7d9475); scene.fog = new THREE.Fog(0x7d9475, 16, 48);
 const camera = new THREE.PerspectiveCamera(55, 1, .1, 100); camera.position.set(10, 8, 13);
 const visitor = new THREE.Object3D(); visitor.position.set(0, 0, 11); scene.add(visitor);
 scene.add(new THREE.HemisphereLight(0xf4f0db, 0x405444, 2.4)); const sun = new THREE.DirectionalLight(0xffe1b8, 1.8); sun.position.set(-8, 15, 8); scene.add(sun);
 const raycaster = new THREE.Raycaster(), pointer = new THREE.Vector2(), ground = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), hit = new THREE.Vector3();
-let garden, target, nearby, dragX, dragging = false;
+let garden, target, nearby, dragX, previousFrame, frameCount = 0, fpsSince = performance.now(), dragging = false;
+
+if (new URLSearchParams(location.search).get('fps') === '1') fpsEl.hidden = false;
 
 function resize() { renderer.setSize(innerWidth, innerHeight, false); camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); }
 function showDetail(memorial) { nearby = memorial; detail.hidden = !memorial; actions.hidden = !memorial; if (memorial) { const title=document.createElement('strong'), meta=document.createElement('small'); title.textContent=`${memorial.petName} · ${memorial.speciesCode}`; meta.textContent=`${memorial.bornYear}–${memorial.diedYear} · ${memorial.districtId} / ${memorial.rowNo} 行 ${memorial.columnNo} 列`; detail.replaceChildren(title,document.createElement('br'),meta,document.createElement('br'),document.createTextNode(memorial.epitaph)); } }
 function point(event) { const r = canvas.getBoundingClientRect(); pointer.set((event.clientX-r.left)/r.width*2-1,-(event.clientY-r.top)/r.height*2+1); raycaster.setFromCamera(pointer,camera); return raycaster.ray.intersectPlane(ground,hit) ? hit.clone() : null; }
-function frame() { const dx = target?.x - visitor.position.x, dz = target?.z - visitor.position.z, dist = Math.hypot(dx || 0,dz || 0); if (target && dist > .15) { const nx = visitor.position.x + dx/dist*.06, nz = visitor.position.z + dz/dist*.06; if (garden.canOccupy(nx,nz)) visitor.position.set(nx,0,nz); else target = null; } else target = null; camera.position.lerp(new THREE.Vector3(visitor.position.x+10,8,visitor.position.z+13),.08); camera.lookAt(visitor.position.x,1,visitor.position.z-2); showDetail(garden.update({visitor})); renderer.render(scene,camera); requestAnimationFrame(frame); }
+function frame(now) { const dx = target?.x - visitor.position.x, dz = target?.z - visitor.position.z, dist = Math.hypot(dx || 0,dz || 0); if (target && dist > .15) { const nx = visitor.position.x + dx/dist*.06, nz = visitor.position.z + dz/dist*.06; if (garden.canOccupy(nx,nz)) visitor.position.set(nx,0,nz); else target = null; } else target = null; camera.position.lerp(new THREE.Vector3(visitor.position.x+10,8,visitor.position.z+13),.08); camera.lookAt(visitor.position.x,1,visitor.position.z-2); showDetail(garden.update({visitor})); renderer.render(scene,camera); if (!fpsEl.hidden) { frameCount++; if (now - fpsSince >= 1000) { fpsEl.textContent = `FPS ${Math.round(frameCount * 1000 / (now - fpsSince))}`; frameCount = 0; fpsSince = now; } } previousFrame = now; requestAnimationFrame(frame); }
 canvas.addEventListener('pointerdown', event => { dragging=false; dragX=event.clientX; canvas.setPointerCapture(event.pointerId); });
 canvas.addEventListener('pointermove', event => { if (!canvas.hasPointerCapture(event.pointerId)) return; const dx=event.clientX-dragX; dragging ||= Math.abs(dx)>2; dragX=event.clientX; if(dragging) visitor.rotation.y-=dx/120; });
 canvas.addEventListener('pointerup', event => { if (!dragging) { const next=point(event); if(next && garden.canOccupy(next.x,next.z)) target=next; } canvas.releasePointerCapture(event.pointerId); });
