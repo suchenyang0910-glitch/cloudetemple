@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "note": "通用 VRM 人形骨骼姿势；不含具体模型或示例角色",
+  "bones": ["hips", "spine", "chest", "upperArm.L", "lowerArm.L", "hand.L", "upperArm.R", "lowerArm.R", "hand.R", "upperLeg.L", "lowerLeg.L", "upperLeg.R", "lowerLeg.R"],
+  "poses": {
+    "idle": {"loop": true, "breath": 0.02},
+    "walk": {"loop": true, "stride": 0.45},
+    "palms": {"upperArm": -0.7, "lowerArm": -0.25, "handsTogether": true, "headOffset": 0.0},
+    "incense": {"upperArm": -0.55, "lowerArm": -0.18, "handsTogether": true, "incense": "three-upright"},
+    "kneel": {"upperLeg": 0.85, "lowerLeg": -0.8},
+    "sit": {"upperLeg": 1.1, "lowerLeg": -1.0}
+  }
+}
