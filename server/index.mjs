@@ -6,8 +6,8 @@ import { createFamilyApi } from "./family-api.mjs";
 import { openMetricsStore } from "./metrics-store.mjs";
 import { createMetricsApi } from "./metrics-api.mjs";
 import { createAccessVerifier } from "./access-auth.mjs";
-import { openPetStore } from "./pet-store.mjs";
-import { createPetApi } from "./pet-api.mjs";
+import { createPetModerationModule } from "./pet-admin-api.mjs";
+import { hash } from "./security.mjs";
 let settings;
 try {
   settings = config(process.env);
@@ -35,11 +35,14 @@ const familyHandler =
       })()
     : async () => false;
 const access = settings.adminEnabled ? createAccessVerifier(settings) : { validate: async () => { throw Error("disabled"); } };
-const pet = openPetStore(store.db);
-const petHandler = createPetApi(settings, pet, {
-  verifyAdmin: (req) => settings.adminEnabled
-    ? access.validate(req.headers["cf-access-jwt-assertion"]).then(() => true, () => false)
-    : false,
+const verifyBound = (req) => {
+  const raw = (req.headers.cookie || "").split(/;\s*/).find((part) => part.startsWith("ct_session="))?.slice(11);
+  return raw && familyStore?.sessionUser(hash(settings.hashSecret, raw))?.id;
+};
+const { pet, handleAdmin: petAdminHandler, handlePublic: petHandler } = createPetModerationModule(settings, store.db, {
+  access,
+  adminOrigin: "https://adminchy-staging.chuamay.org",
+  verifyBound,
 });
 const metricsHandler = createMetricsApi(settings, metrics, access, familyStore);
 const applicationHandler = async (req, res, route) => {
@@ -47,7 +50,7 @@ const applicationHandler = async (req, res, route) => {
   if (settings.environment === "staging" && petRoute !== route && /^Basic /i.test(req.headers.authorization || "")) {
     delete req.headers.authorization;
   }
-  return (await petHandler(req, res, petRoute)) || (await metricsHandler(req, res, route)) || familyHandler(req, res, route);
+  return (await petAdminHandler(req, res, route)) || (await petHandler(req, res, petRoute)) || (await metricsHandler(req, res, route)) || familyHandler(req, res, route);
 };
 const server = createServer(settings, store, undefined, applicationHandler, (status) => { if (status >= 500) metrics.error(); });
 server.requestTimeout = 15000;
