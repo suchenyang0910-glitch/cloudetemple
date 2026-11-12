@@ -41,7 +41,7 @@ function initLabels() {
     const div = document.createElement('div');
     div.className = 'temple-label';
     div.dataset.id = t.id;
-    div.innerHTML = `<span class="label-name">${t.name}</span>` +
+      div.innerHTML = `<span class="label-name">${t.mapName || t.name}</span>` +
       (t.status !== 'open' ? `<span class="label-status">${COMING_SOON_LABEL}</span>` : '');
     labelsEl.appendChild(div);
     labelDivs[t.id] = div;
