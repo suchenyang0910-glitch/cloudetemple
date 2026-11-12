@@ -67,7 +67,7 @@ test("live staging mode keeps real records separate from demo fixtures", () => {
       "pilot@example.invalid",
       "Pilot",
     );
-    family.session("session", user.id, Date.now() + 60_000, "test", "csrf");
+    family.session("session", user.id, Date.now() + 60_000, "csrf");
     const tablet = family.createTablet(user.id, {
       honorific: "Bà ngoại",
       fullName: "Nguyễn Thị An",
@@ -124,11 +124,13 @@ test("email code stays in protected outbox and session CRUD enforces CSRF", asyn
     assert.equal(message.text_body, familyServerText("otp_text", { code }));
     r = await f.request("/family/auth/email/verify", {
       method: "POST",
+      headers: { "User-Agent": "synthetic-test-agent" },
       body: JSON.stringify({ email: "demo@example.com", code }),
     });
     assert.equal(r.status, 200);
     const data = await r.json(),
       cookie = r.headers.get("set-cookie").split(";")[0];
+    assert.deepEqual(f.family.db.prepare("SELECT ua_summary FROM sessions").all(), [{ ua_summary: "" }]);
     assert.deepEqual(data.tablets, []);
     r = await f.request("/family/tablets", {
       method: "POST",
@@ -257,7 +259,7 @@ test("email code stays in protected outbox and session CRUD enforces CSRF", asyn
     assert.equal((await r.json()).count, 1);
     r = await f.request(`/family/tablets/${tablet.id}/invites`, { method: "POST", headers: { Cookie: cookie, "X-CSRF-Token": data.csrf }, body: "{}" });
     const inviteToken = new URL((await r.json()).url).hash.replace("#invite=", ""), guest = f.family.userFor("email", "guest-subject", "guest@example.invalid"), guestSession = "guest-session", guestCsrf = "guest-csrf";
-    f.family.session(hash(settings.hashSecret, guestSession), guest.id, Date.now() + 60000, "test", hash(settings.hashSecret, guestCsrf));
+    f.family.session(hash(settings.hashSecret, guestSession), guest.id, Date.now() + 60000, hash(settings.hashSecret, guestCsrf));
     r = await f.request("/family/invites/accept", { method: "POST", headers: { Cookie: `ct_session=${guestSession}`, "X-CSRF-Token": guestCsrf }, body: JSON.stringify({ token: inviteToken }) });
     assert.equal(r.status, 200);
     for (const payload of [

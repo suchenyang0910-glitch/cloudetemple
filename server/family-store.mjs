@@ -164,13 +164,12 @@ CREATE TABLE IF NOT EXISTS membership_interests(id TEXT PRIMARY KEY,name TEXT NO
       run("DELETE FROM oauth_states WHERE state_hash=?", hash);
       return row && row.expires_at >= Date.now() ? row : null;
     },
-    session(hash, user, expires, ua, csrfHash) {
+    session(hash, user, expires, csrfHash) {
       run(
-        "INSERT INTO sessions VALUES(?,?,?,?,?,?,?)",
+        "INSERT INTO sessions (token_hash,user_id,expires_at,ua_summary,csrf_hash,created_at,demo) VALUES(?,?,?,'',?,?,?)",
         hash,
         user,
         expires,
-        ua,
         csrfHash,
         now(),
         demoFlag,
@@ -178,7 +177,7 @@ CREATE TABLE IF NOT EXISTS membership_interests(id TEXT PRIMARY KEY,name TEXT NO
     },
     sessionUser(hash) {
       return one(
-        "SELECT s.*,u.display_name,u.locale,(SELECT email FROM identities WHERE user_id=u.id AND email IS NOT NULL ORDER BY CASE provider WHEN 'google' THEN 0 WHEN 'email' THEN 1 ELSE 2 END LIMIT 1) AS email FROM sessions s JOIN users u ON u.id=s.user_id WHERE s.token_hash=? AND s.expires_at>? AND u.deleted_at IS NULL",
+        "SELECT s.user_id,s.csrf_hash,u.display_name,u.locale,(SELECT email FROM identities WHERE user_id=u.id AND email IS NOT NULL ORDER BY CASE provider WHEN 'google' THEN 0 WHEN 'email' THEN 1 ELSE 2 END LIMIT 1) AS email FROM sessions s JOIN users u ON u.id=s.user_id WHERE s.token_hash=? AND s.expires_at>? AND u.deleted_at IS NULL",
         hash,
         Date.now(),
       );

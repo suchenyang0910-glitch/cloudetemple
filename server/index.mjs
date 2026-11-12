@@ -37,7 +37,7 @@ const familyHandler =
 const access = settings.adminEnabled ? createAccessVerifier(settings) : { validate: async () => { throw Error("disabled"); } };
 const verifyBound = (req) => {
   const raw = (req.headers.cookie || "").split(/;\s*/).find((part) => part.startsWith("ct_session="))?.slice(11);
-  return raw && familyStore?.sessionUser(hash(settings.hashSecret, raw))?.id;
+  return raw && familyStore?.sessionUser(hash(settings.hashSecret, raw))?.user_id;
 };
 const { pet, handleAdmin: petAdminHandler, handlePublic: petHandler } = settings.petEnabled
   ? createPetModerationModule(settings, store.db, {

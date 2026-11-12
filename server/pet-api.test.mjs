@@ -1,4 +1,8 @@
 import assert from 'node:assert/strict';
+import {spawn} from 'node:child_process';
+import {mkdtempSync, rmSync} from 'node:fs';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
 import {createHmac} from 'node:crypto';
 import {once} from 'node:events';
 import {createServer} from 'node:http';
@@ -9,7 +13,8 @@ import {migratePetOfferings} from './pet-migrate-offerings.mjs';
 import {createPetApi} from './pet-api.mjs';
 import {draftRules} from './pet-moderation.mjs';
 import {openPetStore} from './pet-store.mjs';
-import {config} from './security.mjs';
+import {openFamilyStore} from './family-store.mjs';
+import {config, hash} from './security.mjs';
 
 const require = createRequire(import.meta.url);
 const Database = require('better-sqlite3');
@@ -186,6 +191,56 @@ test('public creation remains closed until the operator supplies approved rules'
   const result = await create(call, telegram(1), {...data, visibility: 'private'});
   assert.equal(result.status, 201);
   assert.equal((await call(base(result.body.id))).status, 404);
+});
+
+test('a valid family session can claim a browser memorial through the API entry point', {timeout: 10000}, async t => {
+  const dir = mkdtempSync(join(tmpdir(), 'pet-family-claim-'));
+  const dbPath = join(dir, 'api.sqlite');
+  const db = new Database(dbPath);
+  const session = 'synthetic-family-session';
+  try {
+    const family = openFamilyStore(db, {demo: false});
+    const user = family.userFor('email', 'fixture', env.FAMILY_ALLOWLIST, 'Fixture');
+    family.session(hash(env.HASH_SECRET, session), user.id, Date.now() + 60000, 'csrf');
+  } finally {
+    db.close();
+  }
+  const child = spawn(process.execPath, ['--input-type=module', '-e', `
+    import {Server} from 'node:http';
+    const listen = Server.prototype.listen;
+    Server.prototype.listen = function (...args) {
+      this.once('listening', () => process.send(this.address().port));
+      return listen.apply(this, args);
+    };
+    await import('./index.mjs');
+  `], {
+    cwd: new URL('.', import.meta.url),
+    env: {...env, DB_PATH: dbPath, PORT: '0', FAMILY_ENABLED: '1', PET_ENABLED: '1', MAIL_PROVIDER: 'outbox'},
+    stdio: ['ignore', 'ignore', 'inherit', 'ipc']
+  });
+  const exited = once(child, 'exit');
+  t.after(async () => {
+    child.kill();
+    await exited;
+    rmSync(dir, {recursive: true});
+  });
+  const port = await Promise.race([
+    once(child, 'message').then(([port]) => port),
+    exited.then(([code]) => { throw Error('API exited before listening: ' + code); })
+  ]);
+  const url = 'http://127.0.0.1:' + port + '/pet-garden/memorials';
+  const post = (path, body, headers = {}) => fetch(url + path, {
+    method: 'POST', headers: {'Content-Type': 'application/json', ...headers}, body: JSON.stringify(body)
+  });
+  const created = await post('', {...data, visibility: 'private'});
+  assert.equal(created.status, 201);
+  const {id, claimToken} = await created.json();
+  const path = '/' + id + '/claim';
+  const headers = {Authorization: 'Bearer family-session'};
+  assert.equal((await post(path, {claimToken}, headers)).status, 401);
+  const claimed = await post(path, {claimToken}, {...headers, Cookie: 'ct_session=' + session});
+  assert.equal(claimed.status, 200);
+  assert.deepEqual(await claimed.json(), {claimed: true});
 });
 
 test('claim atomically transfers a browser memorial, unauthorized edits and deletes fail, deletion cascades', async t => {

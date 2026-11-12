@@ -194,7 +194,7 @@ export function createFamilyApi(settings, family, dependencies = {}) {
     user &&
     typeof req.headers["x-csrf-token"] === "string" &&
     hash(settings.hashSecret, req.headers["x-csrf-token"]) === user.csrf_hash;
-  const issue = (res, user, req) => {
+  const issue = (res, user) => {
     const raw = token(),
       anti = token(18),
       max = 30 * 86400;
@@ -202,7 +202,6 @@ export function createFamilyApi(settings, family, dependencies = {}) {
       hash(settings.hashSecret, raw),
       user.id,
       Date.now() + max * 1000,
-      ua(req),
       hash(settings.hashSecret, anti),
     );
     res.setHeader(
@@ -293,7 +292,7 @@ export function createFamilyApi(settings, family, dependencies = {}) {
             email,
             familyServerText("relative_default", {}, language),
           ),
-          anti = issue(res, account, req);
+          anti = issue(res, account);
         return (
           json(res, 200, {
             ok: true,
@@ -324,7 +323,7 @@ export function createFamilyApi(settings, family, dependencies = {}) {
             "",
             "Telegram",
           ),
-          anti = issue(res, account, req);
+          anti = issue(res, account);
         family.setPrefs(account.id, {
           ...family.prefs(account.id),
           telegramChat: tg.id,
@@ -405,7 +404,7 @@ export function createFamilyApi(settings, family, dependencies = {}) {
           email,
           String(profile.name || "").slice(0, 60),
         );
-        issue(res, account, req);
+        issue(res, account);
         res.writeHead(302, {
           Location: settings.familyUrl,
           "Cache-Control": "no-store",
