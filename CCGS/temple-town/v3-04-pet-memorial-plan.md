@@ -27,7 +27,7 @@
 - `server/pet-api.mjs`：萌宠园 HTTP handler；只处理 `/api/pet-garden/*`，校验字段、身份、状态与速率，不改现有 family API。
 - `server/pet-moderation.mjs`：确定性词表预检接口（`moderatePublicText({ name, epitaph, locale })`）；词表版本化并记录结果，不把用户原文写入分析事件。首期无外部模型调用，降低成本和数据外传；越南语变体、广告和冒名命中由人工复核迭代。
 - `server/pet-telegram-auth.mjs`：若现有 `validateInitData` 可安全复用，应由新 handler 调用现有安全模块；不得复制一份弱化验证实现。此处需要路由 owner 核对允许的 import 边界。
-- `pet_memorials`：`id`、`owner_ref`、`identity_kind`、`browser_claim_hash`（仅普通浏览器随机认领号的不可逆摘要）、`pet_name`、`species_code`、`born_year`、`died_year`、`epitaph`、`public_status`（pending/visible/rejected/hidden/wall）、`moderation_status`、`moderation_rule_version`、`moderation_reason_code`、`district_id`、`row_no`、`column_no`、`created_at`、`updated_at`、`last_qualifying_visit_at`、`wall_at`、`demo`。原文必须只留在业务表，限制访问；不复制到匿名分析库。
+- `pet_memorials`：`id`、`owner_ref`、`identity_kind`、`browser_claim_hash`（仅普通浏览器随机认领号的不可逆摘要）、`pet_name`、`species_code`、`born_on`、`died_on`（完整日期仅成员可见）、公开 API 派生的 `born_year`、`died_year`、`epitaph`、`public_status`（pending/visible/rejected/hidden/wall）、`moderation_status`、`moderation_rule_version`、`moderation_reason_code`、`district_id`、`row_no`、`column_no`、`created_at`、`updated_at`、`last_qualifying_visit_at`、`wall_at`、`demo`。原文必须只留在业务表，限制访问；不复制到匿名分析库。
 - `pet_members`：`memorial_id`、`principal_ref`、`role`（owner/invited）、`created_at`、`revoked_at`；唯一约束防重复邀请成员。复用家族邀请的安全思路，不复用家族白名单，也不把家族实体建模为宠物碑。
 - `pet_invites`：随机 token 摘要、创建者、有效期、撤销时间、使用次数/上限、关联碑；明文 token 只在生成时返回。
 - `pet_visits`：每日去重计数所需 `memorial_id`、不可逆的当日访客去重摘要、动作类别（open/flower/light）、时间；主人端只输出聚合人数，不提供可识别访客列表。保留期限和去重窗口 `[假设·需律师确认]`。
@@ -45,7 +45,7 @@
 | `GET /api/pet-garden/memorials?district=&cursor=` | 匿名 | 分页读取当前片区公开碑摘要；仅 `visible` | `items[{id,petName,speciesCode,bornYear,diedYear,epitaph,rowNo,columnNo}]`、`nextCursor` |
 | `GET /api/pet-garden/memorials/:id` | 匿名 | 单碑公开面；详情另经成员校验 | 公开字段、真实聚合当日花/灯人数 |
 | `GET /api/pet-garden/memorials/:id/private` | owner/invited | 取首期私密日期等内容；验证 `pet_members` | 主人/受邀可读字段，不含照片/信 |
-| `POST /api/pet-garden/memorials` | Telegram 已验 `initData`；或浏览器随机 claim | `petName,speciesCode,bornYear,diedYear,epitaph,visibility`；先机审再公开；普通浏览器仅首碑免费 | `id,publicStatus,claimToken?`（浏览器 token 仅一次展示） |
+| `POST /api/pet-garden/memorials` | Telegram 已验 `initData`；或浏览器随机 claim | `petName,speciesCode,bornOn,diedOn,epitaph,visibility`（服务端只将年份投影到公开响应）；先机审再公开；普通浏览器仅首碑免费 | `id,publicStatus,claimToken?`（浏览器 token 仅一次展示） |
 | `POST /api/pet-garden/memorials/:id/claim` | 已绑定 email/Telegram | 将浏览器随机号下的碑并入账号；只允许摘要匹配且碑未被绑定 | `claimed:true` 或无信息泄露的冲突码 |
 | `POST /api/pet-garden/memorials/:id/invites` | owner | `maxUses,expiresAt`；创建邀请 | 一次性邀请 URL/token、有效期 |
 | `POST /api/pet-garden/invites/:token/accept` | Telegram 或绑定账号 | 接受邀请并建立只读成员关系 | `memorialId,role` |
