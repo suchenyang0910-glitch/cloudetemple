@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+  <title>墓碑阵列性能试验</title>
+  <base href="/">
+  <link rel="stylesheet" href="/town-3d/experiments/tomb-perf/styles.css">
+</head>
+<body>
+  <main>
+    <canvas id="scene" aria-label="墓碑阵列性能试验场景"></canvas>
+    <section class="hud">
+      <div class="title">萌宠园墓碑阵列 · 性能试验</div>
+      <div class="badge">占位 · 试验页 · 未接入业务数据</div>
+      <label>数量 <select id="count"><option>100</option><option>300</option><option selected>1000</option><option>3000</option></select></label>
+      <button id="reload">重建阵列</button>
+      <button id="overview">俯视</button>
+      <button id="walk">走道</button>
+      <button id="close">走近碑</button>
+      <output id="metrics">采样中…</output>
+    </section>
+    <div id="labels" aria-live="polite"></div>
+    <p class="hint">点地面行走 · 按住拖动持续行走</p>
+  </main>
+  <script type="module" src="/town-3d/experiments/tomb-perf/app.js"></script>
+</body>
+</html>
