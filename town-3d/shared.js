@@ -67,28 +67,13 @@ export function updateLabels({ world, temples, labelDivs, mapMode }) {
   const halfW = innerWidth / 2, halfH = innerHeight / 2, cam = world.camera;
   const visible = new Set(), finalPos = new Map(), LHW = 76;
   if (mapMode) {
-    const vx = world.visitor.position.x, vz = world.visitor.position.z;
-    const sorted = [...temples].sort((a, b) => Math.hypot(a.x - vx, a.z - vz) - Math.hypot(b.x - vx, b.z - vz));
-    const placements = [];
-    for (const t of sorted) {
-      const v = _pt.set(t.x, 0.5, t.z).project(cam);
+    for (const t of temples) {
+      const v = _pt.set(t.x, 0, t.z).project(cam);
       if (v.z > 1) continue;
-      placements.push({ id: t.id, sx: v.x * halfW + halfW, sy: -v.y * halfH + halfH });
-    }
-    placements.sort((a, b) => a.sy - b.sy);
-    const placed = [];
-    for (const p of placements) {
-      const sx = Math.max(LHW + 12, Math.min(innerWidth - LHW - 12, p.sx));
-      let sy = p.sy;
-      for (let attempt = 0; attempt < 10; attempt++) {
-        const r = { left: sx - LHW, right: sx + LHW, top: sy - 4, bottom: sy + 38 };
-        const conflict = placed.find(q => rectsOverlap(r, q));
-        if (!conflict) break;
-        sy = conflict.bottom + 4;
-      }
-      sy = Math.max(72, Math.min(innerHeight - 12, sy));
-      placed.push({ left: sx - LHW, right: sx + LHW, top: sy - 4, bottom: sy + 38 });
-      visible.add(p.id); finalPos.set(p.id, { sx, sy });
+      const sx = Math.max(50, Math.min(innerWidth - 50, v.x * halfW + halfW));
+      const sy = Math.max(64, Math.min(innerHeight - 96, -v.y * halfH + halfH));
+      visible.add(t.id);
+      finalPos.set(t.id, { sx, sy });
     }
   } else {
     const BILL_TOP = 12;

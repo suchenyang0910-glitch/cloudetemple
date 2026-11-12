@@ -15,6 +15,8 @@ const panelState = document.querySelector('#temple-state');
 const enterLink = document.querySelector('#temple-enter');
 const hint = document.querySelector('#walk-hint');
 const labelsEl = document.querySelector('#labels');
+const mapSheet = document.querySelector('#map-sheet');
+const mapGrid = document.querySelector('#map-grid');
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 // label divs keyed by temple id — created once in initLabels()
 const labelDivs = {};
@@ -32,20 +34,46 @@ const ground = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
 const hit = new THREE.Vector3();
 // Pulled back enough to show ≥3 temples at once at FOV 58°.
 const CAMERA_OFFSET = new THREE.Vector3(1.6, 13, 14);
-const MAP_CAM_POS = new THREE.Vector3(0, 55, 2);  // higher = temples spread out more in screen space
+const MAP_CAM_POS = new THREE.Vector3(0, 80, 2);  // pull back so every billboard and label clears the phone edges
 const MAP_CAM_TARGET = new THREE.Vector3(0, 0, 2);
 let mapMode = false;
 
 function initLabels() {
   for (const t of TEMPLES) {
     const div = document.createElement('div');
-    div.className = 'temple-label';
+    div.className = `temple-label ${t.status === 'open' ? 'is-open' : 'is-coming'}`;
     div.dataset.id = t.id;
       div.innerHTML = `<span class="label-name">${t.mapName || t.name}</span>` +
       (t.status !== 'open' ? `<span class="label-status">${COMING_SOON_LABEL}</span>` : '');
     labelsEl.appendChild(div);
     labelDivs[t.id] = div;
   }
+}
+
+function nearestMapTemple() {
+  const v = world.visitor.position;
+  return TEMPLES.reduce((near, t) => Math.hypot(v.x - t.x, v.z - t.z) < Math.hypot(v.x - near.x, v.z - near.z) ? t : near, TEMPLES[0]);
+}
+
+function initMapSheet() {
+  for (const t of TEMPLES) {
+    const card = document.createElement('button');
+    card.type = 'button'; card.className = `map-card ${t.status === 'open' ? 'is-open' : 'is-coming'}`;
+    card.dataset.id = t.id;
+    const image = document.createElement('span'); image.className = 'map-card-image';
+    image.style.backgroundImage = `url("./assets/exterior-${t.id}-day.webp")`;
+    if (t.id === 'namtong') image.classList.add('is-placeholder');
+    const name = document.createElement('span'); name.className = 'map-card-name'; name.textContent = t.name;
+    card.append(image, name);
+    if (t.status !== 'open') { const badge = document.createElement('small'); badge.textContent = 'Sắp mở'; card.append(badge); }
+    card.addEventListener('click', () => { if (t.status !== 'open') return; target = new THREE.Vector3(t.x, 0, t.z + 3); toggleMap(); });
+    mapGrid.append(card);
+  }
+}
+
+function updateMapSheet() {
+  const near = nearestMapTemple();
+  for (const card of mapGrid.children) card.classList.toggle('is-current', card.dataset.id === near.id);
 }
 
 function boot() {
@@ -56,6 +84,7 @@ function boot() {
     addEventListener('resize', resize, { passive: true });
     bindControls();
     initLabels();
+    initMapSheet();
     world.camera.position.copy(world.visitor.position).add(CAMERA_OFFSET);
     document.getElementById('map-toggle').addEventListener('click', toggleMap);
     status.classList.add('ready');
@@ -131,6 +160,9 @@ function toggleMap() {
   btn.textContent = mapMode ? 'Đóng' : 'Bản đồ';
   btn.setAttribute('aria-pressed', String(mapMode));
   labelsEl.classList.toggle('map-mode', mapMode);
+  mapSheet.hidden = !mapMode;
+  mapSheet.classList.toggle('is-visible', mapMode);
+  if (mapMode) updateMapSheet();
   // Map camera is at y=55; billboards are ~49 units away → inside near=30 fog.
   // Push fog far so all 7 temples appear full-color from above.
   world.scene.fog.near = mapMode ? 200 : 30;
@@ -169,6 +201,7 @@ function frame(now) {
   updateFollowCamera({ world, delta, reduced, mapMode, cameraOffset: CAMERA_OFFSET, mapPosition: MAP_CAM_POS, mapTarget: MAP_CAM_TARGET });
   updateBillboards(world.billboards, world.camera, mapMode);
   updatePanel();
+  if (mapMode) updateMapSheet();
   activePlace?.update({ world, temple: current, delta, now });
   world.render();
   updateLabels({ world, temples: TEMPLES, labelDivs, mapMode });
