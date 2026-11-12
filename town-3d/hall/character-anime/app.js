@@ -1,0 +1,25 @@
+import * as THREE from '../../../prototype-3d/vendor/three.module.min.js';
+
+const canvas=document.querySelector('#view'), readout=document.querySelector('#readout');
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:'high-performance'}); renderer.outputColorSpace=THREE.SRGBColorSpace;
+const scene=new THREE.Scene(); scene.background=new THREE.Color(0xd7d0c2); scene.add(new THREE.HemisphereLight(0xfff2d8,0x596357,2.5)); const sun=new THREE.DirectionalLight(0xffead4,2.4); sun.position.set(-4,8,6); scene.add(sun);
+const camera=new THREE.PerspectiveCamera(32,1,.1,40); camera.position.set(0,2.65,7.6); camera.lookAt(0,1.35,0);
+const floor=new THREE.Mesh(new THREE.PlaneGeometry(12,12),new THREE.MeshToonMaterial({color:0xc7b79e})); floor.rotation.x=-Math.PI/2; scene.add(floor);
+const back=new THREE.Mesh(new THREE.PlaneGeometry(12,6),new THREE.MeshToonMaterial({color:0xb7c4b5})); back.position.set(0,2,-1.5); scene.add(back);
+const paperTexture=new THREE.TextureLoader().load('../lab-character/assets/paper-bun-light.webp'); const paper=new THREE.Sprite(new THREE.SpriteMaterial({map:paperTexture,transparent:true,depthWrite:false})); paper.scale.set(1.55,2.32,1); paper.position.set(1.15,1.28,.05); scene.add(paper);
+const model=new THREE.Group(); model.position.x=-.95; scene.add(model); const skin=new THREE.MeshToonMaterial({color:0xb9785c}), shirt=new THREE.MeshToonMaterial({color:0xe5d6bd}), pants=new THREE.MeshToonMaterial({color:0x4c4039}), hair=new THREE.MeshToonMaterial({color:0x3e3836}), dark=new THREE.MeshBasicMaterial({color:0x241e1b});
+const outline=new THREE.LineBasicMaterial({color:0x2f2925,transparent:true,opacity:.85}); const parts={};
+function add(name,g,m,p){const x=new THREE.Mesh(g,m); x.position.set(...p); x.castShadow=false; model.add(x); const e=new THREE.LineSegments(new THREE.EdgesGeometry(g,.2),outline); x.add(e); parts[name]=x; return x;}
+parts.torso=add('torso',new THREE.CapsuleGeometry(.34,.62,5,10),shirt,[0,1.28,0]); parts.head=add('head',new THREE.SphereGeometry(.27,16,12),skin,[0,2.03,0]);
+add('bun',new THREE.SphereGeometry(.18,12,8),hair,[0,2.26,-.16]); add('haircap',new THREE.SphereGeometry(.285,16,10,0,Math.PI*2,0,Math.PI*.55),hair,[0,2.09,-.01]);
+const eyeL=add('eyeL',new THREE.SphereGeometry(.035,8,6),dark,[-.10,2.06,.255]), eyeR=add('eyeR',new THREE.SphereGeometry(.035,8,6),dark,[.10,2.06,.255]);
+add('browL',new THREE.BoxGeometry(.11,.018,.018),dark,[-.10,2.14,.255]); add('browR',new THREE.BoxGeometry(.11,.018,.018),dark,[.10,2.14,.255]); add('mouth',new THREE.TorusGeometry(.055,.008,4,8,Math.PI),dark,[0,1.96,.26]);
+const leftLeg=add('leftLeg',new THREE.CapsuleGeometry(.14,.65,5,8),pants,[-.18,.57,0]), rightLeg=add('rightLeg',new THREE.CapsuleGeometry(.14,.65,5,8),pants,[.18,.57,0]);
+const leftArm=add('leftArm',new THREE.CapsuleGeometry(.105,.5,5,8),shirt,[-.43,1.38,0]), rightArm=add('rightArm',new THREE.CapsuleGeometry(.105,.5,5,8),shirt,[.43,1.38,0]);
+const handL=add('handL',new THREE.SphereGeometry(.105,10,8),skin,[-.43,1.08,.04]), handR=add('handR',new THREE.SphereGeometry(.105,10,8),skin,[.43,1.08,.04]);
+const thumbL=add('thumbL',new THREE.CapsuleGeometry(.035,.12,4,6),skin,[-.37,1.10,.11]), thumbR=add('thumbR',new THREE.CapsuleGeometry(.035,.12,4,6),skin,[.37,1.10,.11]);
+const incense=[-.07,0,.07].map(x=>add('inc'+x,new THREE.CylinderGeometry(.018,.018,.62,7),new THREE.MeshToonMaterial({color:0x8a502e}),[x,1.72,.27]));
+let mode='front',phase=0,last=performance.now(); function setMode(x){mode=x;document.querySelectorAll('button').forEach(b=>b.classList.toggle('active',b.dataset.mode===mode));}
+document.querySelectorAll('button').forEach(b=>b.onclick=()=>setMode(b.dataset.mode));
+function animate(now){const dt=Math.min(.04,(now-last)/1000);last=now;phase+=dt;const walk=mode==='walk1'||mode==='walk2', palms=mode==='palms'||mode==='incense', kneel=mode==='kneel'||mode==='sit'; model.rotation.y=mode==='three'?-.52:mode==='back'?Math.PI:0; model.position.y=kneel?-.18:0; leftLeg.rotation.x=walk?Math.sin(phase*8)*.55:kneel?.72:0; rightLeg.rotation.x=walk?-Math.sin(phase*8)*.55:kneel?-.72:0; leftArm.rotation.z=palms?-.62:walk?Math.sin(phase*8)*.14:0; rightArm.rotation.z=palms?.62:walk?-Math.sin(phase*8)*.14:0; handL.position.set(palms?-.12:-.43,palms?1.53:1.08,palms?.2:.04); handR.position.set(palms?.12:.43,palms?1.53:1.08,palms?.2:.04); thumbL.visible=thumbR.visible=!kneel; incense.forEach(m=>m.visible=mode==='incense'); renderer.render(scene,camera); requestAnimationFrame(animate);}
+function resize(){renderer.setSize(canvas.clientWidth,canvas.clientHeight,false);camera.aspect=canvas.clientWidth/canvas.clientHeight;camera.updateProjectionMatrix();} addEventListener('resize',resize); resize(); setMode('front'); readout.textContent='原创代码几何：脸部五官、低发髻、分离手掌/拇指、衣摆与描边\n动作：站立呼吸、两帧走路循环、合掌、持三炷香拜、跪拜、盘坐\n右侧纸片：visitor-bun-light-inc-hold-v1.webp（现有帧对照）'; requestAnimationFrame(animate); window.__CHARACTER_STATE__=()=>({mode,triangles:renderer.info.render.triangles,calls:renderer.info.render.calls});
