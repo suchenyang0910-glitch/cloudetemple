@@ -62,7 +62,6 @@ function initMapSheet() {
     card.dataset.id = t.id;
     const image = document.createElement('span'); image.className = 'map-card-image';
     image.style.backgroundImage = `url("./assets/exterior-${t.id}-day.webp")`;
-    if (t.id === 'namtong') image.classList.add('is-placeholder');
     const name = document.createElement('span'); name.className = 'map-card-name'; name.textContent = t.name;
     card.append(image, name);
     if (t.status !== 'open') { const badge = document.createElement('small'); badge.textContent = 'Sắp mở'; card.append(badge); }
