@@ -67,9 +67,13 @@ export function updateLabels({ world, temples, labelDivs, mapMode }) {
   const halfW = innerWidth / 2, halfH = innerHeight / 2, cam = world.camera;
   const visible = new Set(), finalPos = new Map(), LHW = 76;
   if (mapMode) {
-    for (const [i, t] of temples.entries()) {
+    for (const t of temples) {
+      const v = _pt.set(t.x, 12.5, t.z).project(cam);
+      if (v.z > 1) continue;
+      const sx = Math.max(50, Math.min(innerWidth - 50, v.x * halfW + halfW));
+      const sy = Math.max(64, Math.min(innerHeight - 96, -v.y * halfH + halfH));
       visible.add(t.id);
-      finalPos.set(t.id, { sx: innerWidth * ((i % 3) + .5) / 3, sy: 76 + Math.floor(i / 3) * 62 });
+      finalPos.set(t.id, { sx, sy });
     }
   } else {
     const BILL_TOP = 12;
