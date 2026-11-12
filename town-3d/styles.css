@@ -28,6 +28,19 @@ body { color: var(--ink); overscroll-behavior: none; }
 .labels-layer.map-mode .label-name { white-space: normal; line-height: 1.15; }
 .labels-layer.map-mode .label-status { display: none; }
 
+.map-sheet { position: absolute; z-index: 3; inset: 68px 10px 66px; padding: 8px; background: rgb(242 237 226 / .96); border: 1px solid var(--line); border-radius: 7px; box-shadow: 0 12px 30px rgb(40 32 22 / .18); }
+.map-sheet-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin: 0 2px 6px; color: var(--wood); font-size: 13px; }
+.map-sheet-head span { color: var(--muted); font-size: 9px; }
+.map-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: repeat(3, minmax(0, 1fr)); gap: 6px; height: calc(100% - 25px); }
+.map-card { position: relative; min-width: 0; min-height: 0; display: grid; grid-template-rows: minmax(0, 1fr) auto; gap: 2px; padding: 4px; border: 1px solid rgb(74 65 53 / .3); border-radius: 5px; background: rgb(255 252 244 / .96); color: var(--ink); font: inherit; text-align: center; cursor: pointer; }
+.map-card.is-open { border-color: var(--wood); }
+.map-card.is-coming { opacity: .52; cursor: default; }
+.map-card.is-current { outline: 3px solid #a66b36; outline-offset: 1px; }
+.map-card-image { min-height: 0; display: block; border-radius: 3px; background: center / cover no-repeat #d1c8b8; }
+.map-card-image.is-placeholder { background-image: linear-gradient(135deg, #b9b1a3, #e2dbcf); }
+.map-card-name { display: block; min-height: 2.15em; font-size: clamp(9px, 2.8vw, 12px); font-weight: 600; line-height: 1.08; }
+.map-card small { position: absolute; top: 3px; right: 3px; padding: 1px 3px; border-radius: 3px; background: rgb(74 65 53 / .72); color: #fffaf1; font-size: 8px; }
+
 .panel { position: absolute; left: 14px; right: 14px; bottom: max(18px, env(safe-area-inset-bottom)); padding: 12px; text-align: center; border: 1px solid var(--line); background: var(--glass); box-shadow: 0 12px 36px rgb(40 32 22 / .2); }
 .panel h2 { margin: 0 0 4px; font-size: 17px; font-weight: 600; }
 .panel p { margin: 0 0 8px; color: var(--muted); font-size: 12px; }
