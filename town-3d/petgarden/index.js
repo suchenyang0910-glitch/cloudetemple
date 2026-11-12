@@ -36,10 +36,13 @@ function imagePlane(url, width, height, x, z, rotation = 0) {
 }
 
 function walkwayTexture() {
-  const canvas = document.createElement('canvas'); canvas.width = 256; canvas.height = 64;
-  const ctx = canvas.getContext('2d'); ctx.fillStyle = '#8d9486'; ctx.fillRect(0, 0, 256, 64);
-  for (let x = 0; x < 256; x += 32) { ctx.fillStyle = x % 64 ? '#a8ad9d' : '#777f73'; ctx.fillRect(x + 2, 2, 28, 60); }
-  ctx.strokeStyle = '#626a60'; ctx.lineWidth = 2; for (let x = 0; x <= 256; x += 32) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, 64); ctx.stroke(); }
+  const canvas = document.createElement('canvas'); canvas.width = 256; canvas.height = 128;
+  const ctx = canvas.getContext('2d'); ctx.fillStyle = '#a3aa94'; ctx.fillRect(0, 0, 256, 128);
+  for (let row = 0; row < 3; row++) for (let col = 0; col < 5; col++) {
+    const x = col * 54 - (row % 2 ? 22 : 0), y = row * 44 - 2;
+    ctx.beginPath(); ctx.moveTo(x + 2, y + 4); ctx.lineTo(x + 48, y + 1); ctx.lineTo(x + 53, y + 38); ctx.lineTo(x + 43, y + 43); ctx.lineTo(x + 4, y + 39); ctx.closePath();
+    ctx.fillStyle = ['#aeb49f', '#9ca48f', '#a7ad99'][(row + col) % 3]; ctx.fill(); ctx.strokeStyle = '#8e9784'; ctx.lineWidth = 1.5; ctx.stroke();
+  }
   const texture = new THREE.CanvasTexture(canvas); texture.colorSpace = THREE.SRGBColorSpace; texture.wrapS = texture.wrapT = THREE.RepeatWrapping; texture.repeat.set(3, 1); return texture;
 }
 
