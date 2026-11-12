@@ -10,10 +10,10 @@
 
 | 编号 | 收集或派生的数据、存放位置 | 保存时间 | 谁可见、发送到哪里 | 源码位置 |
 | --- | --- | --- | --- | --- |
-| P01 | 浏览器立碑身份：随机 32 字节及签名存 `ct_pet_browser` Cookie；认领凭证返回建碑客户端，服务端存 `pet_memorials.browser_claim_hash,owner_ref,identity_kind`，所有者引用同步入成员表 | Cookie 最长 365 天；碑关联数据随碑删除，绑定后认领哈希仍留；客户端是否保存凭证未核实 | 用户浏览器及请求服务器；哈希和引用不进公开响应 | `server/pet-api.mjs:67-103,174-182`；`server/pet-store.mjs:14-20,77-93` |
+| P01 | 浏览器立碑身份：随机 32 字节及签名存 `ct_pet_browser` Cookie；认领码由该 Cookie 派生，建碑和查看接口可返回原码；服务端只存 `pet_memorials.browser_claim_hash,owner_ref,identity_kind`，所有者引用同步入成员表 | Cookie 最长 365 天；碑关联数据随碑删除；绑定时清空认领哈希，客户端是否另行保存原码未核实 | 用户浏览器及请求服务器；哈希和引用不进公开响应 | `server/pet-api.mjs:67-105,149-158,206-214`；`server/pet-store.mjs:14-20,77-100` |
 | P02 | 访客计数随机号及签名：`ct_pet_visitor`，打开公开碑详情时按需签发；不设对应数据库原值列 | Cookie 最长 365 天 | 浏览器及萌宠园接口，非公开字段 | `server/pet-api.mjs:67-75,138-142,226-235` |
 | P03 | Telegram 签名数据（含用户资料及签发时间）和语言在验证请求中处理；Telegram ID 转成分域 HMAC，用于 `pet_memorials.owner_ref,identity_kind` 或 `pet_members.principal_ref`；没有原始 initData、Telegram ID 或语言落库列 | 签名资料只在请求内，验签接受约 24 小时内签发；碑/成员引用随碑删除，无单独期限 | Telegram 提供凭据；接口本地验签，无宠物内容发回 Telegram 的调用；引用仅服务端 | `server/security.mjs:15-25`；`server/pet-api.mjs:78-95,106,179-190,201-206`；`server/pet-store.mjs:25-28,83-112` |
-| P04 | 绑定：Telegram 签名凭据或 Bearer（后者需验证器），认领凭证原值在请求内、用 HMAC 比对；`pet_memorials.owner_ref,identity_kind,updated_at` 和 `pet_members` 所有者行替换 | 绑定后新引用随碑；旧 `browser_claim_hash` 未清，旧成员行删除 | 仅验权服务；客户端只收成功或失败。集成入口没传 `verifyBound`，不能据此承诺浏览器可绑邮箱或 Google；Telegram 认领 API 有路径，用户流程未证实 | `server/index.mjs:37-43`；`server/pet-api.mjs:78-103,201-206`；`server/pet-store.mjs:86-93` |
+| P04 | 绑定：Telegram 签名凭据或 Bearer（后者需验证器），认领凭证原值在请求内、用 HMAC 比对；`pet_memorials.owner_ref,identity_kind,updated_at` 和 `pet_members` 所有者行替换 | 绑定后新引用随碑；`browser_claim_hash` 被清空，旧浏览器成员行删除 | 仅验权服务；客户端只收成功或失败。集成入口没传 `verifyBound`，不能据此承诺浏览器可绑邮箱或 Google；Telegram 认领 API 有路径，用户流程未证实 | `server/index.mjs:37-43`；`server/pet-api.mjs:78-105,149-158,235-239`；`server/pet-store.mjs:92-100` |
 | P05 | 碑面：`pet_memorials.id,pet_name,species_code,born_on,died_on,epitaph,public_status,district_id,row_no,column_no,created_at,updated_at,last_qualifying_visit_at,wall_at,demo` | 主人删除前无期限；维护函数按最近合格来访/创建时间移墙，不删除；集成入口未调用维护函数 | 公开碑给任何访客：ID、名、种类、出生/离世年份、碑文、行列；列表按区分页，墙碑详情仍可公开访问；精确日期仅有效成员/主人接口，主人可读状态和分区；隐藏碑不给公众 | `server/pet-store.mjs:14-21,63-83,138-152`；`server/pet-api.mjs:41-65,130-162,237-241`；`server/index.mjs:18-65` |
 | P06 | 机审输入宠物名、碑文、语言；被拒的文本不写入碑表；通过写 `pet_memorials.moderation_status,moderation_rule_version`；表有 `moderation_reason_code` 但此版创建未写 | 请求内处理；已通过记录随碑。未配置已批准词表，公开创建关闭 | 本地规则；申请者收审核结果/修改提示；无外部机审收件方 | `server/pet-moderation.mjs:1-24`；`server/pet-api.mjs:105-109,165-182,260-261`；`server/pet-store.mjs:17-18,77-81`；`server/index.mjs:39-43` |
 | P07 | 邀请：`pet_invites.id,memorial_id,token_hash,created_by,expires_at,max_uses,uses,revoked_at`；凭证原值返回主人，受邀者提交凭证时在请求内处理 | 有效期最多 30 天，限 1–20 次且可撤销；过期/撤销行无定时删除，随碑删除 | 主人取得邀请凭证并可分享给选定对象；持凭证且已绑定的人可兑换；哈希和明细在服务端 | `server/pet-api.mjs:184-190,208-224`；`server/pet-store.mjs:22-24,95-119` |
@@ -65,7 +65,7 @@
 
 **建议删掉（只列建议，不改代码）。**
 
-1. **D1** 清除绑定成功后的 `pet_memorials.browser_claim_hash`；身份已替换，旧凭证不能再认领，长期保留没有已证实用途（P04）。
+1. **D1（已核实，无需改码）** 绑定成功时已清除 `pet_memorials.browser_claim_hash`，并替换旧浏览器成员行（P04）。
 2. **D2** 从 `pet_visits` / `pet_offerings` 合并重复的碑、日、访客、种类记录；保留一个去重事实与必要的时间，先确认历史计数无差异（P09）。
 3. **D3** 萌宠统计若只用动作汇总，优先不留逐条 `visitor_ref`、精确事件时间及未使用的浏览器/系统/设备/屏幕维度；有具体用途再审计是否需要逐条数据（P12）。
 4. **D4** 日历只送电子版时，停收实体配送地址；检视是否仍需联系信息、家庭名和纪念日期。历史预登记按律师确认的处理方式，勿直接删除（C19）。
@@ -77,13 +77,37 @@
 
 “原文”只引相关原句作为插入点，不重写无关条文。以下为**目标上线文案**；【内部门槛】不随页面发布。需由 Claude 按最终接线删去未实现承诺，确认同意界面、浏览器安全 Cookie、绑定/恢复、导出、删除、纪念墙和监护流程后再发布。
 
+### P74 · 认领码查看、保存与删除核验
+
+- [已验证事实] 认领码不是服务端单独保存的原值；它由原浏览器的签名 `ct_pet_browser` Cookie 派生，数据库只保存其 HMAC 哈希。`server/pet-api.mjs:67-75,78-105,206-214`；`server/pet-store.mjs:14-20,77-90`。
+- [已验证事实] 未绑定的碑，只有带原浏览器 Cookie 的 `GET /api/pet-garden/me/claim` 会重显认领码；无该 Cookie、换浏览器、清除浏览器数据或使用 Telegram 身份时接口返回空列表。`server/pet-api.mjs:149-158`；`server/pet-api.test.mjs:254-283`。
+- [已验证事实] 该 Cookie 的最长有效期是 365 天；清除 Cookie 或换浏览器不会删除服务器上的碑，但会使当前接口无法再重显该浏览器的认领码。`server/pet-api.mjs:67-75,149-158`；`server/pet-api.test.mjs:254-283`。
+- [已验证事实] 绑定成功会清空 `browser_claim_hash` 并移除旧浏览器成员行；之后即使仍持有原 Cookie，认领码查看接口也返回空列表。`server/pet-store.mjs:92-100`；`server/pet-api.test.mjs:254-283`。
+- [已验证事实] 已绑定碑可由其所有者删除；删除 `pet_memorials` 会级联删除邀请、成员、献花/点灯、来访和举报等关联行。`server/pet-api.mjs:270-274`；`server/pet-store.mjs:23-40,145`；`server/pet-api.test.mjs:302-334`。
+- [已验证事实] 当前接口尚不支持“同一 Telegram 账号的个人中心重显认领码”：Telegram 身份请求该查看接口返回空列表。`server/pet-api.test.mjs:254-283`。
+- [待产品/接口补齐] 只有在 Telegram 身份可获得已绑定碑的安全管理入口、且产品决定是否展示原认领码后，才可对外承诺“在同一 Telegram 账号的个人中心查看认领码”。
+- [待律师确认] 上述 Cookie、认领码和删除行为是代码事实，不构成对适用隐私义务、备份保留期限或删除完成时点的法律结论。
+
+### 待 Codex E 修改的越南语提示（只列，不改页面）
+
+| 文件:行号 | 当前句子/返回形状 | 建议改成的越南语 | 依据 |
+| --- | --- | --- | --- |
+| `town-3d/petgarden/demo.html:9` | `Mã nhận bia` | `Xem mã nhận bia` | 明确这是“查看”动作，避免暗示码只在当前弹层保存。 |
+| `town-3d/petgarden/demo.js:27` | `Trước khi đổi trình duyệt hoặc xóa dữ liệu trình duyệt, hãy lưu mã này hoặc liên kết bia trong Telegram.` | `Khi bia chưa được liên kết, bạn có thể xem lại mã nhận bia trong mục Cá nhân trên cùng trình duyệt này. Nếu đổi trình duyệt hoặc xóa dữ liệu trình duyệt, bạn sẽ không xem lại được mã ở đó.` | 当前实现仅原浏览器、未绑定碑可重显；不能承诺 Telegram 账号可查看。 |
+| `town-3d/petgarden/demo.js:27` | `Bia: ${claim.memorialId}` / `Mã: ${claim.claimCode}` | `Bia: ${claim.id}` / `Mã nhận bia: ${claim.claimToken}` | 接口实际返回 `items:[{id,claimToken}]`，不是 `memorialId/claimCode`；这是接线不一致，需由 Codex E 修正。 |
+| `town-3d/petgarden/demo.js:28` | 读取 `data.claim || data`，并要求 `memorialId` 与 `claimCode` | 从 `data.items` 读取未绑定碑的 `{id, claimToken}`；无项目时隐藏入口。 | 与 `GET /api/pet-garden/me/claim` 实际返回形状一致；此行没有越南语用户文案，但会导致现有提示无法出现。 |
+| `server/pet-api.mjs:149-158` | `{items:[{id,claimToken}]}`（无越南语用户文案） | 前端显示层映射为 `Mã nhận bia`，不在 API 返回中加入本地化文案。 | 保持接口返回为数据，避免服务端承诺 Telegram 个人中心重显。 |
+
 ### Tiếng Việt · Quyền riêng tư
 
 **1. Số nhận diện trong trình duyệt và Telegram**
 
 - 原文（`quyen-rieng-tu.html:2,6`）：“Bạn có thể xóa chúng trong cài đặt trình duyệt.” / “Telegram cung cấp dữ liệu có chữ ký để xác minh Mini App.”
-- 改后：Bạn có thể vào Vườn Thú Cưng mà không cần đăng nhập. Khi bạn mở một bia tưởng niệm công khai, trình duyệt lưu một mã ngẫu nhiên để không đếm lặp lượt đặt hoa hoặc thắp đèn. Khi bạn tạo bia đầu tiên, trình duyệt lưu một mã riêng để nhận ra bạn là người quản lý bia. Các mã này có thể được lưu tối đa 365 ngày. Chúng được tạo ngẫu nhiên, không dựa vào dấu vân tay thiết bị. Nếu bạn xóa cookie hoặc đổi trình duyệt, bia vẫn còn, nhưng trình duyệt có thể không còn nhận ra bạn. Hãy giữ riêng mã nhận bia và liên kết bia trước khi xóa dữ liệu trình duyệt.
-- 改后（续）：Nếu mở qua Telegram Mini App, Telegram gửi dữ liệu có chữ ký để xác minh. Chúng tôi dùng một mã được tạo từ mã người dùng Telegram để nhận ra bạn trong Vườn. Chúng tôi không lưu toàn bộ dữ liệu xác minh. Để liên kết bia đã tạo trong trình duyệt, hãy xác minh trong Telegram và dùng mã nhận bia của bạn. Đừng chia sẻ mã đó. Nếu chưa liên kết và không còn mã nhận bia, chúng tôi có thể không khôi phục được quyền quản lý.
+- [已验证事实] 改后：Bạn có thể vào Vườn Thú Cưng mà không cần đăng nhập. Khi bạn mở một bia tưởng niệm công khai, trình duyệt lưu một mã ngẫu nhiên để không đếm lặp lượt đặt hoa hoặc thắp đèn. Khi bạn tạo bia đầu tiên, trình duyệt lưu một mã riêng để nhận ra bạn là người quản lý bia. Các mã này có thể được lưu tối đa 365 ngày. Chúng được tạo ngẫu nhiên, không dựa vào dấu vân tay thiết bị. `server/pet-api.mjs:67-75,138-142,206-214`。
+- [已验证事实] 改后：Khi bia chưa được liên kết, bạn có thể xem lại mã nhận bia trong mục Cá nhân trên cùng trình duyệt này. Nếu bạn xóa cookie hoặc đổi trình duyệt, bia vẫn còn trên máy chủ nhưng bạn không thể xem lại mã ở đó. Sau khi liên kết bia, mã nhận bia không còn hiển thị lại. `server/pet-api.mjs:149-158`；`server/pet-store.mjs:92-100`；`server/pet-api.test.mjs:254-283`。
+- [已验证事实] 改后：Nếu mở qua Telegram Mini App, Telegram gửi dữ liệu có chữ ký để xác minh. Chúng tôi dùng một mã được tạo từ mã người dùng Telegram để nhận ra bạn trong Vườn. Chúng tôi không lưu toàn bộ dữ liệu xác minh. `server/security.mjs:15-25`；`server/pet-api.mjs:78-95`。
+- [已验证事实] 改后：Để liên kết bia đã tạo trong trình duyệt, hãy xác minh trong Telegram và dùng mã nhận bia của bạn. Hiện tại, mã nhận bia không hiển thị lại trong cùng một tài khoản Telegram. `server/pet-api.mjs:149-158,235-239`；`server/pet-api.test.mjs:254-283`。
+- [待律师确认] 外发版仍须按最终界面确认 Cookie 告知、删除说明和备份期限；不得把上述代码事实表述为法律结论。
 - 【内部门槛】验证认领凭证如何交给用户、安全保存、从浏览器切到 Telegram、遗失恢复和真实 Cookie 范围；未验证的邮箱/Google 绑定不写。
 
 **2. Thông tin trên bia, quyền truy cập và xóa**
@@ -118,8 +142,11 @@
 **1. Browser numbers and Telegram**
 
 - 原文（`quyen-rieng-tu.html:9`）：“If you create an account, we store sign-in identity, session, memorial tablets, family membership, offerings, invitations and reminder preferences.”（该句属家族功能；其后新设 Pet Garden 小节。）
-- 改后：You can visit the Pet Garden without signing in. When you open a public memorial, your browser stores a random number so we can avoid counting the same flower or light more than once. When you create your first memorial, your browser stores a separate number that lets us recognize you as its owner. These numbers can remain in your browser for up to 365 days. They are generated at random and do not come from device fingerprinting. If you clear cookies or switch browsers, the memorial stays on our server, but your browser may no longer recognize you as its owner. Keep your claim code private and link your memorial before clearing browser data.
-- 改后（续）：When you open the Telegram Mini App, Telegram sends signed data so we can verify you. We use a code derived from your Telegram user ID to recognize you in the Garden. We do not store the full verification data. To link a memorial you created in a browser, verify your Telegram identity and use your memorial claim code. If you have not linked it and no longer have the code, we may be unable to restore access.
+- [已验证事实] 改后：You can visit the Pet Garden without signing in. When you open a public memorial, your browser stores a random number so we can avoid counting the same flower or light more than once. When you create your first memorial, your browser stores a separate number that lets us recognize you as its owner. These numbers can remain in your browser for up to 365 days. They are generated at random and do not come from device fingerprinting. `server/pet-api.mjs:67-75,138-142,206-214`。
+- [已验证事实] 改后：While a memorial is not linked, you can view its claim code again in the personal area in the same browser. If you clear cookies or switch browsers, the memorial remains on our server but you cannot view the code there again. After the memorial is linked, the claim code is no longer shown again. `server/pet-api.mjs:149-158`；`server/pet-store.mjs:92-100`；`server/pet-api.test.mjs:254-283`。
+- [已验证事实] 改后：When you open the Telegram Mini App, Telegram sends signed data so we can verify you. We use a code derived from your Telegram user ID to recognize you in the Garden. We do not store the full verification data. `server/security.mjs:15-25`；`server/pet-api.mjs:78-95`。
+- [已验证事实] 改后：To link a memorial you created in a browser, verify your Telegram identity and use your memorial claim code. At present, the claim code is not shown again within the same Telegram account. `server/pet-api.mjs:149-158,235-239`；`server/pet-api.test.mjs:254-283`。
+- [待律师确认] The release copy still needs review of cookie notice, deletion wording, and backup retention; the implementation facts above are not legal conclusions.
 - 【内部门槛】同越文第 1 项。
 
 **2. Who can see a memorial; copies and deletion**
