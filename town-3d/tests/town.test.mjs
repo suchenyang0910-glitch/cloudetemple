@@ -2,6 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { TEMPLES, TEMPLE_IDS, TRIGGER_DISTANCE, SIDE_HALL_LAYOUT, SPAWN, activityUrl, isOpen, nearestTemple, doorPoint, canOccupy, facingBuddhaYaw } from '../logic.js';
+import { stepWalking } from '../shared.js';
+import { placeForTemple } from '../places.js';
 
 test('round 3 artwork replaces both P0 placeholders', async () => {
   const [scene, character] = await Promise.all([
@@ -69,4 +71,29 @@ test('side-hall order: Buddha, altar, (mallet table ahead of) person; beads on p
   const t = TEMPLES[1]; const d = doorPoint(t);
   const yaw = facingBuddhaYaw(t, d.x, d.z);
   assert.ok(Math.abs(Math.sin(yaw)) < 1e-9 && Math.cos(yaw) < 0); // forward = -z
+});
+
+test('P16 place stubs expose four hooks and only Chùa Mây currently enters the hall', async () => {
+  const [hall, petgarden] = await Promise.all([
+    import('../hall/index.js'), import('../petgarden/index.js')
+  ]);
+  for (const place of [hall, petgarden]) {
+    assert.equal(typeof place.enter, 'function');
+    assert.equal(typeof place.leave, 'function');
+    assert.equal(typeof place.update, 'function');
+    assert.deepEqual(place.resources(), []);
+  }
+  assert.equal(placeForTemple('chuamay'), hall);
+  assert.equal(placeForTemple('petgarden'), petgarden);
+  assert.equal(placeForTemple('dilac'), null);
+});
+
+test('shared walking step preserves the town forward speed and door collision callback', () => {
+  const visitor = { rotation: { y: 0 }, position: { x: 0, z: 0 } };
+  const step = stepWalking({ visitor, keys: new Set(['w']), pointer: { down: false }, target: null, delta: .1, canOccupy: () => true });
+  assert.deepEqual(step, { target: null, walking: true });
+  assert.ok(Math.abs(visitor.position.z - .24) < 1e-9);
+  const blocked = stepWalking({ visitor, keys: new Set(['w']), pointer: { down: false }, target: null, delta: .1, canOccupy: () => false });
+  assert.deepEqual(blocked, { target: null, walking: true });
+  assert.ok(Math.abs(visitor.position.z - .24) < 1e-9);
 });

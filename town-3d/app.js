@@ -2,6 +2,8 @@ import * as THREE from '../prototype-3d/vendor/three.module.min.js';
 import { createTownWorld } from './scene.js';
 import { poseVisitor, updateView } from './character.js';
 import { TEMPLES, canOccupy, nearestTemple, facingBuddhaYaw, COMING_SOON_LABEL } from './logic.js';
+import { placeForTemple } from './places.js';
+import { stepWalking, updateFollowCamera, updateBillboards, updateLabels } from './shared.js';
 
 const ROOT_PREFIX = '../'; // town-3d/ lives one level below the 2D app (index.html).
 const canvas = document.querySelector('#scene');
@@ -21,6 +23,7 @@ let world;
 let target = null;
 let walking = false;
 let current = null;
+let activePlace = null;
 const keys = new Set();
 const pointer = { down: false, id: null, startX: 0, startY: 0, steer: 0, moved: false };
 const raycaster = new THREE.Raycaster();
@@ -42,131 +45,6 @@ function initLabels() {
       (t.status !== 'open' ? `<span class="label-status">${COMING_SOON_LABEL}</span>` : '');
     labelsEl.appendChild(div);
     labelDivs[t.id] = div;
-  }
-}
-
-// ── Label helpers ─────────────────────────────────────────────────────────────
-
-const _pt = new THREE.Vector3();
-
-function rectsOverlap(a, b) {
-  return a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
-}
-
-function updateLabels() {
-  const halfW = innerWidth / 2, halfH = innerHeight / 2;
-  const cam = world.camera;
-
-  const visible = new Set();
-  const finalPos = new Map();
-  const LHW = 76; // label half-width (px)
-
-  if (mapMode) {
-    // Map mode: show all 7, push-down to prevent overlap (never hide)
-    const vx = world.visitor.position.x, vz = world.visitor.position.z;
-    const sorted = [...TEMPLES].sort((a, b) =>
-      Math.hypot(a.x - vx, a.z - vz) - Math.hypot(b.x - vx, b.z - vz)
-    );
-    const LH = 38;
-    const placements = [];
-    for (const t of sorted) {
-      const v = _pt.set(t.x, 0.5, t.z).project(cam);
-      if (v.z > 1) continue;
-      placements.push({ id: t.id, sx: v.x * halfW + halfW, sy: -v.y * halfH + halfH });
-    }
-    placements.sort((a, b) => a.sy - b.sy);
-    const placed = [];
-    for (const p of placements) {
-      let sx = Math.max(LHW + 12, Math.min(innerWidth - LHW - 12, p.sx));
-      let sy = p.sy;
-      for (let attempt = 0; attempt < 10; attempt++) {
-        const r = { left: sx - LHW, right: sx + LHW, top: sy - 4, bottom: sy + LH };
-        const conflict = placed.find(q => rectsOverlap(r, q));
-        if (!conflict) break;
-        sy = conflict.bottom + 4;
-      }
-      sy = Math.max(72, Math.min(innerHeight - 12, sy));
-      placed.push({ left: sx - LHW, right: sx + LHW, top: sy - 4, bottom: sy + LH });
-      visible.add(p.id);
-      finalPos.set(p.id, { sx, sy });
-    }
-  } else {
-    // Normal mode: label shown ONLY when the temple's billboard top is inside the viewport.
-    // No fallback positioning — if the top is off-screen the label is hidden.
-    const BILL_TOP = 12; // must match BILL_H in scene.js (8 * 1536/1024)
-
-    // Visitor bounding rect for overlap guard
-    const vp = world.visitor.position;
-    _pt.set(vp.x, 2.8, vp.z).project(cam);
-    const visSx = _pt.x * halfW + halfW;
-    const visTop = -_pt.y * halfH + halfH;
-    _pt.set(vp.x, 0, vp.z).project(cam);
-    const visBot = -_pt.y * halfH + halfH;
-    const visRect = { left: visSx - 24, right: visSx + 24, top: visTop, bottom: visBot };
-
-    const placedRects = [];
-    for (const t of TEMPLES) {
-      // Project the top of this temple's billboard
-      _pt.set(t.x, BILL_TOP, t.z).project(cam);
-      // Skip if behind clip plane or billboard top is outside the NDC square
-      if (_pt.z > 1 || _pt.x < -1 || _pt.x > 1 || _pt.y < -1 || _pt.y > 1) continue;
-
-      const rawSx = _pt.x * halfW + halfW;
-      const rawSy = -_pt.y * halfH + halfH;
-
-      // Place label just above the projected top; clamp x to avoid edge clipping
-      const sx = Math.max(LHW + 12, Math.min(innerWidth - LHW - 12, rawSx));
-      const sy = Math.max(72, rawSy - 8);
-      if (sy > innerHeight - 46) continue;
-
-      const lRect = { left: sx - LHW, right: sx + LHW, top: sy - 4, bottom: sy + 42 };
-
-      if (rectsOverlap(lRect, visRect)) continue;
-
-      let blocked = false;
-      for (const pr of placedRects) {
-        if (rectsOverlap(lRect, pr)) { blocked = true; break; }
-      }
-      if (blocked) continue;
-
-      placedRects.push(lRect);
-      visible.add(t.id);
-      finalPos.set(t.id, { sx, sy });
-    }
-  }
-
-  // Apply positions and visibility
-  for (const t of TEMPLES) {
-    const div = labelDivs[t.id]; if (!div) continue;
-    if (!visible.has(t.id)) { div.style.display = 'none'; continue; }
-    const pos = finalPos.get(t.id);
-    div.style.display = '';
-    div.style.left = `${pos.sx}px`;
-    div.style.top  = `${pos.sy}px`;
-  }
-}
-
-function updateBillboards() {
-  const cam = world.camera;
-  for (const b of world.billboards) {
-    // Map mode: remove fog veil and restore full opacity for overhead readability
-    if (b.userData.veil) b.userData.veil.visible = !mapMode;
-    if (b.userData.board) {
-      const m = b.userData.board.material;
-      m.opacity = mapMode ? 1 : 0.82;
-      m.color.set(mapMode ? 0xffffff : 0xa8b0be);
-      m.needsUpdate = true;
-    }
-    if (!b.userData.autoRotate) continue; // Sprites auto-billboard; skip them
-    if (mapMode) {
-      // Full lookAt so overhead camera sees the painting, not an edge
-      b.lookAt(cam.position);
-    } else {
-      // Y-axis only: billboard stays vertical, rotates to face camera on horizontal plane
-      const dx = cam.position.x - b.position.x;
-      const dz = cam.position.z - b.position.z;
-      b.rotation.set(0, Math.atan2(dx, dz), 0);
-    }
   }
 }
 
@@ -232,35 +110,15 @@ function setGroundTarget(x, y) {
 
 function moveVisitor(delta, now) {
   const v = world.visitor;
-  let turn = 0; let forward = 0;
-  if (keys.has('arrowleft') || keys.has('a')) turn += 1;
-  if (keys.has('arrowright') || keys.has('d')) turn -= 1;
-  if (keys.has('arrowup') || keys.has('w')) forward += 1;
-  if (keys.has('arrowdown') || keys.has('s')) forward -= .65;
-  if (pointer.down && pointer.moved) { turn -= pointer.steer; forward = 1; target = null; } // press/drag continuous walk
-  v.rotation.y += turn * delta * 1.7;
-  let sx = 0; let sz = 0;
-  if (target) {
-    const dx = target.x - v.position.x; const dz = target.z - v.position.z;
-    const dist = Math.hypot(dx, dz);
-    if (dist < .15) target = null;
-    else { v.rotation.y = Math.atan2(dx, dz); sx = dx / dist; sz = dz / dist; forward = 1; }
-  }
-  if (forward) {
+  const step = stepWalking({ visitor: v, keys, pointer, target, delta, canOccupy });
+  target = step.target;
+  walking = step.walking;
+  if (walking) {
     hint.hidden = true;
-    if (!target) { sx = Math.sin(v.rotation.y); sz = Math.cos(v.rotation.y); }
-    const step = 2.4 * delta * forward;
-    const nx = v.position.x + sx * step; const nz = v.position.z + sz * step;
-    const movedX = canOccupy(nx, v.position.z); const movedZ = canOccupy(v.position.x, nz);
-    if (movedX) v.position.x = nx;
-    if (movedZ) v.position.z = nz;
-    if (!movedX && !movedZ) target = null;
-    walking = true;
     updateView(v, world.camera);
     poseVisitor(v, 'walk', now / 1000, reduced);
     return;
   }
-  walking = false;
   // Standing in a temple's trigger zone: always face the Buddha (never turn away from it).
   if (current) v.rotation.y = facingBuddhaYaw(current, v.position.x, v.position.z);
   updateView(v, world.camera);
@@ -279,20 +137,14 @@ function toggleMap() {
   world.scene.fog.far  = mapMode ? 400 : 65;
 }
 
-function updateCamera(delta) {
-  const v = world.visitor;
-  if (mapMode) {
-    world.camera.position.lerp(MAP_CAM_POS, reduced ? 1 : 1 - Math.pow(.001, delta));
-    world.camera.lookAt(MAP_CAM_TARGET);
-  } else {
-    const desired = v.position.clone().add(CAMERA_OFFSET);
-    world.camera.position.lerp(desired, reduced ? 1 : 1 - Math.pow(.002, delta));
-    world.camera.lookAt(v.position.x, 1.2, v.position.z - 5);
-  }
-}
-
 function updatePanel() {
   const near = nearestTemple(world.visitor.position.x, world.visitor.position.z);
+  const nextPlace = placeForTemple(near?.id);
+  if (activePlace !== nextPlace) {
+    activePlace?.leave({ world, temple: current });
+    activePlace = nextPlace;
+    activePlace?.enter({ world, temple: near });
+  }
   if ((near?.id || null) === (current?.id || null)) return;
   current = near;
   panel.hidden = !near;
@@ -314,11 +166,12 @@ function frame(now) {
   const delta = Math.min(.04, (now - previous) / 1000);
   previous = now;
   moveVisitor(delta, now);
-  updateCamera(delta);
-  updateBillboards();
+  updateFollowCamera({ world, delta, reduced, mapMode, cameraOffset: CAMERA_OFFSET, mapPosition: MAP_CAM_POS, mapTarget: MAP_CAM_TARGET });
+  updateBillboards(world.billboards, world.camera, mapMode);
   updatePanel();
+  activePlace?.update({ world, temple: current, delta, now });
   world.render();
-  updateLabels();
+  updateLabels({ world, temples: TEMPLES, labelDivs, mapMode });
   window.__TOWN_STATE__ = { x: world.visitor.position.x, z: world.visitor.position.z, walking, temple: current?.id || null, href: enterLink.getAttribute('href') };
   requestAnimationFrame(frame);
 }
