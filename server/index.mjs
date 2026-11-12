@@ -44,6 +44,9 @@ const petHandler = createPetApi(settings, pet, {
 const metricsHandler = createMetricsApi(settings, metrics, access, familyStore);
 const applicationHandler = async (req, res, route) => {
   const petRoute = route === "/pet-garden" || route.startsWith("/pet-garden/") ? `/api${route}` : route;
+  if (settings.environment === "staging" && petRoute !== route && /^Basic /i.test(req.headers.authorization || "")) {
+    delete req.headers.authorization;
+  }
   return (await petHandler(req, res, petRoute)) || (await metricsHandler(req, res, route)) || familyHandler(req, res, route);
 };
 const server = createServer(settings, store, undefined, applicationHandler, (status) => { if (status >= 500) metrics.error(); });
