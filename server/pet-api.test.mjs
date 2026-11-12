@@ -228,19 +228,75 @@ test('a valid family session can claim a browser memorial through the API entry 
     once(child, 'message').then(([port]) => port),
     exited.then(([code]) => { throw Error('API exited before listening: ' + code); })
   ]);
-  const url = 'http://127.0.0.1:' + port + '/pet-garden/memorials';
-  const post = (path, body, headers = {}) => fetch(url + path, {
+  const url = 'http://127.0.0.1:' + port + '/pet-garden';
+  const post = (path, body, headers = {}) => fetch(url + '/memorials' + path, {
     method: 'POST', headers: {'Content-Type': 'application/json', ...headers}, body: JSON.stringify(body)
   });
   const created = await post('', {...data, visibility: 'private'});
   assert.equal(created.status, 201);
   const {id, claimToken} = await created.json();
+  const cookie = created.headers.get('set-cookie').split(';')[0];
+  const view = () => fetch(url + '/me/claim', {headers: {Cookie: cookie}});
+  const shown = await view();
+  assert.equal(shown.status, 200);
+  assert.deepEqual(await shown.json(), {items: [{id, claimToken}]});
   const path = '/' + id + '/claim';
   const headers = {Authorization: 'Bearer family-session'};
   assert.equal((await post(path, {claimToken}, headers)).status, 401);
   const claimed = await post(path, {claimToken}, {...headers, Cookie: 'ct_session=' + session});
   assert.equal(claimed.status, 200);
   assert.deepEqual(await claimed.json(), {claimed: true});
+  const afterBinding = await view();
+  assert.equal(afterBinding.status, 200);
+  assert.deepEqual(await afterBinding.json(), {items: []});
+});
+
+test('only the original browser can redisplay an unbound memorial claim code', async t => {
+  const {call} = await fixture(t);
+  const created = await create(call, null);
+  assert.equal(created.status, 201);
+  const {id, claimToken} = created.body;
+  const cookie = created.headers.get('set-cookie').split(';')[0];
+  const view = options => call('/me/claim', options);
+  const shown = await view({cookie});
+  assert.equal(shown.status, 200);
+  assert.equal(shown.headers.get('cache-control'), 'no-store');
+  assert.deepEqual(shown.body, {items: [{id, claimToken}]});
+
+  for (const options of [{}, {cookie: cookie + '0'}, {authorization: 'Claim ' + claimToken},
+    {cookie, authorization: telegram(2)}, {cookie, authorization: 'Bearer verified'}]) {
+    const result = await view(options);
+    assert.equal(result.status, 200);
+    assert.deepEqual(result.body, {items: []});
+  }
+
+  assert.equal((await call(base(id) + '/claim', {
+    method: 'POST', body: {claimToken}, authorization: telegram(2)
+  })).status, 200);
+  const afterBinding = await view({cookie});
+  assert.equal(afterBinding.status, 200);
+  assert.deepEqual(afterBinding.body, {items: []});
+  const boundOwner = await view({cookie, authorization: telegram(2)});
+  assert.equal(boundOwner.status, 200);
+  assert.deepEqual(boundOwner.body, {items: []});
+});
+
+test('claim-code redisplay limits both the browser owner and IP', async t => {
+  let time = now;
+  const {call} = await fixture(t, {clock: () => time});
+  const created = await create(call, null);
+  assert.equal(created.status, 201);
+  const cookie = created.headers.get('set-cookie').split(';')[0];
+  const view = options => call('/me/claim', options);
+  for (let i = 0; i < 2; i++) assert.equal((await view({cookie})).status, 200);
+  const limited = await view({cookie});
+  assert.equal(limited.status, 429);
+  assert.equal(limited.headers.get('retry-after'), '60');
+  assert.equal(limited.headers.get('cache-control'), 'no-store');
+  time += 60000;
+  assert.deepEqual((await view({cookie})).body, {items: [{id: created.body.id, claimToken: created.body.claimToken}]});
+  for (let i = 0; i < 7; i++) assert.equal((await view()).status, 200);
+  assert.equal((await view()).status, 429);
 });
 
 test('claim atomically transfers a browser memorial, unauthorized edits and deletes fail, deletion cascades', async t => {
