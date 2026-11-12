@@ -13,7 +13,7 @@ export function worldPosition({ rowNo, columnNo }) {
 
 export function normalizeMemorial(item) {
   const position = worldPosition(item);
-  return { ...item, districtId: item.districtId || DISTRICT_ID, worldX: position.x, worldZ: position.z, bounds: 1.05 };
+  return { ...item, districtId: item.districtId || DISTRICT_ID, worldX: position.x, worldZ: position.z, bounds: 1.35 };
 }
 
 export function canOccupyMemorials(memorials, x, z, radius = .55) {
