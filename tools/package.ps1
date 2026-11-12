@@ -15,7 +15,7 @@ if (Test-Path -LiteralPath $outputRoot) {
   Move-Item -LiteralPath $resolvedOutput -Destination (Join-Path $archiveRoot 'dist')
 }
 New-Item -ItemType Directory -Path $outputRoot -Force | Out-Null
-foreach ($name in @('index.html','404.html','preload.js','styles.css','app.js','config.js','i18n.js','telegram.js','audio.js','resources.js','beads.js','bow.js','incense.js','referrals.js','morning.js','festival.js','gioi-thieu.html','quyen-rieng-tu.html','dieu-khoan.html','_headers','_routes.json')) { Copy-Item -LiteralPath (Join-Path $projectRoot $name) -Destination (Join-Path $outputRoot $name) -Force }
+foreach ($name in @('index.html','lich-2027.html','calendar-2027.css','calendar-2027.js','404.html','preload.js','styles.css','app.js','config.js','i18n.js','telegram.js','audio.js','resources.js','beads.js','bow.js','incense.js','referrals.js','morning.js','festival.js','gioi-thieu.html','quyen-rieng-tu.html','dieu-khoan.html','_headers','_routes.json')) { Copy-Item -LiteralPath (Join-Path $projectRoot $name) -Destination (Join-Path $outputRoot $name) -Force }
 Copy-Item -Path (Join-Path $projectRoot 'static/*') -Destination $outputRoot -Recurse -Force
 $appFile=Join-Path $outputRoot 'app.js'
 $appSource=[IO.File]::ReadAllText($appFile).Replace('__CT_REFERRALS_ENABLED__',$(if($Environment -eq 'staging'){'1'}else{'0'})).Replace('__CT_PRESENCE_ENABLED__',$(if($Environment -eq 'staging'){'1'}else{'0'}))
@@ -43,6 +43,7 @@ Copy-Item -LiteralPath (Join-Path $projectRoot 'assets/processed-v1/mobile') -De
 Copy-Item -LiteralPath (Join-Path $projectRoot 'assets/fonts') -Destination (Join-Path $outputRoot 'assets') -Recurse
 Copy-Item -LiteralPath (Join-Path $projectRoot 'assets/share') -Destination (Join-Path $outputRoot 'assets') -Recurse
 Copy-Item -LiteralPath (Join-Path $projectRoot 'assets/festival') -Destination (Join-Path $outputRoot 'assets') -Recurse
+Copy-Item -LiteralPath (Join-Path $projectRoot 'assets/calendar-2027') -Destination (Join-Path $outputRoot 'assets') -Recurse
 $debugOutput=Join-Path $outputRoot 'audio-debug.js'
 Copy-Item -LiteralPath (Join-Path $projectRoot 'analytics.js') -Destination $outputRoot
 $index=Join-Path $outputRoot 'index.html'

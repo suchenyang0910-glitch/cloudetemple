@@ -242,7 +242,7 @@ function render(){
     }void showChoice();
   }else if(state.view==='home'){
     const actions=['incense','bow','sit','mo','beads'];
-    $('#controls').innerHTML=`<nav class="action-nav">${actions.map(key=>`<button data-action="${key}"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">${actionIcons[key]}</svg>${key==='memorial'?t('familyAltar'):t(key)}</button>`).join('')}</nav>`;
+    $('#controls').innerHTML=`<nav class="action-nav">${actions.map(key=>`<button data-action="${key}"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">${actionIcons[key]}</svg>${key==='memorial'?t('familyAltar'):t(key)}</button>`).join('')}</nav><a class="calendar-entry" href="/lich-2027.html">Lịch 2027</a>`;
   }else if(state.view==='leave'){
     $('#controls').innerHTML=`<p class="leave-message">${t('goodbye')}</p>${button('reenter','reenter','primary')}`;
   }else if(state.result){

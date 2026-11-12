@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#eee8dc">
+  <meta name="robots" content="noindex,follow">
+  <title>Lịch 2027</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="calendar-2027.css">
+  <script type="module" src="calendar-2027.js"></script>
+</head>
+<body data-period="day">
+  <main id="calendar-app">
+    <header class="calendar-heading">
+      <a href="/" aria-label="Lịch 2027">‹</a>
+      <h1>Lịch 2027</h1>
+      <button id="overview" type="button" aria-pressed="false">Cả năm</button>
+    </header>
+    <figure class="calendar-sheet">
+      <img id="calendar-image" alt="" decoding="async">
+      <figcaption id="calendar-label" aria-live="polite"></figcaption>
+    </figure>
+    <nav class="calendar-months" aria-label="Lịch 2027">
+      <button id="previous" type="button" aria-label="Tháng trước">‹</button>
+      <span id="month-label"></span>
+      <button id="next" type="button" aria-label="Tháng sau">›</button>
+    </nav>
+    <div class="calendar-actions">
+      <a id="save" class="primary" href="#" download>Lưu ảnh</a>
+      <button id="share" type="button">Chia sẻ</button>
+    </div>
+    <p id="calendar-status" role="status" aria-live="polite"></p>
+  </main>
+</body>
+</html>
