@@ -57,12 +57,12 @@
 .wordmark{display:flex;flex-direction:column;justify-content:center;min-height:44px}
 .nav-icon{display:block;width:24px;height:24px;margin:0 auto 5px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
 .share-preview{max-height:none}
-body:is([data-period=night],[data-period=dusk]) button{opacity:1;background:var(--warm-5);color:var(--warm-0);border-color:var(--warm-3)}
-body:is([data-period=night],[data-period=dusk]) button:hover{background:var(--warm-4);color:var(--warm-0)}
+body[data-period=night] button{opacity:1;background:var(--warm-5);color:var(--warm-0);border-color:var(--warm-3)}
+body[data-period=night] button:hover{background:var(--warm-4);color:var(--warm-0)}
 body:is([data-period=night],[data-period=dusk]) button.primary{font-size:17px;background:var(--accent);color:var(--warm-0)}
 body:is([data-period=night],[data-period=dusk]) button.primary:hover{background:var(--accent);color:var(--warm-0)}
 body:is([data-period=night],[data-period=dusk]) button[aria-pressed=true]{background:var(--accent);color:var(--warm-0);border-color:var(--warm-2)}
-body:is([data-period=night],[data-period=dusk]) button:disabled{opacity:1;background:var(--warm-4);color:var(--warm-1);border-color:var(--warm-3);cursor:not-allowed}
+body[data-period=night] button:disabled{opacity:1;background:var(--warm-4);color:var(--warm-1);border-color:var(--warm-3);cursor:not-allowed}
 #eyebrow{text-transform:none}.legal-links{display:flex;flex-wrap:wrap;justify-content:center;gap:12px}.legal-links a{display:inline-flex;align-items:center;min-height:44px;font-size:13px}.legal-page{font-size:13px;max-width:470px;margin:24px auto;padding:24px;line-height:1.8;background:var(--paper)}.legal-page p,.legal-page h2{margin:16px 0}/* The scene and visitor are already composited in one canvas; keep FX on its exact transform. */
 html:has(#app),body:has(#app){height:100%;overflow:hidden;overscroll-behavior:none}
 body:has(#app){--safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px);--safe-left:env(safe-area-inset-left,0px);--safe-right:env(safe-area-inset-right,0px)}
