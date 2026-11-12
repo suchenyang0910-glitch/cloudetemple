@@ -1,0 +1,1320 @@
+{
+  "cases": [
+    {
+      "engine": "chromium",
+      "w": 375,
+      "h": 548,
+      "period": "dawn",
+      "mo": {
+        "woodTop": 335.21875,
+        "woodBottom": 426.390625,
+        "woodWidth": 105,
+        "altarBottom": 327.2342587672689,
+        "haloTop": 50.66677736450586,
+        "headingBottom": 47.796875,
+        "panelTop": 442.40625
+      }
+    },
+    {
+      "engine": "chromium",
+      "w": 375,
+      "h": 548,
+      "period": "dawn",
+      "hand": "right",
+      "beads": {
+        "visible": 5,
+        "complete": true,
+        "thumbPercent": 64.9977189781022,
+        "haloFilter": "none"
+      }
+    },
+    {
+      "engine": "chromium",
+      "w": 375,
+      "h": 548,
+      "period": "dawn",
+      "hand": "left",
+      "beads": {
+        "visible": 5,
+        "complete": true,
+        "thumbPercent": 64.9977189781022,
+        "haloFilter": "none"
+      }
+    },
+    {
+      "engine": "chromium",
+      "w": 375,
+      "h": 548,
+      "period": "day",
+      "mo": {
+        "woodTop": 335.21875,
+        "woodBottom": 426.390625,
+        "woodWidth": 105,
+        "altarBottom": 327.2342587672689,
+        "haloTop": 50.66677736450586,
+        "headingBottom": 47.796875,
+        "panelTop": 442.40625
+      }
+    },
+    {
+      "engine": "chromium",
+      "w": 375,
+      "h": 548,
+      "period": "day",
+      "hand": "right",
+      "beads": {
+        "visible": 5,
+        "complete": true,
+        "thumbPercent": 64.9977189781022,
+        "haloFilter": "none"
+      }
+    },
+    {
+      "engine": "chromium",
+      "w": 375,
+      "h": 548,
+      "period": "day",
+      "hand": "left",
+      "beads": {
+        "visible": 5,
+        "complete": true,
+        "thumbPercent": 64.9977189781022,
+        "haloFilter": "none"
+      }
+    },
+    {
+      "engine": "chromium",
+      "w": 375,
+      "h": 548,
+      "period": "dusk",
+      "mo": {
+        "woodTop": 335.21875,
+        "woodBottom": 426.390625,
+        "woodWidth": 105,
+        "altarBottom": 327.2342587672689,
+        "haloTop": 50.66677736450586,
+        "headingBottom": 47.796875,
+        "panelTop": 442.40625
+      }
+    },
+    {
+      "engine": "chromium",
+      "w": 375,
+      "h": 548,
+      "period": "dusk",
+      "hand": "right",
+      "beads": {
+        "visible": 5,
+        "complete": true,
+        "thumbPercent": 64.9977189781022,
+        "haloFilter": "none"
+      }
+    },
+    {
+      "engine": "chromium",
+      "w": 375,
+      "h": 548,
+      "period": "dusk",
+      "hand": "left",
+      "beads": {
+        "visible": 5,
+        "complete": true,
+        "thumbPercent": 64.9977189781022,
+        "haloFilter": "none"
+      }
+    },
+    {
+      "engine": "chromium",
+      "w": 375,
+      "h": 548,
+      "period": "night",
+      "mo": {
+        "woodTop": 335.21875,
+        "woodBottom": 426.390625,
+        "woodWidth": 105,
+        "altarBottom": 327.2342587672689,
+        "haloTop": 50.66677736450586,
+        "headingBottom": 47.796875,
+        "panelTop": 442.40625
+      }
+    },
+    {
+      "engine": "chromium",
+      "w": 375,
+      "h": 548,
+      "period": "night",
+      "hand": "right",
+      "beads": {
+        "visible": 5,
+        "complete": true,
+        "thumbPercent": 64.9977189781022,
+        "haloFilter": "none"
+      }
+    },
+    {
+      "engine": "chromium",
+      "w": 375,
+      "h": 548,
+      "period": "night",
+      "hand": "left",
+      "beads": {
+        "visible": 5,
+        "complete": true,
+        "thumbPercent": 64.9977189781022,
+        "haloFilter": "none"
+      }
+    },
+    {
+      "engine": "chromium",
+      "w": 393,
+      "h": 659,
+      "period": "dawn",
+      "mo": {
+        "woodTop": 424.359375,
+        "woodBottom": 537.390625,
+        "woodWidth": 130.171875,
+        "altarBottom": 416.37637818809776,
+        "haloTop": 126.53365767800213,
+        "headingBottom": 80,
+        "panelTop": 553.40625
+      }
+    },
+    {
+      "engine": "chromium",
+      "w": 393,
+      "h": 659,
+      "period": "dawn",
+      "hand": "right",
+      "beads": {
+        "visible": 6,
+        "complete": true,
+        "thumbPercent": 64.99905159332322,
+        "haloFilter": "none"
+      }
+    },
+    {
+      "engine": "chromium",
+      "w": 393,
+      "h": 659,
+      "period": "dawn",
+      "hand": "left",
+      "beads": {
+        "visible": 6,
+        "complete": true,
+        "thumbPercent": 64.99905159332322,
+        "haloFilter": "none"
+      }
+    },
+    {
+      "engine": "chromium",
+      "w": 393,
+      "h": 659,
+      "period": "day",
+      "mo": {
+        "woodTop": 424.359375,
+        "woodBottom": 537.390625,
+        "woodWidth": 130.171875,
+        "altarBottom": 416.37637818809776,
+        "haloTop": 126.53365767800213,
+        "headingBottom": 80,
+        "panelTop": 553.40625
+      }
+    },
+    {
+      "engine": "chromium",
+      "w": 393,
+      "h": 659,
+      "period": "day",
+      "hand": "right",
+      "beads": {
+        "visible": 6,
+        "complete": true,
+        "thumbPercent": 64.99905159332322,
+        "haloFilter": "none"
+      }
+    },
+    {
+      "engine": "chromium",
+      "w": 393,
+      "h": 659,
+      "period": "day",
+      "hand": "left",
+      "beads": {
+        "visible": 6,
+        "complete": true,
+        "thumbPercent": 64.99905159332322,
+        "haloFilter": "none"
+      }
+    },
+    {
+      "engine": "chromium",
+      "w": 393,
+      "h": 659,
+      "period": "dusk",
+      "mo": {
+        "woodTop": 424.359375,
+        "woodBottom": 537.390625,
+        "woodWidth": 130.171875,
+        "altarBottom": 416.37637818809776,
+        "haloTop": 126.53365767800213,
+        "headingBottom": 80,
+        "panelTop": 553.40625
+      }
+    },
+    {
+      "engine": "chromium",
+      "w": 393,
+      "h": 659,
+      "period": "dusk",
+      "hand": "right",
+      "beads": {
+        "visible": 6,
+        "complete": true,
+        "thumbPercent": 64.99905159332322,
+        "haloFilter": "none"
+      }
+    },
+    {
+      "engine": "chromium",
+      "w": 393,
+      "h": 659,
+      "period": "dusk",
+      "hand": "left",
+      "beads": {
+        "visible": 6,
+        "complete": true,
+        "thumbPercent": 64.99905159332322,
+        "haloFilter": "none"
+      }
+    },
+    {
+      "engine": "chromium",
+      "w": 393,
+      "h": 659,
+      "period": "night",
+      "mo": {
+        "woodTop": 424.359375,
+        "woodBottom": 537.390625,
+        "woodWidth": 130.171875,
+        "altarBottom": 416.37637818809776,
+        "haloTop": 126.53365767800213,
+        "headingBottom": 80,
+        "panelTop": 553.40625
+      }
+    },
+    {
+      "engine": "chromium",
+      "w": 393,
+      "h": 659,
+      "period": "night",
+      "hand": "right",
+      "beads": {
+        "visible": 6,
+        "complete": true,
+        "thumbPercent": 64.99905159332322,
+        "haloFilter": "none"
+      }
+    },
+    {
+      "engine": "chromium",
+      "w": 393,
+      "h": 659,
+      "period": "night",
+      "hand": "left",
+      "beads": {
+        "visible": 6,
+        "complete": true,
+        "thumbPercent": 64.99905159332322,
+        "haloFilter": "none"
+      }
+    },
+    {
+      "engine": "chromium",
+      "w": 375,
+      "h": 667,
+      "period": "dawn",
+      "mo": {
+        "woodTop": 424.46875,
+        "woodBottom": 545.390625,
+        "woodWidth": 139.265625,
+        "altarBottom": 416.4628055260361,
+        "haloTop": 139.61875664187036,
+        "headingBottom": 80,
+        "panelTop": 561.40625
+      }
+    },
+    {
+      "engine": "chromium",
+      "w": 375,
+      "h": 667,
+      "period": "dawn",
+      "hand": "right",
+      "beads": {
+        "visible": 6,
+        "complete": true,
+        "thumbPercent": 64.99953148425787,
+        "haloFilter": "none"
+      }
+    },
+    {
+      "engine": "chromium",
+      "w": 375,
+      "h": 667,
+      "period": "dawn",
+      "hand": "left",
+      "beads": {
+        "visible": 6,
+        "complete": true,
+        "thumbPercent": 64.99953148425787,
+        "haloFilter": "none"
+      }
+    },
+    {
+      "engine": "chromium",
+      "w": 375,
+      "h": 667,
+      "period": "day",
+      "mo": {
+        "woodTop": 424.46875,
+        "woodBottom": 545.390625,
+        "woodWidth": 139.265625,
+        "altarBottom": 416.4628055260361,
+        "haloTop": 139.61875664187036,
+        "headingBottom": 80,
+        "panelTop": 561.40625
+      }
+    },
+    {
+      "engine": "chromium",
+      "w": 375,
+      "h": 667,
+      "period": "day",
+      "hand": "right",
+      "beads": {
+        "visible": 6,
+        "complete": true,
+        "thumbPercent": 64.99953148425787,
+        "haloFilter": "none"
+      }
+    },
+    {
+      "engine": "chromium",
+      "w": 375,
+      "h": 667,
+      "period": "day",
+      "hand": "left",
+      "beads": {
+        "visible": 6,
+        "complete": true,
+        "thumbPercent": 64.99953148425787,
+        "haloFilter": "none"
+      }
+    },
+    {
+      "engine": "chromium",
+      "w": 375,
+      "h": 667,
+      "period": "dusk",
+      "mo": {
+        "woodTop": 424.46875,
+        "woodBottom": 545.390625,
+        "woodWidth": 139.265625,
+        "altarBottom": 416.4628055260361,
+        "haloTop": 139.61875664187036,
+        "headingBottom": 80,
+        "panelTop": 561.40625
+      }
+    },
+    {
+      "engine": "chromium",
+      "w": 375,
+      "h": 667,
+      "period": "dusk",
+      "hand": "right",
+      "beads": {
+        "visible": 6,
+        "complete": true,
+        "thumbPercent": 64.99953148425787,
+        "haloFilter": "none"
+      }
+    },
+    {
+      "engine": "chromium",
+      "w": 375,
+      "h": 667,
+      "period": "dusk",
+      "hand": "left",
+      "beads": {
+        "visible": 6,
+        "complete": true,
+        "thumbPercent": 64.99953148425787,
+        "haloFilter": "none"
+      }
+    },
+    {
+      "engine": "chromium",
+      "w": 375,
+      "h": 667,
+      "period": "night",
+      "mo": {
+        "woodTop": 424.46875,
+        "woodBottom": 545.390625,
+        "woodWidth": 139.265625,
+        "altarBottom": 416.4628055260361,
+        "haloTop": 139.61875664187036,
+        "headingBottom": 80,
+        "panelTop": 561.40625
+      }
+    },
+    {
+      "engine": "chromium",
+      "w": 375,
+      "h": 667,
+      "period": "night",
+      "hand": "right",
+      "beads": {
+        "visible": 6,
+        "complete": true,
+        "thumbPercent": 64.99953148425787,
+        "haloFilter": "none"
+      }
+    },
+    {
+      "engine": "chromium",
+      "w": 375,
+      "h": 667,
+      "period": "night",
+      "hand": "left",
+      "beads": {
+        "visible": 6,
+        "complete": true,
+        "thumbPercent": 64.99953148425787,
+        "haloFilter": "none"
+      }
+    },
+    {
+      "engine": "chromium",
+      "w": 393,
+      "h": 852,
+      "period": "dawn",
+      "mo": {
+        "woodTop": 585.890625,
+        "woodBottom": 722.390625,
+        "woodWidth": 157.1875,
+        "altarBottom": 531.9851222104144,
+        "haloTop": 178.34750265674813,
+        "headingBottom": 82.59375,
+        "panelTop": 738.40625
+      }
+    },
+    {
+      "engine": "chromium",
+      "w": 393,
+      "h": 852,
+      "period": "dawn",
+      "hand": "right",
+      "beads": {
+        "visible": 7,
+        "complete": true,
+        "thumbPercent": 64.99963321596243,
+        "haloFilter": "none"
+      }
+    },
+    {
+      "engine": "chromium",
+      "w": 393,
+      "h": 852,
+      "period": "dawn",
+      "hand": "left",
+      "beads": {
+        "visible": 7,
+        "complete": true,
+        "thumbPercent": 64.99963321596243,
+        "haloFilter": "none"
+      }
+    },
+    {
+      "engine": "chromium",
+      "w": 393,
+      "h": 852,
+      "period": "day",
+      "mo": {
+        "woodTop": 585.890625,
+        "woodBottom": 722.390625,
+        "woodWidth": 157.1875,
+        "altarBottom": 531.9851222104144,
+        "haloTop": 178.34750265674813,
+        "headingBottom": 82.59375,
+        "panelTop": 738.40625
+      }
+    },
+    {
+      "engine": "chromium",
+      "w": 393,
+      "h": 852,
+      "period": "day",
+      "hand": "right",
+      "beads": {
+        "visible": 7,
+        "complete": true,
+        "thumbPercent": 64.99963321596243,
+        "haloFilter": "none"
+      }
+    },
+    {
+      "engine": "chromium",
+      "w": 393,
+      "h": 852,
+      "period": "day",
+      "hand": "left",
+      "beads": {
+        "visible": 7,
+        "complete": true,
+        "thumbPercent": 64.99963321596243,
+        "haloFilter": "none"
+      }
+    },
+    {
+      "engine": "chromium",
+      "w": 393,
+      "h": 852,
+      "period": "dusk",
+      "mo": {
+        "woodTop": 585.890625,
+        "woodBottom": 722.390625,
+        "woodWidth": 157.1875,
+        "altarBottom": 531.9851222104144,
+        "haloTop": 178.34750265674813,
+        "headingBottom": 82.59375,
+        "panelTop": 738.40625
+      }
+    },
+    {
+      "engine": "chromium",
+      "w": 393,
+      "h": 852,
+      "period": "dusk",
+      "hand": "right",
+      "beads": {
+        "visible": 7,
+        "complete": true,
+        "thumbPercent": 64.99963321596243,
+        "haloFilter": "none"
+      }
+    },
+    {
+      "engine": "chromium",
+      "w": 393,
+      "h": 852,
+      "period": "dusk",
+      "hand": "left",
+      "beads": {
+        "visible": 7,
+        "complete": true,
+        "thumbPercent": 64.99963321596243,
+        "haloFilter": "none"
+      }
+    },
+    {
+      "engine": "chromium",
+      "w": 393,
+      "h": 852,
+      "period": "night",
+      "mo": {
+        "woodTop": 585.890625,
+        "woodBottom": 722.390625,
+        "woodWidth": 157.1875,
+        "altarBottom": 531.9851222104144,
+        "haloTop": 178.34750265674813,
+        "headingBottom": 82.59375,
+        "panelTop": 738.40625
+      }
+    },
+    {
+      "engine": "chromium",
+      "w": 393,
+      "h": 852,
+      "period": "night",
+      "hand": "right",
+      "beads": {
+        "visible": 7,
+        "complete": true,
+        "thumbPercent": 64.99963321596243,
+        "haloFilter": "none"
+      }
+    },
+    {
+      "engine": "chromium",
+      "w": 393,
+      "h": 852,
+      "period": "night",
+      "hand": "left",
+      "beads": {
+        "visible": 7,
+        "complete": true,
+        "thumbPercent": 64.99963321596243,
+        "haloFilter": "none"
+      }
+    },
+    {
+      "engine": "webkit",
+      "w": 375,
+      "h": 548,
+      "period": "dawn",
+      "mo": {
+        "woodTop": 335.21875,
+        "woodBottom": 426.390625,
+        "woodWidth": 105,
+        "altarBottom": 327.2342587672689,
+        "haloTop": 50.66677736450586,
+        "headingBottom": 47.796875,
+        "panelTop": 442.40625
+      }
+    },
+    {
+      "engine": "webkit",
+      "w": 375,
+      "h": 548,
+      "period": "dawn",
+      "hand": "right",
+      "beads": {
+        "visible": 5,
+        "complete": true,
+        "thumbPercent": 64.9977189781022,
+        "haloFilter": "none"
+      }
+    },
+    {
+      "engine": "webkit",
+      "w": 375,
+      "h": 548,
+      "period": "dawn",
+      "hand": "left",
+      "beads": {
+        "visible": 5,
+        "complete": true,
+        "thumbPercent": 64.9977189781022,
+        "haloFilter": "none"
+      }
+    },
+    {
+      "engine": "webkit",
+      "w": 375,
+      "h": 548,
+      "period": "day",
+      "mo": {
+        "woodTop": 335.21875,
+        "woodBottom": 426.390625,
+        "woodWidth": 105,
+        "altarBottom": 327.2342587672689,
+        "haloTop": 50.66677736450586,
+        "headingBottom": 47.796875,
+        "panelTop": 442.40625
+      }
+    },
+    {
+      "engine": "webkit",
+      "w": 375,
+      "h": 548,
+      "period": "day",
+      "hand": "right",
+      "beads": {
+        "visible": 5,
+        "complete": true,
+        "thumbPercent": 64.9977189781022,
+        "haloFilter": "none"
+      }
+    },
+    {
+      "engine": "webkit",
+      "w": 375,
+      "h": 548,
+      "period": "day",
+      "hand": "left",
+      "beads": {
+        "visible": 5,
+        "complete": true,
+        "thumbPercent": 64.9977189781022,
+        "haloFilter": "none"
+      }
+    },
+    {
+      "engine": "webkit",
+      "w": 375,
+      "h": 548,
+      "period": "dusk",
+      "mo": {
+        "woodTop": 335.21875,
+        "woodBottom": 426.390625,
+        "woodWidth": 105,
+        "altarBottom": 327.2342587672689,
+        "haloTop": 50.66677736450586,
+        "headingBottom": 47.796875,
+        "panelTop": 442.40625
+      }
+    },
+    {
+      "engine": "webkit",
+      "w": 375,
+      "h": 548,
+      "period": "dusk",
+      "hand": "right",
+      "beads": {
+        "visible": 5,
+        "complete": true,
+        "thumbPercent": 64.9977189781022,
+        "haloFilter": "none"
+      }
+    },
+    {
+      "engine": "webkit",
+      "w": 375,
+      "h": 548,
+      "period": "dusk",
+      "hand": "left",
+      "beads": {
+        "visible": 5,
+        "complete": true,
+        "thumbPercent": 64.9977189781022,
+        "haloFilter": "none"
+      }
+    },
+    {
+      "engine": "webkit",
+      "w": 375,
+      "h": 548,
+      "period": "night",
+      "mo": {
+        "woodTop": 335.21875,
+        "woodBottom": 426.390625,
+        "woodWidth": 105,
+        "altarBottom": 327.2342587672689,
+        "haloTop": 50.66677736450586,
+        "headingBottom": 47.796875,
+        "panelTop": 442.40625
+      }
+    },
+    {
+      "engine": "webkit",
+      "w": 375,
+      "h": 548,
+      "period": "night",
+      "hand": "right",
+      "beads": {
+        "visible": 5,
+        "complete": true,
+        "thumbPercent": 64.9977189781022,
+        "haloFilter": "none"
+      }
+    },
+    {
+      "engine": "webkit",
+      "w": 375,
+      "h": 548,
+      "period": "night",
+      "hand": "left",
+      "beads": {
+        "visible": 5,
+        "complete": true,
+        "thumbPercent": 64.9977189781022,
+        "haloFilter": "none"
+      }
+    },
+    {
+      "engine": "webkit",
+      "w": 393,
+      "h": 659,
+      "period": "dawn",
+      "mo": {
+        "woodTop": 424.359375,
+        "woodBottom": 537.390625,
+        "woodWidth": 130.171875,
+        "altarBottom": 416.37637818809776,
+        "haloTop": 126.53365767800213,
+        "headingBottom": 80,
+        "panelTop": 553.40625
+      }
+    },
+    {
+      "engine": "webkit",
+      "w": 393,
+      "h": 659,
+      "period": "dawn",
+      "hand": "right",
+      "beads": {
+        "visible": 6,
+        "complete": true,
+        "thumbPercent": 64.99905159332322,
+        "haloFilter": "none"
+      }
+    },
+    {
+      "engine": "webkit",
+      "w": 393,
+      "h": 659,
+      "period": "dawn",
+      "hand": "left",
+      "beads": {
+        "visible": 6,
+        "complete": true,
+        "thumbPercent": 64.99905159332322,
+        "haloFilter": "none"
+      }
+    },
+    {
+      "engine": "webkit",
+      "w": 393,
+      "h": 659,
+      "period": "day",
+      "mo": {
+        "woodTop": 424.359375,
+        "woodBottom": 537.390625,
+        "woodWidth": 130.171875,
+        "altarBottom": 416.37637818809776,
+        "haloTop": 126.53365767800213,
+        "headingBottom": 80,
+        "panelTop": 553.40625
+      }
+    },
+    {
+      "engine": "webkit",
+      "w": 393,
+      "h": 659,
+      "period": "day",
+      "hand": "right",
+      "beads": {
+        "visible": 6,
+        "complete": true,
+        "thumbPercent": 64.99905159332322,
+        "haloFilter": "none"
+      }
+    },
+    {
+      "engine": "webkit",
+      "w": 393,
+      "h": 659,
+      "period": "day",
+      "hand": "left",
+      "beads": {
+        "visible": 6,
+        "complete": true,
+        "thumbPercent": 64.99905159332322,
+        "haloFilter": "none"
+      }
+    },
+    {
+      "engine": "webkit",
+      "w": 393,
+      "h": 659,
+      "period": "dusk",
+      "mo": {
+        "woodTop": 424.359375,
+        "woodBottom": 537.390625,
+        "woodWidth": 130.171875,
+        "altarBottom": 416.37637818809776,
+        "haloTop": 126.53365767800213,
+        "headingBottom": 80,
+        "panelTop": 553.40625
+      }
+    },
+    {
+      "engine": "webkit",
+      "w": 393,
+      "h": 659,
+      "period": "dusk",
+      "hand": "right",
+      "beads": {
+        "visible": 6,
+        "complete": true,
+        "thumbPercent": 64.99905159332322,
+        "haloFilter": "none"
+      }
+    },
+    {
+      "engine": "webkit",
+      "w": 393,
+      "h": 659,
+      "period": "dusk",
+      "hand": "left",
+      "beads": {
+        "visible": 6,
+        "complete": true,
+        "thumbPercent": 64.99905159332322,
+        "haloFilter": "none"
+      }
+    },
+    {
+      "engine": "webkit",
+      "w": 393,
+      "h": 659,
+      "period": "night",
+      "mo": {
+        "woodTop": 424.359375,
+        "woodBottom": 537.390625,
+        "woodWidth": 130.171875,
+        "altarBottom": 416.37637818809776,
+        "haloTop": 126.53365767800213,
+        "headingBottom": 80,
+        "panelTop": 553.40625
+      }
+    },
+    {
+      "engine": "webkit",
+      "w": 393,
+      "h": 659,
+      "period": "night",
+      "hand": "right",
+      "beads": {
+        "visible": 6,
+        "complete": true,
+        "thumbPercent": 64.99905159332322,
+        "haloFilter": "none"
+      }
+    },
+    {
+      "engine": "webkit",
+      "w": 393,
+      "h": 659,
+      "period": "night",
+      "hand": "left",
+      "beads": {
+        "visible": 6,
+        "complete": true,
+        "thumbPercent": 64.99905159332322,
+        "haloFilter": "none"
+      }
+    },
+    {
+      "engine": "webkit",
+      "w": 375,
+      "h": 667,
+      "period": "dawn",
+      "mo": {
+        "woodTop": 424.46875,
+        "woodBottom": 545.390625,
+        "woodWidth": 139.265625,
+        "altarBottom": 416.4628055260361,
+        "haloTop": 139.61875664187036,
+        "headingBottom": 80,
+        "panelTop": 561.40625
+      }
+    },
+    {
+      "engine": "webkit",
+      "w": 375,
+      "h": 667,
+      "period": "dawn",
+      "hand": "right",
+      "beads": {
+        "visible": 6,
+        "complete": true,
+        "thumbPercent": 64.99953148425787,
+        "haloFilter": "none"
+      }
+    },
+    {
+      "engine": "webkit",
+      "w": 375,
+      "h": 667,
+      "period": "dawn",
+      "hand": "left",
+      "beads": {
+        "visible": 6,
+        "complete": true,
+        "thumbPercent": 64.99953148425787,
+        "haloFilter": "none"
+      }
+    },
+    {
+      "engine": "webkit",
+      "w": 375,
+      "h": 667,
+      "period": "day",
+      "mo": {
+        "woodTop": 424.46875,
+        "woodBottom": 545.390625,
+        "woodWidth": 139.265625,
+        "altarBottom": 416.4628055260361,
+        "haloTop": 139.61875664187036,
+        "headingBottom": 80,
+        "panelTop": 561.40625
+      }
+    },
+    {
+      "engine": "webkit",
+      "w": 375,
+      "h": 667,
+      "period": "day",
+      "hand": "right",
+      "beads": {
+        "visible": 6,
+        "complete": true,
+        "thumbPercent": 64.99953148425787,
+        "haloFilter": "none"
+      }
+    },
+    {
+      "engine": "webkit",
+      "w": 375,
+      "h": 667,
+      "period": "day",
+      "hand": "left",
+      "beads": {
+        "visible": 6,
+        "complete": true,
+        "thumbPercent": 64.99953148425787,
+        "haloFilter": "none"
+      }
+    },
+    {
+      "engine": "webkit",
+      "w": 375,
+      "h": 667,
+      "period": "dusk",
+      "mo": {
+        "woodTop": 424.46875,
+        "woodBottom": 545.390625,
+        "woodWidth": 139.265625,
+        "altarBottom": 416.4628055260361,
+        "haloTop": 139.61875664187036,
+        "headingBottom": 80,
+        "panelTop": 561.40625
+      }
+    },
+    {
+      "engine": "webkit",
+      "w": 375,
+      "h": 667,
+      "period": "dusk",
+      "hand": "right",
+      "beads": {
+        "visible": 6,
+        "complete": true,
+        "thumbPercent": 64.99953148425787,
+        "haloFilter": "none"
+      }
+    },
+    {
+      "engine": "webkit",
+      "w": 375,
+      "h": 667,
+      "period": "dusk",
+      "hand": "left",
+      "beads": {
+        "visible": 6,
+        "complete": true,
+        "thumbPercent": 64.99953148425787,
+        "haloFilter": "none"
+      }
+    },
+    {
+      "engine": "webkit",
+      "w": 375,
+      "h": 667,
+      "period": "night",
+      "mo": {
+        "woodTop": 424.46875,
+        "woodBottom": 545.390625,
+        "woodWidth": 139.265625,
+        "altarBottom": 416.4628055260361,
+        "haloTop": 139.61875664187036,
+        "headingBottom": 80,
+        "panelTop": 561.40625
+      }
+    },
+    {
+      "engine": "webkit",
+      "w": 375,
+      "h": 667,
+      "period": "night",
+      "hand": "right",
+      "beads": {
+        "visible": 6,
+        "complete": true,
+        "thumbPercent": 64.99953148425787,
+        "haloFilter": "none"
+      }
+    },
+    {
+      "engine": "webkit",
+      "w": 375,
+      "h": 667,
+      "period": "night",
+      "hand": "left",
+      "beads": {
+        "visible": 6,
+        "complete": true,
+        "thumbPercent": 64.99953148425787,
+        "haloFilter": "none"
+      }
+    },
+    {
+      "engine": "webkit",
+      "w": 393,
+      "h": 852,
+      "period": "dawn",
+      "mo": {
+        "woodTop": 585.890625,
+        "woodBottom": 722.390625,
+        "woodWidth": 157.1875,
+        "altarBottom": 531.9851222104144,
+        "haloTop": 178.34750265674813,
+        "headingBottom": 82.59375,
+        "panelTop": 738.40625
+      }
+    },
+    {
+      "engine": "webkit",
+      "w": 393,
+      "h": 852,
+      "period": "dawn",
+      "hand": "right",
+      "beads": {
+        "visible": 7,
+        "complete": true,
+        "thumbPercent": 64.99963321596243,
+        "haloFilter": "none"
+      }
+    },
+    {
+      "engine": "webkit",
+      "w": 393,
+      "h": 852,
+      "period": "dawn",
+      "hand": "left",
+      "beads": {
+        "visible": 7,
+        "complete": true,
+        "thumbPercent": 64.99963321596243,
+        "haloFilter": "none"
+      }
+    },
+    {
+      "engine": "webkit",
+      "w": 393,
+      "h": 852,
+      "period": "day",
+      "mo": {
+        "woodTop": 585.890625,
+        "woodBottom": 722.390625,
+        "woodWidth": 157.1875,
+        "altarBottom": 531.9851222104144,
+        "haloTop": 178.34750265674813,
+        "headingBottom": 82.59375,
+        "panelTop": 738.40625
+      }
+    },
+    {
+      "engine": "webkit",
+      "w": 393,
+      "h": 852,
+      "period": "day",
+      "hand": "right",
+      "beads": {
+        "visible": 7,
+        "complete": true,
+        "thumbPercent": 64.99963321596243,
+        "haloFilter": "none"
+      }
+    },
+    {
+      "engine": "webkit",
+      "w": 393,
+      "h": 852,
+      "period": "day",
+      "hand": "left",
+      "beads": {
+        "visible": 7,
+        "complete": true,
+        "thumbPercent": 64.99963321596243,
+        "haloFilter": "none"
+      }
+    },
+    {
+      "engine": "webkit",
+      "w": 393,
+      "h": 852,
+      "period": "dusk",
+      "mo": {
+        "woodTop": 585.890625,
+        "woodBottom": 722.390625,
+        "woodWidth": 157.1875,
+        "altarBottom": 531.9851222104144,
+        "haloTop": 178.34750265674813,
+        "headingBottom": 82.59375,
+        "panelTop": 738.40625
+      }
+    },
+    {
+      "engine": "webkit",
+      "w": 393,
+      "h": 852,
+      "period": "dusk",
+      "hand": "right",
+      "beads": {
+        "visible": 7,
+        "complete": true,
+        "thumbPercent": 64.99963321596243,
+        "haloFilter": "none"
+      }
+    },
+    {
+      "engine": "webkit",
+      "w": 393,
+      "h": 852,
+      "period": "dusk",
+      "hand": "left",
+      "beads": {
+        "visible": 7,
+        "complete": true,
+        "thumbPercent": 64.99963321596243,
+        "haloFilter": "none"
+      }
+    },
+    {
+      "engine": "webkit",
+      "w": 393,
+      "h": 852,
+      "period": "night",
+      "mo": {
+        "woodTop": 585.890625,
+        "woodBottom": 722.390625,
+        "woodWidth": 157.1875,
+        "altarBottom": 531.9851222104144,
+        "haloTop": 178.34750265674813,
+        "headingBottom": 82.59375,
+        "panelTop": 738.40625
+      }
+    },
+    {
+      "engine": "webkit",
+      "w": 393,
+      "h": 852,
+      "period": "night",
+      "hand": "right",
+      "beads": {
+        "visible": 7,
+        "complete": true,
+        "thumbPercent": 64.99963321596243,
+        "haloFilter": "none"
+      }
+    },
+    {
+      "engine": "webkit",
+      "w": 393,
+      "h": 852,
+      "period": "night",
+      "hand": "left",
+      "beads": {
+        "visible": 7,
+        "complete": true,
+        "thumbPercent": 64.99963321596243,
+        "haloFilter": "none"
+      }
+    }
+  ],
+  "errors": [],
+  "fontRequests": "same origin, six loaded faces",
+  "debug": "collapsed and expanded enter works in both engines",
+  "incense": "wall clock +/- 1e12 and one-hour monotonic jump bounded"
+}

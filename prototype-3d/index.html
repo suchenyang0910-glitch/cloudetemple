@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+  <meta name="theme-color" content="#d9d3c6">
+  <meta name="description" content="Bản thử nghiệm không gian tranh thủy mặc chuyển động của Chùa Mây">
+  <title>Thử nghiệm HD-2D | Chùa Mây</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main id="app" aria-label="Bản thử nghiệm đi dạo trong Chùa Mây">
+    <canvas id="scene" aria-label="Sân chùa và chánh điện trong không gian tranh thủy mặc"></canvas>
+    <div class="paper-grain" aria-hidden="true"></div>
+
+    <header class="scene-title">
+      <p>CHÙA MÂY · THỬ NGHIỆM HD-2D</p>
+      <h1>Một bức thủy mặc có thể bước vào</h1>
+    </header>
+
+    <section id="context-actions" class="context-actions" aria-label="Hoạt động gần đây" hidden>
+      <p id="context-label"></p>
+      <div>
+        <button type="button" data-action="incense" hidden disabled>Thắp hương</button>
+        <button type="button" data-action="sit" hidden disabled>Ngồi tĩnh</button>
+        <button type="button" data-action="palms" hidden disabled>Chắp tay</button>
+        <button type="button" data-action="bow" hidden disabled>Lễ Phật</button>
+      </div>
+    </section>
+
+    <div class="walk-hint" id="walk-hint">
+      <span>Chạm nền để đi</span>
+      <span>Giữ và kéo để đổi hướng</span>
+    </div>
+
+    <button id="metrics-toggle" class="metrics-toggle" type="button" aria-expanded="false" aria-controls="metrics" disabled>FPS</button>
+    <aside id="metrics" class="metrics" hidden aria-live="polite">
+      <h2>Đo thử máy</h2>
+      <dl>
+        <div><dt>FPS</dt><dd id="metric-fps">—</dd></div>
+        <div><dt>Khung thấp nhất</dt><dd id="metric-low">—</dd></div>
+        <div><dt>Tam giác</dt><dd id="metric-triangles">—</dd></div>
+        <div><dt>Lượt vẽ</dt><dd id="metric-calls">—</dd></div>
+        <div><dt>Bộ nhớ JS</dt><dd id="metric-memory">Không hỗ trợ</dd></div>
+        <div><dt>Tài nguyên đầu</dt><dd id="metric-bytes">—</dd></div>
+      </dl>
+      <p>Đây là số đo kỹ thuật cục bộ, không gửi đi đâu.</p>
+      <button id="metrics-export" type="button" disabled>Xuất JSON</button>
+    </aside>
+
+    <div id="status" class="status" role="status">Đang mở sân chùa…</div>
+    <div id="fallback" class="fallback" hidden>
+      <h2>Thiết bị chưa mở được không gian 3D</h2>
+      <p>Bản 2D của Chùa Mây vẫn phù hợp với thiết bị này.</p>
+    </div>
+  </main>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

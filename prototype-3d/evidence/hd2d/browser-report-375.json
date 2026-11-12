@@ -1,0 +1,30 @@
+[
+  {
+    "viewport": {
+      "width": 375,
+      "height": 548
+    },
+    "initial": {
+      "elapsedMs": 3186,
+      "fps": 60,
+      "low": 47.38868595122914,
+      "triangles": 8064,
+      "calls": 181,
+      "bytes": 4568834,
+      "memory": 10946977
+    },
+    "afterWalk": {
+      "style": "hd2d",
+      "action": "stand",
+      "position": {
+        "x": 1.7114439018084212e-15,
+        "z": -3.475000000000013
+      },
+      "visitorView": "back",
+      "visitorFlip": false,
+      "zone": "incense",
+      "locals": 0
+    },
+    "externalRequests": 0
+  }
+]

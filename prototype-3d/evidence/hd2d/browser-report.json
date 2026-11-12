@@ -1,0 +1,46 @@
+[
+  {
+    "viewport": { "width": 375, "height": 548 },
+    "initial": {
+      "elapsedMs": 3184,
+      "fps": 60.00983767830792,
+      "low": 48.7902021308374,
+      "triangles": 8254,
+      "calls": 162,
+      "bytes": 4755197,
+      "memory": 10843591
+    },
+    "afterWalk": {
+      "style": "hd2d",
+      "action": "stand",
+      "position": { "x": 1.7158409961407606e-15, "z": -3.5109050000000135 },
+      "visitorView": "back",
+      "visitorFlip": false,
+      "zone": "incense",
+      "locals": 2
+    },
+    "externalRequests": 0
+  },
+  {
+    "viewport": { "width": 393, "height": 659 },
+    "initial": {
+      "elapsedMs": 3243,
+      "fps": 60,
+      "low": 51.25677673731138,
+      "triangles": 8112,
+      "calls": 159,
+      "bytes": 4755197,
+      "memory": 12468875
+    },
+    "afterWalk": {
+      "style": "hd2d",
+      "action": "stand",
+      "position": { "x": 1.711417571902242e-15, "z": -3.4747850000000158 },
+      "visitorView": "back",
+      "visitorFlip": false,
+      "zone": "incense",
+      "locals": 2
+    },
+    "externalRequests": 0
+  }
+]

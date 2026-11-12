@@ -1,0 +1,79 @@
+{
+  "errors": [],
+  "states": {
+    "01-entry": {
+      "x": 6.6,
+      "z": 1,
+      "incenseStep": -1
+    },
+    "02-walkway": {
+      "x": 6.6,
+      "z": 8,
+      "incenseStep": -1
+    },
+    "03-first-row": {
+      "x": 7.91,
+      "z": 14.5,
+      "incenseStep": -1
+    },
+    "04-middle-row": {
+      "x": 7.91,
+      "z": 8.5,
+      "incenseStep": -1
+    },
+    "05-last-row": {
+      "x": 7.91,
+      "z": 2.5,
+      "incenseStep": -1
+    },
+    "06-inc-walk-1": {
+      "x": 6.6,
+      "z": 8,
+      "incenseStep": 0
+    },
+    "07-inc-2": {
+      "x": 6.6,
+      "z": 15.5,
+      "incenseStep": 1
+    },
+    "08-inc-3": {
+      "x": 6.6,
+      "z": 15.5,
+      "incenseStep": 2
+    },
+    "09-inc-4": {
+      "x": 9.6,
+      "z": 17.2,
+      "incenseStep": 3
+    },
+    "010-inc-5": {
+      "x": 6.6,
+      "z": 15.2,
+      "incenseStep": 4
+    },
+    "011-inc-6": {
+      "x": 6.6,
+      "z": 15.2,
+      "incenseStep": 5
+    },
+    "012-inc-7": {
+      "x": 6.6,
+      "z": 16.6,
+      "incenseStep": 6
+    },
+    "013-inc-8": {
+      "x": 6.6,
+      "z": 15.2,
+      "incenseStep": 7
+    },
+    "14-return": {
+      "x": 6.6,
+      "z": 1,
+      "incenseStep": 7
+    }
+  },
+  "measure": {
+    "finishMedian": 0,
+    "fps": "FPS: 384"
+  }
+}
