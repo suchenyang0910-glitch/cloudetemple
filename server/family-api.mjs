@@ -72,8 +72,8 @@ function interestInput(value) {
 }
 function preorderInput(value) {
   const anniversaries = Array.isArray(value?.anniversaries) ? value.anniversaries.slice(0, 10).map((item) => ({ name: text(item?.name, 100), date: text(item?.date, 40) })) : [];
-  if (value?.agree !== true || !anniversaries.length || !["basic", "family"].includes(value?.edition)) throw Error("invalid");
-  return { contact: text(value.contact, 100), familyName: text(value.familyName, 100), edition: value.edition, anniversaries, address: text(value.address, 300) };
+  if (Object.hasOwn(value ?? {}, "address") || value?.agree !== true || !anniversaries.length || !["basic", "family"].includes(value?.edition)) throw Error("invalid");
+  return { contact: text(value.contact, 100), familyName: text(value.familyName, 100), edition: value.edition, anniversaries };
 }
 const validSolarDate = ({ day, month, year }) => {
   if (![day, month, year].every(Number.isInteger) || year < 1900 || year > 2100)
@@ -194,7 +194,7 @@ export function createFamilyApi(settings, family, dependencies = {}) {
     user &&
     typeof req.headers["x-csrf-token"] === "string" &&
     hash(settings.hashSecret, req.headers["x-csrf-token"]) === user.csrf_hash;
-  const issue = (res, user, req) => {
+  const issue = (res, user) => {
     const raw = token(),
       anti = token(18),
       max = 30 * 86400;
@@ -202,7 +202,6 @@ export function createFamilyApi(settings, family, dependencies = {}) {
       hash(settings.hashSecret, raw),
       user.id,
       Date.now() + max * 1000,
-      ua(req),
       hash(settings.hashSecret, anti),
     );
     res.setHeader(
@@ -293,7 +292,7 @@ export function createFamilyApi(settings, family, dependencies = {}) {
             email,
             familyServerText("relative_default", {}, language),
           ),
-          anti = issue(res, account, req);
+          anti = issue(res, account);
         return (
           json(res, 200, {
             ok: true,
@@ -324,7 +323,7 @@ export function createFamilyApi(settings, family, dependencies = {}) {
             "",
             "Telegram",
           ),
-          anti = issue(res, account, req);
+          anti = issue(res, account);
         family.setPrefs(account.id, {
           ...family.prefs(account.id),
           telegramChat: tg.id,
@@ -405,7 +404,7 @@ export function createFamilyApi(settings, family, dependencies = {}) {
           email,
           String(profile.name || "").slice(0, 60),
         );
-        issue(res, account, req);
+        issue(res, account);
         res.writeHead(302, {
           Location: settings.familyUrl,
           "Cache-Control": "no-store",

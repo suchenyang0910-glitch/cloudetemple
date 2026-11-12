@@ -99,7 +99,7 @@ function identify(req, settings, now, digest, verifyBound, input = {}) {
   const claimToken = scheme === 'claim' ? supplied : browser && digest('browser-token', browser);
   requireValue(!claimToken || tokenPattern.test(claimToken), 401, 'identity');
   const claimHash = claimToken && digest('claim', claimToken);
-  return {ref: claimHash && 'browser:' + claimHash, kind: 'browser', browser, claimHash, suppliedClaim: scheme === 'claim'};
+  return {ref: claimHash && 'browser:' + claimHash, kind: 'browser', suppliedClaim: scheme === 'claim'};
 }
 
 export function createPetApi(settings, pet, {clock = Date.now, verifyBound, verifyAdmin, approvedRules, moderation} = {}) {
@@ -156,6 +156,14 @@ export function createPetApi(settings, pet, {clock = Date.now, verifyBound, veri
       requireValue(isoDay(day) && day <= today, 400, 'day');
       return ok({date: day, ...pet.counts(id, day)});
     }
+    if (method === 'GET' && area === 'memorials' && action === 'export' && segments.length === 3) {
+      const row = uuid.test(id) && pet.find(id);
+      owner(row, identity);
+      const counts = pet.exportCounts(id);
+      return ok({...publicFields(row), bornOn: row.born_on, diedOn: row.died_on,
+        createdAt: new Date(row.created_at).toISOString(), publicStatus: row.public_status,
+        districtId: row.district_id, ...counts, offeringCount: counts.flowers + counts.lights});
+    }
     if (method === 'GET' && area === 'memorials' && action === 'private' && segments.length === 3) {
       const row = uuid.test(id) && pet.find(id);
       requireValue(row?.demo === 0 && identity.ref && pet.member(id, identity.ref), 404, 'memorial');
@@ -182,12 +190,12 @@ export function createPetApi(settings, pet, {clock = Date.now, verifyBound, veri
         requireValue(data.status !== 'visible' || approvedRules, 503, 'public_creation_closed');
       }
 
-      const isBrowser = identity.kind === 'browser';
-      const browser = isBrowser && (identity.browser ?? mint());
-      const claimToken = isBrowser && !identity.ref && digest('browser-token', browser);
-      const claimHash = identity.claimHash || (claimToken ? digest('claim', claimToken) : null);
+      // An old browser cookie must never recreate a claim code after transfer.
+      const browser = identity.kind === 'browser' ? mint() : null;
+      const claimToken = browser && digest('browser-token', browser);
+      const claimHash = claimToken && digest('claim', claimToken);
       const memorialId = randomUUID();
-      if (!pet.create({...data, id: memorialId, kind: identity.kind, owner: identity.ref || 'browser:' + claimHash,
+      if (!pet.create({...data, id: memorialId, kind: identity.kind, owner: browser ? 'browser:' + claimHash : identity.ref,
         claimHash, now, ruleVersion: rules.version})) return ok({code: 'coming_soon', message: 'Sắp mở'}, 409);
       if (claimToken) setSignedCookie(res, 'ct_pet_browser', browser, digest);
       return ok({id: memorialId, publicStatus: data.status, ...(claimToken ? {claimToken} : {})}, 201);

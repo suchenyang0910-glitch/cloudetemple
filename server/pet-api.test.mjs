@@ -1,13 +1,20 @@
 import assert from 'node:assert/strict';
+import {spawn} from 'node:child_process';
+import {mkdtempSync, rmSync} from 'node:fs';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
 import {createHmac} from 'node:crypto';
 import {once} from 'node:events';
 import {createServer} from 'node:http';
 import {createRequire} from 'node:module';
 import {test} from 'node:test';
+import {auditPetOfferings} from './pet-audit-offerings.mjs';
+import {migratePetOfferings} from './pet-migrate-offerings.mjs';
 import {createPetApi} from './pet-api.mjs';
 import {draftRules} from './pet-moderation.mjs';
 import {openPetStore} from './pet-store.mjs';
-import {config} from './security.mjs';
+import {openFamilyStore} from './family-store.mjs';
+import {config, hash} from './security.mjs';
 
 const require = createRequire(import.meta.url);
 const Database = require('better-sqlite3');
@@ -109,7 +116,7 @@ test('public projections hide dates and identities, private access follows invit
 });
 
 test('offerings are deduplicated by visitor and day, owner only receives visitor totals, rate limits apply', async t => {
-  const {call} = await fixture(t);
+  const {call, db} = await fixture(t);
   const {body: {id}} = await create(call);
   const offer = kind => call(base(id) + '/offerings', {method: 'POST', body: {kind}});
   const pair = await Promise.all([offer('flower'), offer('flower')]);
@@ -119,6 +126,12 @@ test('offerings are deduplicated by visitor and day, owner only receives visitor
   assert.equal((await call('/mine/' + id + '/visits')).status, 404);
   assert.deepEqual((await call('/mine/' + id + '/visits', {authorization: telegram(1)})).body,
     {date: '2026-11-12', uniqueVisitors: 1, flowers: 1, lights: 1});
+  assert.equal(db.prepare('SELECT count(*) AS n FROM pet_visits').get().n, 2);
+  assert.equal(db.prepare('SELECT count(*) AS n FROM pet_offerings').get().n, 0);
+  const exported = await call(base(id) + '/export', {authorization: telegram(1)});
+  assert.equal(exported.body.flowers, 1);
+  assert.equal(exported.body.lights, 1);
+  assert.equal(exported.body.offeringCount, 2);
   let limited;
   for (let i = 0; i < 20; i++) limited = await offer('flower');
   assert.equal(limited.status, 429);
@@ -180,6 +193,56 @@ test('public creation remains closed until the operator supplies approved rules'
   assert.equal((await call(base(result.body.id))).status, 404);
 });
 
+test('a valid family session can claim a browser memorial through the API entry point', {timeout: 10000}, async t => {
+  const dir = mkdtempSync(join(tmpdir(), 'pet-family-claim-'));
+  const dbPath = join(dir, 'api.sqlite');
+  const db = new Database(dbPath);
+  const session = 'synthetic-family-session';
+  try {
+    const family = openFamilyStore(db, {demo: false});
+    const user = family.userFor('email', 'fixture', env.FAMILY_ALLOWLIST, 'Fixture');
+    family.session(hash(env.HASH_SECRET, session), user.id, Date.now() + 60000, 'csrf');
+  } finally {
+    db.close();
+  }
+  const child = spawn(process.execPath, ['--input-type=module', '-e', `
+    import {Server} from 'node:http';
+    const listen = Server.prototype.listen;
+    Server.prototype.listen = function (...args) {
+      this.once('listening', () => process.send(this.address().port));
+      return listen.apply(this, args);
+    };
+    await import('./index.mjs');
+  `], {
+    cwd: new URL('.', import.meta.url),
+    env: {...env, DB_PATH: dbPath, PORT: '0', FAMILY_ENABLED: '1', PET_ENABLED: '1', MAIL_PROVIDER: 'outbox'},
+    stdio: ['ignore', 'ignore', 'inherit', 'ipc']
+  });
+  const exited = once(child, 'exit');
+  t.after(async () => {
+    child.kill();
+    await exited;
+    rmSync(dir, {recursive: true});
+  });
+  const port = await Promise.race([
+    once(child, 'message').then(([port]) => port),
+    exited.then(([code]) => { throw Error('API exited before listening: ' + code); })
+  ]);
+  const url = 'http://127.0.0.1:' + port + '/pet-garden/memorials';
+  const post = (path, body, headers = {}) => fetch(url + path, {
+    method: 'POST', headers: {'Content-Type': 'application/json', ...headers}, body: JSON.stringify(body)
+  });
+  const created = await post('', {...data, visibility: 'private'});
+  assert.equal(created.status, 201);
+  const {id, claimToken} = await created.json();
+  const path = '/' + id + '/claim';
+  const headers = {Authorization: 'Bearer family-session'};
+  assert.equal((await post(path, {claimToken}, headers)).status, 401);
+  const claimed = await post(path, {claimToken}, {...headers, Cookie: 'ct_session=' + session});
+  assert.equal(claimed.status, 200);
+  assert.deepEqual(await claimed.json(), {claimed: true});
+});
+
 test('claim atomically transfers a browser memorial, unauthorized edits and deletes fail, deletion cascades', async t => {
   const {call, db} = await fixture(t);
   const created = await create(call, null);
@@ -196,6 +259,13 @@ test('claim atomically transfers a browser memorial, unauthorized edits and dele
   const transfers = await Promise.all([claim('Bearer verified'), claim(telegram(2))]);
   assert.deepEqual(transfers.map(x => x.status).sort(), [200, 409]);
   const winner = transfers[0].status === 200 ? 'Bearer verified' : telegram(2);
+  assert.equal(db.prepare('SELECT browser_claim_hash FROM pet_memorials WHERE id=?').get(id).browser_claim_hash, null);
+  assert.equal((await claim(telegram(3))).status, 409);
+  assert.equal((await call(base(id) + '/export', {authorization: 'Claim ' + claimToken})).status, 404);
+  const next = await create((path, options) => call(path, {...options, cookie}), null);
+  assert.equal(next.status, 201);
+  assert.notEqual(next.body.claimToken, claimToken);
+  assert.equal((await call(base(next.body.id), {method: 'DELETE', authorization: 'Claim ' + next.body.claimToken})).status, 200);
   assert.equal((await call('/mine', {cookie})).body.items.length, 0);
   assert.equal((await call(base(id), {method: 'PATCH', body: {petName: 'Edited'}, authorization: telegram(3)})).status, 404);
   assert.equal((await call(base(id), {method: 'DELETE', authorization: telegram(3)})).status, 404);
@@ -223,11 +293,84 @@ test('pet Telegram users outside the family allowlist can create while family re
 });
 
 test('yearly maintenance moves an inactive memorial to the wall without deleting it', async t => {
-  const {call, pet} = await fixture(t);
+  const {call, pet, db} = await fixture(t);
   const {body: {id}} = await create(call);
-  pet.maintain(now + 365 * 86400000, now);
+  const dayMs = 86400000;
+  db.prepare('UPDATE pet_memorials SET created_at=? WHERE id=?').run(now - 366 * dayMs, id);
+  assert.equal((await call(base(id))).status, 200);
+  assert.equal((await call(base(id) + '/offerings', {
+    method: 'POST', body: {kind: 'flower'}, authorization: telegram(1)
+  })).body.flowers, 0);
+  assert.equal(pet.find(id).last_qualifying_visit_at, null);
+  pet.limit('test', ['old'], Math.floor(now / 60000) - 1, [1]);
+  const activeBucket = Math.floor(now / 60000);
+  const result = pet.maintain(now, now - 365 * dayMs);
+  assert.deepEqual(result, {movedToWall: 1, clearedRates: 1});
+  assert.ok(db.prepare('SELECT 1 FROM pet_rates WHERE bucket=?').get(activeBucket));
   assert.equal((await call('/memorials')).body.items.length, 0);
   assert.equal((await call(base(id))).status, 200);
   assert.equal((await call('/mine', {authorization: telegram(1)})).body.items[0].publicStatus, 'wall');
   assert.equal((await call(base(id) + '/offerings', {method: 'POST', body: {kind: 'light'}})).status, 404);
+});
+
+test('only the owner can export a hidden memorial, with no identities or hashes', async t => {
+  const {call} = await fixture(t);
+  const {body: {id}} = await create(call, telegram(1), {...data, visibility: 'private'});
+  const {body: invite} = await call(base(id) + '/invites', {
+    method: 'POST', authorization: telegram(1), body: {maxUses: 1, expiresAt: new Date(now + 60000).toISOString()}
+  });
+  assert.equal((await call('/invites/' + invite.token + '/accept', {
+    method: 'POST', authorization: telegram(2), body: {}
+  })).status, 200);
+  for (const authorization of [undefined, telegram(2), telegram(3)]) {
+    assert.equal((await call(base(id) + '/export', {authorization})).status, 404);
+  }
+  const exported = await call(base(id) + '/export', {authorization: telegram(1)});
+  assert.equal(exported.status, 200);
+  assert.equal(exported.headers.get('cache-control'), 'no-store');
+  assert.deepEqual(exported.body, {
+    id, ...data, bornYear: '2013', diedYear: '2025', rowNo: 1, columnNo: 1, districtId: 1,
+    publicStatus: 'hidden', createdAt: new Date(now).toISOString(),
+    inviteCount: 1, memberCount: 2, flowers: 0, lights: 0, offeringCount: 0
+  });
+});
+
+test('legacy offering migration preserves counts and wall eligibility, and refuses unmatched facts', async t => {
+  const {call, db, pet} = await fixture(t);
+  const {body: {id}} = await create(call);
+  const {body: {id: inactiveId}} = await create(call, telegram(2));
+  const dayMs = 86400000;
+  const day = '2026-11-12';
+  const insertLegacy = db.prepare('INSERT INTO pet_offerings VALUES (?,?,?,?,0)');
+  const insertVisit = db.prepare('INSERT INTO pet_visits VALUES (?,?,?,?,?)');
+  db.prepare('UPDATE pet_memorials SET created_at=? WHERE id IN (?,?)').run(now - 366 * dayMs, id, inactiveId);
+  db.prepare('UPDATE pet_memorials SET last_qualifying_visit_at=? WHERE id=?').run(now, id);
+  for (const [visitor, kind] of [['a', 'flower'], ['a', 'light'], ['b', 'flower']]) {
+    insertLegacy.run(id, day, visitor, kind);
+    insertVisit.run(id, day, visitor, kind, now);
+  }
+  insertVisit.run(id, '2026-11-11', 'a', 'flower', now - dayMs);
+  const projected = async () => [
+    (await call(base(id))).body,
+    (await call('/mine/' + id + '/visits', {authorization: telegram(1)})).body,
+    (await call(base(id) + '/export', {authorization: telegram(1)})).body,
+    pet.find(id).last_qualifying_visit_at
+  ];
+  const before = await projected();
+  assert.equal(before[2].offeringCount, 4);
+  insertLegacy.run(id, day, 'unmatched', 'light');
+  assert.equal(auditPetOfferings(db, now).unmatchedRows, 1);
+  assert.throws(() => migratePetOfferings(db), /audit failed/);
+  assert.equal(db.prepare('SELECT count(*) AS n FROM pet_offerings').get().n, 4);
+  db.prepare("DELETE FROM pet_offerings WHERE visitor_ref='unmatched'").run();
+  assert.deepEqual(auditPetOfferings(db, now), {
+    legacyRows: 3, rowsToDelete: 3, unmatchedRows: 0, changedDailyTotals: 0,
+    wallEligibleBefore: 1, wallEligibleAfter: 1
+  });
+  assert.deepEqual(migratePetOfferings(db), {deleted: 3});
+  assert.deepEqual(await projected(), before);
+  assert.deepEqual(migratePetOfferings(db), {deleted: 0});
+  assert.equal(pet.maintain(now, now - 365 * dayMs).movedToWall, 1);
+  assert.equal(pet.find(id).public_status, 'visible');
+  assert.equal(pet.find(inactiveId).public_status, 'wall');
 });
