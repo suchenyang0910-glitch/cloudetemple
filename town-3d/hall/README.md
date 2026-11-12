@@ -4,4 +4,6 @@
 
 [已验证事实] `assets/` 中的八帧来自 `origin/codex/staging-integration` 的 `visitor-bun-dark-inc-*-v1.webp`：`walk-1`、`walk-2`、`hold`、`light`、`vai-1`、`vai-2`、`plant-1`、`end`。全部是占位样板素材，香头朝上，不出现吹香。
 
-[假设] 佛、殿体、供桌、香炉、油灯和坐垫仍是占位几何；真实贴图到达后只需替换 `assets/` 文件，不改变坐标和状态机接口。
+[已验证事实] P30 接入 Codex C 的 `origin/codexc/pet-art:review/p26-b-hall-textures/` 11 张样张：地面、墙、天花、门框、佛台、供桌、香炉、燃香、油灯、坐垫、佛剪影。样张文件已复制到 `assets/`，不改 Codex C 分支。
+
+[假设] 访客八帧仍是占位样板素材；佛堂尺寸、碰撞和状态机坐标不变，后续只替换样张即可。
