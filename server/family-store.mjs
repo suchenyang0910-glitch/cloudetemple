@@ -419,8 +419,8 @@ CREATE TABLE IF NOT EXISTS membership_interests(id TEXT PRIMARY KEY,name TEXT NO
     },
     presaleAdmin() {
       return {
-        preorders: all("SELECT id,contact,family_name,edition,address,status,created_at FROM calendar_preorders ORDER BY created_at DESC LIMIT 500"),
-        interests: all("SELECT id,name,contact,ancestor_count,willingness,region,created_at FROM membership_interests ORDER BY created_at DESC LIMIT 500"),
+        preorders: all("SELECT contact,family_name,edition,status FROM calendar_preorders ORDER BY created_at DESC LIMIT 500"),
+        interests: all("SELECT contact,ancestor_count,willingness,region FROM membership_interests ORDER BY created_at DESC LIMIT 500"),
       };
     },
     deleteUser(user) {
