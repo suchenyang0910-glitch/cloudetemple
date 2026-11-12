@@ -99,7 +99,10 @@ function identify(req, settings, now, digest, verifyBound, input = {}) {
   const claimToken = scheme === 'claim' ? supplied : browser && digest('browser-token', browser);
   requireValue(!claimToken || tokenPattern.test(claimToken), 401, 'identity');
   const claimHash = claimToken && digest('claim', claimToken);
-  return {ref: claimHash && 'browser:' + claimHash, kind: 'browser', suppliedClaim: scheme === 'claim'};
+  return {
+    ref: claimHash && 'browser:' + claimHash, kind: 'browser', suppliedClaim: scheme === 'claim',
+    browserClaimToken: scheme === 'claim' ? undefined : claimToken
+  };
 }
 
 export function createPetApi(settings, pet, {clock = Date.now, verifyBound, verifyAdmin, approvedRules, moderation} = {}) {
@@ -144,6 +147,16 @@ export function createPetApi(settings, pet, {clock = Date.now, verifyBound, veri
 
     const input = method === 'POST' ? await readBody(req) : {};
     const identity = await identify(req, settings, now, digest, verifyBound, input);
+    if (method === 'GET' && area === 'me' && id === 'claim' && segments.length === 2) {
+      const claimToken = identity.browserClaimToken;
+      rate(req, res, 'view-claim', claimToken ? identity : {}, now, 2, 8);
+      if (!claimToken) return ok({items: []});
+      const claimHash = digest('claim', claimToken);
+      const items = pet.mine(identity.ref)
+        .filter(row => row.identity_kind === 'browser' && row.browser_claim_hash === claimHash)
+        .map(row => ({id: row.id, claimToken}));
+      return ok({items});
+    }
     if (method === 'GET' && area === 'mine' && segments.length === 1) {
       requireValue(identity.ref, 401, 'identity');
       return ok({items: pet.mine(identity.ref).map(row => ({
