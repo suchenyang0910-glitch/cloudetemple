@@ -117,7 +117,13 @@ test("admin endpoint is read-only, writes audit and returns only allowlisted agg
   assert.deepEqual(data.data.family.metrics, { memorial_view: 1, offering_complete: 1 });
   assert.equal(database.db.prepare("SELECT count(*) n FROM admin_audit").get().n, 1);
   family.createInterest({ name: "Synthetic", contact: "contact-test", ancestorCount: "1-2", willingness: "none", region: "" });
-  const presale = await request(jwt(), "GET", "presale"); assert.equal(presale.status, 200); const listed = await presale.json(); assert.equal(listed.data.interests[0].contact, "contact-test"); assert.equal(database.db.prepare("SELECT count(*) n FROM admin_audit").get().n, 2);
+  database.db.prepare("INSERT INTO calendar_preorders VALUES ('synthetic',NULL,'calendar-test','Family test','basic','[]','Private address','pending','2026-11-12T00:00:00.000Z',1)").run();
+  const presale = await request(jwt(), "GET", "presale"); assert.equal(presale.status, 200); const listed = await presale.json();
+  assert.deepEqual(Object.keys(listed.data.preorders[0]).sort(), ["contact", "edition", "family_name", "status"]);
+  assert.deepEqual(Object.keys(listed.data.interests[0]).sort(), ["ancestor_count", "contact", "region", "willingness"]);
+  assert.equal(listed.data.interests[0].contact, "contact-test");
+  assert.equal(JSON.stringify(listed).includes("Private address"), false); assert.equal(JSON.stringify(listed).includes("Synthetic"), false);
+  assert.equal(database.db.prepare("SELECT count(*) n FROM admin_audit").get().n, 2);
 });
 
 test("server observer receives 5xx status without request content", async (t) => {
