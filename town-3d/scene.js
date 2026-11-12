@@ -51,7 +51,7 @@ function comingSoonTex() {
 //   coming_soon with exterior (all except namtong) → exterior image + cold-fog tint, autoRotate=true
 //   coming_soon namtong (no exterior yet) → gray silhouette Sprite, autoRotate=false
 
-const EXTERIOR_IDS = new Set(['chuamay', 'dilac', 'quanam', 'lienchi', 'diatang', 'duocsu']);
+const EXTERIOR_IDS = new Set(['chuamay', 'dilac', 'quanam', 'lienchi', 'diatang', 'duocsu', 'petgarden', 'tocuong']);
 const BILL_W = 8, BILL_H = 8 * (1536 / 1024); // ≈ 12 units (4.3× visitor height 2.8)
 
 function createBillboard(temple) {

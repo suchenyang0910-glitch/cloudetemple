@@ -10,37 +10,40 @@ test('round 3 artwork replaces both P0 placeholders', async () => {
     readFile(new URL('../scene.js', import.meta.url), 'utf8'),
     readFile(new URL('../character.js', import.meta.url), 'utf8')
   ]);
-  assert.match(scene, /\.\/assets\/exterior-chuamay-day\.webp/);
+  assert.match(scene, /exterior-\$\{temple\.id\}-day\.webp/);
   assert.doesNotMatch(scene, /scene-vn-courtyard-day\.webp/);
   assert.match(character, /\.\/assets\/visitor\/palms-back\.webp/);
   assert.match(character, /rig\.view === 'back'\) setFrame\(visitor, 'palms-back'\)/);
 });
 
-test('seven temple IDs exactly, in plan order', () => {
-  assert.deepEqual(TEMPLES.map(t => t.id), ['chuamay', 'dilac', 'quanam', 'lienchi', 'diatang', 'duocsu', 'namtong']);
+test('nine town places exactly, in plan order', () => {
+  assert.deepEqual(TEMPLES.map(t => t.id), ['chuamay', 'dilac', 'quanam', 'lienchi', 'diatang', 'duocsu', 'namtong', 'petgarden', 'tocuong']);
   assert.deepEqual([...TEMPLE_IDS], TEMPLES.map(t => t.id));
 });
 
-test('only chuamay and dilac are open; others coming_soon', () => {
-  assert.deepEqual(TEMPLES.filter(t => t.status === 'open').map(t => t.id), ['chuamay', 'dilac']);
-  for (const id of ['quanam', 'lienchi', 'diatang', 'duocsu', 'namtong']) assert.equal(isOpen(id), false);
+test('chuamay, dilac and petgarden are open; five temples and tocuong coming_soon', () => {
+  assert.deepEqual(TEMPLES.filter(t => t.status === 'open').map(t => t.id), ['chuamay', 'dilac', 'petgarden']);
+  for (const id of ['quanam', 'lienchi', 'diatang', 'duocsu', 'namtong', 'tocuong']) assert.equal(isOpen(id), false);
 });
 
-test('map positions follow the plan (S/centre/E/W/N/NE/SW); z grows south', () => {
+test('map positions follow the nine-place plan; z grows south', () => {
   const p = Object.fromEntries(TEMPLES.map(t => [t.id, t]));
   assert.ok(p.chuamay.z > p.dilac.z && Math.abs(p.chuamay.x) < 1);   // south
-  assert.ok(Math.abs(p.dilac.x) < 1 && Math.abs(p.dilac.z) < 1);      // centre
+  assert.ok(Math.abs(p.dilac.x - 5) < 1 && Math.abs(p.dilac.z + 1) < 1); // centre-east
   assert.ok(p.quanam.x > 5);                                          // east
-  assert.ok(p.lienchi.x < -5);                                        // west
+  assert.ok(p.lienchi.x <= -5);                                       // west
   assert.ok(p.diatang.z < p.dilac.z - 5);                             // north
   assert.ok(p.duocsu.x > 5 && p.duocsu.z < -5);                       // north-east
-  assert.ok(p.namtong.x < -5 && p.namtong.z > 5);                     // south-west
+  assert.ok(p.namtong.x < -5 && p.namtong.z > 3);                     // south-west
+  assert.ok(p.petgarden.x < -16 && p.petgarden.z > 5);
+  assert.ok(p.tocuong.x > 5 && p.tocuong.z < -9);
 });
 
 test('activity URLs: open temples only, index.html?temple=id', () => {
   assert.equal(activityUrl('chuamay'), 'index.html?temple=chuamay');
   assert.equal(activityUrl('dilac'), 'index.html?temple=dilac');
-  for (const id of ['quanam', 'lienchi', 'diatang', 'duocsu', 'namtong', 'nope']) assert.equal(activityUrl(id), null);
+  assert.equal(activityUrl('petgarden'), 'petgarden/demo.html');
+  for (const id of ['quanam', 'lienchi', 'diatang', 'duocsu', 'namtong', 'tocuong', 'nope']) assert.equal(activityUrl(id), null);
 });
 
 test('proximity trigger is 1.5 m from the door point (inclusive)', () => {

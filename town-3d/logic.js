@@ -1,26 +1,26 @@
 export const COMING_SOON_LABEL = 'Sắp mở cửa';
 export const TRIGGER_DISTANCE = 1.5;
 export const SPAWN = Object.freeze({ x: 0, z: 14 });
-export const WALK_BOUNDS = Object.freeze({ minX: -16, maxX: 16, minZ: -15, maxZ: 19 });
+export const WALK_BOUNDS = Object.freeze({ minX: -30, maxX: 16, minZ: -15, maxZ: 19 });
 export const SIDE_HALL_LAYOUT = Object.freeze({
   buddha: Object.freeze({ x: 0, z: -5 }), altar: Object.freeze({ x: 0, z: -3.4 }),
   malletTable: Object.freeze({ x: 0, z: -1.9 }), person: Object.freeze({ x: 0, z: 0 }),
   beads: Object.freeze({ x: 1.2, z: 0 })
 });
-// Portrait layout (393×659, horizontal FOV ≈ 36°):
-//   chuamay  center; quanam far-right (x=13,z=4); namtong far-left (x=-13,z=4)
-//   separated enough that their billboards don't overlap chuamay on screen
+// Nine fixed places: seven temples plus the pet garden and ancestor hall.
 export const TEMPLES = Object.freeze([
   { id: 'chuamay', name: 'Chùa Mây', x:  0, z:  8, status: 'open' },
+  { id: 'dilac',   name: 'Chùa Di Lặc', x:  5, z: -1, status: 'open' },
   { id: 'quanam',  name: 'Chùa Quan Âm', x: 13, z:  4, status: 'coming_soon' },
-  { id: 'namtong', name: 'Khu phố Nam Tông', x: -13, z:  4, status: 'coming_soon' },
-  { id: 'dilac',   name: 'Chùa Di Lặc', x:  5, z: -1, status: 'coming_soon' }, // blocked: main app not yet reading ?temple=dilac
   { id: 'lienchi', name: 'Chùa Liên Trì', x: -5, z: -1, status: 'coming_soon' },
   { id: 'diatang', name: 'Chùa Địa Tạng', x:  0, z: -9, status: 'coming_soon' },
-  { id: 'duocsu',  name: 'Chùa Dược Sư', x:  7, z: -7, status: 'coming_soon' }
+  { id: 'duocsu',  name: 'Chùa Dược Sư', x:  7, z: -7, status: 'coming_soon' },
+  { id: 'namtong', name: 'Chùa Nam Tông', x: -13, z:  4, status: 'coming_soon' },
+  { id: 'petgarden', name: 'Vườn Tưởng Niệm Thú Cưng', mapName: 'Vườn Thú Cưng', x: -23, z: 8, status: 'open' },
+  { id: 'tocuong', name: 'Từ Đường', x: 12, z: -12, status: 'coming_soon' }
 ]);
 export const TEMPLE_IDS = Object.freeze(TEMPLES.map(t => t.id));
-export const activityUrl = id => isOpen(id) ? `index.html?temple=${id}` : null;
+export const activityUrl = id => isOpen(id) ? (id === 'petgarden' ? 'petgarden/demo.html' : `index.html?temple=${id}`) : null;
 export const isOpen = id => TEMPLES.some(t => t.id === id && t.status === 'open');
 export const doorPoint = temple => ({ x: temple.x, z: temple.z + 3 });
 export function nearestTemple(x, z) {
