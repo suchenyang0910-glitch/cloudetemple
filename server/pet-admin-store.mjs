@@ -26,6 +26,8 @@ export function openPetAdminStore(db) {
       WHEN EXISTS(SELECT 1 FROM pet_admin_audit WHERE id=NEW.id OR request_id=NEW.request_id)
       BEGIN SELECT RAISE(ABORT,'pet_admin_audit is append-only'); END;
   `);
+  if (!db.prepare("PRAGMA table_info(pet_admin_bans)").all().some(column => column.name === 'user_id'))
+    db.exec("ALTER TABLE pet_admin_bans ADD COLUMN user_id TEXT");
   const get = (sql, ...args) => db.prepare(sql).get(...args);
   const all = (sql, ...args) => db.prepare(sql).all(...args);
   const run = (sql, ...args) => db.prepare(sql).run(...args);
@@ -36,7 +38,7 @@ export function openPetAdminStore(db) {
   const resolved = (action, target) => get(
     "SELECT 1 FROM pet_admin_audit WHERE action=? AND target_id=? AND result='ok'", action, target
   );
-  const memorial = id => get("SELECT id,owner_ref,public_status FROM pet_memorials WHERE id=? AND demo=0", id);
+  const memorial = id => get("SELECT id,owner_ref,owner_user_id,public_status FROM pet_memorials WHERE id=? AND demo=0", id);
   const change = db.transaction(op => {
     const {action, target, now, requestId} = op;
     let result = 'not_found', banId;
@@ -59,8 +61,8 @@ export function openPetAdminStore(db) {
       const row = memorial(target);
       if (row) {
         banId = randomUUID();
-        result = run('INSERT INTO pet_admin_bans VALUES(?,?,?) ON CONFLICT(subject_ref) DO NOTHING',
-          banId, row.owner_ref, now).changes ? 'ok' : 'already_banned';
+        result = run('INSERT INTO pet_admin_bans(id,subject_ref,created_at,user_id) VALUES(?,?,?,?) ON CONFLICT(subject_ref) DO NOTHING',
+          banId, row.owner_ref, now, row.owner_user_id).changes ? 'ok' : 'already_banned';
       }
     } else if (action === 'unban') {
       if (run('DELETE FROM pet_admin_bans WHERE id=?', target).changes) result = 'ok';
@@ -74,7 +76,7 @@ export function openPetAdminStore(db) {
   }).immediate;
 
   return {
-    isBanned: ref => Boolean(ref && get('SELECT 1 FROM pet_admin_bans WHERE subject_ref=?', ref)),
+    isBanned: (ref, userId) => Boolean((ref || userId) && get('SELECT 1 FROM pet_admin_bans WHERE subject_ref=? OR user_id=?', ref, userId)),
     hold: (category, version, now) => run('INSERT INTO pet_admin_reviews VALUES(?,?,?,?)',
       randomUUID(), category, version, now),
     reviews: after => all(

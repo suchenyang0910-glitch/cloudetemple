@@ -24,16 +24,15 @@ if (settings.presenceEnabled) {
   presenceSample.unref();
 }
 let familyCleanup, familyStore;
-const familyHandler =
-  settings.familyEnabled
-    ? (() => {
-        familyStore = openFamilyStore(store.db, { demo: false });
-        familyStore.cleanup();
-        familyCleanup = setInterval(() => familyStore.cleanup(), 60000);
-        familyCleanup.unref();
-        return createFamilyApi(settings, familyStore, { metric: (name, dimension) => metrics.count(name, dimension) });
-      })()
-    : async () => false;
+if (settings.familyEnabled || settings.petEnabled) {
+  familyStore = openFamilyStore(store.db, { demo: false });
+  familyStore.cleanup();
+  familyCleanup = setInterval(() => familyStore.cleanup(), 60000);
+  familyCleanup.unref();
+}
+const familyHandler = settings.familyEnabled
+  ? createFamilyApi(settings, familyStore, { metric: (name, dimension) => metrics.count(name, dimension) })
+  : async () => false;
 const access = settings.adminEnabled ? createAccessVerifier(settings) : { validate: async () => { throw Error("disabled"); } };
 const verifyBound = (req) => {
   const raw = (req.headers.cookie || "").split(/;\s*/).find((part) => part.startsWith("ct_session="))?.slice(11);
@@ -44,6 +43,7 @@ const { pet, handleAdmin: petAdminHandler, handlePublic: petHandler } = settings
       access,
       adminOrigin: "https://adminchy-staging.chuamay.org",
       verifyBound,
+      family: familyStore,
     })
   : { handleAdmin: async () => false, handlePublic: async () => false };
 let petMaintenance;

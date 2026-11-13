@@ -1,8 +1,4 @@
 import assert from 'node:assert/strict';
-import {spawn} from 'node:child_process';
-import {mkdtempSync, rmSync} from 'node:fs';
-import {tmpdir} from 'node:os';
-import {join} from 'node:path';
 import {createHmac} from 'node:crypto';
 import {once} from 'node:events';
 import {createServer} from 'node:http';
@@ -14,6 +10,7 @@ import {createPetApi} from './pet-api.mjs';
 import {draftRules} from './pet-moderation.mjs';
 import {openPetStore} from './pet-store.mjs';
 import {openFamilyStore} from './family-store.mjs';
+import {listOutbox} from './outbox-staging.mjs';
 import {config, hash} from './security.mjs';
 
 const require = createRequire(import.meta.url);
@@ -25,6 +22,7 @@ const env = {
   FAMILY_ALLOWLIST: 'allowed@example.invalid', ALLOWED_ORIGINS: 'https://staging.chuamay.org'
 };
 const data = {petName: 'Miu', speciesCode: 'cat', bornOn: '2013-06-15', diedOn: '2025-09-27', epitaph: 'Luôn nhớ em.'};
+const storedData = {name: data.petName, species: data.speciesCode, born: data.bornOn, died: data.diedOn, epitaph: data.epitaph};
 
 function telegram(id) {
   const fields = {auth_date: String(now / 1000), user: JSON.stringify({id, language_code: 'vi'})};
@@ -37,16 +35,16 @@ async function fixture(t, {rules = draftRules, mountFamily = false, clock = () =
   const db = new Database(':memory:');
   t.after(() => db.close());
   const pet = openPetStore(db);
+  const familyStore = openFamilyStore(db, {demo: false});
   const settings = config(env);
   const app = createPetApi({...settings, adminEnabled: true}, pet, {
     clock, approvedRules: rules, verifyBound: req => req.headers.authorization === 'Bearer verified' ? 'account-1' : null,
-    verifyAdmin: req => req.headers.authorization === 'Bearer admin'
+    verifyAdmin: req => req.headers.authorization === 'Bearer admin', family: familyStore
   });
   let family;
   if (mountFamily) {
-    const {openFamilyStore} = await import('./family-store.mjs');
     const {createFamilyApi} = await import('./family-api.mjs');
-    family = createFamilyApi(settings, openFamilyStore(db, {demo: false}));
+    family = createFamilyApi(settings, familyStore);
   }
   const server = createServer(async (req, res) => {
     try {
@@ -60,34 +58,64 @@ async function fixture(t, {rules = draftRules, mountFamily = false, clock = () =
   server.listen(0, '127.0.0.1');
   await once(server, 'listening');
   t.after(() => new Promise(resolve => server.close(resolve)));
-  const call = async (path, {method = 'GET', body, authorization, cookie, familyRoute = false} = {}) => {
+  const call = async (path, {method = 'GET', body, authorization, cookie, familyRoute = false, headers: extraHeaders = {}} = {}) => {
     const headers = {};
     if (body !== undefined) headers['Content-Type'] = 'application/json';
     if (authorization) headers.Authorization = authorization;
     if (cookie) headers.Cookie = cookie;
     if (familyRoute) headers.Origin = 'https://staging.chuamay.org';
+    Object.assign(headers, extraHeaders);
     const r = await fetch('http://127.0.0.1:' + server.address().port + (familyRoute ? '' : '/api/pet-garden') + path, {
       method, headers, body: body === undefined ? undefined : JSON.stringify(body)
     });
     const text = await r.text();
     return {status: r.status, body: text ? JSON.parse(text) : null, headers: r.headers};
   };
-  return {call, db, pet};
+  return {call, db, pet, familyStore};
 }
 
 const create = (call, authorization = telegram(1), body = data) =>
   call('/memorials', {method: 'POST', body, authorization});
 const base = id => '/memorials/' + id;
+const familyRoutes = [
+  ['GET', '/family/status'], ['POST', '/family/auth/email/start'], ['POST', '/family/auth/email/verify'], ['POST', '/family/auth/telegram'],
+  ['GET', '/family/session'], ['POST', '/family/logout'], ['POST', '/family/invites/info'], ['GET', '/family/calendar.ics'],
+  ['GET', '/family/reminders/unsubscribe'], ['GET', '/family/presale/config'], ['POST', '/family/presale/interests'], ['POST', '/family/presale/orders'],
+  ['GET', '/family/consent'], ['POST', '/family/consent'], ['POST', '/family/calendar.pdf'], ['GET', '/family/tablets'], ['POST', '/family/tablets'],
+  ['PATCH', '/family/tablets/00000000-0000-4000-8000-000000000001'], ['DELETE', '/family/tablets/00000000-0000-4000-8000-000000000001'],
+  ['POST', '/family/tablets/00000000-0000-4000-8000-000000000001/invites'], ['POST', '/family/tablets/00000000-0000-4000-8000-000000000001/invites/revoke'],
+  ['POST', '/family/invites/accept'], ['DELETE', '/family/tablets/00000000-0000-4000-8000-000000000001/membership'], ['GET', '/family/reminders'],
+  ['PUT', '/family/reminders'], ['GET', '/family/account/export'], ['DELETE', '/family/account'], ['POST', '/family/convert']
+];
+async function expectFamilyRejected(call, cookie) {
+  for (const [method, route] of familyRoutes) {
+    const result = await call(route, {method, cookie, familyRoute: true, body: method === 'GET' ? undefined : {}});
+    assert.equal(result.status, 404, route);
+    assert.deepEqual(result.body, {ok: false, error: 'not_found'}, route);
+  }
+}
 
 test('rejects unsigned Telegram credentials and keeps the first memorial free', async t => {
   const {call, db} = await fixture(t);
   assert.equal((await create(call, 'Telegram user=%7B%22id%22%3A1%7D')).status, 401);
   assert.equal((await create(call, null, {...data, initData: ''})).status, 401);
+  const unsigned = await create(call, null);
+  assert.deepEqual(unsigned.body, {error: 'pet_login_required'});
   assert.equal((await create(call)).status, 201);
   const second = await create(call);
   assert.equal(second.status, 409);
   assert.deepEqual(second.body, {code: 'coming_soon', message: 'Sắp mở'});
   assert.equal(db.prepare('SELECT count(*) AS n FROM pet_memorials').get().n, 1);
+});
+
+test('signed Telegram browsing and status checks do not create an account', async t => {
+  const {call, db} = await fixture(t);
+  const {body: {id}} = await create(call);
+  const before = db.prepare('SELECT count(*) AS n FROM users').get().n;
+  assert.equal((await call(base(id), {authorization: telegram(99)})).status, 200);
+  assert.deepEqual((await call('/me', {authorization: telegram(99)})).body, {authenticated: false, identityKinds: []});
+  assert.equal(db.prepare('SELECT count(*) AS n FROM users').get().n, before);
+  assert.equal(db.prepare('SELECT count(*) AS n FROM identities WHERE provider=?').get('telegram').n, 1);
 });
 
 test('public projections hide dates and identities, private access follows invitation and revocation', async t => {
@@ -180,6 +208,7 @@ test('blocked text stays out of responses, stored memorials and consent-based an
   assert.equal(pet.recordAnalytics(event, now), false);
   assert.equal(pet.recordAnalytics({...event, consent: true}, now), true);
   assert.equal(db.prepare('SELECT * FROM pet_analytics_events').get().epitaph, undefined);
+  assert.equal(db.prepare('PRAGMA table_info(pet_analytics_events)').all().some(column => column.name === 'user_id'), false);
   assert.deepEqual(db.prepare('SELECT browser,source FROM pet_analytics_events').get(), {browser: 'safari', source: null});
   assert.equal((await call('/analytics')).status, 403);
   assert.deepEqual((await call('/analytics', {authorization: 'Bearer admin'})).body, {items: [{action: 'open', total: 1}]});
@@ -193,159 +222,126 @@ test('public creation remains closed until the operator supplies approved rules'
   assert.equal((await call(base(result.body.id))).status, 404);
 });
 
-test('a valid family session can claim a browser memorial through the API entry point', {timeout: 10000}, async t => {
-  const dir = mkdtempSync(join(tmpdir(), 'pet-family-claim-'));
-  const dbPath = join(dir, 'api.sqlite');
-  const db = new Database(dbPath);
-  const session = 'synthetic-family-session';
-  try {
-    const family = openFamilyStore(db, {demo: false});
-    const user = family.userFor('email', 'fixture', env.FAMILY_ALLOWLIST, 'Fixture');
-    family.session(hash(env.HASH_SECRET, session), user.id, Date.now() + 60000, 'csrf');
-  } finally {
-    db.close();
-  }
-  const child = spawn(process.execPath, ['--input-type=module', '-e', `
-    import {Server} from 'node:http';
-    const listen = Server.prototype.listen;
-    Server.prototype.listen = function (...args) {
-      this.once('listening', () => process.send(this.address().port));
-      return listen.apply(this, args);
-    };
-    await import('./index.mjs');
-  `], {
-    cwd: new URL('.', import.meta.url),
-    env: {...env, DB_PATH: dbPath, PORT: '0', FAMILY_ENABLED: '1', PET_ENABLED: '1', MAIL_PROVIDER: 'outbox'},
-    stdio: ['ignore', 'ignore', 'inherit', 'ipc']
-  });
-  const exited = once(child, 'exit');
-  t.after(async () => {
-    child.kill();
-    await exited;
-    rmSync(dir, {recursive: true});
-  });
-  const port = await Promise.race([
-    once(child, 'message').then(([port]) => port),
-    exited.then(([code]) => { throw Error('API exited before listening: ' + code); })
-  ]);
-  const url = 'http://127.0.0.1:' + port + '/pet-garden';
-  const post = (path, body, headers = {}) => fetch(url + '/memorials' + path, {
-    method: 'POST', headers: {'Content-Type': 'application/json', ...headers}, body: JSON.stringify(body)
-  });
-  const created = await post('', {...data, visibility: 'private'});
-  assert.equal(created.status, 201);
-  const {id, claimToken} = await created.json();
-  const cookie = created.headers.get('set-cookie').split(';')[0];
-  const view = () => fetch(url + '/me/claim', {headers: {Cookie: cookie}});
-  const shown = await view();
-  assert.equal(shown.status, 200);
-  assert.deepEqual(await shown.json(), {items: [{id, claimToken}]});
-  const path = '/' + id + '/claim';
-  const headers = {Authorization: 'Bearer family-session'};
-  assert.equal((await post(path, {claimToken}, headers)).status, 401);
-  const claimed = await post(path, {claimToken}, {...headers, Cookie: 'ct_session=' + session});
-  assert.equal(claimed.status, 200);
-  assert.deepEqual(await claimed.json(), {claimed: true});
-  const afterBinding = await view();
-  assert.equal(afterBinding.status, 200);
-  assert.deepEqual(await afterBinding.json(), {items: []});
+test('pet email login creates an account-scoped memorial and cannot enter family routes', async t => {
+  const {call, familyStore, db} = await fixture(t, {mountFamily: true});
+  assert.equal((await call('/auth/email/start', {method: 'POST', body: {email: 'outside@example.invalid'}})).status, 201);
+  assert.equal(db.prepare('SELECT count(*) AS n FROM email_codes').get().n, 0);
+  const code = listOutbox(familyStore.db)[0].text_body.match(/\b\d{6}\b/)[0];
+  const signedIn = await call('/auth/email/verify', {method: 'POST', body: {email: 'outside@example.invalid', code}});
+  assert.equal(signedIn.status, 200);
+  const session = signedIn.headers.get('set-cookie').split(';')[0], {csrf} = signedIn.body;
+  const user = db.prepare("SELECT user_id FROM identities WHERE provider='email'").get();
+  const familyRaw = 'd'.repeat(64);
+  familyStore.session(hash(env.HASH_SECRET, familyRaw), user.user_id, Date.now() + 600000, hash(env.HASH_SECRET, 'family-csrf'));
+  const created = await create(call, null, {...data, visibility: 'private'});
+  assert.equal(created.status, 401);
+  const emailCreated = await call('/memorials', {method: 'POST', cookie: session, headers: {'X-CSRF-Token': csrf}, body: {...data, visibility: 'private'}});
+  assert.equal(emailCreated.status, 201);
+  assert.equal(emailCreated.body.claimToken, undefined);
+  assert.ok(db.prepare('SELECT owner_user_id FROM pet_memorials WHERE id=?').get(emailCreated.body.id).owner_user_id);
+  assert.equal((await call('/mine', {cookie: session})).body.items[0].id, emailCreated.body.id);
+  await expectFamilyRejected(call, 'ct_session=' + familyRaw);
+  assert.equal((await call('/family/status', {cookie: 'ct_session=' + session.split('=')[1], familyRoute: true})).status, 404);
+  assert.equal((await call('/mine', {cookie: 'ct_pet_session=' + familyRaw})).status, 401);
 });
 
-test('only the original browser can redisplay an unbound memorial claim code', async t => {
+test('confirmed cross-identity merge keeps both memorials and a single account', async t => {
+  const {call, familyStore, db} = await fixture(t, {mountFamily: true});
+  const email = 'merge@example.invalid';
+  assert.equal((await call('/auth/email/start', {method: 'POST', body: {email}})).status, 201);
+  const code = listOutbox(familyStore.db)[0].text_body.match(/\b\d{6}\b/)[0];
+  const signedIn = await call('/auth/email/verify', {method: 'POST', body: {email, code}});
+  const emailSession = signedIn.headers.get('set-cookie').split(';')[0];
+  const emailMemorial = await call('/memorials', {method: 'POST', cookie: emailSession, headers: {'X-CSRF-Token': signedIn.body.csrf}, body: {...data, visibility: 'private'}});
+  assert.equal(emailMemorial.status, 201);
+  assert.equal((await create(call, telegram(11), {...data, petName: 'Milo', visibility: 'private'})).status, 201);
+  assert.equal((await call('/auth/link/email/start', {method: 'POST', authorization: telegram(11), body: {email}})).status, 201);
+  const linkCode = listOutbox(familyStore.db)[0].text_body.match(/\b\d{6}\b/)[0];
+  const pending = await call('/auth/link/email/verify', {method: 'POST', authorization: telegram(11), body: {email, code: linkCode}});
+  assert.equal(pending.status, 409);
+  assert.equal(pending.body.error, 'merge_confirmation_required');
+  const merged = await call('/auth/link/confirm', {method: 'POST', authorization: telegram(11), body: {mergeToken: pending.body.mergeToken, confirm: true}});
+  assert.equal(merged.status, 200);
+  assert.deepEqual(merged.body.identityKinds, ['email', 'telegram']);
+  const mergedSession = merged.headers.get('set-cookie').split(';')[0];
+  assert.equal((await call('/mine', {cookie: mergedSession})).body.items.length, 2);
+  const mergedUser = db.prepare('SELECT user_id FROM identities WHERE email=?').get(email);
+  assert.ok(mergedUser?.user_id);
+  const familyRaw = 'e'.repeat(64);
+  familyStore.session(hash(env.HASH_SECRET, familyRaw), mergedUser.user_id, Date.now() + 600000, hash(env.HASH_SECRET, 'family-csrf'));
+  await expectFamilyRejected(call, 'ct_session=' + familyRaw);
+  assert.equal((await call(base(emailMemorial.body.id), {method: 'DELETE', authorization: telegram(11), body: {}})).status, 200);
+  assert.equal((await call('/mine', {cookie: emailSession})).status, 401);
+});
+
+test('account merge moves pet relations and deduplicates account-attributed visits', async t => {
+  const {db, familyStore, pet} = await fixture(t);
+  const first = familyStore.userFor('telegram', 'telegram-a', '', 'Telegram');
+  const second = familyStore.userFor('email', 'email-b', 'second@example.invalid', '');
+  const a = '00000000-0000-4000-8000-000000000021', b = '00000000-0000-4000-8000-000000000022';
+  assert.equal(pet.create({...storedData, id: a, kind: 'telegram', owner: 'user:' + first.id, userId: first.id, claimHash: null, now, ruleVersion: draftRules.version, status: 'visible'}), true);
+  assert.equal(pet.create({...storedData, id: b, kind: 'email', owner: 'user:' + second.id, userId: second.id, claimHash: null, now, ruleVersion: draftRules.version, status: 'visible'}), true);
+  pet.offer(a, '2026-11-12', 'visit-a', 'flower', now, 'user:visitor', first.id);
+  pet.offer(a, '2026-11-12', 'visit-b', 'flower', now, 'user:visitor', second.id);
+  db.prepare('INSERT INTO pet_consents VALUES(?,?)').run(first.id, now - 1);
+  db.prepare('INSERT INTO pet_consents VALUES(?,?)').run(second.id, now);
+  assert.deepEqual(familyStore.mergeUsers(first.id, second.id), {survivor: first.id});
+  assert.equal(pet.mineUser(first.id).length, 2);
+  assert.equal(db.prepare('SELECT count(*) AS n FROM pet_visits WHERE user_id=?').get(first.id).n, 1);
+  assert.equal(db.prepare('SELECT accepted_at FROM pet_consents WHERE user_id=?').get(first.id).accepted_at, now);
+  assert.equal(pet.invite(b, 'user:' + first.id, first.id, {id: '00000000-0000-4000-8000-000000000023', hash: 'c'.repeat(64), expires: now + 60000, maxUses: 1}), true);
+});
+
+test('merging two accounts with family data is rejected without changing identities', async t => {
+  const {familyStore} = await fixture(t);
+  const first = familyStore.userFor('telegram', 'telegram-family-a', '', 'Telegram');
+  const second = familyStore.userFor('email', 'email-family-b', 'family@example.invalid', '');
+  familyStore.acceptConsent(first.id, 'test');
+  familyStore.acceptConsent(second.id, 'test');
+  assert.deepEqual(familyStore.mergeUsers(first.id, second.id), {error: 'family_merge_conflict'});
+  assert.equal(familyStore.user(first.id).id, first.id);
+  assert.equal(familyStore.user(second.id).id, second.id);
+});
+
+test('pet email verification limits resend attempts and leaves legacy claim routes transitional', async t => {
   const {call} = await fixture(t);
-  const created = await create(call, null);
-  assert.equal(created.status, 201);
-  const {id, claimToken} = created.body;
-  const cookie = created.headers.get('set-cookie').split(';')[0];
-  const view = options => call('/me/claim', options);
-  const shown = await view({cookie});
-  assert.equal(shown.status, 200);
-  assert.equal(shown.headers.get('cache-control'), 'no-store');
-  assert.deepEqual(shown.body, {items: [{id, claimToken}]});
-
-  for (const options of [{}, {cookie: cookie + '0'}, {authorization: 'Claim ' + claimToken},
-    {cookie, authorization: telegram(2)}, {cookie, authorization: 'Bearer verified'}]) {
-    const result = await view(options);
-    assert.equal(result.status, 200);
-    assert.deepEqual(result.body, {items: []});
-  }
-
-  assert.equal((await call(base(id) + '/claim', {
-    method: 'POST', body: {claimToken}, authorization: telegram(2)
-  })).status, 200);
-  const afterBinding = await view({cookie});
-  assert.equal(afterBinding.status, 200);
-  assert.deepEqual(afterBinding.body, {items: []});
-  const boundOwner = await view({cookie, authorization: telegram(2)});
-  assert.equal(boundOwner.status, 200);
-  assert.deepEqual(boundOwner.body, {items: []});
-});
-
-test('claim-code redisplay limits both the browser owner and IP', async t => {
-  let time = now;
-  const {call} = await fixture(t, {clock: () => time});
-  const created = await create(call, null);
-  assert.equal(created.status, 201);
-  const cookie = created.headers.get('set-cookie').split(';')[0];
-  const view = options => call('/me/claim', options);
-  for (let i = 0; i < 2; i++) assert.equal((await view({cookie})).status, 200);
-  const limited = await view({cookie});
+  assert.equal((await call('/auth/email/start', {method: 'POST', body: {email: 'rate@example.invalid'}})).status, 201);
+  const limited = await call('/auth/email/start', {method: 'POST', body: {email: 'rate@example.invalid'}});
   assert.equal(limited.status, 429);
-  assert.equal(limited.headers.get('retry-after'), '60');
-  assert.equal(limited.headers.get('cache-control'), 'no-store');
-  time += 60000;
-  assert.deepEqual((await view({cookie})).body, {items: [{id: created.body.id, claimToken: created.body.claimToken}]});
-  for (let i = 0; i < 7; i++) assert.equal((await view()).status, 200);
-  assert.equal((await view()).status, 429);
+  assert.equal(limited.body.error, 'email_rate_limited');
+  assert.deepEqual((await call('/me/claim')).body, {items: []});
 });
 
-test('claim atomically transfers a browser memorial, unauthorized edits and deletes fail, deletion cascades', async t => {
+test('unverified email submitted for Telegram linking is not stored as an identity', async t => {
   const {call, db} = await fixture(t);
-  const created = await create(call, null);
-  assert.equal(created.status, 201);
-  const {id, claimToken} = created.body;
-  const cookie = created.headers.get('set-cookie').split(';')[0];
-  assert.match(claimToken, /^[a-f0-9]{64}$/);
-  assert.equal((await call('/mine', {cookie})).body.items[0].id, id);
-  assert.equal((await call('/mine', {cookie})).body.items[0].claimToken, undefined);
-  assert.equal((await create((path, options) => call(path, {...options, cookie}), null)).status, 409);
-  assert.notEqual(db.prepare('SELECT browser_claim_hash FROM pet_memorials').get().browser_claim_hash, claimToken);
-  const claim = authorization => call(base(id) + '/claim', {method: 'POST', body: {claimToken}, authorization});
-  assert.equal((await claim('Bearer bogus')).status, 401);
-  const transfers = await Promise.all([claim('Bearer verified'), claim(telegram(2))]);
-  assert.deepEqual(transfers.map(x => x.status).sort(), [200, 409]);
-  const winner = transfers[0].status === 200 ? 'Bearer verified' : telegram(2);
-  assert.equal(db.prepare('SELECT browser_claim_hash FROM pet_memorials WHERE id=?').get(id).browser_claim_hash, null);
-  assert.equal((await claim(telegram(3))).status, 409);
-  assert.equal((await call(base(id) + '/export', {authorization: 'Claim ' + claimToken})).status, 404);
-  const next = await create((path, options) => call(path, {...options, cookie}), null);
-  assert.equal(next.status, 201);
-  assert.notEqual(next.body.claimToken, claimToken);
-  assert.equal((await call(base(next.body.id), {method: 'DELETE', authorization: 'Claim ' + next.body.claimToken})).status, 200);
-  assert.equal((await call('/mine', {cookie})).body.items.length, 0);
-  assert.equal((await call(base(id), {method: 'PATCH', body: {petName: 'Edited'}, authorization: telegram(3)})).status, 404);
-  assert.equal((await call(base(id), {method: 'DELETE', authorization: telegram(3)})).status, 404);
-  assert.equal((await call(base(id))).body.petName, 'Miu');
-  assert.equal((await call('/reports', {method: 'POST', body: {memorialId: id, reasonCode: 'privacy'}})).status, 201);
-  assert.equal((await call(base(id) + '/offerings', {method: 'POST', body: {kind: 'flower'}})).status, 200);
-  assert.equal((await call(base(id), {method: 'DELETE', authorization: winner})).status, 200);
-  assert.equal((await call(base(id))).status, 404);
-  for (const table of ['pet_members', 'pet_offerings', 'pet_visits', 'pet_reports'])
-    assert.equal(db.prepare('SELECT count(*) AS n FROM ' + table).get().n, 0);
+  assert.equal((await create(call, telegram(77), {...data, visibility: 'private'})).status, 201);
+  const email = 'unverified@example.invalid';
+  assert.equal((await call('/auth/link/email/start', {method: 'POST', authorization: telegram(77), body: {email}})).status, 201);
+  assert.equal(db.prepare('SELECT count(*) AS n FROM identities WHERE email=?').get(email).n, 0);
 });
 
-test('pet Telegram users outside the family allowlist can create while family registration remains restricted', async t => {
-  const {call} = await fixture(t, {mountFamily: true});
+test('pet Telegram users outside the family allowlist stay rejected by every family route', async t => {
+  const {call, familyStore} = await fixture(t, {mountFamily: true});
   assert.equal((await create(call, telegram(1))).status, 201);
-  const result = await call('/family/auth/email/start', {
-    method: 'POST', familyRoute: true, body: {email: 'outside@example.invalid', language: 'vi'}
-  });
-  assert.equal(result.status, 404);
-  assert.equal(result.body.error, 'not_found');
-  const familyTelegram = await call('/family/auth/telegram', {
-    method: 'POST', familyRoute: true, body: {initData: telegram(1).slice('Telegram '.length)}
-  });
-  assert.equal(familyTelegram.status, 404);
+  const user = familyStore.db.prepare("SELECT user_id FROM identities WHERE provider='telegram'").get();
+  const raw = 'a'.repeat(64);
+  familyStore.session(hash(env.HASH_SECRET, raw), user.user_id, Date.now() + 600000, hash(env.HASH_SECRET, 'csrf'));
+  await expectFamilyRejected(call, 'ct_session=' + raw);
+});
+
+test('legacy browser memorials remain claimable but new memorials do not use claim tokens', async t => {
+  const {call, pet} = await fixture(t);
+  const browser = 'b'.repeat(64);
+  const digest = (scope, value) => hash(env.HASH_SECRET, JSON.stringify(['pet-garden', scope, value]));
+  const claimToken = digest('browser-token', browser);
+  const claimHash = digest('claim', claimToken);
+  const id = '00000000-0000-4000-8000-000000000007';
+  assert.equal(pet.create({...storedData, id, kind: 'browser', owner: 'browser:' + claimHash, userId: null, claimHash, now, ruleVersion: draftRules.version, status: 'hidden'}), true);
+  const cookie = 'ct_pet_browser=' + browser + '.' + digest('ct_pet_browser', browser);
+  assert.deepEqual((await call('/me/claim', {cookie})).body, {items: [{id, claimToken}]});
+  assert.deepEqual((await call(base(id) + '/claim', {method: 'POST', authorization: telegram(7), body: {claimToken}})).body, {claimed: true});
+  assert.equal((await call('/me/claim', {cookie})).body.items.length, 0);
+  assert.equal((await call('/mine', {authorization: telegram(7)})).body.items[0].id, id);
 });
 
 test('yearly maintenance moves an inactive memorial to the wall without deleting it', async t => {
@@ -397,8 +393,8 @@ test('legacy offering migration preserves counts and wall eligibility, and refus
   const {body: {id: inactiveId}} = await create(call, telegram(2));
   const dayMs = 86400000;
   const day = '2026-11-12';
-  const insertLegacy = db.prepare('INSERT INTO pet_offerings VALUES (?,?,?,?,0)');
-  const insertVisit = db.prepare('INSERT INTO pet_visits VALUES (?,?,?,?,?)');
+  const insertLegacy = db.prepare('INSERT INTO pet_offerings(memorial_id,day,visitor_ref,kind,demo) VALUES (?,?,?,?,0)');
+  const insertVisit = db.prepare('INSERT INTO pet_visits(memorial_id,day,visitor_ref,kind,created_at) VALUES (?,?,?,?,?)');
   db.prepare('UPDATE pet_memorials SET created_at=? WHERE id IN (?,?)').run(now - 366 * dayMs, id, inactiveId);
   db.prepare('UPDATE pet_memorials SET last_qualifying_visit_at=? WHERE id=?').run(now, id);
   for (const [visitor, kind] of [['a', 'flower'], ['a', 'light'], ['b', 'flower']]) {

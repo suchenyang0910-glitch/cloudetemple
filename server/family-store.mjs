@@ -16,7 +16,7 @@ export function openFamilyStore(db, { demo = true } = {}) {
   db.exec(`
 CREATE TABLE IF NOT EXISTS users(id TEXT PRIMARY KEY,display_name TEXT NOT NULL DEFAULT '',locale TEXT NOT NULL DEFAULT 'vi',created_at TEXT NOT NULL,deleted_at TEXT,demo INTEGER NOT NULL DEFAULT 1);
 CREATE TABLE IF NOT EXISTS identities(id INTEGER PRIMARY KEY,user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,provider TEXT NOT NULL CHECK(provider IN('email','google','telegram')),subject TEXT NOT NULL,email TEXT,created_at TEXT NOT NULL,demo INTEGER NOT NULL DEFAULT 1,UNIQUE(provider,subject));
-CREATE TABLE IF NOT EXISTS sessions(token_hash TEXT PRIMARY KEY,user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,expires_at INTEGER NOT NULL,ua_summary TEXT NOT NULL,csrf_hash TEXT NOT NULL,created_at TEXT NOT NULL,demo INTEGER NOT NULL DEFAULT 1);
+CREATE TABLE IF NOT EXISTS sessions(token_hash TEXT PRIMARY KEY,user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,expires_at INTEGER NOT NULL,ua_summary TEXT NOT NULL,csrf_hash TEXT NOT NULL,created_at TEXT NOT NULL,demo INTEGER NOT NULL DEFAULT 1,scope TEXT NOT NULL DEFAULT 'family');
 CREATE TABLE IF NOT EXISTS email_codes(subject TEXT PRIMARY KEY,email TEXT NOT NULL,code_hash TEXT NOT NULL,expires_at INTEGER NOT NULL,attempts INTEGER NOT NULL DEFAULT 0,ip_hash TEXT NOT NULL,created_at TEXT NOT NULL,demo INTEGER NOT NULL DEFAULT 1);
 CREATE TABLE IF NOT EXISTS family_rates(key TEXT PRIMARY KEY,until INTEGER NOT NULL);
 CREATE TABLE IF NOT EXISTS oauth_states(state_hash TEXT PRIMARY KEY,verifier TEXT NOT NULL,expires_at INTEGER NOT NULL,created_at TEXT NOT NULL,demo INTEGER NOT NULL DEFAULT 1);
@@ -37,10 +37,13 @@ CREATE TABLE IF NOT EXISTS membership_interests(id TEXT PRIMARY KEY,name TEXT NO
       "CREATE UNIQUE INDEX IF NOT EXISTS deliveries_dedupe_key ON deliveries(dedupe_key)",
     );
   }
+  if (!db.prepare("PRAGMA table_info(sessions)").all().some((column) => column.name === "scope"))
+    db.exec("ALTER TABLE sessions ADD COLUMN scope TEXT NOT NULL DEFAULT 'family'");
   const now = () => new Date().toISOString(),
     one = (sql, ...p) => db.prepare(sql).get(...p),
     all = (sql, ...p) => db.prepare(sql).all(...p),
-    run = (sql, ...p) => db.prepare(sql).run(...p);
+    run = (sql, ...p) => db.prepare(sql).run(...p),
+    transaction = (fn) => db.transaction(fn).immediate;
   const userFor = (provider, subject, email = "", display = "") => {
     email = String(email || "").trim().toLowerCase();
     const found = one(
@@ -113,9 +116,51 @@ CREATE TABLE IF NOT EXISTS membership_interests(id TEXT PRIMARY KEY,name TEXT NO
       user,
       id,
     );
+  const familyData = (user) => Boolean(one(
+    "SELECT 1 WHERE EXISTS(SELECT 1 FROM tablets WHERE owner_id=?) OR EXISTS(SELECT 1 FROM tablet_members WHERE user_id=?) OR EXISTS(SELECT 1 FROM offerings WHERE user_id=?) OR EXISTS(SELECT 1 FROM invites WHERE created_by=?) OR EXISTS(SELECT 1 FROM deliveries WHERE user_id=?) OR EXISTS(SELECT 1 FROM family_consents WHERE user_id=?) OR EXISTS(SELECT 1 FROM calendar_preorders WHERE user_id=?) OR EXISTS(SELECT 1 FROM reminder_prefs WHERE user_id=? AND (email_on=1 OR telegram_on=1 OR telegram_chat_id IS NOT NULL OR ics_token IS NOT NULL))",
+    user, user, user, user, user, user, user, user,
+  ));
+  const table = (name) => Boolean(one("SELECT 1 FROM sqlite_master WHERE type='table' AND name=?", name));
+  const mergeUsers = transaction((current, other) => {
+    if (current === other) return {survivor: current};
+    const currentHasFamily = familyData(current), otherHasFamily = familyData(other);
+    if (currentHasFamily && otherHasFamily) return {error: 'family_merge_conflict'};
+    const survivor = otherHasFamily ? other : current, loser = otherHasFamily ? current : other;
+    if (!one("SELECT 1 FROM users WHERE id=?", survivor) || !one("SELECT 1 FROM users WHERE id=?", loser)) return {error: 'account'};
+    if (table('pet_visits')) {
+      run("DELETE FROM pet_visits WHERE user_id=? AND EXISTS(SELECT 1 FROM pet_visits keep WHERE keep.user_id=? AND keep.memorial_id=pet_visits.memorial_id AND keep.day=pet_visits.day AND keep.kind=pet_visits.kind)", loser, survivor);
+      run("UPDATE pet_visits SET user_id=? WHERE user_id=?", survivor, loser);
+      run("DELETE FROM pet_offerings WHERE user_id=? AND EXISTS(SELECT 1 FROM pet_offerings keep WHERE keep.user_id=? AND keep.memorial_id=pet_offerings.memorial_id AND keep.day=pet_offerings.day AND keep.kind=pet_offerings.kind)", loser, survivor);
+      run("UPDATE pet_offerings SET user_id=? WHERE user_id=?", survivor, loser);
+      run("UPDATE pet_memorials SET owner_user_id=? WHERE owner_user_id=?", survivor, loser);
+      run("DELETE FROM pet_members WHERE user_id=? AND EXISTS(SELECT 1 FROM pet_members keep WHERE keep.user_id=? AND keep.memorial_id=pet_members.memorial_id)", loser, survivor);
+      run("UPDATE pet_members SET user_id=?,principal_ref=? WHERE user_id=?", survivor, 'user:' + survivor, loser);
+      run("UPDATE pet_invites SET created_by_user_id=? WHERE created_by_user_id=?", survivor, loser);
+      if (table('pet_consents')) run("INSERT INTO pet_consents(user_id,accepted_at) SELECT ?,accepted_at FROM pet_consents WHERE user_id=? ON CONFLICT(user_id) DO UPDATE SET accepted_at=max(pet_consents.accepted_at,excluded.accepted_at)", survivor, loser);
+      if (table('pet_admin_bans')) run("UPDATE pet_admin_bans SET user_id=? WHERE user_id=?", survivor, loser);
+    }
+    run("UPDATE identities SET user_id=? WHERE user_id=?", survivor, loser);
+    run("DELETE FROM sessions WHERE user_id=?", loser);
+    run("DELETE FROM users WHERE id=?", loser);
+    return {survivor};
+  });
   return {
     db,
     userFor,
+    identityUser(provider, subject) {
+      return one(
+        "SELECT u.* FROM users u JOIN identities i ON i.user_id=u.id WHERE i.provider=? AND i.subject=? AND u.deleted_at IS NULL",
+        provider, subject,
+      ) || null;
+    },
+    mergeUsers,
+    familyData,
+    user(id) {
+      return one("SELECT * FROM users WHERE id=? AND deleted_at IS NULL", id) || null;
+    },
+    identityKinds(user) {
+      return all("SELECT provider FROM identities WHERE user_id=? ORDER BY provider", user).map(row => row.provider);
+    },
     member,
     rate(key, until) {
       const row = one("SELECT until FROM family_rates WHERE key=?", key);
@@ -164,21 +209,23 @@ CREATE TABLE IF NOT EXISTS membership_interests(id TEXT PRIMARY KEY,name TEXT NO
       run("DELETE FROM oauth_states WHERE state_hash=?", hash);
       return row && row.expires_at >= Date.now() ? row : null;
     },
-    session(hash, user, expires, csrfHash) {
+    session(hash, user, expires, csrfHash, scope = 'family') {
       run(
-        "INSERT INTO sessions (token_hash,user_id,expires_at,ua_summary,csrf_hash,created_at,demo) VALUES(?,?,?,'',?,?,?)",
+        "INSERT INTO sessions (token_hash,user_id,expires_at,ua_summary,csrf_hash,created_at,demo,scope) VALUES(?,?,?,'',?,?,?,?)",
         hash,
         user,
         expires,
         csrfHash,
         now(),
         demoFlag,
+        scope,
       );
     },
-    sessionUser(hash) {
+    sessionUser(hash, scope = 'family') {
       return one(
-        "SELECT s.user_id,s.csrf_hash,u.display_name,u.locale,(SELECT email FROM identities WHERE user_id=u.id AND email IS NOT NULL ORDER BY CASE provider WHEN 'google' THEN 0 WHEN 'email' THEN 1 ELSE 2 END LIMIT 1) AS email FROM sessions s JOIN users u ON u.id=s.user_id WHERE s.token_hash=? AND s.expires_at>? AND u.deleted_at IS NULL",
+        "SELECT s.user_id,s.csrf_hash,u.display_name,u.locale,(SELECT email FROM identities WHERE user_id=u.id AND email IS NOT NULL ORDER BY CASE provider WHEN 'google' THEN 0 WHEN 'email' THEN 1 ELSE 2 END LIMIT 1) AS email FROM sessions s JOIN users u ON u.id=s.user_id WHERE s.token_hash=? AND s.scope=? AND s.expires_at>? AND u.deleted_at IS NULL",
         hash,
+        scope,
         Date.now(),
       );
     },
