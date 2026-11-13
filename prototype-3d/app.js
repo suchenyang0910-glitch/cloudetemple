@@ -1,4 +1,4 @@
-import * as THREE from './vendor/three.module.min.js';
+import * as THREE from './vendor/three.bundle.min.js';
 import { createTempleWorld } from './scene.js';
 import { poseVisitor, setVisitorView } from './character.js';
 import { canOccupy, nearestZone } from './logic.js';

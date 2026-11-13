@@ -14,12 +14,15 @@ async function files(dir){const entries=await readdir(dir,{withFileTypes:true});
 const all=await files(output),html=all.filter(file=>file.endsWith('.html')&&path.basename(file)!=='404.html');
 const titles=new Set(),descriptions=new Set(),report=[];
 const cssBytes=(await stat(path.join(output,'assets','site.css'))).size;
+const css=await readFile(path.join(output,'assets','site.css'),'utf8');
+if(previewBase){assert(css.includes(`url('${previewBase}assets/`),'preview CSS assets are not base-prefixed');assert(!css.includes("url('/assets/"),'preview CSS keeps root asset URLs');}
 const fontBytes=(await stat(path.join(output,'assets','BeVietnam-latin.woff2'))).size+(await stat(path.join(output,'assets','BeVietnam-vietnamese.woff2'))).size;
 const localPath=target=>previewBase&&target.startsWith(previewBase)?target.slice(previewBase.length-1):target;
 
 for(const file of html){
   const text=await readFile(file,'utf8'),relative=path.relative(output,file).replaceAll('\\','/'),title=(text.match(/<title>([^<]+)<\/title>/)||[])[1],description=(text.match(/<meta name="description" content="([^"]+)"/ )||[])[1];
   assert(title,`${relative}: missing title`);assert(description,`${relative}: missing description`);assert(title.length<=60,`${relative}: title over 60 chars`);assert(description.length<=155,`${relative}: description over 155 chars`);assert(!titles.has(title),`${relative}: duplicate title`);assert(!descriptions.has(description),`${relative}: duplicate description`);titles.add(title);descriptions.add(description);
+  assert(text.includes(`<link rel="icon" href="${previewBase}assets/favicon.svg">`),`${relative}: missing same-origin favicon`);
   assert.equal((text.match(/<h1[ >]/g)||[]).length,1,`${relative}: expected one H1`);assert(/<html lang="(vi|en)"/.test(text),`${relative}: missing language`);for(const lang of ['vi','en','x-default'])assert(text.includes(`hreflang="${lang}"`),`${relative}: missing ${lang} hreflang`);
   const pathname=relative==='index.html'?'/' : `/${relative.replace(/\/index\.html$/,'/')}`;assert(text.includes(`<link rel="canonical" href="https://chuamay.org${pathname}">`),`${relative}: canonical changed`);
   if(previewBase)assert(text.includes('<meta name="robots" content="noindex">'),`${relative}: preview missing noindex`);else assert(!text.includes('<meta name="robots" content="noindex">'),`${relative}: production unexpectedly noindex`);

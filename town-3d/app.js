@@ -1,4 +1,4 @@
-import * as THREE from '../prototype-3d/vendor/three.module.min.js';
+import * as THREE from '../prototype-3d/vendor/three.bundle.min.js';
 import { createTownWorld } from './scene.js';
 import { poseVisitor, updateView } from './character.js';
 import { TEMPLES, canOccupy, nearestTemple, facingBuddhaYaw, COMING_SOON_LABEL } from './logic.js';
@@ -61,7 +61,7 @@ function initMapSheet() {
     card.type = 'button'; card.className = `map-card ${t.status === 'open' ? 'is-open' : 'is-coming'}`;
     card.dataset.id = t.id;
     const image = document.createElement('span'); image.className = 'map-card-image';
-    image.style.backgroundImage = `url("./assets/exterior-${t.id}-day.webp")`;
+    image.style.backgroundImage = `url("./assets/map-thumbs/exterior-${t.id}-day.webp")`;
     const name = document.createElement('span'); name.className = 'map-card-name'; name.textContent = t.name;
     card.append(image, name);
     if (t.status !== 'open') { const badge = document.createElement('small'); badge.textContent = 'Sắp mở'; card.append(badge); }
@@ -199,6 +199,11 @@ function frame(now) {
   moveVisitor(delta, now);
   updateFollowCamera({ world, delta, reduced, mapMode, cameraOffset: CAMERA_OFFSET, mapPosition: MAP_CAM_POS, mapTarget: MAP_CAM_TARGET });
   updateBillboards(world.billboards, world.camera, mapMode);
+  for (const billboard of world.billboards) {
+    const dx = world.visitor.position.x - billboard.position.x;
+    const dz = world.visitor.position.z - billboard.position.z;
+    if (Math.hypot(dx, dz) <= 9) billboard.userData.loadExterior?.();
+  }
   updatePanel();
   if (mapMode) updateMapSheet();
   activePlace?.update({ world, temple: current, delta, now });
