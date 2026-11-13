@@ -1,0 +1,72 @@
+{
+  "passed": true,
+  "pages": 11,
+  "performance": [
+    {
+      "page": "/404.html",
+      "initialBytes": 136936,
+      "clientJavaScriptBytes": 0,
+      "clientInteraction": "0ms client JavaScript; no client-side hydration"
+    },
+    {
+      "page": "/cau-hoi-thuong-gap/",
+      "initialBytes": 139786,
+      "clientJavaScriptBytes": 0,
+      "clientInteraction": "0ms client JavaScript; no client-side hydration"
+    },
+    {
+      "page": "/en/about/",
+      "initialBytes": 138113,
+      "clientJavaScriptBytes": 0,
+      "clientInteraction": "0ms client JavaScript; no client-side hydration"
+    },
+    {
+      "page": "/en/faq/",
+      "initialBytes": 139383,
+      "clientJavaScriptBytes": 0,
+      "clientInteraction": "0ms client JavaScript; no client-side hydration"
+    },
+    {
+      "page": "/en/",
+      "initialBytes": 241237,
+      "clientJavaScriptBytes": 0,
+      "clientInteraction": "0ms client JavaScript; no client-side hydration"
+    },
+    {
+      "page": "/en/lunar-calendar-2027/",
+      "initialBytes": 138944,
+      "clientJavaScriptBytes": 0,
+      "clientInteraction": "0ms client JavaScript; no client-side hydration"
+    },
+    {
+      "page": "/en/lunar-calendar-2027/month-01/",
+      "initialBytes": 139099,
+      "clientJavaScriptBytes": 0,
+      "clientInteraction": "0ms client JavaScript; no client-side hydration"
+    },
+    {
+      "page": "/gioi-thieu/",
+      "initialBytes": 138255,
+      "clientJavaScriptBytes": 0,
+      "clientInteraction": "0ms client JavaScript; no client-side hydration"
+    },
+    {
+      "page": "/",
+      "initialBytes": 241460,
+      "clientJavaScriptBytes": 0,
+      "clientInteraction": "0ms client JavaScript; no client-side hydration"
+    },
+    {
+      "page": "/lich-am-2027/",
+      "initialBytes": 138964,
+      "clientJavaScriptBytes": 0,
+      "clientInteraction": "0ms client JavaScript; no client-side hydration"
+    },
+    {
+      "page": "/lich-am-2027/thang-01/",
+      "initialBytes": 139176,
+      "clientJavaScriptBytes": 0,
+      "clientInteraction": "0ms client JavaScript; no client-side hydration"
+    }
+  ]
+}
