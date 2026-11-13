@@ -1,4 +1,4 @@
-import * as THREE from '../prototype-3d/vendor/three.module.min.js';
+import * as THREE from '../prototype-3d/vendor/three.bundle.min.js';
 import { TEMPLES, WALK_BOUNDS, COMING_SOON_LABEL, SPAWN } from './logic.js';
 import { createVisitor } from './character.js';
 

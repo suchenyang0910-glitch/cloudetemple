@@ -1,4 +1,4 @@
-import * as THREE from '../prototype-3d/vendor/three.module.min.js';
+import * as THREE from '../prototype-3d/vendor/three.bundle.min.js';
 import { createTownWorld } from './scene.js';
 import { poseVisitor, updateView } from './character.js';
 import { TEMPLES, canOccupy, nearestTemple, facingBuddhaYaw, COMING_SOON_LABEL } from './logic.js';

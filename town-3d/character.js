@@ -1,4 +1,4 @@
-import * as THREE from '../prototype-3d/vendor/three.module.min.js';
+import * as THREE from '../prototype-3d/vendor/three.bundle.min.js';
 
 const loader = new THREE.TextureLoader();
 const names = ['stand-front', 'stand-side', 'stand-back', 'walk-side-1', 'walk-side-2', 'walk-back-1', 'walk-back-2', 'palms'];
