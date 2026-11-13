@@ -14,6 +14,8 @@ async function files(dir){const entries=await readdir(dir,{withFileTypes:true});
 const all=await files(output),html=all.filter(file=>file.endsWith('.html')&&path.basename(file)!=='404.html');
 const titles=new Set(),descriptions=new Set(),report=[];
 const cssBytes=(await stat(path.join(output,'assets','site.css'))).size;
+const css=await readFile(path.join(output,'assets','site.css'),'utf8');
+if(previewBase){assert(css.includes(`url('${previewBase}assets/`),'preview CSS assets are not base-prefixed');assert(!css.includes("url('/assets/"),'preview CSS keeps root asset URLs');}
 const fontBytes=(await stat(path.join(output,'assets','BeVietnam-latin.woff2'))).size+(await stat(path.join(output,'assets','BeVietnam-vietnamese.woff2'))).size;
 const localPath=target=>previewBase&&target.startsWith(previewBase)?target.slice(previewBase.length-1):target;
 
