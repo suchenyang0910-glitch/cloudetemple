@@ -1,4 +1,4 @@
-import * as THREE from '../../prototype-3d/vendor/three.module.min.js';
+import * as THREE from '../../prototype-3d/vendor/three.bundle.min.js';
 import { mountPetGarden } from './index.js';
 
 const canvas = document.querySelector('#scene');
