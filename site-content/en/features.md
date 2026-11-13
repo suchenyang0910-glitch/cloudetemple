@@ -3,14 +3,14 @@
 SEO title: Chùa Mây: five online activities
 Meta description: Learn about five neutral Chùa Mây activities: incense, a bow, sitting still, beads, and a wooden-block sound.
 
-Chùa Mây offers five simple online activities: incense, a respectful bow, sitting still, moving beads, and a wooden-block sound. Each is only a web interaction that can be stopped or skipped, with no promise about an outcome.
+Chùa Mây has five simple online activities to try at your own pace: incense, a respectful bow, sitting still, moving beads, and a wooden-block sound. You can stop or skip any activity; none is tied to a promised outcome.
 
 ## Five activities
 
-- **Incense:** view an illustrated burner and move on whenever you wish. It is an image in the web space, not a required ritual.
-- **A respectful bow:** bow toward a faceless silhouette with no held object. The interaction models movement only and makes no doctrinal claim.
-- **Sitting still:** leave the screen quiet for a few minutes if you wish. A timer only shows session length; it is not a score.
-- **Moving beads:** tap to move beads in an illustrated strand. There are no points, levels, or rankings.
-- **Wooden-block sound:** play a sample sound with stop and volume controls. You can mute audio before opening the activity.
+- **Incense:** tap to light an illustrated stick and watch a small glow appear; move on whenever you wish.
+- **A respectful bow:** bow toward a faceless silhouette with no held object, a slow gesture before you change scenes.
+- **Sitting still:** leave the screen quiet for a few minutes; a timer shows length only and is not a score.
+- **Moving beads:** tap each bead and follow the steady rhythm; there are no points, levels, or rankings.
+- **Wooden-block sound:** play one sample sound, adjust the volume, or mute it before moving on.
 
 [待顾问确认] Any doctrinal or ritual explanation will be added only after adviser review. Last updated: 2026-11-13.
