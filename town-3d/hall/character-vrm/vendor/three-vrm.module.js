@@ -28,22 +28,22 @@ var __async = (__this, __arguments, generator) => {
 };
 
 // ../three-vrm-core/lib/three-vrm-core.module.js
-import * as THREE from "./three.module.min.js";
-import * as THREE4 from "./three.module.min.js";
-import * as THREE2 from "./three.module.min.js";
-import * as THREE3 from "./three.module.min.js";
-import * as THREE5 from "./three.module.min.js";
-import * as THREE6 from "./three.module.min.js";
-import * as THREE7 from "./three.module.min.js";
-import * as THREE8 from "./three.module.min.js";
-import * as THREE11 from "./three.module.min.js";
-import * as THREE9 from "./three.module.min.js";
-import * as THREE10 from "./three.module.min.js";
-import * as THREE13 from "./three.module.min.js";
-import * as THREE12 from "./three.module.min.js";
-import * as THREE14 from "./three.module.min.js";
-import * as THREE15 from "./three.module.min.js";
-import * as THREE16 from "./three.module.min.js";
+import * as THREE from "../../../../prototype-3d/vendor/three.module.min.js";
+import * as THREE4 from "../../../../prototype-3d/vendor/three.module.min.js";
+import * as THREE2 from "../../../../prototype-3d/vendor/three.module.min.js";
+import * as THREE3 from "../../../../prototype-3d/vendor/three.module.min.js";
+import * as THREE5 from "../../../../prototype-3d/vendor/three.module.min.js";
+import * as THREE6 from "../../../../prototype-3d/vendor/three.module.min.js";
+import * as THREE7 from "../../../../prototype-3d/vendor/three.module.min.js";
+import * as THREE8 from "../../../../prototype-3d/vendor/three.module.min.js";
+import * as THREE11 from "../../../../prototype-3d/vendor/three.module.min.js";
+import * as THREE9 from "../../../../prototype-3d/vendor/three.module.min.js";
+import * as THREE10 from "../../../../prototype-3d/vendor/three.module.min.js";
+import * as THREE13 from "../../../../prototype-3d/vendor/three.module.min.js";
+import * as THREE12 from "../../../../prototype-3d/vendor/three.module.min.js";
+import * as THREE14 from "../../../../prototype-3d/vendor/three.module.min.js";
+import * as THREE15 from "../../../../prototype-3d/vendor/three.module.min.js";
+import * as THREE16 from "../../../../prototype-3d/vendor/three.module.min.js";
 var __async2 = (__this, __arguments, generator) => {
   return new Promise((resolve, reject) => {
     var fulfilled = (value) => {
@@ -3211,11 +3211,11 @@ var VRM = class extends VRMCore {
 };
 
 // ../three-vrm-materials-mtoon/lib/three-vrm-materials-mtoon.module.js
-import * as THREE52 from "./three.module.min.js";
-import * as THREE22 from "./three.module.min.js";
-import * as THREE17 from "./three.module.min.js";
-import * as THREE42 from "./three.module.min.js";
-import * as THREE32 from "./three.module.min.js";
+import * as THREE52 from "../../../../prototype-3d/vendor/three.module.min.js";
+import * as THREE22 from "../../../../prototype-3d/vendor/three.module.min.js";
+import * as THREE17 from "../../../../prototype-3d/vendor/three.module.min.js";
+import * as THREE42 from "../../../../prototype-3d/vendor/three.module.min.js";
+import * as THREE32 from "../../../../prototype-3d/vendor/three.module.min.js";
 var __defProp = Object.defineProperty;
 var __getOwnPropSymbols = Object.getOwnPropertySymbols;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
@@ -4068,7 +4068,7 @@ _VRMMaterialsHDREmissiveMultiplierLoaderPlugin.EXTENSION_NAME = "VRMC_materials_
 var VRMMaterialsHDREmissiveMultiplierLoaderPlugin = _VRMMaterialsHDREmissiveMultiplierLoaderPlugin;
 
 // ../three-vrm-materials-v0compat/lib/three-vrm-materials-v0compat.module.js
-import * as THREE18 from "./three.module.min.js";
+import * as THREE18 from "../../../../prototype-3d/vendor/three.module.min.js";
 var __defProp2 = Object.defineProperty;
 var __defProps = Object.defineProperties;
 var __getOwnPropDescs = Object.getOwnPropertyDescriptors;
@@ -4410,11 +4410,11 @@ var VRMMaterialsV0CompatPlugin = class {
 };
 
 // ../three-vrm-node-constraint/lib/three-vrm-node-constraint.module.js
-import * as THREE19 from "./three.module.min.js";
-import * as THREE33 from "./three.module.min.js";
-import * as THREE23 from "./three.module.min.js";
-import * as THREE43 from "./three.module.min.js";
-import * as THREE53 from "./three.module.min.js";
+import * as THREE19 from "../../../../prototype-3d/vendor/three.module.min.js";
+import * as THREE33 from "../../../../prototype-3d/vendor/three.module.min.js";
+import * as THREE23 from "../../../../prototype-3d/vendor/three.module.min.js";
+import * as THREE43 from "../../../../prototype-3d/vendor/three.module.min.js";
+import * as THREE53 from "../../../../prototype-3d/vendor/three.module.min.js";
 var __async6 = (__this, __arguments, generator) => {
   return new Promise((resolve, reject) => {
     var fulfilled = (value) => {
@@ -4800,20 +4800,20 @@ _VRMNodeConstraintLoaderPlugin.EXTENSION_NAME = "VRMC_node_constraint";
 var VRMNodeConstraintLoaderPlugin = _VRMNodeConstraintLoaderPlugin;
 
 // ../three-vrm-springbone/lib/three-vrm-springbone.module.js
-import * as THREE72 from "./three.module.min.js";
-import * as THREE20 from "./three.module.min.js";
-import * as THREE24 from "./three.module.min.js";
-import * as THREE34 from "./three.module.min.js";
-import * as THREE44 from "./three.module.min.js";
-import * as THREE54 from "./three.module.min.js";
-import * as THREE62 from "./three.module.min.js";
-import * as THREE92 from "./three.module.min.js";
-import * as THREE82 from "./three.module.min.js";
-import * as THREE102 from "./three.module.min.js";
-import * as THREE132 from "./three.module.min.js";
-import * as THREE122 from "./three.module.min.js";
-import * as THREE112 from "./three.module.min.js";
-import * as THREE142 from "./three.module.min.js";
+import * as THREE72 from "../../../../prototype-3d/vendor/three.module.min.js";
+import * as THREE20 from "../../../../prototype-3d/vendor/three.module.min.js";
+import * as THREE24 from "../../../../prototype-3d/vendor/three.module.min.js";
+import * as THREE34 from "../../../../prototype-3d/vendor/three.module.min.js";
+import * as THREE44 from "../../../../prototype-3d/vendor/three.module.min.js";
+import * as THREE54 from "../../../../prototype-3d/vendor/three.module.min.js";
+import * as THREE62 from "../../../../prototype-3d/vendor/three.module.min.js";
+import * as THREE92 from "../../../../prototype-3d/vendor/three.module.min.js";
+import * as THREE82 from "../../../../prototype-3d/vendor/three.module.min.js";
+import * as THREE102 from "../../../../prototype-3d/vendor/three.module.min.js";
+import * as THREE132 from "../../../../prototype-3d/vendor/three.module.min.js";
+import * as THREE122 from "../../../../prototype-3d/vendor/three.module.min.js";
+import * as THREE112 from "../../../../prototype-3d/vendor/three.module.min.js";
+import * as THREE142 from "../../../../prototype-3d/vendor/three.module.min.js";
 var __async7 = (__this, __arguments, generator) => {
   return new Promise((resolve, reject) => {
     var fulfilled = (value) => {
@@ -6063,7 +6063,7 @@ var VRMLoaderPlugin = class {
 };
 
 // src/VRMUtils/combineMorphs.ts
-import * as THREE21 from "./three.module.min.js";
+import * as THREE21 from "../../../../prototype-3d/vendor/three.module.min.js";
 function collectMeshes(scene) {
   const meshes = /* @__PURE__ */ new Set();
   scene.traverse((obj) => {
@@ -6185,10 +6185,10 @@ function combineMorphs(vrm) {
 }
 
 // src/VRMUtils/combineSkeletons.ts
-import * as THREE27 from "./three.module.min.js";
+import * as THREE27 from "../../../../prototype-3d/vendor/three.module.min.js";
 
 // src/utils/attributeGetComponentCompat.ts
-import * as THREE25 from "./three.module.min.js";
+import * as THREE25 from "../../../../prototype-3d/vendor/three.module.min.js";
 function attributeGetComponentCompat(attribute, index, component) {
   if (attribute.getComponent) {
     return attribute.getComponent(index, component);
@@ -6202,7 +6202,7 @@ function attributeGetComponentCompat(attribute, index, component) {
 }
 
 // src/utils/attributeSetComponentCompat.ts
-import * as THREE26 from "./three.module.min.js";
+import * as THREE26 from "../../../../prototype-3d/vendor/three.module.min.js";
 function attributeSetComponentCompat(attribute, index, component, value) {
   if (attribute.setComponent) {
     attribute.setComponent(index, component, value);
@@ -6459,7 +6459,7 @@ function deepDispose(object3D) {
 }
 
 // src/VRMUtils/removeUnnecessaryJoints.ts
-import * as THREE28 from "./three.module.min.js";
+import * as THREE28 from "../../../../prototype-3d/vendor/three.module.min.js";
 function removeUnnecessaryJoints(root, options) {
   var _a, _b;
   console.warn(
@@ -6517,8 +6517,8 @@ function removeUnnecessaryJoints(root, options) {
 }
 
 // src/VRMUtils/removeUnnecessaryVertices.ts
-import * as THREE29 from "./three.module.min.js";
-import { BufferAttribute as BufferAttribute9 } from "./three.module.min.js";
+import * as THREE29 from "../../../../prototype-3d/vendor/three.module.min.js";
+import { BufferAttribute as BufferAttribute9 } from "../../../../prototype-3d/vendor/three.module.min.js";
 function checkIsVertexUsed(attributes, originalIndex) {
   const vertexCount = attributes.position.count;
   const isVertexUsed = new Array(vertexCount);
