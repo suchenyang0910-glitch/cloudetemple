@@ -74,7 +74,7 @@ export function createPetAdminApi(settings, admin, {access, adminOrigin, clock =
   };
 }
 
-export function createPetModerationModule(settings, db, {access, adminOrigin, approvedRuleVersion, verifyBound, clock = Date.now} = {}) {
+export function createPetModerationModule(settings, db, {access, adminOrigin, approvedRuleVersion, verifyBound, clock = Date.now, family} = {}) {
   if (approvedRuleVersion !== undefined && approvedRuleVersion !== candidateRules.version) {
     throw Error('Unknown approved pet moderation rule version');
   }
@@ -82,7 +82,7 @@ export function createPetModerationModule(settings, db, {access, adminOrigin, ap
   const admin = openPetAdminStore(db);
   const handleAdmin = createPetAdminApi(settings, admin, {access, adminOrigin, clock});
   const handlePublic = createPetApi(settings, pet, {
-    clock, verifyBound, approvedRules: approvedRuleVersion ? candidateRules : undefined,
+    clock, verifyBound, family, approvedRules: approvedRuleVersion ? candidateRules : undefined,
     verifyAdmin: async req => {
       try { return await access.validate(req.headers['cf-access-jwt-assertion']); } catch { return false; }
     },

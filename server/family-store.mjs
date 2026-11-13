@@ -40,7 +40,8 @@ CREATE TABLE IF NOT EXISTS membership_interests(id TEXT PRIMARY KEY,name TEXT NO
   const now = () => new Date().toISOString(),
     one = (sql, ...p) => db.prepare(sql).get(...p),
     all = (sql, ...p) => db.prepare(sql).all(...p),
-    run = (sql, ...p) => db.prepare(sql).run(...p);
+    run = (sql, ...p) => db.prepare(sql).run(...p),
+    transaction = (fn) => db.transaction(fn).immediate;
   const userFor = (provider, subject, email = "", display = "") => {
     email = String(email || "").trim().toLowerCase();
     const found = one(
@@ -113,9 +114,45 @@ CREATE TABLE IF NOT EXISTS membership_interests(id TEXT PRIMARY KEY,name TEXT NO
       user,
       id,
     );
+  const familyData = (user) => Boolean(one(
+    "SELECT 1 WHERE EXISTS(SELECT 1 FROM tablets WHERE owner_id=?) OR EXISTS(SELECT 1 FROM tablet_members WHERE user_id=?) OR EXISTS(SELECT 1 FROM offerings WHERE user_id=?) OR EXISTS(SELECT 1 FROM invites WHERE created_by=?) OR EXISTS(SELECT 1 FROM deliveries WHERE user_id=?) OR EXISTS(SELECT 1 FROM family_consents WHERE user_id=?) OR EXISTS(SELECT 1 FROM calendar_preorders WHERE user_id=?) OR EXISTS(SELECT 1 FROM reminder_prefs WHERE user_id=? AND (email_on=1 OR telegram_on=1 OR telegram_chat_id IS NOT NULL OR ics_token IS NOT NULL))",
+    user, user, user, user, user, user, user, user,
+  ));
+  const table = (name) => Boolean(one("SELECT 1 FROM sqlite_master WHERE type='table' AND name=?", name));
+  const mergeUsers = transaction((current, other) => {
+    if (current === other) return {survivor: current};
+    const currentHasFamily = familyData(current), otherHasFamily = familyData(other);
+    if (currentHasFamily && otherHasFamily) return {error: 'family_merge_conflict'};
+    const survivor = otherHasFamily ? other : current, loser = otherHasFamily ? current : other;
+    if (!one("SELECT 1 FROM users WHERE id=?", survivor) || !one("SELECT 1 FROM users WHERE id=?", loser)) return {error: 'account'};
+    if (table('pet_visits')) {
+      run("DELETE FROM pet_visits WHERE user_id=? AND EXISTS(SELECT 1 FROM pet_visits keep WHERE keep.user_id=? AND keep.memorial_id=pet_visits.memorial_id AND keep.day=pet_visits.day AND keep.kind=pet_visits.kind)", loser, survivor);
+      run("UPDATE pet_visits SET user_id=? WHERE user_id=?", survivor, loser);
+      run("DELETE FROM pet_offerings WHERE user_id=? AND EXISTS(SELECT 1 FROM pet_offerings keep WHERE keep.user_id=? AND keep.memorial_id=pet_offerings.memorial_id AND keep.day=pet_offerings.day AND keep.kind=pet_offerings.kind)", loser, survivor);
+      run("UPDATE pet_offerings SET user_id=? WHERE user_id=?", survivor, loser);
+      run("UPDATE pet_memorials SET owner_user_id=? WHERE owner_user_id=?", survivor, loser);
+      run("DELETE FROM pet_members WHERE user_id=? AND EXISTS(SELECT 1 FROM pet_members keep WHERE keep.user_id=? AND keep.memorial_id=pet_members.memorial_id)", loser, survivor);
+      run("UPDATE pet_members SET user_id=?,principal_ref=? WHERE user_id=?", survivor, 'user:' + survivor, loser);
+      run("UPDATE pet_invites SET created_by_user_id=? WHERE created_by_user_id=?", survivor, loser);
+      if (table('pet_consents')) run("INSERT INTO pet_consents(user_id,accepted_at) SELECT ?,accepted_at FROM pet_consents WHERE user_id=? ON CONFLICT(user_id) DO UPDATE SET accepted_at=max(pet_consents.accepted_at,excluded.accepted_at)", survivor, loser);
+      if (table('pet_admin_bans')) run("UPDATE pet_admin_bans SET user_id=? WHERE user_id=?", survivor, loser);
+    }
+    run("UPDATE identities SET user_id=? WHERE user_id=?", survivor, loser);
+    run("DELETE FROM sessions WHERE user_id=?", loser);
+    run("DELETE FROM users WHERE id=?", loser);
+    return {survivor};
+  });
   return {
     db,
     userFor,
+    mergeUsers,
+    familyData,
+    user(id) {
+      return one("SELECT * FROM users WHERE id=? AND deleted_at IS NULL", id) || null;
+    },
+    identityKinds(user) {
+      return all("SELECT provider FROM identities WHERE user_id=? ORDER BY provider", user).map(row => row.provider);
+    },
     member,
     rate(key, until) {
       const row = one("SELECT until FROM family_rates WHERE key=?", key);

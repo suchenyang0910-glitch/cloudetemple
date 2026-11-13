@@ -1,6 +1,7 @@
-import {randomBytes, randomUUID} from 'node:crypto';
+import {randomBytes, randomInt, randomUUID} from 'node:crypto';
 import {clientIP, equal, hash, validateInitData} from './security.mjs';
 import {draftRules, moderatePublicText} from './pet-moderation.mjs';
+import {sendMail} from './mail.mjs';
 
 const prefix = '/api/pet-garden';
 const uuid = /^[a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12}$/;
@@ -9,6 +10,7 @@ const species = new Set(['cat', 'dog', 'rabbit', 'bird', 'other']);
 const reportReasons = new Set(['abuse', 'advertising', 'impersonation', 'privacy', 'other']);
 const dayFormat = new Intl.DateTimeFormat('sv-SE', {timeZone: 'Asia/Ho_Chi_Minh'});
 const mint = () => randomBytes(32).toString('hex');
+const validEmail = value => /^[^\s@<>]+@[^\s@<>.]+(?:\.[^\s@<>.]+)+$/.test(value);
 const reject = (status, code, details) => { throw Object.assign(new Error(code), {status, details}); };
 const requireValue = (condition, status, code) => { if (!condition) reject(status, code); };
 
@@ -70,12 +72,16 @@ function signedCookie(req, name, digest) {
   return !extra && tokenPattern.test(id ?? '') && equal(signature, digest(name, id)) ? id : undefined;
 }
 
+function cookie(req, name) {
+  return (req.headers.cookie ?? '').split(/;\s*/).find(part => part.startsWith(name + '='))?.slice(name.length + 1);
+}
+
 function setSignedCookie(res, name, id, digest) {
   const cookie = name + '=' + id + '.' + digest(name, id);
   res.setHeader('Set-Cookie', cookie + '; Path=/api/pet-garden; HttpOnly; Secure; SameSite=Lax; Max-Age=31536000');
 }
 
-function identify(req, settings, now, digest, verifyBound, input = {}) {
+function identify(req, settings, now, digest, verifyBound, family, input = {}) {
   const authorization = req.headers.authorization;
   const credential = typeof authorization === 'string' ? /^(Telegram|Claim|Bearer) (.+)$/i.exec(authorization) : null;
   requireValue(!authorization || credential, 401, 'identity');
@@ -86,7 +92,9 @@ function identify(req, settings, now, digest, verifyBound, input = {}) {
     requireValue(settings.telegramEnabled !== false && settings.token && (!credential || scheme === 'telegram'), 401, 'init_data');
     try {
       const user = validateInitData(initData, settings.token, now);
-      return {ref: digest('telegram', user.id), kind: 'telegram', locale: user.language};
+      const account = family?.userFor('telegram', hash(settings.hashSecret, user.id), '', 'Telegram');
+      requireValue(account, 503, 'account_unavailable');
+      return {ref: 'user:' + account.id, userId: account.id, kind: 'telegram', locale: user.language};
     } catch { reject(401, 'init_data'); }
   }
   if (scheme === 'bearer') {
@@ -94,6 +102,11 @@ function identify(req, settings, now, digest, verifyBound, input = {}) {
       requireValue(typeof subject === 'string' && subject.length > 0 && subject.length <= 256, 401, 'identity');
       return {ref: digest('bound', subject), kind: 'bound'};
     });
+  }
+  const sessionToken = cookie(req, 'ct_pet_session');
+  if (tokenPattern.test(sessionToken ?? '')) {
+    const user = family?.sessionUser(hash(settings.hashSecret, sessionToken));
+    if (user) return {ref: 'user:' + user.user_id, userId: user.user_id, kind: 'email', csrfHash: user.csrf_hash};
   }
   const browser = signedCookie(req, 'ct_pet_browser', digest);
   const claimToken = scheme === 'claim' ? supplied : browser && digest('browser-token', browser);
@@ -105,13 +118,13 @@ function identify(req, settings, now, digest, verifyBound, input = {}) {
   };
 }
 
-export function createPetApi(settings, pet, {clock = Date.now, verifyBound, verifyAdmin, approvedRules, moderation} = {}) {
+export function createPetApi(settings, pet, {clock = Date.now, verifyBound, verifyAdmin, approvedRules, moderation, family} = {}) {
   const digest = (scope, value) => hash(settings.hashSecret, JSON.stringify(['pet-garden', scope, value]));
   const rules = approvedRules ?? moderation?.rules ?? draftRules;
   if (!rules.version || !Object.values(rules.entries).some(entries => entries.length))
     throw Error('Missing pet moderation rules');
   const bound = (identity) => requireValue(identity.ref && identity.kind !== 'browser', 401, 'bound_identity_required');
-  const owner = (row, identity) => requireValue(row?.demo === 0 && row.owner_ref === identity.ref, 404, 'memorial');
+  const owner = (row, identity) => requireValue(row?.demo === 0 && (row.owner_user_id ? row.owner_user_id === identity.userId : row.owner_ref === identity.ref), 404, 'memorial');
   const rate = (req, res, scope, identity, now, subjectLimit = 10, ipLimit = 40) => {
     const ip = digest('rate-ip', [Math.floor(now / 60000), clientIP(req, settings.trustLocal)]);
     const actor = identity.ref && digest('rate-actor', [Math.floor(now / 60000), identity.ref]);
@@ -119,6 +132,24 @@ export function createPetApi(settings, pet, {clock = Date.now, verifyBound, veri
       res.setHeader('Retry-After', String(60 - Math.floor(now / 1000) % 60));
       reject(429, 'rate_limit');
     }
+  };
+  const issuePetSession = (res, account, now) => {
+    const raw = mint(), csrf = mint().slice(0, 36), max = 30 * 86400;
+    family.session(hash(settings.hashSecret, raw), account.id, now + max * 1000, hash(settings.hashSecret, csrf));
+    res.setHeader('Set-Cookie', `ct_pet_session=${raw}; Path=/api/pet-garden; Max-Age=${max}; HttpOnly; Secure; SameSite=Lax`);
+    return csrf;
+  };
+  const mergeOrPrompt = (res, current, target, now, confirmed = false) => {
+    const summary = pet.mineSummary(target.id);
+    if (!confirmed && (summary.memorialCount || family.familyData(target.id))) {
+      const mergeToken = mint();
+      pet.linkStart(digest('merge', mergeToken), current.userId, 'merge', null, target.id, now + 600000);
+      reject(409, 'merge_confirmation_required', {mergeToken, source: {memorialCount: summary.memorialCount, hasFamilyData: family.familyData(target.id)}});
+    }
+    const result = family.mergeUsers(current.userId, target.id);
+    requireValue(!result.error, 409, result.error);
+    const account = family.user(result.survivor);
+    return {merged: true, csrf: issuePetSession(res, account, now), identityKinds: family.identityKinds(account.id)};
   };
 
   async function dispatch(req, res, segments, query, now) {
@@ -146,7 +177,79 @@ export function createPetApi(settings, pet, {clock = Date.now, verifyBound, veri
     }
 
     const input = method === 'POST' ? await readBody(req) : {};
-    const identity = await identify(req, settings, now, digest, verifyBound, input);
+    if (method === 'POST' && area === 'auth' && id === 'email' && action === 'start' && segments.length === 3) {
+      requireValue(family, 503, 'account_unavailable');
+      const email = String(input.email ?? '').trim().toLowerCase();
+      requireValue(validEmail(email), 400, 'email_invalid');
+      const subject = hash(settings.hashSecret, email), ip = hash(settings.hashSecret, clientIP(req, settings.trustLocal));
+      if (!family.rate('pet-email:' + subject, now + 60000) || !family.rate('pet-email-ip:' + ip, now + 30000)) reject(429, 'email_rate_limited');
+      if (!pet.emailDailyLimit(dayFormat.format(now), settings.petEmailDailyLimit ?? 200)) reject(429, 'email_daily_limit');
+      const code = String(randomInt(100000, 1000000));
+      pet.saveEmailCode(subject, hash(settings.hashSecret, code), now + 600000);
+      await sendMail(settings, family, {to: email, subject: 'Mã đăng nhập Vườn Thú Cưng', text: `Mã đăng nhập của bạn: ${code}. Mã có hiệu lực trong 10 phút.`, html: `<p>Mã đăng nhập của bạn: <strong>${code}</strong>.</p><p>Mã có hiệu lực trong 10 phút.</p>`});
+      return ok({ok: true}, 201);
+    }
+    if (method === 'POST' && area === 'auth' && id === 'email' && action === 'verify' && segments.length === 3) {
+      requireValue(family, 503, 'account_unavailable');
+      const email = String(input.email ?? '').trim().toLowerCase(), code = String(input.code ?? '');
+      requireValue(validEmail(email) && /^\d{6}$/.test(code), 400, 'email_code_invalid');
+      requireValue(pet.takeEmailCode(hash(settings.hashSecret, email), hash(settings.hashSecret, code), now), 401, 'email_code_invalid');
+      const account = family.userFor('email', hash(settings.hashSecret, email), email, '');
+      return ok({ok: true, csrf: issuePetSession(res, account, now), identityKinds: ['email']});
+    }
+    const identity = await identify(req, settings, now, digest, verifyBound, family, input);
+    if (!['GET', 'HEAD'].includes(method) && identity.kind === 'email')
+      requireValue(typeof req.headers['x-csrf-token'] === 'string' && equal(hash(settings.hashSecret, req.headers['x-csrf-token']), identity.csrfHash), 403, 'csrf');
+    if (method === 'GET' && area === 'me' && segments.length === 1)
+      return ok({authenticated: Boolean(identity.userId), identityKinds: identity.userId ? family.identityKinds(identity.userId) : []});
+    if (method === 'POST' && area === 'auth' && id === 'link' && action === 'email' && extra === 'start') {
+      requireValue(identity.userId, 401, 'pet_login_required');
+      const email = String(input.email ?? '').trim().toLowerCase();
+      requireValue(validEmail(email), 400, 'email_invalid');
+      const subject = hash(settings.hashSecret, email), ip = hash(settings.hashSecret, clientIP(req, settings.trustLocal));
+      if (!family.rate('pet-link-email:' + subject, now + 60000) || !family.rate('pet-link-email-ip:' + ip, now + 30000)) reject(429, 'email_rate_limited');
+      if (!pet.emailDailyLimit(dayFormat.format(now), settings.petEmailDailyLimit ?? 200)) reject(429, 'email_daily_limit');
+      const code = String(randomInt(100000, 1000000));
+      pet.saveEmailCode(subject, hash(settings.hashSecret, code), now + 600000);
+      await sendMail(settings, family, {to: email, subject: 'Mã liên kết Vườn Thú Cưng', text: `Mã liên kết của bạn: ${code}. Mã có hiệu lực trong 10 phút.`, html: `<p>Mã liên kết của bạn: <strong>${code}</strong>.</p><p>Mã có hiệu lực trong 10 phút.</p>`});
+      return ok({ok: true}, 201);
+    }
+    if (method === 'POST' && area === 'auth' && id === 'link' && action === 'email' && extra === 'verify') {
+      requireValue(identity.userId, 401, 'pet_login_required');
+      const email = String(input.email ?? '').trim().toLowerCase(), code = String(input.code ?? '');
+      requireValue(validEmail(email) && /^\d{6}$/.test(code), 400, 'email_code_invalid');
+      requireValue(pet.takeEmailCode(hash(settings.hashSecret, email), hash(settings.hashSecret, code), now), 401, 'email_code_invalid');
+      const target = family.userFor('email', hash(settings.hashSecret, email), email, '');
+      if (target.id === identity.userId) return ok({linked: true, identityKinds: family.identityKinds(target.id)});
+      return ok(mergeOrPrompt(res, identity, target, now));
+    }
+    if (method === 'POST' && area === 'auth' && id === 'link' && action === 'telegram' && extra === 'start') {
+      requireValue(identity.userId, 401, 'pet_login_required');
+      const linkCode = mint();
+      pet.linkStart(digest('telegram-link', linkCode), identity.userId, 'telegram', null, null, now + 600000);
+      return ok({linkCode, expiresAt: new Date(now + 600000).toISOString(), deepLink: `https://t.me/ChuaMayBot/chuamay?startapp=pet-link-${linkCode}`}, 201);
+    }
+    if (method === 'POST' && area === 'auth' && id === 'link' && action === 'telegram' && extra === 'confirm') {
+      requireValue(identity.kind === 'telegram' && identity.userId, 401, 'pet_login_required');
+      const linkCode = String(input.linkCode ?? ''), link = tokenPattern.test(linkCode) && pet.linkPeek(digest('telegram-link', linkCode), 'telegram', now);
+      requireValue(link, 400, 'link_expired');
+      requireValue(link.source_user_id !== identity.userId, 403, 'link_forbidden');
+      requireValue(pet.linkAssignTarget(digest('telegram-link', linkCode), identity.userId), 403, 'link_forbidden');
+      return ok({pending: true});
+    }
+    if (method === 'POST' && area === 'auth' && id === 'link' && action === 'confirm' && segments.length === 3) {
+      requireValue(identity.userId, 401, 'pet_login_required');
+      const mergeToken = String(input.mergeToken ?? '');
+      const linkCode = String(input.linkCode ?? '');
+      const tokenHash = mergeToken ? digest('merge', mergeToken) : digest('telegram-link', linkCode);
+      const kind = mergeToken ? 'merge' : 'telegram';
+      requireValue(tokenPattern.test(mergeToken || linkCode), 400, 'link_expired');
+      const link = pet.linkTake(tokenHash, identity.userId, kind, now);
+      requireValue(link, 400, 'link_expired');
+      const target = family.user(link.target_user_id);
+      requireValue(target, 400, 'link_expired');
+      return ok(mergeOrPrompt(res, identity, target, now, kind === 'merge'));
+    }
     if (method === 'GET' && area === 'me' && id === 'claim' && segments.length === 2) {
       const claimToken = identity.browserClaimToken;
       rate(req, res, 'view-claim', claimToken ? identity : {}, now, 2, 8);
@@ -158,8 +261,8 @@ export function createPetApi(settings, pet, {clock = Date.now, verifyBound, veri
       return ok({items});
     }
     if (method === 'GET' && area === 'mine' && segments.length === 1) {
-      requireValue(identity.ref, 401, 'identity');
-      return ok({items: pet.mine(identity.ref).map(row => ({
+      requireValue(identity.userId, 401, 'pet_login_required');
+      return ok({items: pet.mineUser(identity.userId).map(row => ({
         ...publicFields(row), publicStatus: row.public_status, districtId: row.district_id
       }))});
     }
@@ -185,9 +288,9 @@ export function createPetApi(settings, pet, {clock = Date.now, verifyBound, veri
 
     if (method === 'POST' && area === 'memorials' && segments.length === 1) {
       rate(req, res, 'create', identity, now, 4, 12);
-      requireValue(!moderation?.isBanned(identity.ref), 403, 'pet_banned');
-      if (identity.ref && pet.mine(identity.ref).length) return ok({code: 'coming_soon', message: 'Sắp mở'}, 409);
-      requireValue(!identity.suppliedClaim, 401, 'identity');
+      requireValue(!moderation?.isBanned(identity.ref, identity.userId), 403, 'pet_banned');
+      requireValue(identity.userId && ['telegram', 'email'].includes(identity.kind), 401, 'pet_login_required');
+      if (pet.mineUser(identity.userId).length) return ok({code: 'coming_soon', message: 'Sắp mở'}, 409);
       const data = memorialInput(input, today);
       const text = dataWithLocale(data, identity, input);
       if (moderation && data.status === 'visible') {
@@ -203,21 +306,16 @@ export function createPetApi(settings, pet, {clock = Date.now, verifyBound, veri
         requireValue(data.status !== 'visible' || approvedRules, 503, 'public_creation_closed');
       }
 
-      // An old browser cookie must never recreate a claim code after transfer.
-      const browser = identity.kind === 'browser' ? mint() : null;
-      const claimToken = browser && digest('browser-token', browser);
-      const claimHash = claimToken && digest('claim', claimToken);
       const memorialId = randomUUID();
-      if (!pet.create({...data, id: memorialId, kind: identity.kind, owner: browser ? 'browser:' + claimHash : identity.ref,
-        claimHash, now, ruleVersion: rules.version})) return ok({code: 'coming_soon', message: 'Sắp mở'}, 409);
-      if (claimToken) setSignedCookie(res, 'ct_pet_browser', browser, digest);
-      return ok({id: memorialId, publicStatus: data.status, ...(claimToken ? {claimToken} : {})}, 201);
+      if (!pet.create({...data, id: memorialId, kind: identity.kind, owner: identity.ref, userId: identity.userId,
+        claimHash: null, now, ruleVersion: rules.version})) return ok({code: 'coming_soon', message: 'Sắp mở'}, 409);
+      return ok({id: memorialId, publicStatus: data.status}, 201);
     }
     if (method === 'POST' && area === 'invites' && action === 'accept' && segments.length === 3) {
       bound(identity);
       rate(req, res, 'accept', identity, now);
       requireValue(tokenPattern.test(id), 404, 'invite');
-      const result = pet.accept(digest('invite', id), identity.ref, now);
+      const result = pet.accept(digest('invite', id), identity.ref, identity.userId ?? null, now);
       requireValue(result, 404, 'invite');
       return ok(result);
     }
@@ -233,9 +331,9 @@ export function createPetApi(settings, pet, {clock = Date.now, verifyBound, veri
     if (method === 'POST' && action === 'claim' && segments.length === 3) {
       bound(identity);
       rate(req, res, 'claim', identity, now, 4, 12);
-      requireValue(!moderation?.isBanned(identity.ref), 403, 'pet_banned');
+      requireValue(!moderation?.isBanned(identity.ref, identity.userId), 403, 'pet_banned');
       requireValue(typeof input.claimToken === 'string' && tokenPattern.test(input.claimToken) &&
-        pet.claim(id, digest('claim', input.claimToken), identity.ref, identity.kind, now), 409, 'claim_conflict');
+        pet.claim(id, digest('claim', input.claimToken), identity.ref, identity.userId ?? null, identity.kind, now), 409, 'claim_conflict');
       return ok({claimed: true});
     }
     if (method === 'POST' && action === 'invites' && segments.length === 3) {
@@ -247,13 +345,13 @@ export function createPetApi(settings, pet, {clock = Date.now, verifyBound, veri
         expires > now && expires <= now + 30 * 86400000, 400, 'invite_fields');
       const inviteId = randomUUID();
       const token = mint();
-      requireValue(pet.invite(id, identity.ref, {id: inviteId, hash: digest('invite', token), expires, maxUses}), 404, 'memorial');
+      requireValue(pet.invite(id, identity.ref, identity.userId ?? null, {id: inviteId, hash: digest('invite', token), expires, maxUses}), 404, 'memorial');
       return ok({inviteId, token, expiresAt: new Date(expires).toISOString()}, 201);
     }
     if (method === 'DELETE' && action === 'invites' && segments.length === 4) {
       rate(req, res, 'revoke', identity, now);
       owner(pet.find(id), identity);
-      requireValue(uuid.test(extra) && pet.revoke(id, identity.ref, extra, now), 404, 'invite');
+      requireValue(uuid.test(extra) && pet.revoke(id, identity.ref, identity.userId ?? null, extra, now), 404, 'invite');
       return ok({revoked: true});
     }
     if (method === 'POST' && action === 'offerings' && segments.length === 3) {
@@ -263,14 +361,14 @@ export function createPetApi(settings, pet, {clock = Date.now, verifyBound, veri
       // shortcut: direct clients without cookies share a daily key per IP, read the public detail first to distinguish them.
       const visitor = digest('daily-visitor', [today,
         identity.ref ?? signedCookie(req, 'ct_pet_visitor', digest) ?? clientIP(req, settings.trustLocal)]);
-      const counts = pet.offer(id, today, visitor, input.kind, now, identity.ref);
+      const counts = pet.offer(id, today, visitor, input.kind, now, identity.ref, identity.userId ?? null);
       requireValue(counts, 404, 'memorial');
       return ok(publicCounts(counts));
     }
     if (method === 'DELETE' && segments.length === 2) {
       rate(req, res, 'delete', identity, now);
       owner(pet.find(id), identity);
-      requireValue(pet.remove(id, identity.ref), 404, 'memorial');
+      requireValue(pet.remove(id, identity.ref, identity.userId ?? null), 404, 'memorial');
       return ok({deleted: true});
     }
     reject(404, 'route');

@@ -84,10 +84,10 @@
 `POST /auth/link/telegram/start`（当前邮箱会话）成功返回：
 
 ```json
-{"linkCode":"opaque","expiresAt":"2026-11-12T13:10:00.000Z","deepLink":"https://t.me/<bot>?start=pet-link-opaque"}
+{"linkCode":"opaque","expiresAt":"2026-11-12T13:10:00.000Z","deepLink":"https://t.me/ChuaMayBot/chuamay?startapp=pet-link-opaque"}
 ```
 
-在 Telegram 内以签名身份调用 `POST /auth/link/telegram/confirm`，请求 `{"linkCode":"opaque"}`。无冲突时返回 `200 {"linked":true,"identityKinds":["email","telegram"]}`；有冲突时返回同一 `merge_confirmation_required` 摘要，Telegram 内再调用 `/auth/link/confirm` 完成。关联码单次消费、10 分钟有效，并绑定发起账号。
+深链使用现有 Mini App 的 `startapp` 形式。Telegram 内以签名身份调用 `POST /auth/link/telegram/confirm`，请求 `{"linkCode":"opaque"}`，返回 `200 {"pending":true}`。随后必须回到原邮箱会话调用 `POST /auth/link/confirm`，请求 `{"linkCode":"opaque"}`，才会关联或返回 `merge_confirmation_required` 摘要；这防止持有码的他人 Telegram 身份直接绑定。关联码单次消费、10 分钟有效，并绑定发起账号。
 
 合并迁移碑、成员/邀请关系、账号归属的花灯与来访、同意和封禁；同碑同日同种类的两次花灯/来访合并为一条。若两个账号都含家族数据，返回 `409 family_merge_conflict`，不做任何写入。
 

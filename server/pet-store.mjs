@@ -43,6 +43,24 @@ export function openPetStore(db) {
     "visitor_ref TEXT NOT NULL, action TEXT NOT NULL, created_at INTEGER NOT NULL," +
     "browser TEXT, os TEXT, device TEXT, screen TEXT, language TEXT, source TEXT, page TEXT);"
   );
+  for (const [table, column] of [
+    ['pet_memorials', 'owner_user_id TEXT'], ['pet_members', 'user_id TEXT'],
+    ['pet_invites', 'created_by_user_id TEXT'], ['pet_offerings', 'user_id TEXT'],
+    ['pet_visits', 'user_id TEXT']
+  ]) {
+    if (!db.prepare(`PRAGMA table_info(${table})`).all().some(item => item.name === column.split(' ')[0]))
+      db.exec(`ALTER TABLE ${table} ADD COLUMN ${column}`);
+  }
+  db.exec(
+    "CREATE INDEX IF NOT EXISTS pet_memorials_owner_user ON pet_memorials(owner_user_id) WHERE owner_user_id IS NOT NULL;" +
+    "CREATE INDEX IF NOT EXISTS pet_members_user ON pet_members(user_id) WHERE user_id IS NOT NULL;" +
+    "CREATE TABLE IF NOT EXISTS pet_email_daily (day TEXT PRIMARY KEY, sent INTEGER NOT NULL);" +
+    "CREATE TABLE IF NOT EXISTS pet_email_codes (subject TEXT PRIMARY KEY, code_hash TEXT NOT NULL, expires_at INTEGER NOT NULL, attempts INTEGER NOT NULL DEFAULT 0);" +
+    "CREATE TABLE IF NOT EXISTS pet_consents (user_id TEXT PRIMARY KEY, accepted_at INTEGER NOT NULL);" +
+    "CREATE TABLE IF NOT EXISTS pet_link_tokens (token_hash TEXT PRIMARY KEY, source_user_id TEXT NOT NULL, kind TEXT NOT NULL, target_email TEXT, target_user_id TEXT, expires_at INTEGER NOT NULL, used_at INTEGER);"
+  );
+  if (!db.prepare("PRAGMA table_info(pet_link_tokens)").all().some(item => item.name === 'target_user_id'))
+    db.exec("ALTER TABLE pet_link_tokens ADD COLUMN target_user_id TEXT");
   const get = (sql, ...args) => db.prepare(sql).get(...args);
   const all = (sql, ...args) => db.prepare(sql).all(...args);
   const run = (sql, ...args) => db.prepare(sql).run(...args);
@@ -52,10 +70,10 @@ export function openPetStore(db) {
     "SELECT count(DISTINCT visitor_ref) AS uniqueVisitors, count(*) FILTER(WHERE kind='flower') AS flowers," +
     "count(*) FILTER(WHERE kind='light') AS lights FROM pet_visits WHERE memorial_id=? AND day=?", id, day
   );
-  const addMember = (id, ref, role, inviteId, now) => run(
-    "INSERT INTO pet_members VALUES(?,?,?,?,?,NULL) ON CONFLICT(memorial_id,principal_ref)" +
-    " DO UPDATE SET role=excluded.role,invite_id=excluded.invite_id,created_at=excluded.created_at,revoked_at=NULL",
-    id, ref, role, inviteId, now
+  const addMember = (id, ref, userId, role, inviteId, now) => run(
+    "INSERT INTO pet_members(memorial_id,principal_ref,role,invite_id,created_at,revoked_at,user_id) VALUES(?,?,?,?,?,NULL,?) ON CONFLICT(memorial_id,principal_ref)" +
+    " DO UPDATE SET role=excluded.role,invite_id=excluded.invite_id,created_at=excluded.created_at,revoked_at=NULL,user_id=excluded.user_id",
+    id, ref, role, inviteId, now, userId
   );
   return {
     find,
@@ -71,11 +89,15 @@ export function openPetStore(db) {
       district, cursor, limit
     ),
     mine: (ref) => all("SELECT * FROM pet_memorials WHERE owner_ref=? AND demo=0", ref),
+    mineUser: (userId) => all("SELECT * FROM pet_memorials WHERE owner_user_id=? AND demo=0", userId),
     member: (id, ref) => Boolean(get(
       "SELECT 1 FROM pet_members WHERE memorial_id=? AND principal_ref=? AND revoked_at IS NULL", id, ref
     )),
+    memberUser: (id, userId) => Boolean(get(
+      "SELECT 1 FROM pet_members WHERE memorial_id=? AND user_id=? AND revoked_at IS NULL", id, userId
+    )),
     create: transaction((m) => {
-      if (get("SELECT 1 FROM pet_memorials WHERE owner_ref=? OR browser_claim_hash=?", m.owner, m.claimHash)) return false;
+      if (get("SELECT 1 FROM pet_memorials WHERE owner_ref=? OR owner_user_id=? OR browser_claim_hash=?", m.owner, m.userId, m.claimHash)) return false;
       const {slot} = get(
         "SELECT coalesce(max((district_id-1)*64+(row_no-1)*8+column_no),0) AS slot FROM pet_memorials WHERE wall_at IS NULL"
       );
@@ -86,25 +108,27 @@ export function openPetStore(db) {
         m.id, m.owner, m.kind, m.claimHash, m.name, m.species, m.born, m.died, m.epitaph, m.status, m.ruleVersion,
         Math.floor(slot / 64) + 1, Math.floor(slot % 64 / 8) + 1, slot % 8 + 1, m.now, m.now
       );
-      addMember(m.id, m.owner, 'owner', null, m.now);
+      if (m.userId) run("UPDATE pet_memorials SET owner_user_id=? WHERE id=?", m.userId, m.id);
+      addMember(m.id, m.owner, m.userId ?? null, 'owner', null, m.now);
       return true;
     }),
-    claim: transaction((id, claimHash, owner, kind, now) => {
-      if (get("SELECT 1 FROM pet_memorials WHERE owner_ref=?", owner)) return false;
+    claim: transaction((id, claimHash, owner, userId, kind, now) => {
+      if (get("SELECT 1 FROM pet_memorials WHERE owner_ref=? OR owner_user_id=?", owner, userId)) return false;
       const memorial = find(id);
       if (memorial?.demo !== 0 || memorial.identity_kind !== 'browser' || memorial.browser_claim_hash !== claimHash) return false;
-      run("UPDATE pet_memorials SET owner_ref=?,identity_kind=?,browser_claim_hash=NULL,updated_at=? WHERE id=?", owner, kind, now, id);
+      run("UPDATE pet_memorials SET owner_ref=?,owner_user_id=?,identity_kind=?,browser_claim_hash=NULL,updated_at=? WHERE id=?", owner, userId, kind, now, id);
       run("DELETE FROM pet_members WHERE memorial_id=? AND principal_ref=?", id, memorial.owner_ref);
-      addMember(id, owner, 'owner', null, now);
+      addMember(id, owner, userId, 'owner', null, now);
       return true;
     }),
-    invite: transaction((id, owner, invite) => {
-      if (find(id)?.owner_ref !== owner) return false;
-      run("INSERT INTO pet_invites(id,memorial_id,token_hash,created_by,expires_at,max_uses) VALUES(?,?,?,?,?,?)",
-        invite.id, id, invite.hash, owner, invite.expires, invite.maxUses);
+    invite: transaction((id, owner, userId, invite) => {
+      const memorial = find(id);
+      if (!memorial || (memorial.owner_user_id ? memorial.owner_user_id !== userId : memorial.owner_ref !== owner)) return false;
+      run("INSERT INTO pet_invites(id,memorial_id,token_hash,created_by,expires_at,max_uses,created_by_user_id) VALUES(?,?,?,?,?,?,?)",
+        invite.id, id, invite.hash, owner, invite.expires, invite.maxUses, userId);
       return true;
     }),
-    accept: transaction((tokenHash, ref, now) => {
+    accept: transaction((tokenHash, ref, userId, now) => {
       const invite = get("SELECT * FROM pet_invites WHERE token_hash=? AND revoked_at IS NULL AND expires_at>?", tokenHash, now);
       if (!invite) return null;
       const id = invite.memorial_id;
@@ -113,18 +137,19 @@ export function openPetStore(db) {
       );
       if (member) return {memorialId: id, role: member.role};
       if (invite.uses >= invite.max_uses) return null;
-      addMember(id, ref, 'invited', invite.id, now);
+      addMember(id, ref, userId ?? null, 'invited', invite.id, now);
       run("UPDATE pet_invites SET uses=uses+1 WHERE id=?", invite.id);
       return {memorialId: id, role: 'invited'};
     }),
-    revoke: transaction((id, owner, inviteId, now) => {
-      if (find(id)?.owner_ref !== owner) return false;
+    revoke: transaction((id, owner, userId, inviteId, now) => {
+      const memorial = find(id);
+      if (!memorial || (memorial.owner_user_id ? memorial.owner_user_id !== userId : memorial.owner_ref !== owner)) return false;
       if (!run("UPDATE pet_invites SET revoked_at=coalesce(revoked_at,?) WHERE id=? AND memorial_id=?", now, inviteId, id).changes)
         return false;
       run("UPDATE pet_members SET revoked_at=? WHERE invite_id=? AND revoked_at IS NULL", now, inviteId);
       return true;
     }),
-    offer: transaction((id, day, visitor, kind, now, ownerRef) => {
+    offer: transaction((id, day, visitor, kind, now, ownerRef, userId) => {
       const memorial = find(id);
       if (memorial?.public_status !== 'visible' || memorial.demo) return null;
       if (memorial.owner_ref !== ownerRef && run(
@@ -134,6 +159,7 @@ export function openPetStore(db) {
       ).changes) {
         run("UPDATE pet_memorials SET last_qualifying_visit_at=? WHERE id=?", now, id);
       }
+      if (userId) run("UPDATE pet_visits SET user_id=? WHERE memorial_id=? AND day=? AND visitor_ref=? AND kind=?", userId, id, day, visitor, kind);
       return counts(id, day);
     }),
     report: transaction((id, memorialId, reason, now) => {
@@ -142,7 +168,7 @@ export function openPetStore(db) {
       run("INSERT INTO pet_reports VALUES(?,?,?,?)", id, memorialId, reason, now);
       return true;
     }),
-    remove: (id, owner) => Boolean(run("DELETE FROM pet_memorials WHERE id=? AND owner_ref=? AND demo=0", id, owner).changes),
+    remove: (id, owner, userId) => Boolean(run("DELETE FROM pet_memorials WHERE id=? AND demo=0 AND (owner_user_id=? OR (owner_user_id IS NULL AND owner_ref=?))", id, userId, owner).changes),
     limit: transaction((scope, subjects, bucket, limits) => {
       if (subjects.some((ref, i) => (get(
         "SELECT hits FROM pet_rates WHERE scope=? AND subject_ref=? AND bucket=?", scope, ref, bucket
@@ -152,6 +178,42 @@ export function openPetStore(db) {
       );
       return true;
     }),
+    emailDailyLimit: transaction((day, limit) => {
+      const row = get("SELECT sent FROM pet_email_daily WHERE day=?", day);
+      if ((row?.sent ?? 0) >= limit) return false;
+      run("INSERT INTO pet_email_daily(day,sent) VALUES(?,1) ON CONFLICT(day) DO UPDATE SET sent=sent+1", day);
+      return true;
+    }),
+    saveEmailCode: transaction((subject, codeHash, expires) => {
+      run("INSERT INTO pet_email_codes(subject,code_hash,expires_at,attempts) VALUES(?,?,?,0) ON CONFLICT(subject) DO UPDATE SET code_hash=excluded.code_hash,expires_at=excluded.expires_at,attempts=0", subject, codeHash, expires);
+    }),
+    takeEmailCode: transaction((subject, codeHash, now) => {
+      const row = get("SELECT * FROM pet_email_codes WHERE subject=?", subject);
+      if (!row || row.expires_at < now || row.attempts >= 5) return false;
+      if (row.code_hash !== codeHash) {
+        run("UPDATE pet_email_codes SET attempts=attempts+1 WHERE subject=?", subject);
+        return false;
+      }
+      run("DELETE FROM pet_email_codes WHERE subject=?", subject);
+      return true;
+    }),
+    linkStart: transaction((tokenHash, sourceUserId, kind, targetEmail, targetUserId, expires) => {
+      run("INSERT INTO pet_link_tokens(token_hash,source_user_id,kind,target_email,target_user_id,expires_at,used_at) VALUES(?,?,?,?,?,?,NULL)", tokenHash, sourceUserId, kind, targetEmail, targetUserId, expires);
+    }),
+    linkPeek: (tokenHash, kind, now) => {
+      const row = get("SELECT * FROM pet_link_tokens WHERE token_hash=?", tokenHash);
+      return !row || row.kind !== kind || row.used_at || row.expires_at < now ? null : row;
+    },
+    linkAssignTarget: transaction((tokenHash, targetUserId) => {
+      return Boolean(run("UPDATE pet_link_tokens SET target_user_id=? WHERE token_hash=? AND used_at IS NULL AND target_user_id IS NULL", targetUserId, tokenHash).changes);
+    }),
+    linkTake: transaction((tokenHash, sourceUserId, kind, now) => {
+      const row = get("SELECT * FROM pet_link_tokens WHERE token_hash=?", tokenHash);
+      if (!row || row.source_user_id !== sourceUserId || row.kind !== kind || row.used_at || row.expires_at < now || !row.target_user_id) return null;
+      run("UPDATE pet_link_tokens SET used_at=? WHERE token_hash=?", now, tokenHash);
+      return row;
+    }),
+    mineSummary: (userId) => get("SELECT count(*) AS memorialCount FROM pet_memorials WHERE owner_user_id=? AND demo=0", userId),
     maintain: transaction((now, yearAgo) => {
       const clearedRates = run("DELETE FROM pet_rates WHERE bucket<?", Math.floor(now / 60000)).changes;
       const movedToWall = run("UPDATE pet_memorials SET public_status='wall',wall_at=?,updated_at=? WHERE public_status='visible'" +
