@@ -1,4 +1,4 @@
-import * as THREE from '../prototype-3d/vendor/three.module.min.js';
+import * as THREE from '../prototype-3d/vendor/three.bundle.min.js';
 
 const _pt = new THREE.Vector3();
 
