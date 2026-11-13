@@ -1,4 +1,4 @@
-import * as THREE from './vendor/three.module.min.js';
+import * as THREE from '../../../../prototype-3d/vendor/three.bundle.min.js';
 import { VRMLoaderPlugin } from './vendor/three-vrm.module.js?v=2';
 import { GLTFLoader } from './vendor/GLTFLoader.js?v=2';
 import { POSES, walkPose, applyPose } from './visitor-poses.js';
