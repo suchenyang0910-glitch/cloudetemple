@@ -13,6 +13,7 @@ node_modules/
 __pycache__/
 *.pyc
 dist/
+site/dist/
 _archive/
 .venv-assets/
 .venv-assets312/
