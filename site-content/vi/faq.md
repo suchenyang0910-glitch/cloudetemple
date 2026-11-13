@@ -1,6 +1,6 @@
 # Câu hỏi thường gặp
 
-Trang này trả lời ngắn các câu hỏi mà người đọc có thể đặt cho một trợ lý AI về Chùa Mây, lịch 2027 và dữ liệu. Cập nhật lần cuối: 2026-11-13.
+Trang này trả lời ngắn các câu hỏi thường gặp về Chùa Mây, lịch 2027 và dữ liệu. Cập nhật lần cuối: 2026-11-13.
 
 ## Chùa Mây là gì?
 
@@ -52,7 +52,7 @@ Các ngày được tạo bằng cùng bộ chuyển đổi lịch âm-dương c
 
 ## Chùa Mây có thu thập thông tin của tôi không?
 
-Chỉ dữ liệu tối thiểu cần cho việc tải trang, xử lý thao tác hoặc trả lời hỗ trợ; xem [Chính sách riêng tư](/privacy).
+Chỉ dữ liệu tối thiểu cần cho việc tải trang, xử lý thao tác hoặc trả lời hỗ trợ; xem [Chính sách riêng tư](/quyen-rieng-tu/).
 
 ## Vườn tưởng niệm thú cưng mở khi nào?
 

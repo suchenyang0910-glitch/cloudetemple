@@ -15,7 +15,7 @@ You can view an illustrated burner, bow toward a neutral silhouette, sit still, 
 
 ## 2027 lunar calendar
 
-The [2027 lunar calendar](/lunar-calendar-2027) has an overview and 12 pages grouped by Gregorian month. Each day lists its Gregorian date, weekday, lunar day, and lunar month; first-day and full-moon rows are bold and have a downloadable image.
+The [2027 lunar calendar](/en/lunar-calendar-2027/) has an overview and 12 pages grouped by Gregorian month. Each day lists its Gregorian date, weekday, lunar day, and lunar month; first-day and full-moon rows are bold and have a downloadable image.
 
 ## Three common questions
 

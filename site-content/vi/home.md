@@ -15,7 +15,7 @@ Bạn có thể xem lư hương minh họa, cúi chào một hình bóng trung t
 
 ## Lịch âm 2027
 
-Trang [lịch âm 2027](/lunar-calendar-2027) có bảng tổng quan và 12 trang theo tháng dương lịch. Mỗi ngày ghi ngày dương, thứ, ngày âm và tháng âm; các dòng mùng 1 và rằm được in đậm, kèm ảnh lịch tải xuống.
+Trang [lịch âm 2027](/lich-am-2027/) có bảng tổng quan và 12 trang theo tháng dương lịch. Mỗi ngày ghi ngày dương, thứ, ngày âm và tháng âm; các dòng mùng 1 và rằm được in đậm, kèm ảnh lịch tải xuống.
 
 ## Ba câu hỏi thường gặp
 
