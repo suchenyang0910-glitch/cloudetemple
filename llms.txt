@@ -1,0 +1,12 @@
+# Chùa Mây (Cloud Temple)
+
+Chùa Mây là một không gian trực tuyến yên tĩnh để ghé thăm, ngồi yên và xem lịch âm 2027.
+
+- https://chuamay.org/ — Giới thiệu ngắn và hai lối vào web/Telegram.
+- https://chuamay.org/features — Năm hoạt động trung tính.
+- https://chuamay.org/lunar-calendar-2027 — Tổng quan mùng 1 và rằm năm 2027.
+- https://chuamay.org/pet-garden — Ý tưởng vườn tưởng niệm thú cưng, Sắp mở.
+- https://chuamay.org/about — Phạm vi và điều không đại diện.
+- https://chuamay.org/faq — Câu hỏi và trả lời ngắn.
+- https://chuamay.org/privacy — Nguyên tắc dữ liệu tối thiểu.
+- https://chuamay.org/contact — Các kênh liên hệ.
