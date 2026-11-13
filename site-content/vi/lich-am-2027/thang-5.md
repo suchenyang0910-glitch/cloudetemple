@@ -1,5 +1,8 @@
 # Lịch âm 2027 — tháng 5
 
+SEO title: Lịch âm 2027 — tháng 5
+Meta description: Bảng từng ngày của tháng 5 năm 2027 ghi ngày dương, thứ, ngày âm và tháng âm.
+
 Trang này liệt kê từng ngày của tháng 5 năm 2027 theo dương lịch, kèm thứ, ngày âm và tên tháng âm. Mùng 1 tháng Tư rơi vào 06/05/2027 (Thứ Năm). Rằm tháng Tư rơi vào 20/05/2027 (Thứ Năm). Dữ liệu dùng múi giờ UTC+7 và có thể đọc được khi không tải ảnh.
 
 | Dương lịch | Thứ | Ngày âm | Tháng âm |

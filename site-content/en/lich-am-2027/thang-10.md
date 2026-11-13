@@ -1,5 +1,8 @@
 # 2027 lunar calendar — Gregorian month 10
 
+SEO title: 2027 lunar calendar — month 10
+Meta description: This daily table for Gregorian month 10 in 2027 lists the date, weekday, lunar day, and lunar month.
+
 This page lists every day in Gregorian month 10 of 2027 with its weekday, lunar day, and lunar month. The first day of the 10th lunar month is 29/10/2027 (Friday). The full moon of the 9th lunar month is 14/10/2027 (Thursday). Dates use UTC+7 and remain readable without the image.
 
 | Gregorian date | Weekday | Lunar day | Lunar month |

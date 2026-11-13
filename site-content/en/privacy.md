@@ -1,5 +1,8 @@
 # Privacy
 
+SEO title: Chùa Mây privacy
+Meta description: This policy explains the minimum data used when you open Chùa Mây on the web or in Telegram.
+
 This page explains the minimum data used when you open Chùa Mây on the web or in Telegram. We use only what is needed to load the page, process an interaction, or answer support.
 
 - Do not enter sensitive information into the illustrative experience.

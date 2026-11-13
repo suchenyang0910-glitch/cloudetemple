@@ -24,9 +24,9 @@
 
 | 页面 | `<title>`（≤60） | Meta description（≤155） | H1 | 目标词（3–5） | 结构化数据 |
 |---|---|---|---|---|---|
-| 首页 | Chùa Mây — Không gian tĩnh lặng trực tuyến | Chùa Mây là không gian trực tuyến yên tĩnh để ghé thăm, ngồi yên và tìm hiểu lịch 2027. | Chùa Mây | chùa mây [假设]；không gian tĩnh lặng trực tuyến [假设]；cloud temple [假设] | WebSite, Organization |
+| 首页 | Chùa Mây — Không gian trực tuyến yên tĩnh | Chùa Mây là một không gian trực tuyến yên tĩnh để ghé thăm, ngồi yên và xem lịch âm 2027. | Chùa Mây | chùa mây [假设]；không gian tĩnh lặng trực tuyến [假设]；cloud temple [假设] | WebSite, Organization |
 | 功能 | Chùa Mây: Thắp hương, lễ Phật và ngồi yên | Tìm hiểu năm hoạt động trung tính của Chùa Mây: thắp hương, lễ Phật, ngồi yên, lần chuỗi và gõ mõ. | Bạn có thể làm gì ở Chùa Mây? | thắp hương trực tuyến [假设]；ngồi yên [假设]；lần chuỗi [假设]；gõ mõ [假设] | WebPage, ItemList |
-| 2027 总览 | Lịch âm 2027: mùng 1 và rằm | Tra ngày dương lịch của mùng 1 và rằm từng tháng âm lịch năm 2027, kèm lịch tải xuống. | Lịch âm 2027 | lịch âm 2027 [假设]；mùng 1 2027 [假设]；rằm 2027 [假设] | WebPage, Dataset |
+| 2027 总览 | Lịch âm 2027: mùng 1 và rằm | Trang này liệt kê ngày dương của mùng 1 và rằm trong 12 tháng âm lịch năm 2027, kèm ảnh lịch tải xuống. | Lịch âm 2027 | lịch âm 2027 [假设]；mùng 1 2027 [假设]；rằm 2027 [假设] | WebPage, Dataset |
 | 每个公历月 | Lịch âm 2027 — tháng {n} | Bảng từng ngày của tháng {n} năm 2027: ngày dương, thứ, ngày âm, tháng âm; mùng 1 và rằm được in đậm. | Lịch âm 2027 — tháng {n} | lịch âm 2027 tháng {n} [假设]；mùng 1 tháng {n} [假设]；rằm tháng {n} [假设] | WebPage, Dataset |
 | 萌宠园 | Vườn tưởng niệm thú cưng Chùa Mây — Sắp mở | Vườn tưởng niệm thú cưng của Chùa Mây đang được chuẩn bị; trang này chỉ giới thiệu ý tưởng, chưa có ngày mở. | Vườn tưởng niệm thú cưng | vườn tưởng niệm thú cưng [假设]；pet memorial garden [假设]；Chùa Mây pet garden [假设] | WebPage, Event（不填日期） |
 | 关于 | Chùa Mây là gì? | Chùa Mây là một không gian trực tuyến; trang này nói rõ phạm vi và điều Chùa Mây không đại diện. | Về Chùa Mây | Chùa Mây là gì [假设]；Cloud Temple [假设]；không phải chùa vật lý [假设] | AboutPage, Organization(name=Chùa Mây) |

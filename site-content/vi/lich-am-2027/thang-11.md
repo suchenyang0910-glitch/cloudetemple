@@ -1,5 +1,8 @@
 # Lịch âm 2027 — tháng 11
 
+SEO title: Lịch âm 2027 — tháng 11
+Meta description: Bảng từng ngày của tháng 11 năm 2027 ghi ngày dương, thứ, ngày âm và tháng âm.
+
 Trang này liệt kê từng ngày của tháng 11 năm 2027 theo dương lịch, kèm thứ, ngày âm và tên tháng âm. Mùng 1 tháng Mười Một rơi vào 28/11/2027 (Chủ Nhật). Rằm tháng Mười rơi vào 12/11/2027 (Thứ Sáu). Dữ liệu dùng múi giờ UTC+7 và có thể đọc được khi không tải ảnh.
 
 | Dương lịch | Thứ | Ngày âm | Tháng âm |

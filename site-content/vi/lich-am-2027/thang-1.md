@@ -1,5 +1,8 @@
 # Lịch âm 2027 — tháng 1
 
+SEO title: Lịch âm 2027 — tháng 1
+Meta description: Bảng từng ngày của tháng 1 năm 2027 ghi ngày dương, thứ, ngày âm và tháng âm.
+
 Trang này liệt kê từng ngày của tháng 1 năm 2027 theo dương lịch, kèm thứ, ngày âm và tên tháng âm. Mùng 1 tháng Chạp rơi vào 08/01/2027 (Thứ Sáu). Rằm tháng Chạp rơi vào 22/01/2027 (Thứ Sáu). Dữ liệu dùng múi giờ UTC+7 và có thể đọc được khi không tải ảnh.
 
 | Dương lịch | Thứ | Ngày âm | Tháng âm |

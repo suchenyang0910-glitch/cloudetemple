@@ -1,5 +1,8 @@
 # Bạn có thể làm gì ở Chùa Mây?
 
+SEO title: Chùa Mây: năm hoạt động trực tuyến
+Meta description: Tìm hiểu năm hoạt động trung tính của Chùa Mây: thắp hương, lễ Phật, ngồi yên, lần chuỗi và gõ mõ.
+
 Chùa Mây cho bạn năm hoạt động trực tuyến đơn giản: thắp hương, lễ Phật, ngồi yên, lần chuỗi và gõ mõ. Mỗi hoạt động chỉ là một tương tác trong không gian web, có thể dừng hoặc bỏ qua, và không gắn với lời hứa về kết quả.
 
 ## Năm hoạt động

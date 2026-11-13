@@ -1,5 +1,8 @@
 # 2027 lunar calendar — Gregorian month 11
 
+SEO title: 2027 lunar calendar — month 11
+Meta description: This daily table for Gregorian month 11 in 2027 lists the date, weekday, lunar day, and lunar month.
+
 This page lists every day in Gregorian month 11 of 2027 with its weekday, lunar day, and lunar month. The first day of the 11th lunar month is 28/11/2027 (Sunday). The full moon of the 10th lunar month is 12/11/2027 (Friday). Dates use UTC+7 and remain readable without the image.
 
 | Gregorian date | Weekday | Lunar day | Lunar month |

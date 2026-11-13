@@ -1,5 +1,8 @@
 # Lịch âm 2027 — tháng 12
 
+SEO title: Lịch âm 2027 — tháng 12
+Meta description: Bảng từng ngày của tháng 12 năm 2027 ghi ngày dương, thứ, ngày âm và tháng âm.
+
 Trang này liệt kê từng ngày của tháng 12 năm 2027 theo dương lịch, kèm thứ, ngày âm và tên tháng âm. Mùng 1 tháng Chạp rơi vào 28/12/2027 (Thứ Ba). Rằm tháng Mười Một rơi vào 12/12/2027 (Chủ Nhật). Dữ liệu dùng múi giờ UTC+7 và có thể đọc được khi không tải ảnh.
 Rằm tháng Chạp rơi vào ngày 11/01/2028, nên không nằm trong bảng tháng 12 năm 2027.
 

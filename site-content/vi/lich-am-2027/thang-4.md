@@ -1,5 +1,8 @@
 # Lịch âm 2027 — tháng 4
 
+SEO title: Lịch âm 2027 — tháng 4
+Meta description: Bảng từng ngày của tháng 4 năm 2027 ghi ngày dương, thứ, ngày âm và tháng âm.
+
 Trang này liệt kê từng ngày của tháng 4 năm 2027 theo dương lịch, kèm thứ, ngày âm và tên tháng âm. Mùng 1 tháng Ba rơi vào 07/04/2027 (Thứ Tư). Rằm tháng Ba rơi vào 21/04/2027 (Thứ Tư). Dữ liệu dùng múi giờ UTC+7 và có thể đọc được khi không tải ảnh.
 
 | Dương lịch | Thứ | Ngày âm | Tháng âm |

@@ -1,6 +1,9 @@
 # Câu hỏi thường gặp
 
-Trang này trả lời ngắn các câu hỏi mà người đọc có thể đặt cho một trợ lý AI về Chùa Mây, lịch 2027 và dữ liệu. Cập nhật lần cuối: 2026-11-13.
+SEO title: Câu hỏi thường gặp về Chùa Mây
+Meta description: Đọc câu trả lời ngắn về Chùa Mây, lịch 2027, cách mở Telegram và quyền riêng tư.
+
+Bạn sẽ tìm thấy câu trả lời ngắn về Chùa Mây, lịch 2027 và cách hỏi về dữ liệu. Cập nhật lần cuối: 2026-11-13.
 
 ## Chùa Mây là gì?
 
@@ -48,7 +51,7 @@ Mở trang theo tháng dương lịch rồi chọn đường dẫn ảnh lịch 
 
 ## Dữ liệu lịch đến từ đâu?
 
-Các ngày được tạo bằng cùng bộ chuyển đổi lịch âm-dương của dự án, dùng múi giờ Việt Nam UTC+7 và đã được kiểm tra mốc năm 2027.
+Các ngày được tạo bằng bộ chuyển đổi lịch âm-dương dùng cho các trang này, theo múi giờ Việt Nam UTC+7 và đã được kiểm tra mốc năm 2027.
 
 ## Chùa Mây có thu thập thông tin của tôi không?
 

@@ -1,5 +1,8 @@
 # 2027 lunar calendar — Gregorian month 7
 
+SEO title: 2027 lunar calendar — month 7
+Meta description: This daily table for Gregorian month 7 in 2027 lists the date, weekday, lunar day, and lunar month.
+
 This page lists every day in Gregorian month 7 of 2027 with its weekday, lunar day, and lunar month. The first day of the 6th lunar month is 04/07/2027 (Sunday). The full moon of the 6th lunar month is 18/07/2027 (Sunday). Dates use UTC+7 and remain readable without the image.
 
 | Gregorian date | Weekday | Lunar day | Lunar month |
