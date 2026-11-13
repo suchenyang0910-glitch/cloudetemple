@@ -1,5 +1,8 @@
 # Chùa Mây
 
+SEO title: Chùa Mây — Không gian trực tuyến yên tĩnh
+Meta description: Chùa Mây là một không gian trực tuyến yên tĩnh để ghé thăm, ngồi yên và xem lịch âm 2027.
+
 Chùa Mây là một không gian trực tuyến yên tĩnh để ghé thăm, ngồi yên và tìm hiểu lịch âm 2027. Bạn có thể mở trên web hoặc trong Telegram, đọc nội dung bằng tiếng Việt hoặc tiếng Anh, rồi rời đi mà không cần biến trải nghiệm thành một cam kết.
 
 ## Hành động

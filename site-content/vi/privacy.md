@@ -1,5 +1,8 @@
 # Chính sách riêng tư
 
+SEO title: Chính sách riêng tư Chùa Mây
+Meta description: Chính sách này giải thích dữ liệu tối thiểu khi bạn mở Chùa Mây trên web hoặc Telegram.
+
 Trang này giải thích dữ liệu tối thiểu khi bạn mở Chùa Mây trên web hoặc Telegram. Chúng tôi chỉ dùng dữ liệu cần thiết để tải trang, xử lý thao tác và trả lời yêu cầu hỗ trợ.
 
 - Không nhập thông tin nhạy cảm vào trải nghiệm minh họa.

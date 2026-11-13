@@ -1,5 +1,8 @@
 # What can you do at Chùa Mây?
 
+SEO title: Chùa Mây: five online activities
+Meta description: Learn about five neutral Chùa Mây activities: incense, a bow, sitting still, beads, and a wooden-block sound.
+
 Chùa Mây offers five simple online activities: incense, a respectful bow, sitting still, moving beads, and a wooden-block sound. Each is only a web interaction that can be stopped or skipped, with no promise about an outcome.
 
 ## Five activities

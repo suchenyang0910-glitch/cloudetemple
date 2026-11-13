@@ -1,5 +1,8 @@
 # 2027 lunar calendar — Gregorian month 2
 
+SEO title: 2027 lunar calendar — month 2
+Meta description: This daily table for Gregorian month 2 in 2027 lists the date, weekday, lunar day, and lunar month.
+
 This page lists every day in Gregorian month 2 of 2027 with its weekday, lunar day, and lunar month. The first day of the 1st lunar month is 06/02/2027 (Saturday). The full moon of the 1st lunar month is 20/02/2027 (Saturday). Dates use UTC+7 and remain readable without the image.
 Tết Nguyên Đán 2027 begins on the first day of the first lunar month, 06/02/2027 (Saturday).
 

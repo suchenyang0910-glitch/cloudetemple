@@ -1,6 +1,9 @@
 # Chùa Mây (Cloud Temple)
 
-Chùa Mây (Cloud Temple) is a quiet online space to visit, sit still, and read the 2027 lunar calendar. Open it on the web or in Telegram, read Vietnamese or English, and leave without turning the experience into a promise or commitment.
+SEO title: Chùa Mây — A quiet online space
+Meta description: Chùa Mây is a quiet online space to visit, sit still, and read the 2027 lunar calendar.
+
+Chùa Mây (Cloud Temple) is a quiet online space to visit, sit still, and read the 2027 lunar calendar. Open it on the web or in Telegram, read Vietnamese or English, and leave whenever you wish; the site does not ask you to make a promise.
 
 ## Actions
 

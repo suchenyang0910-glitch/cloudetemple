@@ -1,5 +1,8 @@
 # 2027 lunar calendar — Gregorian month 1
 
+SEO title: 2027 lunar calendar — month 1
+Meta description: This daily table for Gregorian month 1 in 2027 lists the date, weekday, lunar day, and lunar month.
+
 This page lists every day in Gregorian month 1 of 2027 with its weekday, lunar day, and lunar month. The first day of the twelfth lunar month is 08/01/2027 (Friday). The full moon of the twelfth lunar month is 22/01/2027 (Friday). Dates use UTC+7 and remain readable without the image.
 
 | Gregorian date | Weekday | Lunar day | Lunar month |

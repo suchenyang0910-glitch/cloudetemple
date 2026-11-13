@@ -1,5 +1,8 @@
 # 2027 lunar calendar — Gregorian month 5
 
+SEO title: 2027 lunar calendar — month 5
+Meta description: This daily table for Gregorian month 5 in 2027 lists the date, weekday, lunar day, and lunar month.
+
 This page lists every day in Gregorian month 5 of 2027 with its weekday, lunar day, and lunar month. The first day of the 4th lunar month is 06/05/2027 (Thursday). The full moon of the 4th lunar month is 20/05/2027 (Thursday). Dates use UTC+7 and remain readable without the image.
 
 | Gregorian date | Weekday | Lunar day | Lunar month |

@@ -1,5 +1,8 @@
 # 2027 lunar calendar — Gregorian month 12
 
+SEO title: 2027 lunar calendar — month 12
+Meta description: This daily table for Gregorian month 12 in 2027 lists the date, weekday, lunar day, and lunar month.
+
 This page lists every day in Gregorian month 12 of 2027 with its weekday, lunar day, and lunar month. The first day of the twelfth lunar month is 28/12/2027 (Tuesday). The full moon of the 11th lunar month is 12/12/2027 (Sunday). Dates use UTC+7 and remain readable without the image.
 The full moon of the twelfth lunar month falls on 11/01/2028, outside this December 2027 table.
 

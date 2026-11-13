@@ -1,5 +1,8 @@
 # 2027 lunar calendar — Gregorian month 8
 
+SEO title: 2027 lunar calendar — month 8
+Meta description: This daily table for Gregorian month 8 in 2027 lists the date, weekday, lunar day, and lunar month.
+
 This page lists every day in Gregorian month 8 of 2027 with its weekday, lunar day, and lunar month. The first day of the 7th lunar month is 02/08/2027 (Monday). The full moon of the 7th lunar month is 16/08/2027 (Monday). Dates use UTC+7 and remain readable without the image.
 
 | Gregorian date | Weekday | Lunar day | Lunar month |
