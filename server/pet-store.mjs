@@ -153,7 +153,7 @@ export function openPetStore(db) {
       const memorial = find(id);
       if (memorial?.public_status !== 'visible' || memorial.demo) return null;
       if (memorial.owner_ref !== ownerRef && run(
-        "INSERT INTO pet_visits SELECT ?,?,?,?,? WHERE NOT EXISTS (" +
+        "INSERT INTO pet_visits(memorial_id,day,visitor_ref,kind,created_at) SELECT ?,?,?,?,? WHERE NOT EXISTS (" +
         "SELECT 1 FROM pet_offerings WHERE memorial_id=? AND day=? AND visitor_ref=? AND kind=?)" +
         " ON CONFLICT(memorial_id,day,visitor_ref,kind) DO NOTHING", id, day, visitor, kind, now, id, day, visitor, kind
       ).changes) {

@@ -50,10 +50,11 @@ async function fixture(t, {approved = true, enabled = true} = {}) {
   const db = new Database(':memory:');
   const settings = config({...env, ADMIN_ENABLED: enabled ? '1' : '0'});
   const access = createAccessVerifier(settings, async () => Response.json({keys: [jwk]}), () => now);
+  const familyStore = openFamilyStore(db, {demo: false});
   const {handleAdmin, handlePublic, pet} = createPetModerationModule(settings, db,
     {access, adminOrigin, approvedRuleVersion: approved ? candidateRules.version : undefined, clock: () => now,
-      verifyBound: req => req.headers.authorization === 'Bearer synthetic-bound' ? familyEmail : null});
-  const family = createFamilyApi(settings, openFamilyStore(db, {demo: false}));
+      verifyBound: req => req.headers.authorization === 'Bearer synthetic-bound' ? familyEmail : null, family: familyStore});
+  const family = createFamilyApi(settings, familyStore);
   const server = createServer(async (req, res) => {
     const path = new URL(req.url, 'http://localhost').pathname;
     try {
@@ -197,7 +198,7 @@ test('reports redact private content; audited takedown hides list, detail and of
 
 test('ban prevents new pet memorials after owner deletion; unban restores creation and the same account can still sign into family', async t => {
   const {db, request, admin, write} = await fixture(t);
-  const auth = {Authorization: 'Bearer synthetic-bound'};
+  const auth = {Authorization: 'Telegram ' + telegram(101)};
   const create = () => request(base + '/memorials', {body: data, headers: auth});
   const {body: {id}} = await create();
   const {body: {banId}} = await write('ban', id);

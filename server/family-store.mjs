@@ -16,7 +16,7 @@ export function openFamilyStore(db, { demo = true } = {}) {
   db.exec(`
 CREATE TABLE IF NOT EXISTS users(id TEXT PRIMARY KEY,display_name TEXT NOT NULL DEFAULT '',locale TEXT NOT NULL DEFAULT 'vi',created_at TEXT NOT NULL,deleted_at TEXT,demo INTEGER NOT NULL DEFAULT 1);
 CREATE TABLE IF NOT EXISTS identities(id INTEGER PRIMARY KEY,user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,provider TEXT NOT NULL CHECK(provider IN('email','google','telegram')),subject TEXT NOT NULL,email TEXT,created_at TEXT NOT NULL,demo INTEGER NOT NULL DEFAULT 1,UNIQUE(provider,subject));
-CREATE TABLE IF NOT EXISTS sessions(token_hash TEXT PRIMARY KEY,user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,expires_at INTEGER NOT NULL,ua_summary TEXT NOT NULL,csrf_hash TEXT NOT NULL,created_at TEXT NOT NULL,demo INTEGER NOT NULL DEFAULT 1);
+CREATE TABLE IF NOT EXISTS sessions(token_hash TEXT PRIMARY KEY,user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,expires_at INTEGER NOT NULL,ua_summary TEXT NOT NULL,csrf_hash TEXT NOT NULL,created_at TEXT NOT NULL,demo INTEGER NOT NULL DEFAULT 1,scope TEXT NOT NULL DEFAULT 'family');
 CREATE TABLE IF NOT EXISTS email_codes(subject TEXT PRIMARY KEY,email TEXT NOT NULL,code_hash TEXT NOT NULL,expires_at INTEGER NOT NULL,attempts INTEGER NOT NULL DEFAULT 0,ip_hash TEXT NOT NULL,created_at TEXT NOT NULL,demo INTEGER NOT NULL DEFAULT 1);
 CREATE TABLE IF NOT EXISTS family_rates(key TEXT PRIMARY KEY,until INTEGER NOT NULL);
 CREATE TABLE IF NOT EXISTS oauth_states(state_hash TEXT PRIMARY KEY,verifier TEXT NOT NULL,expires_at INTEGER NOT NULL,created_at TEXT NOT NULL,demo INTEGER NOT NULL DEFAULT 1);
@@ -37,6 +37,8 @@ CREATE TABLE IF NOT EXISTS membership_interests(id TEXT PRIMARY KEY,name TEXT NO
       "CREATE UNIQUE INDEX IF NOT EXISTS deliveries_dedupe_key ON deliveries(dedupe_key)",
     );
   }
+  if (!db.prepare("PRAGMA table_info(sessions)").all().some((column) => column.name === "scope"))
+    db.exec("ALTER TABLE sessions ADD COLUMN scope TEXT NOT NULL DEFAULT 'family'");
   const now = () => new Date().toISOString(),
     one = (sql, ...p) => db.prepare(sql).get(...p),
     all = (sql, ...p) => db.prepare(sql).all(...p),
@@ -145,6 +147,12 @@ CREATE TABLE IF NOT EXISTS membership_interests(id TEXT PRIMARY KEY,name TEXT NO
   return {
     db,
     userFor,
+    identityUser(provider, subject) {
+      return one(
+        "SELECT u.* FROM users u JOIN identities i ON i.user_id=u.id WHERE i.provider=? AND i.subject=? AND u.deleted_at IS NULL",
+        provider, subject,
+      ) || null;
+    },
     mergeUsers,
     familyData,
     user(id) {
@@ -201,21 +209,23 @@ CREATE TABLE IF NOT EXISTS membership_interests(id TEXT PRIMARY KEY,name TEXT NO
       run("DELETE FROM oauth_states WHERE state_hash=?", hash);
       return row && row.expires_at >= Date.now() ? row : null;
     },
-    session(hash, user, expires, csrfHash) {
+    session(hash, user, expires, csrfHash, scope = 'family') {
       run(
-        "INSERT INTO sessions (token_hash,user_id,expires_at,ua_summary,csrf_hash,created_at,demo) VALUES(?,?,?,'',?,?,?)",
+        "INSERT INTO sessions (token_hash,user_id,expires_at,ua_summary,csrf_hash,created_at,demo,scope) VALUES(?,?,?,'',?,?,?,?)",
         hash,
         user,
         expires,
         csrfHash,
         now(),
         demoFlag,
+        scope,
       );
     },
-    sessionUser(hash) {
+    sessionUser(hash, scope = 'family') {
       return one(
-        "SELECT s.user_id,s.csrf_hash,u.display_name,u.locale,(SELECT email FROM identities WHERE user_id=u.id AND email IS NOT NULL ORDER BY CASE provider WHEN 'google' THEN 0 WHEN 'email' THEN 1 ELSE 2 END LIMIT 1) AS email FROM sessions s JOIN users u ON u.id=s.user_id WHERE s.token_hash=? AND s.expires_at>? AND u.deleted_at IS NULL",
+        "SELECT s.user_id,s.csrf_hash,u.display_name,u.locale,(SELECT email FROM identities WHERE user_id=u.id AND email IS NOT NULL ORDER BY CASE provider WHEN 'google' THEN 0 WHEN 'email' THEN 1 ELSE 2 END LIMIT 1) AS email FROM sessions s JOIN users u ON u.id=s.user_id WHERE s.token_hash=? AND s.scope=? AND s.expires_at>? AND u.deleted_at IS NULL",
         hash,
+        scope,
         Date.now(),
       );
     },

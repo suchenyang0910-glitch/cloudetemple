@@ -81,7 +81,7 @@ function setSignedCookie(res, name, id, digest) {
   res.setHeader('Set-Cookie', cookie + '; Path=/api/pet-garden; HttpOnly; Secure; SameSite=Lax; Max-Age=31536000');
 }
 
-function identify(req, settings, now, digest, verifyBound, family, input = {}) {
+function identify(req, settings, now, digest, verifyBound, family, input = {}, provisionTelegram = false) {
   const authorization = req.headers.authorization;
   const credential = typeof authorization === 'string' ? /^(Telegram|Claim|Bearer) (.+)$/i.exec(authorization) : null;
   requireValue(!authorization || credential, 401, 'identity');
@@ -92,9 +92,11 @@ function identify(req, settings, now, digest, verifyBound, family, input = {}) {
     requireValue(settings.telegramEnabled !== false && settings.token && (!credential || scheme === 'telegram'), 401, 'init_data');
     try {
       const user = validateInitData(initData, settings.token, now);
-      const account = family?.userFor('telegram', hash(settings.hashSecret, user.id), '', 'Telegram');
-      requireValue(account, 503, 'account_unavailable');
-      return {ref: 'user:' + account.id, userId: account.id, kind: 'telegram', locale: user.language};
+      const subject = hash(settings.hashSecret, user.id);
+      const account = provisionTelegram ? family?.userFor('telegram', subject, '', 'Telegram') : family?.identityUser('telegram', subject);
+      return account
+        ? {ref: 'user:' + account.id, userId: account.id, kind: 'telegram', locale: user.language}
+        : {kind: 'telegram', locale: user.language};
     } catch { reject(401, 'init_data'); }
   }
   if (scheme === 'bearer') {
@@ -105,7 +107,7 @@ function identify(req, settings, now, digest, verifyBound, family, input = {}) {
   }
   const sessionToken = cookie(req, 'ct_pet_session');
   if (tokenPattern.test(sessionToken ?? '')) {
-    const user = family?.sessionUser(hash(settings.hashSecret, sessionToken));
+    const user = family?.sessionUser(hash(settings.hashSecret, sessionToken), 'pet');
     if (user) return {ref: 'user:' + user.user_id, userId: user.user_id, kind: 'email', csrfHash: user.csrf_hash};
   }
   const browser = signedCookie(req, 'ct_pet_browser', digest);
@@ -135,7 +137,7 @@ export function createPetApi(settings, pet, {clock = Date.now, verifyBound, veri
   };
   const issuePetSession = (res, account, now) => {
     const raw = mint(), csrf = mint().slice(0, 36), max = 30 * 86400;
-    family.session(hash(settings.hashSecret, raw), account.id, now + max * 1000, hash(settings.hashSecret, csrf));
+    family.session(hash(settings.hashSecret, raw), account.id, now + max * 1000, hash(settings.hashSecret, csrf), 'pet');
     res.setHeader('Set-Cookie', `ct_pet_session=${raw}; Path=/api/pet-garden; Max-Age=${max}; HttpOnly; Secure; SameSite=Lax`);
     return csrf;
   };
@@ -182,7 +184,7 @@ export function createPetApi(settings, pet, {clock = Date.now, verifyBound, veri
       const email = String(input.email ?? '').trim().toLowerCase();
       requireValue(validEmail(email), 400, 'email_invalid');
       const subject = hash(settings.hashSecret, email), ip = hash(settings.hashSecret, clientIP(req, settings.trustLocal));
-      if (!family.rate('pet-email:' + subject, now + 60000) || !family.rate('pet-email-ip:' + ip, now + 30000)) reject(429, 'email_rate_limited');
+      if (!family.rate('pet-email:' + subject, Date.now() + 60000) || !family.rate('pet-email-ip:' + ip, Date.now() + 30000)) reject(429, 'email_rate_limited');
       if (!pet.emailDailyLimit(dayFormat.format(now), settings.petEmailDailyLimit ?? 200)) reject(429, 'email_daily_limit');
       const code = String(randomInt(100000, 1000000));
       pet.saveEmailCode(subject, hash(settings.hashSecret, code), now + 600000);
@@ -197,7 +199,15 @@ export function createPetApi(settings, pet, {clock = Date.now, verifyBound, veri
       const account = family.userFor('email', hash(settings.hashSecret, email), email, '');
       return ok({ok: true, csrf: issuePetSession(res, account, now), identityKinds: ['email']});
     }
-    const identity = await identify(req, settings, now, digest, verifyBound, family, input);
+    const provisionTelegram =
+      (method === 'GET' && area === 'mine') ||
+      (method === 'DELETE' && area === 'memorials') ||
+      (method === 'POST' && (
+        (area === 'auth' && id === 'link') ||
+        (area === 'invites' && action === 'accept') ||
+        (area === 'memorials' && (segments.length === 1 || action === 'claim' || action === 'invites'))
+      ));
+    const identity = await identify(req, settings, now, digest, verifyBound, family, input, provisionTelegram);
     if (!['GET', 'HEAD'].includes(method) && identity.kind === 'email')
       requireValue(typeof req.headers['x-csrf-token'] === 'string' && equal(hash(settings.hashSecret, req.headers['x-csrf-token']), identity.csrfHash), 403, 'csrf');
     if (method === 'GET' && area === 'me' && segments.length === 1)
@@ -207,7 +217,7 @@ export function createPetApi(settings, pet, {clock = Date.now, verifyBound, veri
       const email = String(input.email ?? '').trim().toLowerCase();
       requireValue(validEmail(email), 400, 'email_invalid');
       const subject = hash(settings.hashSecret, email), ip = hash(settings.hashSecret, clientIP(req, settings.trustLocal));
-      if (!family.rate('pet-link-email:' + subject, now + 60000) || !family.rate('pet-link-email-ip:' + ip, now + 30000)) reject(429, 'email_rate_limited');
+      if (!family.rate('pet-link-email:' + subject, Date.now() + 60000) || !family.rate('pet-link-email-ip:' + ip, Date.now() + 30000)) reject(429, 'email_rate_limited');
       if (!pet.emailDailyLimit(dayFormat.format(now), settings.petEmailDailyLimit ?? 200)) reject(429, 'email_daily_limit');
       const code = String(randomInt(100000, 1000000));
       pet.saveEmailCode(subject, hash(settings.hashSecret, code), now + 600000);
