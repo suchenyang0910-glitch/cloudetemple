@@ -1,4 +1,4 @@
-import * as THREE from '../prototype-3d/vendor/three.module.min.js';
+import * as THREE from '../prototype-3d/vendor/three.bundle.min.js';
 import { TEMPLES, WALK_BOUNDS, COMING_SOON_LABEL, SPAWN } from './logic.js';
 import { createVisitor } from './character.js';
 
@@ -61,15 +61,12 @@ function createBillboard(temple) {
 
   if (EXTERIOR_IDS.has(temple.id)) {
     group.userData.autoRotate = true;
-    const tex = loader.load(`./assets/exterior-${temple.id}-day.webp`);
-    tex.colorSpace = THREE.SRGBColorSpace;
     const isOpen = temple.status === 'open';
     const board = new THREE.Mesh(
       new THREE.PlaneGeometry(BILL_W, BILL_H),
       new THREE.MeshBasicMaterial({
-        map: tex,
         // Coming-soon: cool gray-blue tint + slight transparency to signal "not yet open"
-        color: isOpen ? 0xffffff : 0xa8b0be,
+        color: isOpen ? 0xd6d9d0 : 0xa8b0be,
         transparent: true,
         alphaTest: isOpen ? .02 : 0,
         opacity: isOpen ? 1 : .82,
@@ -78,6 +75,15 @@ function createBillboard(temple) {
     );
     board.position.set(0, BILL_H / 2, .05);
     group.add(board);
+    group.userData.loadExterior = () => {
+      if (group.userData.exteriorLoaded) return;
+      group.userData.exteriorLoaded = true;
+      const tex = loader.load(`./assets/exterior-${temple.id}-day.webp`);
+      tex.colorSpace = THREE.SRGBColorSpace;
+      board.material.map = tex;
+      board.material.color.set(0xffffff);
+      board.material.needsUpdate = true;
+    };
     if (!isOpen) group.userData.board = board; // map mode restores full opacity on this
     // Coming-soon: add a soft foggy veil (semi-transparent cool plane in front)
     if (!isOpen) {
