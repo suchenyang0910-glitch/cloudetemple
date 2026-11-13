@@ -1,4 +1,4 @@
-import * as THREE from '../../prototype-3d/vendor/three.module.min.js';
+import * as THREE from '../../prototype-3d/vendor/three.bundle.min.js';
 
 const canvas = document.querySelector('#scene'), stateEl = document.querySelector('#state'), status = document.querySelector('#status'), fpsEl = document.querySelector('#fps');
 const params = new URLSearchParams(location.search), useVrm = params.get('visitor') === 'vrm';
