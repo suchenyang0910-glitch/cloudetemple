@@ -159,7 +159,7 @@ function fx(){
   const f=state.layout.fx_hall_side,bowing=state.view==='bow';
   $('#effects').innerHTML=bowing?`<ellipse class="halo-pulse" cx="${f.halo_center[0]}" cy="${f.halo_center[1]}" rx="92" ry="112" fill="#ffe2a6" opacity=".07"/>`:'';
 }
-function stopActivity(){stopWoodAuto();stopWoodMotion();stopBeadMotion();clearTimeout(finishTimer);clearTimeout(incenseReadyTimer);beadCleanup?.();beadCleanup=null;state.activity=null;state.incense=null;cancelAnimationFrame(drawFrame);audio.ambient('none',1,2);audio.stopBreathing(2);updateBreathCue();}
+function stopActivity(){stopWoodAuto();stopWoodMotion();stopBeadMotion();clearTimeout(finishTimer);clearTimeout(incenseReadyTimer);beadCleanup?.();beadCleanup=null;state.activity=null;state.incense=null;cancelAnimationFrame(drawFrame);audio.stopBreathing(2);updateBreathCue();}
 function prefetch(view){
  const visitor=state.visitor,period=state.period;
  const run=()=>{if(state.visitor!==visitor||state.period!==period||state.view!==view)return;
@@ -268,7 +268,7 @@ function render(){
     const a=state.activity;
     const sitBack=morning.isActive()?`<button type="button" class="text-button morning-skip-step" data-action="morning-skip-step" data-step="sit">${t('morningSkipStep')}</button>`:button('back','home','back-button');
     const summary=t('sitSummary',{minutes:state.sitMinutes,ambient:t(audio.ambientKind),breath:t(state.breathGuide?'breathOn':'breathOff')});
-    const options=!a&&state.sitOptionsOpen?(state.sitTutorialOpen?breathTutorialHTML():`<div class="sit-options" role="dialog" aria-label="${t('sitOptions')}"><p class="sit-save-note">${t('sitSaved')}</p><div class="choice-row duration-options" aria-label="${t('duration')}">${[1,3,5,10].map(n=>`<button data-minutes="${n}" aria-pressed="${state.sitMinutes===n}">${n} ${t('minutes')}</button>`).join('')}</div><div class="breath-controls"><button type="button" data-action="breath-toggle" aria-pressed="${state.breathGuide}">${t('breathGuide')}</button><div class="choice-row" aria-label="${t('breathPace')}">${Object.keys(breathPatterns).map(k=>`<button data-breath="${k}" aria-pressed="${state.breathPattern===k}">${k.split('-').join(' / ')}</button>`).join('')}</div></div>${state.breathPattern==='4-7-8'?`<button type="button" class="text-button breath-help" data-action="sit-tutorial">${t('breath478Link')}</button>`:''}<div class="choice-row ambient-options">${['none','forest','rain'].map(k=>`<button data-ambient="${k}" aria-pressed="${audio.ambientKind===k}">${t(k)}</button>`).join('')}</div>${button('done','sit-options-done','primary')}</div>`):'';
+    const options=!a&&state.sitOptionsOpen?(state.sitTutorialOpen?breathTutorialHTML():`<div class="sit-options" role="dialog" aria-label="${t('sitOptions')}"><p class="sit-save-note">${t('sitSaved')}</p><div class="choice-row duration-options" aria-label="${t('duration')}">${[1,3,5,10].map(n=>`<button data-minutes="${n}" aria-pressed="${state.sitMinutes===n}">${n} ${t('minutes')}</button>`).join('')}</div><div class="breath-controls"><button type="button" data-action="breath-toggle" aria-pressed="${state.breathGuide}">${t('breathGuide')}</button><div class="choice-row" aria-label="${t('breathPace')}">${Object.keys(breathPatterns).map(k=>`<button data-breath="${k}" aria-pressed="${state.breathPattern===k}">${k.split('-').join(' / ')}</button>`).join('')}</div></div>${state.breathPattern==='4-7-8'?`<button type="button" class="text-button breath-help" data-action="sit-tutorial">${t('breath478Link')}</button>`:''}<div class="choice-row ambient-options">${['none','forest','rain','rain-strings'].map(k=>`<button data-ambient="${k}" aria-pressed="${audio.ambientKind===k}">${t(k)}</button>`).join('')}</div>${button('done','sit-options-done','primary')}</div>`):'';
     $('#controls').innerHTML=options||`<div class="stack sit-main"><p class="timer" id="timer" role="timer">${formatTime(a?remaining(a):state.sitMinutes*60000)}</p><p class="sit-summary">${summary}</p><div class="row">${!a?`${button('start','sit-start','primary')}${button('sitOptions','sit-options','',`aria-expanded="false"`)}`:`${button(a.running?'pause':'resume','pause','primary')}${button('finish','finish')}`}${sitBack}</div></div>`;
     if(a?.running&&state.breathGuide&&state.breathPattern==='4-7-8'){$('.stage').insertAdjacentHTML('beforeend',`<div class="breath-triangle-guide" data-phase="inhale">${breathTriangle(true)}<div class="breath-triangle-copy" role="status"><strong>${t('breath478PhaseInhale')}</strong><span>${t('breath478CueInhale',{count:4})}</span></div></div>`);updateBreathCue();}
   }else if(state.view==='mo'){
@@ -316,7 +316,7 @@ function setIncensePhase(phase,now=performance.now()){
 function startIncenseStep(now=performance.now()){
  const j=state.incense;if(!j)return;
  if(j.phase==='ready-light'){
-  event('activity_start',{activity:'incense'});state.activity={kind:'incense',running:true,startedMonotonic:now,started:Date.now()};j.ignited=false;setIncensePhase('lighting',now);void audio.load('ignite-v1').catch(()=>{});void audio.ambient('forest',.6,2);
+  event('activity_start',{activity:'incense'});state.activity={kind:'incense',running:true,startedMonotonic:now,started:Date.now()};j.ignited=false;setIncensePhase('lighting',now);void audio.load('ignite-v1').catch(()=>{});
  }else if(j.phase==='ready-vai'){j.strikes=0;setIncensePhase('bowing',now);}
  else if(j.phase==='ready-plant')setIncensePhase('planting',now);
  else if(j.phase==='standing'&&state.activity&&now-state.activity.startedMonotonic>=incenseConfig.earlyMs&&now-j.standStarted>=incenseConfig.standMinMs)complete('incense',Math.round(now-state.activity.startedMonotonic));
@@ -412,7 +412,7 @@ function bead(){
 }
 
 export const audio=createTempleAudio({onChange:updateSoundUI,onError:()=>showSoundHint('soundUnavailable',6000),volume:()=>Number($('#volume').value)/100});
-audio.ambientKind=['none','forest','rain'].includes(read('ct-sit-ambient','none'))?read('ct-sit-ambient','none'):'none';
+audio.ambientKind=['none','forest','rain','rain-strings'].includes(read('ct-sit-ambient','none'))?read('ct-sit-ambient','none'):'none';
 let hintTimer=0,woodAuto=null,woodSession=0,woodMotionTimer=0,finishTimer=0,incenseReadyTimer=0,woodQueue=[];
 function updateBreathCue(frame){const cue=$('#stage-note');if(!cue)return;const active=state.view==='sit'&&state.activity?.running&&state.breathGuide;if(!active){if(cue.dataset.breath)cue.textContent='';delete cue.dataset.breath;return;}const next=frame?.phase?frame:breathFrame(performance.now(),state.activity.breathStarted,state.breathPattern),key=next.phase==='inhale'?'inhale':next.phase==='hold'?'holdBreath':'exhale';cue.dataset.breath=next.phase;if(state.breathPattern!=='4-7-8'){cue.textContent=t(key);return;}cue.textContent='';const guide=$('.breath-triangle-guide');if(!guide)return;guide.dataset.phase=next.phase;const points={inhale:[[10,100],[48.75,30]],hold:[[48.75,30],[170,100]],exhale:[[170,100],[10,100]]},[a,b]=points[next.phase],dot=guide.querySelector('.breath-triangle-dot');if(dot&&!reduced.matches){dot.setAttribute('cx',a[0]+(b[0]-a[0])*next.progress);dot.setAttribute('cy',a[1]+(b[1]-a[1])*next.progress);}guide.querySelector('strong').textContent=t(`breath478Phase${next.phase[0].toUpperCase()+next.phase.slice(1)}`);guide.querySelector('span').textContent=t(`breath478Cue${next.phase[0].toUpperCase()+next.phase.slice(1)}`,{count:next.seconds});}
 function startBreathing(fade=.2){if(state.view!=='sit'||!state.activity?.running||!state.breathGuide)return;state.activity.breathStarted=performance.now();updateBreathCue(breathFrame(state.activity.breathStarted,state.activity.breathStarted,state.breathPattern));void audio.breathing(state.breathPattern,.5,fade);animation();}
@@ -423,13 +423,16 @@ function updateSoundUI(){
  const label=t(audio.enabled?'muteSound':'enableSound');b.setAttribute('aria-label',label);b.title=label;b.setAttribute('aria-pressed',String(audio.enabled));b.setAttribute('aria-busy',String(audio.loading));
  b.innerHTML=`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z"/>${audio.enabled?'<path d="M16 8q5 4 0 8m3-11q7 7 0 14"/>':'<path d="m16 9 5 6m0-6-5 6"/>'}</svg>`;
  $('#sound-controls').hidden=!audio.enabled;
+ for(const slider of [$('#volume'),$('#sound-volume')])if(slider&&slider!==document.activeElement)slider.value=$('#volume').value;
+ const mute=$('#sound-mute');if(mute){mute.textContent=t(audio.enabled?'muteSound':'enableSound');mute.setAttribute('aria-pressed',String(!audio.enabled));}
+ document.querySelectorAll('[data-ambient]').forEach(e=>e.setAttribute('aria-pressed',String(e.dataset.ambient===audio.ambientKind)));
  const status=$('#audio-status');status.textContent=audio.loading?t('audioLoading'):'';placeSoundMessage(status);
  if(audio.loading){clearTimeout(hintTimer);$('#sound-hint').hidden=true;}
 }
 function showSoundHint(key,ms=3000){if(audio.loading)return;clearTimeout(hintTimer);$('#audio-status').textContent='';const hint=$('#sound-hint');placeSoundMessage(hint);hint.getAnimations().forEach(a=>a.cancel());hint.textContent=t(key);hint.hidden=false;if(!reduced.matches)hint.animate([{opacity:1,offset:0},{opacity:1,offset:Math.max(0,1-300/ms)},{opacity:0}],{duration:ms});hintTimer=setTimeout(()=>{hint.hidden=true;},ms);}
 async function enableSound(automatic=false){
  const began=Date.now();const pending=audio.enable();
-  if(await pending){if(automatic)showSoundHint('tapMute');else setTimeout(()=>{if(audio.enabled&&audio.lastPlayed<began)showSoundHint('silentTip',6000);},2000);audio.strike('bell',.6);if(state.view==='sit'&&state.activity?.running){audio.ambient(audio.ambientKind);startBreathing();}if(state.view==='incense'&&state.activity?.running)audio.ambient('forest',.6,2);if(state.view==='beads')void audio.load('bead-v1').catch(()=>{});}
+  if(await pending){if(automatic)showSoundHint('tapMute');else setTimeout(()=>{if(audio.enabled&&audio.lastPlayed<began)showSoundHint('silentTip',6000);},2000);audio.strike('bell',.6);void audio.ambient(audio.ambientKind,.32,1.5);if(state.view==='sit'&&state.activity?.running)startBreathing();if(state.view==='beads')void audio.load('bead-v1').catch(()=>{});}
 }
 function localDay(){const d=new Date();return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;}
 function dailyWood(){const stored=read('ct-wood',{});if(stored.day===localDay()&&Number.isSafeInteger(stored.count)&&stored.count>=0)return stored.count;return 0;}
@@ -457,6 +460,9 @@ function openMore(){closeModal();$('#more-menu').showModal();telegramBack(true);
 $('#close-more').onclick=()=>$('#more-menu').close();
 $('#leave-more').onclick=()=>$('#more-menu').close();
 $('#more-menu').addEventListener('close',()=>telegramBack(!['entry','home'].includes(state.view)));
+function openSound(){closeModal();if($('#more-menu').open)$('#more-menu').close();$('#sound-menu').showModal();telegramBack(true);updateSoundUI();}
+$('#close-sound').onclick=()=>$('#sound-menu').close();
+$('#sound-menu').addEventListener('close',()=>telegramBack(!['entry','home'].includes(state.view)));
 function memorial(){
   if(familyEnabled){location.href='/family.html';return;}
   analytics?.view('memorial');$('#modal').addEventListener('close',()=>analytics?.view(state.view),{once:true});
@@ -530,7 +536,7 @@ document.addEventListener('click',async e=>{
   if(state.view==='sit'&&state.sitOptionsOpen&&e.target.closest?.('.stage')&&!e.target.closest?.('#controls')){closeSitOptions();return;}
   const b=e.target.closest('button');if(!b||b.disabled)return;
   if(b.dataset.target){state.bowTarget=Number(b.dataset.target);stopActivity();render();paint();return;}
-  if(b.dataset.ambient){audio.ambientKind=b.dataset.ambient;write('ct-sit-ambient',audio.ambientKind);if(state.activity?.running)void audio.ambient(b.dataset.ambient);render();return;}
+  if(b.dataset.ambient){audio.ambientKind=b.dataset.ambient;write('ct-sit-ambient',audio.ambientKind);if(audio.enabled)void audio.ambient(b.dataset.ambient,.32,1.2);render();return;}
   if(b.dataset.breath){state.breathPattern=breathPatterns[b.dataset.breath]?b.dataset.breath:'4-6';write('ct-breath-pattern',state.breathPattern);if(audio.enabled&&state.breathGuide)void audio.load(`breath-${state.breathPattern}`).catch(()=>{});if(state.breathPattern==='4-7-8'&&!read('ct-breath-478-tutorial-seen',false)){write('ct-breath-478-tutorial-seen',true);state.sitTutorialOpen=true;}if(state.activity?.running)startBreathing(.15);render();return;}
   if(b.dataset.minutes){state.sitMinutes=Number(b.dataset.minutes);write('ct-sit-minutes',state.sitMinutes);render();return;}
   const action=b.dataset.action;if(!action)return;
@@ -559,8 +565,8 @@ document.addEventListener('click',async e=>{
     case 'sit-options-done':closeSitOptions();break;
     case 'sit-tutorial':state.sitTutorialOpen=true;render();requestAnimationFrame(()=>document.querySelector('[data-action="sit-tutorial-done"]')?.focus({preventScroll:true}));break;
     case 'sit-tutorial-done':state.sitTutorialOpen=false;render();requestAnimationFrame(()=>document.querySelector('[data-action="sit-tutorial"]')?.focus({preventScroll:true}));break;
-    case 'sit-start':state.sitOptionsOpen=false;state.sitTutorialOpen=false;event('activity_start',{activity:'sit'});state.activity={kind:'sit',running:true,deadline:Date.now()+state.sitMinutes*60000,left:state.sitMinutes*60000,total:state.sitMinutes*60000,breathStarted:performance.now(),breathFading:false};audio.ambient(audio.ambientKind);startBreathing();render();animation();break;
-    case 'pause':{const a=state.activity;if(!a||a.finishing)break;if(a.running){a.left=remaining(a);a.running=false;const kind=audio.ambientKind;audio.ambient('none');audio.ambientKind=kind;audio.stopBreathing(.2);updateBreathCue();}else{a.deadline=Date.now()+a.left;a.running=true;a.breathFading=false;audio.ambient(audio.ambientKind);startBreathing();}render();animation();break;}
+    case 'sit-start':state.sitOptionsOpen=false;state.sitTutorialOpen=false;event('activity_start',{activity:'sit'});state.activity={kind:'sit',running:true,deadline:Date.now()+state.sitMinutes*60000,left:state.sitMinutes*60000,total:state.sitMinutes*60000,breathStarted:performance.now(),breathFading:false};startBreathing();render();animation();break;
+    case 'pause':{const a=state.activity;if(!a||a.finishing)break;if(a.running){a.left=remaining(a);a.running=false;audio.stopBreathing(.2);updateBreathCue();}else{a.deadline=Date.now()+a.left;a.running=true;a.breathFading=false;startBreathing();}render();animation();break;}
     case 'finish':finishSit();break;
     case 'breath-toggle':state.breathGuide=!state.breathGuide;write('ct-breath-guide',state.breathGuide);if(state.breathGuide){if(audio.enabled)void audio.load(`breath-${state.breathPattern}`).catch(()=>{});startBreathing();}else{audio.stopBreathing(.2);updateBreathCue();}render();animation();break;
     case 'wood':tapWood();break;
@@ -592,14 +598,16 @@ $('#app').addEventListener('touchstart',e=>{if(e.target.closest?.('#bead-control
 $('#app').addEventListener('pointerdown',e=>{if(continuous(e)){if(e.target.closest?.('#bead-control'))e.preventDefault();getSelection()?.removeAllRanges();}});
 $('#memorial').addEventListener('click',memorial);
 $('#language').addEventListener('change',e=>{state.lang=e.target.value;closeModal();render();});
-$('#sound-toggle').addEventListener('click',()=>{event('sound_toggle',{state:audio.enabled?'off':'on'});if(audio.enabled){write('ct-muted',true);audio.mute();}else{write('ct-muted',false);void enableSound();}});
+$('#sound-toggle').addEventListener('click',async()=>{if(!audio.enabled){write('ct-muted',false);await enableSound();}openSound();});
 const savedVolume=read('ct-volume',80);$('#volume').value=typeof savedVolume==='number'&&Number.isFinite(savedVolume)&&savedVolume>=0&&savedVolume<=100?savedVolume:80;
 state.beadHand=read('ct-bead-hand','right')==='left'?'left':'right';
 $('#volume').addEventListener('input',()=>{write('ct-volume',Number($('#volume').value));audio.volume();});
+$('#sound-volume').addEventListener('input',()=>{$('#volume').value=$('#sound-volume').value;write('ct-volume',Number($('#volume').value));audio.volume();});
+$('#sound-mute').addEventListener('click',()=>{event('sound_toggle',{state:audio.enabled?'off':'on'});if(audio.enabled){write('ct-muted',true);audio.mute();}else{write('ct-muted',false);void enableSound();}});
 $('#controls').addEventListener('pointerdown',e=>{const action=e.target.closest('[data-action]')?.dataset.action;if(action==='enter')void image(artFile(state.visitor,'sit'));else if(['incense','bow','sit','beads','mo'].includes(action))void image(sceneFile(action,periodNow()));});
 document.addEventListener('click',()=>{void audio.wake();},true);
 reduced.addEventListener('change',()=>{stopBeadMotion();animation();paint();fx();if(state.view==='beads')render();});
-document.addEventListener('visibilitychange',async()=>{if(document.hidden){stopWoodAuto();stopWoodMotion();stopBeadMotion();audio.stopBackground();audio.stopBreathing();cancelAnimationFrame(drawFrame);if(['mo','beads'].includes(state.view))render();}else{heartbeat();await audio.wake();tick();animation();if(state.view==='sit'&&state.activity?.running){audio.ambient(audio.ambientKind);startBreathing();}if(state.view==='incense'&&state.activity?.running)audio.ambient('forest',.6,2);if(state.view==='beads')void audio.load('bead-v1').catch(()=>{});}});
+document.addEventListener('visibilitychange',async()=>{if(document.hidden){stopWoodAuto();stopWoodMotion();stopBeadMotion();audio.stopBackground();audio.stopBreathing();cancelAnimationFrame(drawFrame);if(['mo','beads'].includes(state.view))render();}else{heartbeat();await audio.wake();tick();animation();if(audio.enabled)void audio.ambient(audio.ambientKind,.32,1.5);if(state.view==='sit'&&state.activity?.running)startBreathing();if(state.view==='beads')void audio.load('bead-v1').catch(()=>{});}});
 let periodUpdating=false;
 async function tick(){
   if(!state.layout||state.busy)return;
@@ -618,7 +626,7 @@ async function init(){
   startPresence();
   state.period=periodNow();document.documentElement.lang=state.lang;$('#language').value=state.lang;document.body.dataset.period=state.period;$('#eyebrow').textContent=t(state.period);$('#subtitle').textContent=t('tagline');updateSoundUI();
   const familyReady=fetch(apiURL('/family/status'),{credentials:'include',signal:AbortSignal.timeout(3000)}).then(async response=>{familyEnabled=response.ok&&(await response.json()).enabled===true;}).catch(()=>{familyEnabled=false;});
-  await initTelegram(()=>{if($('#more-menu').open)$('#more-menu').close();else if($('#modal').open)closeModal();else navigate(state.view==='choose'?'entry':'home');},openMore);
+  await initTelegram(()=>{if($('#sound-menu').open)$('#sound-menu').close();else if($('#more-menu').open)$('#more-menu').close();else if($('#modal').open)closeModal();else navigate(state.view==='choose'?'entry':'home');},openMore);
   if(telegramStartParam()==='family'){location.replace('/family.html?telegram=1');return;}
   enableImageDebug(inTelegram());
   if(['staging.chuamay.org','h5.chuamay.org','miniapp.chuamay.org'].includes(location.hostname))void import('./analytics.js').then(({setupAnalytics})=>{

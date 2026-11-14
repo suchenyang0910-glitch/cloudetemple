@@ -2,14 +2,14 @@
 import {assetURL} from './resources.js';
 export const soundFile=name=>({bell:'bell-v2',keisu:'keisu-v2'}[name]??name);
 export function createTempleAudio({onChange=()=>{},onError=()=>{},volume=()=>.8}={}){
- const a={enabled:false,loading:false,context:null,master:null,ambientKind:'none',background:null,buffers:new Map(),requests:new Map(),voices:new Set(),slots:Array(6).fill(0),lastPlayed:0,epoch:0,controller:null,observe:()=>{},native:new Map(),ambientVersion:0,breathVersion:0,fading:new Set(),backgroundLevel:null,breathSource:null,breathLevel:null,
+ const a={enabled:false,loading:false,context:null,master:null,limiter:null,ambientKind:'none',background:null,backgroundNodes:[],buffers:new Map(),requests:new Map(),voices:new Set(),slots:Array(6).fill(0),lastPlayed:0,epoch:0,controller:null,observe:()=>{},native:new Map(),ambientVersion:0,breathVersion:0,fading:new Set(),backgroundLevel:null,breathSource:null,breathLevel:null,stringTimer:0,stringSources:new Set(),stringBuffers:new Map(),stringNote:3,
   async enable(){
    if(this.enabled)return !this.loading;
    const epoch=++this.epoch;this.enabled=true;this.loading=true;this.controller=new AbortController();onChange();
    try{
     try{if(navigator.audioSession)navigator.audioSession.type='playback';}catch{}
     const Context=window.AudioContext||window.webkitAudioContext;if(!Context)throw Error('audio');
-    this.context??=new Context();this.context.onstatechange=()=>{this.observe({event:'state',state:this.context.state});onChange();};if(!this.master){this.master=this.context.createGain();this.master.connect(this.context.destination);}
+    this.context??=new Context();this.context.onstatechange=()=>{this.observe({event:'state',state:this.context.state});onChange();};if(!this.master){this.master=this.context.createGain();this.limiter=this.context.createDynamicsCompressor();this.limiter.threshold.value=-6;this.limiter.knee.value=0;this.limiter.ratio.value=20;this.limiter.attack.value=.003;this.limiter.release.value=.25;this.master.connect(this.limiter);this.limiter.connect(this.context.destination);}
     for(const name of ['bell','keisu','mo','bead-v1','ignite-v1'])if(!this.native.has(name)){const el=new Audio();el.preload='none';el.src=assetURL(`audio/${soundFile(name)}.mp3`);this.native.set(name,el);}
     this.volume();const resumed=this.context.resume();
     // Start a silent frame inside the original click stack, before any network await.
@@ -53,18 +53,23 @@ export function createTempleAudio({onChange=()=>{},onError=()=>{},volume=()=>.8}
   },
   stopBackground(fade=0){
    this.ambientVersion++;
-   const source=this.background,level=this.backgroundLevel;this.background=null;this.backgroundLevel=null;
+   clearTimeout(this.stringTimer);this.stringTimer=0;const source=this.background,level=this.backgroundLevel,nodes=this.backgroundNodes;this.background=null;this.backgroundLevel=null;this.backgroundNodes=[];
+   const stopStrings=when=>{for(const voice of this.stringSources)try{when===undefined?voice.stop():voice.stop(when);}catch{}};
+   if(this.context)stopStrings(fade&&this.enabled?this.context.currentTime+fade:undefined);
    if(!source)return;
    if(fade&&this.enabled&&level){const now=this.context.currentTime;level.gain.cancelScheduledValues(now);level.gain.setValueAtTime(level.gain.value,now);level.gain.linearRampToValueAtTime(0,now+fade);this.fading.add(source);source.stop(now+fade);}
-   else {try{source.stop();}catch{}source.disconnect();level?.disconnect();}
+   else {try{source.stop();}catch{}source.disconnect();level?.disconnect();for(const node of nodes)try{node.disconnect();}catch{}}
   },
+  stringBuffer(frequency){if(this.stringBuffers.has(frequency))return this.stringBuffers.get(frequency);const rate=this.context.sampleRate,length=Math.round(rate*3),period=Math.max(2,Math.round(rate/frequency)),buffer=this.context.createBuffer(1,length,rate),data=buffer.getChannelData(0);for(let i=0;i<period;i++)data[i]=(Math.random()*2-1)*.28;for(let i=period;i<length;i++)data[i]=.996*.5*(data[i-period]+data[i-period+1]);this.stringBuffers.set(frequency,buffer);return buffer;},
+  pluckString(){if(!this.enabled||this.ambientKind!=='rain-strings'||document.hidden||!this.backgroundLevel)return;const notes=[73.42,82.41,92.5,110,123.47,146.83,164.81,185],step=Math.floor(Math.random()*3)-1;this.stringNote=Math.max(0,Math.min(notes.length-1,this.stringNote+step));const source=this.context.createBufferSource(),filter=this.context.createBiquadFilter(),level=this.context.createGain(),now=this.context.currentTime;source.buffer=this.stringBuffer(notes[this.stringNote]);filter.type='lowpass';filter.frequency.value=1100;filter.Q.value=.7;level.gain.setValueAtTime(.75,now);level.gain.exponentialRampToValueAtTime(.001,now+2.8);source.connect(filter);filter.connect(level);level.connect(this.backgroundLevel);this.stringSources.add(source);source.onended=()=>{this.stringSources.delete(source);source.disconnect();filter.disconnect();level.disconnect();};source.start();const r=Math.random(),delay=r<.12?400:r<.25?6000+Math.random()*1000:1500+Math.random()*2500;this.stringTimer=setTimeout(()=>this.pluckString(),delay);},
+  startStrings(){clearTimeout(this.stringTimer);this.stringTimer=setTimeout(()=>this.pluckString(),700+Math.random()*800);},
   async ambient(kind,gain=1,fade=0){
    this.ambientKind=kind;this.stopBackground(fade);const epoch=this.epoch,version=this.ambientVersion;
    if(!this.enabled||kind==='none'||document.hidden)return;
    try{const buffer=await this.load(kind==='forest'?'ambient-courtyard':'ambient-rain');if(!this.enabled||this.epoch!==epoch||this.ambientVersion!==version||this.ambientKind!==kind||document.hidden)return;
-    const source=this.context.createBufferSource(),level=this.context.createGain();source.buffer=buffer;source.loop=true;source.loopEnd=Math.min(60,buffer.duration);source.connect(level);level.connect(this.master);
+    const source=this.context.createBufferSource(),level=this.context.createGain(),nodes=[];source.buffer=buffer;source.loop=true;source.loopEnd=Math.min(60,buffer.duration);if(kind==='forest')source.connect(level);else{const merger=this.context.createChannelMerger(2),left=this.context.createGain(),right=this.context.createDelay(.05);right.delayTime.value=.021;source.connect(left);left.connect(merger,0,0);source.connect(right);right.connect(merger,0,1);merger.connect(level);nodes.push(left,right,merger);this.backgroundNodes=nodes;}level.connect(this.master);
     level.gain.setValueAtTime(fade?0:gain,this.context.currentTime);if(fade)level.gain.linearRampToValueAtTime(gain,this.context.currentTime+fade);
-    source.onended=()=>{source.disconnect();level.disconnect();this.fading.delete(source);};source.start();this.background=source;this.backgroundLevel=level;this.lastPlayed=Date.now();
+    source.onended=()=>{source.disconnect();level.disconnect();for(const node of nodes)try{node.disconnect();}catch{}this.fading.delete(source);};source.start();this.background=source;this.backgroundLevel=level;if(kind==='rain-strings')this.startStrings();this.lastPlayed=Date.now();
    }catch(e){if(e.name!=='AbortError'&&this.enabled)onError();}
   },
   stopBreathing(fade=0){
