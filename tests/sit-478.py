@@ -22,8 +22,8 @@ def assert_layout(page):
 
 def open_478(page):
  page.locator('[data-action="sit-options"]').click()
- page.locator('[data-action="breath-toggle"]').click()
  page.locator('[data-breath="4-7-8"]').click()
+ assert page.evaluate("localStorage.getItem('ct-breath-guide')==='true'")
  page.locator('.sit-tutorial').wait_for()
 
 with sync_playwright() as pw:
@@ -42,7 +42,7 @@ with sync_playwright() as pw:
   page.locator('[data-action="sit-tutorial-done"]').click();page.locator('.sit-options').wait_for();assert_layout(page)
   page.screenshot(path=str(OUT/f'settings-{width}x{height}-vi.png'))
   page.keyboard.press('Escape');page.wait_for_timeout(50);assert not page.locator('.sit-options').count();assert page.locator('[data-action="sit-options"]').evaluate('e=>e===document.activeElement')
-  page.locator('[data-action="sit-options"]').click();page.locator('.stage').click(position={'x':20,'y':250});assert not page.locator('.sit-options').count()
+  page.locator('[data-action="sit-options"]').click();page.locator('.stage').click(position={'x':20,'y':20});assert not page.locator('.sit-options').count()
   page.locator('[data-action="sit-options"]').click();page.locator('[data-action="sit-options-done"]').click();page.wait_for_timeout(50);assert page.locator('[data-action="sit-options"]').evaluate('e=>e===document.activeElement')
   context.close()
 
@@ -74,9 +74,11 @@ with sync_playwright() as pw:
   for phase,wait in [('inhale',0),('hold',4.1),('exhale',7.1)]:
    if wait:page.wait_for_timeout(int(wait*1000))
    page.wait_for_function(f"document.querySelector('.breath-triangle-guide')?.dataset.phase==='{phase}'")
-   data=page.evaluate("""()=>{const g=document.querySelector('.breath-triangle-guide'),r=g.getBoundingClientRect(),h=document.querySelector('.scene-heading').getBoundingClientRect(),c=document.querySelector('.controls').getBoundingClientRect(),dot=g.querySelector('.breath-triangle-dot'),active=getComputedStyle(g.querySelector('.breath-edge-'+g.dataset.phase));return {phase:g.dataset.phase,text:g.querySelector('.breath-triangle-copy').innerText,stageNote:document.querySelector('#stage-note').textContent,box:r.toJSON(),heading:h.toJSON(),controls:c.toJSON(),dot:dot.getBoundingClientRect().toJSON(),activeWidth:active.strokeWidth,scroll:document.documentElement.scrollHeight>innerHeight};}""")
+   data=page.evaluate("""()=>{const g=document.querySelector('.breath-triangle-guide'),r=g.getBoundingClientRect(),h=document.querySelector('.scene-heading').getBoundingClientRect(),c=document.querySelector('.controls').getBoundingClientRect(),dot=g.querySelector('.breath-triangle-dot'),dotStyle=getComputedStyle(dot),active=getComputedStyle(g.querySelector('.breath-edge-'+g.dataset.phase));return {phase:g.dataset.phase,text:g.querySelector('.breath-triangle-copy').innerText,stageNote:document.querySelector('#stage-note').textContent,box:r.toJSON(),heading:h.toJSON(),controls:c.toJSON(),dot:dot.getBoundingClientRect().toJSON(),dotFill:dotStyle.fill,dotStroke:dotStyle.stroke,activeWidth:active.strokeWidth,scroll:document.documentElement.scrollHeight>innerHeight};}""")
    assert data['phase']==phase and not data['stageNote'] and not data['scroll'],data
    assert data['box']['top']>=data['heading']['bottom'] and data['box']['bottom']<=data['controls']['top'],data
+   assert 16<=data['dot']['width']<=22 and data['dotFill']!=data['dotStroke'],data
+   assert len(data['text'].splitlines())==2 and data['text'].splitlines()[1].isdigit(),data
    observed.append({'phase':phase,'elapsed':round(time.monotonic()-started,2),'text':data['text']})
    page.screenshot(path=str(OUT/f'guide-{width}x{height}-{phase}.png'))
   page.wait_for_timeout(8_100);page.wait_for_function("document.querySelector('.breath-triangle-guide')?.dataset.phase==='inhale'")
