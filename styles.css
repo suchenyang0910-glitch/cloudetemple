@@ -600,3 +600,4 @@ body[data-view=sit] .sit-main>.row [data-action=home],body[data-view=incense] .c
 body:is([data-view=incense],[data-view=bow],[data-view=sit],[data-view=mo],[data-view=beads]) .controls button{padding-inline:4px;white-space:nowrap;overflow-wrap:normal}
 body[data-view=incense] .controls .row button,body[data-view=bow] .controls .row button{height:48px;min-height:48px;padding:4px;line-height:1.15}
 @media(max-height:700px){body:is([data-view=incense],[data-view=bow],[data-view=sit],[data-view=mo],[data-view=beads]) .controls{height:208px;min-height:208px}}
+body[data-view=beads] .controls{height:auto;min-height:0}
