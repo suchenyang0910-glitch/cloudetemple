@@ -6,6 +6,7 @@ Chùa Mây là một không gian trực tuyến yên tĩnh để ghé thăm, ng�
 - https://chuamay.org/tinh-nang/ — Năm hoạt động trung tính.
 - https://chuamay.org/lich-am-2027/ — Tổng quan mùng 1 và rằm năm 2027; dữ liệu tính theo UTC+7.
 - https://chuamay.org/lich-am-2027/thang-1 … /thang-12 — Bảng từng ngày theo từng tháng dương lịch năm 2027.
+- https://chuamay.org/ngay-le-phat-giao-2027/ — Các ngày mùng 1, ngày rằm và ngày lễ Phật giáo năm 2027.
 - https://chuamay.org/vuon-thu-cung/ — Ý tưởng vườn tưởng niệm thú cưng, Sắp mở.
 - https://chuamay.org/gioi-thieu/ — Phạm vi và điều không đại diện.
 - https://chuamay.org/hoi-dap/ — Câu hỏi và trả lời ngắn.
