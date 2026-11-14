@@ -34,7 +34,7 @@ Write-Output 'Static files packaged in dist. Deploy with Wrangler from project r
 
 $audioOutput = Join-Path $outputRoot 'assets/audio'
 New-Item -ItemType Directory -Path $audioOutput -Force | Out-Null
-foreach ($sound in @('bell-v2','keisu-v2','mo','bead-v1','ignite-v1','ambient-courtyard','ambient-rain','breath-4-6','breath-4-4','breath-5-7')) {
+foreach ($sound in @('bell-v2','keisu-v2','mo','bead-v1','ignite-v1','ambient-courtyard','ambient-rain','breath-4-6','breath-4-4','breath-5-7','breath-4-7-8')) {
   foreach ($ext in @('mp3','m4a')) { Copy-Item -LiteralPath (Join-Path $projectRoot "assets/audio/$sound.$ext") -Destination $audioOutput }
 }
 foreach ($name in @('LICENSES.md','measurements.json','measurements-v2.json')) { Copy-Item -LiteralPath (Join-Path $projectRoot "assets/audio/$name") -Destination $audioOutput }
