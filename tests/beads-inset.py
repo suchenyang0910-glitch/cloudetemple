@@ -7,6 +7,7 @@ from playwright.sync_api import sync_playwright
 BASE=os.environ.get('CT_TEST_BASE','http://127.0.0.1:8828')
 OUT=Path('screenshots/beads-inset-staging');OUT.mkdir(parents=True,exist_ok=True)
 SIZES=[(375,548),(390,844),(393,659),(430,932)]
+OCCLUSION_SIZES=[(360,640),(393,852),(406,695)]
 VISITORS=['short-light','curly-dark','curly-medium','bun-light','bun-dark','ponytail-medium']
 
 def alpha_right(visitor):
@@ -24,7 +25,7 @@ def open_beads(page,visitor):
   page.locator(f'[data-action="{action}"]:visible').first.click();ready(page)
 
 def metrics(page,visitor):
- return page.evaluate("""right=>{const bead=[...document.querySelectorAll('.strand-bead')].find(e=>e.dataset.number==='1'),visible=[...document.querySelectorAll('.strand-bead')].filter(e=>+getComputedStyle(e).opacity>.05).map(e=>e.getBoundingClientRect()),thumb=document.querySelector('.thumb-point').getBoundingClientRect(),arrows=document.querySelector('.bead-chevrons').getBoundingClientRect(),canvas=document.querySelector('#scene').getBoundingClientRect();const personRight=canvas.left+(350+right/600*397)/941*canvas.width;return {bead:bead.getBoundingClientRect().toJSON(),thumb:thumb.toJSON(),arrows:arrows.toJSON(),visible:visible.map(r=>r.toJSON()),personRight,innerWidth,scroll:document.documentElement.scrollWidth>innerWidth||document.documentElement.scrollHeight>innerHeight};}""",alpha_right(visitor))
+ return page.evaluate("""right=>{const all=[...document.querySelectorAll('.strand-bead')],bead=all.find(e=>e.dataset.number==='1'),neighbors=['3','2','1','0','-1'].map(n=>all.find(e=>e.dataset.number===n)),visible=all.filter(e=>+getComputedStyle(e).opacity>.05).map(e=>e.getBoundingClientRect()),thumb=document.querySelector('.thumb-point').getBoundingClientRect(),arrows=document.querySelector('.bead-chevrons').getBoundingClientRect(),canvas=document.querySelector('#scene').getBoundingClientRect(),panel=document.querySelector('.controls').getBoundingClientRect(),heading=document.querySelector('.scene-heading').getBoundingClientRect();const personRight=canvas.left+(350+right/600*397)/941*canvas.width,boxes=neighbors.map(e=>({opacity:+getComputedStyle(e).opacity,box:e.getBoundingClientRect().toJSON()})),intersects=(a,b)=>a.left<b.right&&a.right>b.left&&a.top<b.bottom&&a.bottom>b.top;return {bead:bead.getBoundingClientRect().toJSON(),neighbors:boxes,overlap:boxes.some(({box})=>intersects(box,panel)||intersects(box,heading)||box.left<0||box.right>innerWidth||box.top<0||box.bottom>innerHeight),thumb:thumb.toJSON(),arrows:arrows.toJSON(),visible:visible.map(r=>r.toJSON()),personRight,innerWidth,scroll:document.documentElement.scrollWidth>innerWidth||document.documentElement.scrollHeight>innerHeight};}""",alpha_right(visitor))
 
 rows=[]
 with sync_playwright() as pw:
@@ -40,6 +41,14 @@ with sync_playwright() as pw:
   assert not m['scroll'],(width,height,'scroll')
   page.screenshot(path=str(OUT/f'{width}x{height}-day.png'))
   rows.append({'size':[width,height],'outerGap':round(gap,2),'personGap':round(person_gap,2),'ring':[round(m['thumb']['left'],2),round(m['thumb']['right'],2)],'arrowGap':round(m['arrows']['top']-last,2)})
+  context.close()
+
+ for width,height in OCCLUSION_SIZES:
+  context=browser.new_context(viewport={'width':width,'height':height},timezone_id='UTC')
+  page=context.new_page();page.clock.set_fixed_time(datetime(2026,11,10,10,tzinfo=timezone.utc));open_beads(page,'short-light')
+  for hand in ('right','left'):
+   m=metrics(page,'short-light');assert not m['overlap'],(width,height,hand,'current bead or two neighbors overlap chrome');assert all(n['opacity']>.95 for n in m['neighbors']),(width,height,hand,m['neighbors'])
+   if hand=='right':page.locator('[data-action=bead-hand]').click();page.wait_for_timeout(250)
   context.close()
 
  # Fixed-order six-person day/night review at the real Safari viewport.
