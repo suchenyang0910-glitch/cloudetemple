@@ -18,38 +18,7 @@ Trang này liệt kê các ngày thường dùng trong lịch Phật giáo năm 
 - **Vía Bồ-tát Quán Thế Âm — ngày 19 tháng Chín:** Ngày quán niệm về Bồ-tát Quán Thế Âm. Ngày dương: {{date:19/9}}.
 - **Rằm tháng Mười:** Ngày 15 của tháng Mười âm lịch. Ngày dương: {{date:15/10}}.
 - **Vía Phật A-di-đà — ngày 17 tháng Mười Một:** Ngày tưởng niệm Đức Phật A-di-đà. Ngày dương: {{date:17/11}}.
-- **Ngày Phật thành đạo — mùng 8 tháng Chạp:** Ngày tưởng nhớ sự kiện Đức Phật thành đạo. Trong năm dương lịch 2027, ngày này rơi vào 15/01/2027; ngày dương: {{date:8/12}}.
-
-## Mùng 1 và rằm của từng tháng
-
-Mỗi tháng có một ngày đầu và một ngày 15. Các dòng dưới đây là những mốc lịch thông thường.
-
-| Ngày âm | Tên | Ngày dương |
-|---|---|---|
-| 1/1 | Mùng 1 tháng Giêng | {{date:1/1}} |
-| 15/1 | Rằm tháng Giêng | {{date:15/1}} |
-| 1/2 | Mùng 1 tháng Hai | {{date:1/2}} |
-| 15/2 | Rằm tháng Hai | {{date:15/2}} |
-| 1/3 | Mùng 1 tháng Ba | {{date:1/3}} |
-| 15/3 | Rằm tháng Ba | {{date:15/3}} |
-| 1/4 | Mùng 1 tháng Tư | {{date:1/4}} |
-| 15/4 | Rằm tháng Tư | {{date:15/4}} |
-| 1/5 | Mùng 1 tháng Năm | {{date:1/5}} |
-| 15/5 | Rằm tháng Năm | {{date:15/5}} |
-| 1/6 | Mùng 1 tháng Sáu | {{date:1/6}} |
-| 15/6 | Rằm tháng Sáu | {{date:15/6}} |
-| 1/7 | Mùng 1 tháng Bảy | {{date:1/7}} |
-| 15/7 | Rằm tháng Bảy | {{date:15/7}} |
-| 1/8 | Mùng 1 tháng Tám | {{date:1/8}} |
-| 15/8 | Rằm tháng Tám | {{date:15/8}} |
-| 1/9 | Mùng 1 tháng Chín | {{date:1/9}} |
-| 15/9 | Rằm tháng Chín | {{date:15/9}} |
-| 1/10 | Mùng 1 tháng Mười | {{date:1/10}} |
-| 15/10 | Rằm tháng Mười | {{date:15/10}} |
-| 1/11 | Mùng 1 tháng Mười Một | {{date:1/11}} |
-| 15/11 | Rằm tháng Mười Một | {{date:15/11}} |
-| 1/12 | Mùng 1 tháng Chạp | {{date:1/12}} |
-| 15/12 | Rằm tháng Chạp | {{date:15/12}} |
+- **Ngày Phật thành đạo — mùng 8 tháng Chạp:** Ngày tưởng nhớ sự kiện Đức Phật thành đạo. Trong năm dương lịch 2027, ngày này rơi vào 15/01/2027 (tháng Chạp năm Bính Ngọ).
 
 ## Phật lịch
 
