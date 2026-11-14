@@ -53,7 +53,7 @@ Mỗi tháng có một ngày đầu và một ngày 15. Các dòng dưới đây
 
 ## Phật lịch
 
-Theo cách tính phổ biến ở Việt Nam, Phật lịch bằng năm dương lịch cộng 544 và đổi số sau ngày Phật Đản. Vì vậy năm 2027 dùng nhãn Phật lịch 2571 trước ngày Phật Đản và 2572 sau ngày đó. Đây là quy ước lịch, không phải kết luận về giáo lý.
+Theo cách tính phổ biến ở Việt Nam, từ ngày Phật Đản của một năm dương lịch, Phật lịch bằng năm dương lịch cộng 544; trước ngày đó bằng năm dương lịch cộng 543. Vì vậy, từ ngày Phật Đản 2027 (20/05/2027) là Phật lịch 2571, còn trước ngày đó là 2570. Đây là quy ước lịch, không phải kết luận về giáo lý.
 
 Các chùa hoặc truyền thống khác nhau có thể xếp một số ngày khác nhau, chẳng hạn ngày Phật Đản có nơi dùng mùng 8 tháng Tư và có nơi dùng rằm tháng Tư. Trang này giữ danh sách nêu trên như một danh mục tham khảo.
 
@@ -69,7 +69,7 @@ Ngày âm là rằm tháng Bảy; ngày dương sẽ được điền tại `{{d
 
 ### Phật lịch 2571 được tính thế nào?
 
-Theo cách tính phổ biến ở Việt Nam, lấy năm dương lịch cộng 544; sau ngày Phật Đản của năm đó, nhãn chuyển sang 2572.
+Từ ngày Phật Đản 2027, lấy năm dương lịch 2027 cộng 544 để có Phật lịch 2571; trước ngày đó, dùng 2027 cộng 543 để có 2570.
 
 ### Mùng 1 và rằm là gì?
 

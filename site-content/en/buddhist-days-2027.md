@@ -53,7 +53,7 @@ Each lunar month has a first day and a day 15. These rows are ordinary calendar 
 
 ## Buddhist Era
 
-Under the common Vietnamese convention, the Buddhist Era is the Gregorian year plus 544, and the label changes after Vesak. Thus 2027 uses 2571 before Vesak and 2572 after that date. This is a calendar convention, not a doctrinal claim.
+Under the common Vietnamese convention, from a year's Vesak day the Buddhist Era is that Gregorian year plus 544; before Vesak it is that Gregorian year plus 543. Thus Vesak 2027 (20/05/2027) begins Buddhist Era 2571, while the period before it is 2570. This is a calendar convention, not a doctrinal claim.
 
 Temples and traditions may place some days differently; for example, Vesak may be observed on the 8th day or the 15th day of the fourth lunar month. This page keeps the list above as a neutral reference.
 
@@ -69,7 +69,7 @@ The lunar date is day 15 of month 7; the Gregorian date will be filled at `{{dat
 
 ### How is Buddhist Era 2571 calculated?
 
-Under the common Vietnamese convention, add 544 to the Gregorian year; after Vesak that year, the label changes to 2572.
+From Vesak 2027, add 544 to Gregorian year 2027 to get Buddhist Era 2571; before Vesak, add 543 to get 2570.
 
 ### What are mùng 1 and rằm?
 
