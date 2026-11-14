@@ -11,20 +11,12 @@ Chùa Mây là trải nghiệm trực tuyến, không phải một địa điể
 
 > Hiện không thu phí. Đây là trải nghiệm trực tuyến, không phải một địa điểm vật lý.
 
-## Thẻ hôm nay
-
-- **Hôm nay:** ngày hiện tại theo múi giờ Việt Nam (UTC+7).
-- **Âm lịch:** ngày và tháng âm tương ứng.
-- **Phật lịch:** năm Phật lịch theo quy ước được ghi trên lịch.
-- **Ngày tiếp theo:** mốc sắp tới trong danh sách lịch.
-- **Còn {{days}} ngày:** số ngày còn lại đến mốc đó.
-
 Cập nhật lần cuối: 2026-11-14.
 
 ## Năm hoạt động
 
 - **Thắp hương:** chạm để thắp một nén hương minh họa.
-- **Lễ Phật:** cúi chào một hình bóng không có mặt và không cầm vật.
+- **Lễ Phật:** cúi chào một hình bóng giản dị.
 - **Ngồi yên:** để màn hình lặng vài phút nếu bạn muốn.
 - **Lần chuỗi:** chạm từng hạt theo một nhịp đều, không có điểm hay cấp độ.
 - **Gõ mõ:** nghe một tiếng mõ mẫu, chỉnh âm lượng hoặc tắt âm thanh.
@@ -33,7 +25,7 @@ Cập nhật lần cuối: 2026-11-14.
 
 Mỗi ngày ghi ngày dương, thứ, ngày âm và tháng âm; mùng 1 và rằm được in đậm, kèm ảnh lịch tải xuống.
 
-[Xem cả năm 2027](/lunar-calendar-2027)
+[Xem cả năm 2027](/lich-am-2027/)
 
 ## Ba câu hỏi thường gặp
 
