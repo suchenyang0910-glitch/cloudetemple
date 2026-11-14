@@ -9,7 +9,9 @@ const festivals=new Map([
 ]);
 const iso=date=>date.toISOString().slice(0,10);
 const yearName=year=>{const stems=['Giáp','Ất','Bính','Đinh','Mậu','Kỷ','Canh','Tân','Nhâm','Quý'],branches=['Tý','Sửu','Dần','Mão','Thìn','Tỵ','Ngọ','Mùi','Thân','Dậu','Tuất','Hợi'];return `${stems[(year+6)%10]} ${branches[(year+8)%12]}`;};
-const ordinary=(date,lunar)=>({date,lunarDay:lunar.day,lunarMonth:lunar.month,leap:lunar.leap,type:'ordinary',nameVi:lunar.day===1?`Mùng 1 tháng ${lunar.month}`:`Rằm tháng ${lunar.month}`,nameEn:lunar.day===1?`1st day of lunar month ${lunar.month}`:`Full moon of lunar month ${lunar.month}`});
+const viMonths=['Giêng','Hai','Ba','Tư','Năm','Sáu','Bảy','Tám','Chín','Mười','Mười Một','Chạp'];
+const lunarName=(day,month)=>day===15?`Rằm tháng ${viMonths[month-1]}`:day<=10?`Mùng ${day} tháng ${viMonths[month-1]}`:`Ngày ${day} tháng ${viMonths[month-1]}`;
+const ordinary=(date,lunar)=>({date,lunarDay:lunar.day,lunarMonth:lunar.month,leap:lunar.leap,type:'ordinary',nameVi:lunarName(lunar.day,lunar.month),nameEn:lunar.day===1?`1st day of lunar month ${lunar.month}`:`Full moon of lunar month ${lunar.month}`});
 const festival=(date,lunar,names)=>({date,lunarDay:lunar.day,lunarMonth:lunar.month,leap:false,type:'festival',nameVi:names[0],nameEn:names[1]});
 
 export function officialBuddhistData(){const start=new Date(`${range.start}T00:00:00Z`),end=new Date(`${range.end}T00:00:00Z`),days=[],lunarDates={};for(let date=new Date(start);date<=end;date.setUTCDate(date.getUTCDate()+1)){const value=iso(date),lunar=solarToLunar({day:date.getUTCDate(),month:date.getUTCMonth()+1,year:date.getUTCFullYear()}),key=`${lunar.day}/${lunar.month}`;lunarDates[value]={day:lunar.day,month:lunar.month,leap:lunar.leap,yearName:yearName(lunar.year)};if(lunar.day===1||lunar.day===15)days.push(ordinary(value,lunar));const names=!lunar.leap&&festivals.get(key);if(names)days.push(festival(value,lunar,names));}return {days,lunarDates};}
