@@ -16,3 +16,17 @@ test('sample account data follows the account API response shape', () => {
   assert.match(source, /identityKinds: \['email'\]/);
   assert.match(source, /publicStatus: 'hidden'/);
 });
+
+test('offerings use the backend kinds and expose failure state', () => {
+  assert.match(source, /offer\('flower'\)/);
+  assert.match(source, /offer\('light'\)/);
+  assert.match(source, /\/memorials\/\$\{encodeURIComponent\(nearby\.id\)\}\/offerings/);
+  assert.match(source, /data\.flowers/);
+  assert.match(source, /offering_failed/);
+});
+
+test('mine navigation never falls back to the first memorial', () => {
+  assert.match(source, /memorial\.id === item\.id/);
+  assert.match(source, /Không thể định vị: bia chưa được tải/);
+  assert.doesNotMatch(source, /garden\.memorials\[0\]/);
+});
