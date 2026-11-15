@@ -11,6 +11,7 @@ import {draftRules} from './pet-moderation.mjs';
 import {openPetStore} from './pet-store.mjs';
 import {openFamilyStore} from './family-store.mjs';
 import {listOutbox} from './outbox-staging.mjs';
+import {createServer as createApplicationServer} from './app.mjs';
 import {config, hash} from './security.mjs';
 
 const require = createRequire(import.meta.url);
@@ -94,6 +95,36 @@ async function expectFamilyRejected(call, cookie) {
     assert.deepEqual(result.body, {ok: false, error: 'not_found'}, route);
   }
 }
+
+test('pet API CORS preflight allows the configured origin, rejects another origin, and keeps no-Origin reads same-origin', async t => {
+  const db = new Database(':memory:');
+  t.after(() => db.close());
+  const pet = openPetStore(db), family = openFamilyStore(db, {demo: false}), settings = config(env);
+  const petApi = createPetApi(settings, pet, {approvedRules: draftRules, family});
+  const server = createApplicationServer(settings, {}, undefined, (req, res, route) => petApi(req, res, route));
+  server.listen(0, '127.0.0.1');
+  await once(server, 'listening');
+  t.after(() => new Promise(resolve => server.close(resolve)));
+  const request = (method, headers = {}) => fetch('http://127.0.0.1:' + server.address().port + '/api/pet-garden/memorials', {method, headers});
+  await t.test('allows the configured origin', async () => {
+    const allowed = await request('OPTIONS', {Origin: 'https://staging.chuamay.org'});
+    assert.equal(allowed.status, 204);
+    assert.equal(allowed.headers.get('access-control-allow-origin'), 'https://staging.chuamay.org');
+    assert.equal(allowed.headers.get('access-control-allow-credentials'), 'true');
+    assert.match(allowed.headers.get('access-control-allow-methods'), /OPTIONS/);
+  });
+  await t.test('rejects another origin', async () => {
+    const rejected = await request('OPTIONS', {Origin: 'https://other.example.invalid'});
+    assert.equal(rejected.status, 403);
+    assert.equal(rejected.headers.get('access-control-allow-origin'), null);
+    assert.deepEqual(await rejected.json(), {ok: false, error: 'origin'});
+  });
+  await t.test('keeps no-Origin reads same-origin', async () => {
+    const sameOrigin = await request('GET');
+    assert.equal(sameOrigin.status, 200);
+    assert.equal(sameOrigin.headers.get('access-control-allow-origin'), null);
+  });
+});
 
 test('rejects unsigned Telegram credentials and keeps the first memorial free', async t => {
   const {call, db} = await fixture(t);
