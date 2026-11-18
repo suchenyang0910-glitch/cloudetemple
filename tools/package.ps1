@@ -17,6 +17,13 @@ if (Test-Path -LiteralPath $outputRoot) {
 New-Item -ItemType Directory -Path $outputRoot -Force | Out-Null
 foreach ($name in @('index.html','lich-2027.html','calendar-2027.css','calendar-2027.js','404.html','preload.js','styles.css','app.js','config.js','i18n.js','telegram.js','audio.js','resources.js','beads.js','bow.js','incense.js','morning.js','festival.js','gioi-thieu.html','quyen-rieng-tu.html','dieu-khoan.html','_headers','_routes.json')) { Copy-Item -LiteralPath (Join-Path $projectRoot $name) -Destination (Join-Path $outputRoot $name) -Force }
 Copy-Item -Path (Join-Path $projectRoot 'static/*') -Destination $outputRoot -Recurse -Force
+Copy-Item -LiteralPath (Join-Path $projectRoot 'town-3d') -Destination $outputRoot -Recurse -Force
+$prototypeOutput = Join-Path $outputRoot 'prototype-3d'
+New-Item -ItemType Directory -Path $prototypeOutput -Force | Out-Null
+Copy-Item -LiteralPath (Join-Path $projectRoot 'prototype-3d/vendor') -Destination $prototypeOutput -Recurse -Force
+$prototypeAssets = Join-Path $prototypeOutput 'assets'
+New-Item -ItemType Directory -Path $prototypeAssets -Force | Out-Null
+Copy-Item -LiteralPath (Join-Path $projectRoot 'prototype-3d/assets/visitor') -Destination $prototypeAssets -Recurse -Force
 $appFile=Join-Path $outputRoot 'app.js'
 $appSource=[IO.File]::ReadAllText($appFile)
 [IO.File]::WriteAllText($appFile,$appSource,[Text.UTF8Encoding]::new($false))
