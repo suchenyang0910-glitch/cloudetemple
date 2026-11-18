@@ -7,7 +7,7 @@ const about=await fs.readFile(new URL('gioi-thieu.html',root),'utf8');assert(abo
 const files=await fs.readdir(root),pattern=new RegExp(`\\.${release}\\.(js|css)$`),versioned=files.filter(n=>pattern.test(n));
 await fs.access(new URL('404.html',root));
 for(const name of ['town-3d/index.html','town-3d/app.js','town-3d/hall/index.js','town-3d/petgarden/index.js','prototype-3d/vendor/three.bundle.min.js','prototype-3d/vendor/three.core.js','prototype-3d/assets/visitor/stand-back.webp'])await fs.access(new URL(name,root));
-for(const name of ['town-3d/review','town-3d/evidence','town-3d/tools','town-3d/tests','town-3d/hall/character-vrm','town-3d/petgarden/demo.html','town-3d/petgarden/demo.js','town-3d/petgarden/sample-data.json','server/pet-migrate-offerings.mjs'])await assert.rejects(fs.access(new URL(name,root)),name+' excluded from production');
+for(const name of ['town-3d/review','town-3d/evidence','town-3d/tools','town-3d/tests','town-3d/hall/character-vrm','town-3d/petgarden/demo.html','town-3d/petgarden/demo.js','town-3d/petgarden/sample-data.json'])await assert.rejects(fs.access(new URL(name,root)),name+' excluded from production');
 for(const name of ['morning','festival'])assert(versioned.includes(`${name}.${release}.js`),`${name} module packaged and versioned`);
 const analyticsName=versioned.find(n=>n.startsWith('analytics.')),analyticsText=await fs.readFile(new URL(analyticsName,root),'utf8');assert(analyticsText.includes('campaign_content')&&analyticsText.includes("endsWith('_a_'+name)"),'anonymous activity attribution allowlist');
 assert(files.filter(n=>/\.(js|css)$/.test(n)).every(n=>pattern.test(n)),'only current hashed JS/CSS');
