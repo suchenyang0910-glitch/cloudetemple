@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="vi">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>Vườn Tưởng Niệm Thú Cưng</title>
+<link rel="stylesheet" href="./demo.css">
+<main>
+  <canvas id="scene" aria-label="Vườn Tưởng Niệm Thú Cưng ba chiều"></canvas>
+  <section class="hud"><strong>Vườn Tưởng Niệm Thú Cưng · Khu garden-01</strong><div class="hud-actions"><label><input id="build-toggle" type="checkbox"> Tạo bia</label><button id="mine">Mộ của tôi</button><button id="account-open">Cá nhân</button></div></section>
+  <section id="account-panel" class="panel" hidden><button class="close" data-close="account-panel">×</button><h2>Cá nhân</h2><div id="account-body"></div></section>
+  <section id="create-panel" class="panel" hidden><button class="close" data-close="create-panel">×</button><h2>Tạo bia</h2><div id="create-body"></div></section>
+  <section id="detail" class="detail" hidden></section><div class="actions" hidden><button id="flower" aria-label="Đặt hoa">🌼</button><button id="lamp" aria-label="Thắp đèn">🪔</button></div>
+  <p>Chạm vào cỏ để đi · Giữ và kéo để đổi hướng · Không thể đi xuyên qua bia</p>
+</main><script type="module" src="./demo.js"></script>
