@@ -383,7 +383,7 @@ export function createPetApi(settings, pet, {clock = Date.now, verifyBound, appr
   return async function handlePet(req, res, route) {
     if (route !== prefix && !route.startsWith(prefix + '/')) return false;
     const path = route.slice(prefix.length) || '/';
-    if (!(req.method === 'GET' && (path === '/memorials' || path === '/me' || /^\/memorials\/[a-f0-9-]{36}$/.test(path)) ||
+    if (!(req.method === 'GET' && (path === '/memorials' || path === '/me' || path === '/mine' || /^\/memorials\/[a-f0-9-]{36}(?:\/private)?$/.test(path)) ||
       req.method === 'POST' && (/^\/auth\/email\/(start|verify)$/.test(path) || /^\/memorials\/[a-f0-9-]{36}\/offerings$/.test(path)))) {
       json(res, 404, {error: 'route'});
       return true;
