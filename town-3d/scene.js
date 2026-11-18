@@ -22,7 +22,7 @@ function createGround(scene) {
   groundMesh.receiveShadow = true; scene.add(groundMesh);
 }
 
-// ── Coming-soon fallback canvas (gray ink silhouette — namtong only) ─────────
+// ── Coming-soon fallback canvas (gray ink silhouette) ────────────────────────
 
 let _comingSoonTex = null;
 function comingSoonTex() {
@@ -48,10 +48,10 @@ function comingSoonTex() {
 // ── Temple billboards ─────────────────────────────────────────────────────────
 // Three cases:
 //   open        → full-color exterior image, autoRotate=true
-//   coming_soon with exterior (all except namtong) → exterior image + cold-fog tint, autoRotate=true
-//   coming_soon namtong (no exterior yet) → gray silhouette Sprite, autoRotate=false
+//   coming_soon with approved exterior → exterior image + cold-fog tint, autoRotate=true
+//   coming_soon without approved exterior → gray silhouette Sprite, autoRotate=false
 
-const EXTERIOR_IDS = new Set(['chuamay', 'dilac', 'quanam', 'lienchi', 'diatang', 'duocsu', 'petgarden', 'namtong', 'tocuong']);
+const EXTERIOR_IDS = new Set(['chuamay', 'dilac', 'quanam', 'lienchi', 'diatang', 'duocsu', 'petgarden', 'tocuong']);
 const BILL_W = 8, BILL_H = 8 * (1536 / 1024); // ≈ 12 units (4.3× visitor height 2.8)
 
 function createBillboard(temple) {
@@ -96,7 +96,7 @@ function createBillboard(temple) {
       group.userData.veil = veil; // map mode hides this for clearer overhead view
     }
   } else {
-    // namtong — no exterior yet; gray silhouette Sprite auto-billboards
+    // No approved exterior; gray silhouette Sprite auto-billboards
     group.userData.autoRotate = false;
     const sprite = new THREE.Sprite(
       new THREE.SpriteMaterial({ map: comingSoonTex(), transparent: true, depthWrite: false })

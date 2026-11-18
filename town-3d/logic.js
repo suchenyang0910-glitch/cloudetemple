@@ -20,7 +20,7 @@ export const TEMPLES = Object.freeze([
   { id: 'tocuong', name: 'Từ Đường', x: 12, z: -12, status: 'coming_soon' }
 ]);
 export const TEMPLE_IDS = Object.freeze(TEMPLES.map(t => t.id));
-export const activityUrl = id => isOpen(id) ? (id === 'petgarden' ? 'petgarden/demo.html' : `index.html?temple=${id}`) : null;
+export const activityUrl = id => isOpen(id) ? (id === 'petgarden' ? 'town-3d/petgarden/index.html' : `index.html?temple=${id}`) : null;
 export const isOpen = id => TEMPLES.some(t => t.id === id && t.status === 'open');
 export const doorPoint = temple => ({ x: temple.x, z: temple.z + 3 });
 export function nearestTemple(x, z) {

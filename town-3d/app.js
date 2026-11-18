@@ -60,10 +60,14 @@ function initMapSheet() {
     const card = document.createElement('button');
     card.type = 'button'; card.className = `map-card ${t.status === 'open' ? 'is-open' : 'is-coming'}`;
     card.dataset.id = t.id;
-    const image = document.createElement('span'); image.className = 'map-card-image';
-    image.style.backgroundImage = `url("./assets/map-thumbs/exterior-${t.id}-day.webp")`;
+    if (t.id === 'namtong') card.classList.add('no-thumbnail');
+    else {
+      const image = document.createElement('span'); image.className = 'map-card-image';
+      image.style.backgroundImage = `url("./assets/map-thumbs/exterior-${t.id}-day.webp")`;
+      card.append(image);
+    }
     const name = document.createElement('span'); name.className = 'map-card-name'; name.textContent = t.name;
-    card.append(image, name);
+    card.append(name);
     if (t.status !== 'open') { const badge = document.createElement('small'); badge.textContent = 'Sắp mở'; card.append(badge); }
     card.addEventListener('click', () => { if (t.status !== 'open') return; target = new THREE.Vector3(t.x, 0, t.z + 3); toggleMap(); });
     mapGrid.append(card);
