@@ -1390,7 +1390,7 @@ const wk=moving?1:0,sL=Math.sin(walkPh)*wk,sR=-sL;
   if(camPos.z>-1.2&&hallK>.5)camPos.y=Math.max(camPos.y,pos.y+2.1);
   if(hallK>.5)camPos.x=THREE.MathUtils.clamp(camPos.x,camPos.z>-2.7?-4.4:-7.2,camPos.z>-2.7?4.4:7.2);       // 不让镜头钻到格扇和侧墙后面
   camLook.set(pos.x+(pos.x-camPos.x)*.75,pos.y+THREE.MathUtils.lerp(2.9,1.75,hallK)-wide*.7,pos.z+(pos.z-camPos.z)*.75);   // 视线永远穿过人物
-  if(W===GARDEN){const id=GARDEN._world?.id,sea=id==='sea',forest=id==='forest';if(sea){camPos.set(-16,14,20);camLook.set(-10,1.2,5)}else{camPos.set(pos.x+Math.sin(yaw)*22,pos.y+9,pos.z+Math.cos(yaw)*22);camLook.set(forest?-1:0,1.8,forest?-1:0)}}
+  if(W===GARDEN){const id=GARDEN.g?.name,sea=id==='sea',forest=id==='forest';if(sea){camPos.set(-16,14,20);camLook.set(-10,1.2,5)}else{camPos.set(pos.x+Math.sin(yaw)*22,pos.y+9,pos.z+Math.cos(yaw)*22);camLook.set(forest?-1:0,1.8,forest?-1:0)}}
   for(const c of fadeCols){const dx=camPos.x-c.x,dz=camPos.z-c.z,d=Math.hypot(dx,dz);if(d<1.0){camPos.x=c.x+(dx/(d||1))*1.0;camPos.z=c.z+(dz/(d||1))*1.0}}   // 镜头不贴着柱子
   if(W===TOWN){const cp=Math.cos(tPitch),hy=pos.y+1.2;let d=tDist*(1+wide*.15);const ux=Math.sin(yaw)*cp,uy=Math.sin(tPitch),uz=Math.cos(yaw)*cp;
     for(const c of TALL){const rr=c[2]+.8,ox=pos.x-c[0],oz=pos.z-c[1],A=ux*ux+uz*uz,B=2*(ox*ux+oz*uz),C=ox*ox+oz*oz-rr*rr,D=B*B-4*A*C;if(D<=0||A<1e-6)continue;const q=Math.sqrt(D),t0=(-B-q)/(2*A),t1=(-B+q)/(2*A);if(t1<0||t0>d)continue;if(d>t0&&d<t1&&hy+uy*d<c[3]+.6)d=Math.max(3.2,t0-.3)}   // 镜头不进高建筑：只拉近，不改角度
