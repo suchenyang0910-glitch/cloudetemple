@@ -1,0 +1,286 @@
+{
+  "task": "A-20261119-07 supplement 3 / lawn only",
+  "status": "AUTHOR_LOCAL_EVIDENCE_PENDING_INDEPENDENT_REVIEW",
+  "sourceHashes": [
+    {
+      "Path": "E:\\cloudtemple\\ops\\design-sync\\3d-sample\\petgarden\\scene-lawn.js",
+      "Hash": "C5317E2A9B264079DF415212939F032FCF1F15B468BBECBB2512435E945143C5"
+    },
+    {
+      "Path": "E:\\cloudtemple\\ops\\design-sync\\3d-sample\\petgarden\\common.js",
+      "Hash": "0D0AE99E846D152A479C31ADF611A5E0DCE3A162EB92EB5E00E39A696A6503A8"
+    },
+    {
+      "Path": "E:\\cloudtemple\\ops\\design-sync\\3d-sample\\petgarden\\petgarden-demo.html",
+      "Hash": "9415AF9961FAABDC2B6CC7A36B4CECC038482189A97717CC6E8E4CBEBA483E58"
+    },
+    {
+      "Path": "E:\\cloudtemple\\ops\\design-sync\\3d-sample\\petgarden\\scene-forest.js",
+      "Hash": "BA053DF5698415DE796CF8ED58A6336121EB291A12EBE61FE583F25D000459FC"
+    },
+    {
+      "Path": "E:\\cloudtemple\\ops\\design-sync\\3d-sample\\petgarden\\scene-sea.js",
+      "Hash": "C4A166D5ECEFAEC2A6AE2766598BBA85D8B660B2FAF1EDA5F011AB2132D50836"
+    },
+    {
+      "Path": "E:\\cloudtemple\\ops\\design-sync\\3d-sample\\petgarden\\three.bundle.min.js",
+      "Hash": "7349C026D6F8C57200DC1325B04A38EA0426A5957BD26040C682998CAED606FA"
+    },
+    {
+      "Path": "E:\\cloudtemple\\ops\\design-sync\\3d-sample\\petgarden\\s3-lawn-selfcheck.js",
+      "Hash": "FB3D02B91A755B93B823A78B4FB31B80999D0293CCE3D9B3C280CBBEF028363D"
+    }
+  ],
+  "unchanged": [
+    {
+      "path": "E:\\cloudtemple\\ops\\design-sync\\3d-sample\\petgarden\\common.js",
+      "sha256": "0D0AE99E846D152A479C31ADF611A5E0DCE3A162EB92EB5E00E39A696A6503A8",
+      "unchanged": true
+    },
+    {
+      "path": "E:\\cloudtemple\\ops\\design-sync\\3d-sample\\petgarden\\petgarden-demo.html",
+      "sha256": "9415AF9961FAABDC2B6CC7A36B4CECC038482189A97717CC6E8E4CBEBA483E58",
+      "unchanged": true
+    },
+    {
+      "path": "E:\\cloudtemple\\ops\\design-sync\\3d-sample\\petgarden\\scene-forest.js",
+      "sha256": "BA053DF5698415DE796CF8ED58A6336121EB291A12EBE61FE583F25D000459FC",
+      "unchanged": true
+    },
+    {
+      "path": "E:\\cloudtemple\\ops\\design-sync\\3d-sample\\petgarden\\scene-sea.js",
+      "sha256": "C4A166D5ECEFAEC2A6AE2766598BBA85D8B660B2FAF1EDA5F011AB2132D50836",
+      "unchanged": true
+    },
+    {
+      "path": "E:\\cloudtemple\\ops\\design-sync\\3d-sample\\petgarden\\three.bundle.min.js",
+      "sha256": "7349C026D6F8C57200DC1325B04A38EA0426A5957BD26040C682998CAED606FA",
+      "unchanged": true
+    }
+  ],
+  "assertions": {
+    "status": "PASS",
+    "layout": {
+      "slots": 34,
+      "islands": 6,
+      "courts": 4,
+      "distances": [
+        3.996939715588815,
+        3.996939715588815,
+        3.996939715588815,
+        3.996939715588815,
+        3.996939715588815,
+        3.996939715588815
+      ],
+      "clearGrass": 2.381594578792294,
+      "tests": {
+        "cases": 100,
+        "rejectedSamples": 24,
+        "unreachable": 0,
+        "wallCrossings": 0
+      }
+    },
+    "motion": {
+      "before": {
+        "y": 3.5944998264312744,
+        "wing": -0.586591385739083
+      },
+      "after": {
+        "y": 3.5645573139190674,
+        "wing": -0.849717179409777
+      }
+    },
+    "samples": 3,
+    "card": "Nơi này còn trống\n\nNơi này còn trống.\n\nBản nháp · cần người bản ngữ kiểm tra\nĐóng",
+    "cleared": {
+      "hidden": true,
+      "samples": 0
+    },
+    "metrics": {
+      "triangles": 26570,
+      "calls": 34
+    }
+  },
+  "performance": {
+    "browser": "157.0.8103.80",
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "pose": [
+      0,
+      0,
+      0,
+      1.5707963267948966,
+      37
+    ],
+    "fov": 96,
+    "samples": [
+      {
+        "rate": 1,
+        "frames": 181,
+        "durationMs": 3016.5999999999913,
+        "fps": 60.00132599615478,
+        "maxFrameMs": 21.60000000000582,
+        "metrics": {
+          "triangles": 26570,
+          "calls": 34
+        }
+      },
+      {
+        "rate": 4,
+        "frames": 167,
+        "durationMs": 3001,
+        "fps": 55.648117294235256,
+        "maxFrameMs": 33.40000000000873,
+        "metrics": {
+          "triangles": 26570,
+          "calls": 34
+        }
+      },
+      {
+        "rate": 6,
+        "frames": 86,
+        "durationMs": 3000.600000000006,
+        "fps": 28.660934479770656,
+        "maxFrameMs": 84.89999999999418,
+        "metrics": {
+          "triangles": 26570,
+          "calls": 34
+        }
+      }
+    ]
+  },
+  "console": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "screenshots": [
+    {
+      "path": "E:\\cloudtemple\\ops\\design-sync\\3d-sample\\petgarden\\screenshots\\s3-lawn-cluster.png",
+      "sha256": "587B64DE266A2B90439F9BBFD3D7D2EA60701BD3D5D15C464E18BFA0EFE6002C",
+      "pose": [
+        1,
+        14.5,
+        0,
+        0,
+        11
+      ],
+      "fov": 58,
+      "viewport": [
+        1440,
+        1000
+      ],
+      "samples": false
+    },
+    {
+      "path": "E:\\cloudtemple\\ops\\design-sync\\3d-sample\\petgarden\\screenshots\\s3-lawn-courts.png",
+      "sha256": "09C48319D359F812D2D09D75D6C7025F46A9F579BC6660D46687E8BD1AA1A692",
+      "pose": [
+        12.5,
+        -14,
+        0,
+        0.9,
+        16
+      ],
+      "fov": 58,
+      "viewport": [
+        1440,
+        1000
+      ],
+      "samples": false
+    },
+    {
+      "path": "E:\\cloudtemple\\ops\\design-sync\\3d-sample\\petgarden\\screenshots\\s3-lawn-entry.png",
+      "sha256": "797F11BB7003AC865736718C7E65D34148DDC996659A78038B96C1B36C90171B",
+      "pose": [
+        -18,
+        18,
+        0,
+        0,
+        5.6
+      ],
+      "fov": 58,
+      "viewport": [
+        1440,
+        1000
+      ],
+      "samples": false
+    },
+    {
+      "path": "E:\\cloudtemple\\ops\\design-sync\\3d-sample\\petgarden\\screenshots\\s3-lawn-overviewEye.png",
+      "sha256": "985C4A57589C061102CFE3D69C0BB084170CA2C194590394C8B8EB5DFD3527AA",
+      "pose": [
+        0,
+        19,
+        0,
+        0,
+        8
+      ],
+      "fov": 58,
+      "viewport": [
+        1440,
+        1000
+      ],
+      "samples": false
+    },
+    {
+      "path": "E:\\cloudtemple\\ops\\design-sync\\3d-sample\\petgarden\\screenshots\\s3-lawn-petals-butterflies.png",
+      "sha256": "0217DB70EA92D446C504AAD40CC0A056894AAA8465753E786F7CEA9C75FCE5CB",
+      "pose": [
+        0,
+        6,
+        0,
+        0,
+        6
+      ],
+      "fov": 58,
+      "viewport": [
+        1440,
+        1000
+      ],
+      "samples": false
+    },
+    {
+      "path": "E:\\cloudtemple\\ops\\design-sync\\3d-sample\\petgarden\\screenshots\\s3-lawn-private.png",
+      "sha256": "6125EB1CEBE4FC3B82A003D9B79081755BF00F5B20A0AB067A6C0B02AFC55F3E",
+      "pose": [
+        10,
+        -9.5,
+        0,
+        0,
+        7
+      ],
+      "fov": 58,
+      "viewport": [
+        1440,
+        1000
+      ],
+      "samples": false
+    },
+    {
+      "path": "E:\\cloudtemple\\ops\\design-sync\\3d-sample\\petgarden\\screenshots\\s3-lawn-top.png",
+      "sha256": "0C17FF6235B2E130B30747FF02F05271A5FD886E7186850F004281B31773280D",
+      "pose": [
+        0,
+        0,
+        0,
+        1.5707963267948966,
+        37
+      ],
+      "fov": 96,
+      "viewport": [
+        1440,
+        1000
+      ],
+      "samples": false
+    }
+  ],
+  "limitations": [
+    "Desktop Chromium short 3 second samples, not physical mobile validation",
+    "6x CPU 28.66 FPS; stable 60 FPS not achieved",
+    "Top/courts views use temporary debug camera positions, no lighting/fog/object suppression or image retouching",
+    "Touch, real device, CI, merge, deployment, production NOT_RUN"
+  ],
+  "verificationScript": "s3-lawn-selfcheck.js"
+}

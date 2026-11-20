@@ -1,0 +1,216 @@
+{
+  "task": "A-20261119-07 supplement 2",
+  "recordedAt": "2026-11-20T14:22:00+07:00",
+  "scope": "standalone petgarden only; author evidence, not independent acceptance",
+  "files": [
+    {
+      "Path": "E:\\cloudtemple\\ops\\design-sync\\3d-sample\\petgarden\\common.js",
+      "Hash": "0D0AE99E846D152A479C31ADF611A5E0DCE3A162EB92EB5E00E39A696A6503A8"
+    },
+    {
+      "Path": "E:\\cloudtemple\\ops\\design-sync\\3d-sample\\petgarden\\petgarden-demo.html",
+      "Hash": "F96F4B3FB09CD8C3994390CC67A2269F649FE144E38E7BC7045FD7DF3350BC23"
+    },
+    {
+      "Path": "E:\\cloudtemple\\ops\\design-sync\\3d-sample\\petgarden\\scene-lawn.js",
+      "Hash": "87DD400FE259DD53018860ECB68C4C6B4CFE8355FB3735F9D3299FB46D993172"
+    },
+    {
+      "Path": "E:\\cloudtemple\\ops\\design-sync\\3d-sample\\petgarden\\scene-forest.js",
+      "Hash": "33481BA34295D54F30BC1476C4ECD359B470930064489F13DACD74158559312F"
+    },
+    {
+      "Path": "E:\\cloudtemple\\ops\\design-sync\\3d-sample\\petgarden\\scene-sea.js",
+      "Hash": "7F944C733E5B578AEAB296713DE2E4BB1AC88B2D3A1E878488A2B0C54DA0E2E4"
+    },
+    {
+      "Path": "E:\\cloudtemple\\ops\\design-sync\\3d-sample\\petgarden\\three.bundle.min.js",
+      "Hash": "7349C026D6F8C57200DC1325B04A38EA0426A5957BD26040C682998CAED606FA"
+    }
+  ],
+  "screenshots": [
+    {
+      "Path": "E:\\cloudtemple\\ops\\design-sync\\3d-sample\\petgarden\\screenshots\\s2-forest-cluster.png",
+      "Hash": "63B2D2678B3CA685D46649D22AE7E748D1A75CC1AC863593C306E330AC581F7B"
+    },
+    {
+      "Path": "E:\\cloudtemple\\ops\\design-sync\\3d-sample\\petgarden\\screenshots\\s2-forest-entry.png",
+      "Hash": "BA2629EADD22C78EE2C0D5B1F85DE0B7DB6DA74DFE283F748B762573B7B81E97"
+    },
+    {
+      "Path": "E:\\cloudtemple\\ops\\design-sync\\3d-sample\\petgarden\\screenshots\\s2-forest-overview.png",
+      "Hash": "9FB68CA04450D6658EE0DCB0479FB66FD3AF9ABAEC0FE48CAE99097456A4FE3C"
+    },
+    {
+      "Path": "E:\\cloudtemple\\ops\\design-sync\\3d-sample\\petgarden\\screenshots\\s2-forest-private.png",
+      "Hash": "FBB5CAE6E3A617D58E238ED0FD3F972E5F2DA62A98DCB66261969FC0F253A600"
+    },
+    {
+      "Path": "E:\\cloudtemple\\ops\\design-sync\\3d-sample\\petgarden\\screenshots\\s2-forest-top.png",
+      "Hash": "21ED977A37C7F9CD4D33295A0C61E0EA9C2F41EF8D2FA8D49741AF0D8E1C7EC4"
+    },
+    {
+      "Path": "E:\\cloudtemple\\ops\\design-sync\\3d-sample\\petgarden\\screenshots\\s2-lawn-cluster.png",
+      "Hash": "4A602F6B39B909AD8F171079F59B010F3F3FC1068C7AB48FCF9E0E515265D527"
+    },
+    {
+      "Path": "E:\\cloudtemple\\ops\\design-sync\\3d-sample\\petgarden\\screenshots\\s2-lawn-entry.png",
+      "Hash": "C916B154383CC9FDA241B893B3695C76916BE4634442920F5CE365BE88493757"
+    },
+    {
+      "Path": "E:\\cloudtemple\\ops\\design-sync\\3d-sample\\petgarden\\screenshots\\s2-lawn-overview.png",
+      "Hash": "5D352C88AF9B776CBA7E8D0DAE1A5BCDCA1F20AE3EF8C9BDF7FFFD16F19D6B78"
+    },
+    {
+      "Path": "E:\\cloudtemple\\ops\\design-sync\\3d-sample\\petgarden\\screenshots\\s2-lawn-private.png",
+      "Hash": "63FE9246EB787824E0C8E79B3D1E005C275F1ABEAFF73398665AFFE99A6CC90A"
+    },
+    {
+      "Path": "E:\\cloudtemple\\ops\\design-sync\\3d-sample\\petgarden\\screenshots\\s2-lawn-top.png",
+      "Hash": "ADFF5D8BD7CE3DE120D04979FFA9B8973B032954A6424FADBF8F06BDBBF679EF"
+    },
+    {
+      "Path": "E:\\cloudtemple\\ops\\design-sync\\3d-sample\\petgarden\\screenshots\\s2-sea-cluster.png",
+      "Hash": "398F5C84DF942C90FD20AA27E34AB2AA33961BA04C580FC0059B91BA32B0004D"
+    },
+    {
+      "Path": "E:\\cloudtemple\\ops\\design-sync\\3d-sample\\petgarden\\screenshots\\s2-sea-entry.png",
+      "Hash": "A9CDECCC76A64DB40AE58D9B3F4F06D873BF247CBA6D63C20F45132F2B903662"
+    },
+    {
+      "Path": "E:\\cloudtemple\\ops\\design-sync\\3d-sample\\petgarden\\screenshots\\s2-sea-overview.png",
+      "Hash": "995493A4291F22766E30E789D254B6D371A95A1A7D3DD08F2EB561868B2216CF"
+    },
+    {
+      "Path": "E:\\cloudtemple\\ops\\design-sync\\3d-sample\\petgarden\\screenshots\\s2-sea-private.png",
+      "Hash": "DF826D455F5FFED8473BB51E22C6D9645B45AC0C565889C85F268D53BE7EDA14"
+    },
+    {
+      "Path": "E:\\cloudtemple\\ops\\design-sync\\3d-sample\\petgarden\\screenshots\\s2-sea-top.png",
+      "Hash": "0E8E019117B3BA1B0C2EC407B0D6CCC3448029304AB7DE68627B781BA8F64F41"
+    }
+  ],
+  "time": "2026-11-20 14:19",
+  "metrics": [
+    {
+      "scene": "lawn",
+      "triangles": 17748,
+      "drawCalls": 27,
+      "slots": 34,
+      "publicClusters": 6,
+      "privateCourts": 4,
+      "trees": 6,
+      "pointsObjects": 1,
+      "particles": 112,
+      "pathPairs": 100,
+      "rejectedCandidateSamples": 19,
+      "unreachable": 0,
+      "wallCrossings": 0
+    },
+    {
+      "scene": "forest",
+      "triangles": 30793,
+      "drawCalls": 23,
+      "slots": 19,
+      "publicClusters": 5,
+      "privateCourts": 4,
+      "trees": 58,
+      "pointsObjects": 1,
+      "particles": 126,
+      "pathPairs": 100,
+      "rejectedCandidateSamples": 16,
+      "unreachable": 0,
+      "wallCrossings": 0
+    },
+    {
+      "scene": "sea",
+      "triangles": 23572,
+      "drawCalls": 20,
+      "slots": 24,
+      "publicClusters": 5,
+      "privateCourts": 4,
+      "trees": 0,
+      "pointsObjects": 1,
+      "particles": 138,
+      "pathPairs": 100,
+      "rejectedCandidateSamples": 210,
+      "unreachable": 0,
+      "wallCrossings": 0
+    }
+  ],
+  "fps": {
+    "method": "Chrome DevTools Protocol Emulation.setCPUThrottlingRate; 1.2-second requestAnimationFrame samples per scene/rate; desktop RTX 5070 Ti; not real-device performance",
+    "samples": [
+      {
+        "id": "lawn",
+        "rate": 1,
+        "fps": 60.2
+      },
+      {
+        "id": "lawn",
+        "rate": 4,
+        "fps": 59.3
+      },
+      {
+        "id": "lawn",
+        "rate": 6,
+        "fps": 43.2
+      },
+      {
+        "id": "forest",
+        "rate": 1,
+        "fps": 60.6
+      },
+      {
+        "id": "forest",
+        "rate": 4,
+        "fps": 56.1
+      },
+      {
+        "id": "forest",
+        "rate": 6,
+        "fps": 35.7
+      },
+      {
+        "id": "sea",
+        "rate": 1,
+        "fps": 60.2
+      },
+      {
+        "id": "sea",
+        "rate": 4,
+        "fps": 60.2
+      },
+      {
+        "id": "sea",
+        "rate": 6,
+        "fps": 44.9
+      }
+    ]
+  },
+  "console": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "checks": {
+    "syntax": "PASS: common.js, scene-lawn.js, scene-forest.js, scene-sea.js, entry inline module",
+    "viewport390TabsOverlap": false,
+    "sampleDefault": false,
+    "sampleOnCount": 3,
+    "sampleOffCount": 0,
+    "interaction": "Browser-driven WASD, drag, wheel, tabs, plaque empty/sample card, Escape, ground click and CDP emulated pinch passed",
+    "rapidSwitch": "final lawn; one active world group"
+  },
+  "notRun": [
+    "D independent acceptance",
+    "Real mobile device performance and touch",
+    "Vietnamese native-speaker review",
+    "Formal town integration and existing feature/data regressions"
+  ],
+  "limitations": [
+    "Short desktop FPS samples are not a stable-60-FPS guarantee.",
+    "Path tests sample valid walkable start/end positions; rejected candidates include sea and obstacles.",
+    "Historic formal feature inventory in receipt was not reverified this run.",
+    "Some lawn path and court fence corners visually intersect; navigation honors collision."
+  ]
+}

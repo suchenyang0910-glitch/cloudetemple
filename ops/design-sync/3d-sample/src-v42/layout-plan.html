@@ -1,0 +1,55 @@
+<!doctype html><meta charset=utf-8><body style="margin:0;background:#e8e3d6"><canvas id=c width=1800 height=1240></canvas><script>
+const cv=document.getElementById('c'),c=cv.getContext('2d'),k=9.2,X=x=>900+x*k,Z=z=>610+z*k;
+function sm(pts,closed){c.beginPath();const n=pts.length;for(let i=0;i<(closed?n:n-1);i++){const p0=pts[(i-1+n)%n],p1=pts[i],p2=pts[(i+1)%n],p3=pts[(i+2)%n];if(!closed&&i===0){}if(i===0)c.moveTo(X(p1[0]),Z(p1[1]));const a=closed||i>0?p0:p1,b=closed||i<n-2?p3:p2;c.bezierCurveTo(X(p1[0]+(p2[0]-a[0])/6),Z(p1[1]+(p2[1]-a[1])/6),X(p2[0]-(b[0]-p1[0])/6),Z(p2[1]-(b[1]-p1[1])/6),X(p2[0]),Z(p2[1]))}if(closed)c.closePath()}
+c.fillStyle='#e8e3d6';c.fillRect(0,0,1800,1240);
+// sea east
+c.fillStyle='#a9d0dc';c.beginPath();c.moveTo(1800,Z(-40));c.lineTo(X(84),Z(-34));c.quadraticCurveTo(X(96),Z(0),X(80),Z(34));c.lineTo(1800,Z(44));c.fill();
+c.fillStyle='#3d6f80';c.font='italic 26px Georgia';c.fillText('Biển',X(90),Z(-14));
+// mountains north
+for(const [x,w,h,col] of [[-62,34,17,'#9fb59a'],[-40,26,13,'#8aa58c'],[-78,22,11,'#7d9a84'],[60,36,18,'#9fb59a'],[82,24,12,'#8aa58c'],[38,22,10,'#7d9a84'],[0,30,9,'#b3c4ac'],[-18,22,7,'#a6baa2'],[18,22,7,'#a6baa2']]){c.fillStyle=col;c.beginPath();c.moveTo(X(x-w/2),Z(-56));c.lineTo(X(x),Z(-56-h));c.lineTo(X(x+w/2),Z(-56));c.fill()}
+const OUT=[[-80,-8],[-74,-36],[-50,-54],[-12,-58],[26,-56],[58,-52],[80,-32],[86,0],[76,28],[52,48],[16,58],[-26,57],[-60,44],[-82,20]];
+c.fillStyle='#c9e08f';sm(OUT,true);c.fill();
+// darker lawn zones
+c.fillStyle='#b6d483';sm([[-70,-30],[-52,-48],[-30,-42],[-34,-18],[-58,-14]],true);c.fill();sm([[34,-42],[58,-46],[70,-30],[54,-18],[34,-22]],true);c.fill();
+// chua may court
+c.fillStyle='#ecdcb8';c.beginPath();c.roundRect(X(-17),Z(-48),34*k,36*k,14);c.fill();
+// lake + island + stream + lien tri pond
+c.strokeStyle='#8ec3d6';c.lineWidth=9;c.lineCap='round';sm([[-52,-48],[-56,-36],[-50,-24],[-54,-12],[-46,-4]]);c.stroke();
+c.fillStyle='#e9dcae';sm([[-56,6],[-48,-10],[-30,-12],[-14,-2],[-14,16],[-28,26],[-46,24]],true);c.fill();c.fillStyle='#7ec6dc';sm([[-54,6],[-47,-8],[-30,-10],[-16,-1],[-16,15],[-28,24],[-45,22]],true);c.fill();
+c.fillStyle='#c9e08f';c.beginPath();c.ellipse(X(-34),Z(5),8*k,7*k,0,0,7);c.fill();c.fillStyle='#b5392e';c.fillRect(X(-35.4),Z(11),2.8*k,13*k);
+c.fillStyle='#7ec6dc';c.fillRect(X(-71),Z(-4),10*k,10*k);
+// roads
+const road=(pts,w,closed)=>{c.strokeStyle='#f1e6cc';c.lineWidth=w*k;c.lineJoin='round';sm(pts,closed);c.stroke()};
+road([[0,44],[-24,46],[-52,36],[-68,14],[-66,-10],[-58,-30],[-36,-44],[-22,-30],[-22,-12],[-8,-6],[8,-6],[22,-12],[22,-30],[38,-44],[60,-36],[70,-14],[66,10],[58,28],[36,42]],4.2,true);
+road([[0,58],[0,44],[0,26],[0,10]],5);road([[0,10],[0,-6],[0,-14]],5);
+road([[0,10],[-8,22],[-22,28],[-34,25]],3.2);road([[0,10],[14,6],[28,-2],[38,-8],[54,-4],[68,4]],3.2);road([[0,10],[12,22],[20,30],[36,36]],3);
+road([[-66,2],[-58,4]],2.6);road([[-44,-26],[-50,-30]],2.6);road([[44,-30],[40,-38]],2.6);road([[-48,36],[-50,34]],2.6);road([[-16,40],[-16,45]],2.6);
+const foot=pts=>{c.strokeStyle='#f6eedc';c.lineWidth=1.3*k;sm(pts);c.stroke()};
+foot([[-22,-20],[-34,-22],[-44,-26]]);foot([[22,-20],[34,-24],[44,-30]]);foot([[-60,-22],[-66,-24],[-70,-18]]);foot([[28,-2],[24,12],[20,30]]);foot([[58,28],[58,22],[54,-4]]);foot([[-24,46],[-30,38],[-34,25]]);foot([[-68,14],[-60,18],[-46,23]]);foot([[38,-8],[40,-20],[44,-30]]);foot([[12,22],[-4,34],[-16,40]]);foot([[36,36],[44,26],[58,22]]);foot([[-8,-6],[-14,4],[-8,22]]);
+// plazas
+const plaza=(x,z,r)=>{c.fillStyle='#f1e6cc';c.beginPath();c.arc(X(x),Z(z),r*k,0,7);c.fill();c.strokeStyle='#cbbd9c';c.lineWidth=2;c.stroke()};
+plaza(0,10,6);c.fillStyle='#7ec6dc';c.beginPath();c.arc(X(0),Z(10),2.4*k,0,7);c.fill();c.fillStyle='#f4a3bd';c.beginPath();c.arc(X(0),Z(10),1*k,0,7);c.fill();
+plaza(20,30,5);plaza(-66,-24,4.5);plaza(-34,26.5,3.4);plaza(38,-8,6);
+// flower garden
+for(const [x,z] of [[55,20],[59,20],[55,24],[59,24]]){c.fillStyle='#6f5a40';c.fillRect(X(x-1.6),Z(z-1.6),3.2*k,3.2*k);for(let i=0;i<9;i++){c.fillStyle=['#f2a65a','#f6d04a','#e8647a','#fff'][i%4];c.beginPath();c.arc(X(x-1.1+(i%3)*1.1),Z(z-1.1+((i/3)|0)*1.1),4,0,7);c.fill()}}
+// trees clusters
+let sd=7;const rr=()=>(sd=sd*16807%2147483647)/2147483647;
+const tree=(x,z,pine)=>{c.fillStyle=pine?'#4f8a5a':'#7fb85a';c.beginPath();c.arc(X(x),Z(z),1.9*k,0,7);c.fill();c.fillStyle=pine?'#3f7a4c':'#6aa64a';c.beginPath();c.arc(X(x+.5),Z(z+.6),1.2*k,0,7);c.fill()};
+for(const [cx,cz,n,r,p] of [[-66,-40,9,7,1],[-40,-50,8,7,1],[-10,-52,5,5,1],[24,-52,6,6,1],[66,-44,8,6,1],[76,-18,6,5,0],[78,16,6,5,0],[62,38,7,6,0],[26,50,7,6,0],[-8,52,4,4,0],[-40,50,7,6,0],[-70,32,7,6,0],[-76,6,4,4,0],[-76,-22,5,5,1],[-40,-36,5,4,1],[48,-22,4,4,1],[10,34,3,3,0],[30,14,4,4,0],[46,10,4,4,0],[-6,-22,0,0,0],[-20,10,3,3,0],[12,-22,0,0,0],[50,-36,4,4,1],[-30,36,3,3,0]])for(let i=0;i<n;i++)tree(cx+(rr()-.5)*2*r,cz+(rr()-.5)*2*r*.7,p);
+// buildings
+const house=(x,z,s,col)=>{const px=X(x),pz=Z(z);c.fillStyle='#f6eedc';c.fillRect(px-s*.72,pz-s*.1,s*1.44,s*.62);c.fillStyle='#5a3a28';c.fillRect(px-s*.16,pz+s*.14,s*.32,s*.38);c.fillStyle=col;c.beginPath();c.moveTo(px-s*1.15,pz-s*.02);c.quadraticCurveTo(px-s*.7,pz-s*.12,px-s*.5,pz-s*.72);c.lineTo(px+s*.5,pz-s*.72);c.quadraticCurveTo(px+s*.7,pz-s*.12,px+s*1.15,pz-s*.02);c.quadraticCurveTo(px,pz+s*.12,px-s*1.15,pz-s*.02);c.fill()};
+const tower=(x,z)=>{const px=X(x),pz=Z(z);for(let i=0;i<6;i++){const w=30-i*4;c.fillStyle='#b98670';c.fillRect(px-w/2,pz+18-i*15,w,13);c.fillStyle='#5a3a28';c.fillRect(px-w/2-4,pz+15-i*15,w+8,4)}};
+house(0,-40,56,'#b5532e');house(-11,-27,26,'#b5532e');house(11,-27,26,'#b5532e');house(0,-14,30,'#8a4a36');tower(38,-8);
+house(-34,5,34,'#7a4030');house(74,6,34,'#4f6b78');house(-66,1,26,'#b8683c');house(-48,36,32,'#c9a24a');house(-16,40,34,'#7a4030');house(40,36,26,'#c98f86');house(-44,-27,34,'#5e4236');house(44,-31,34,'#35506c');house(20,30,20,'#7a4030');house(-66,-24,20,'#7a4030');house(0,57,22,'#8a4a36');
+// gates on edge (suoi, cliff)
+const pin=(n,x,z,col,r=22)=>{c.fillStyle=col;c.strokeStyle='#fff';c.lineWidth=5;c.beginPath();c.arc(X(x),Z(z),r,0,7);c.fill();c.stroke();c.fillStyle='#fff';c.font='bold '+(r+2)+'px system-ui';c.textAlign='center';c.textBaseline='middle';c.fillText(n,X(x),Z(z)+1)};
+const lab=(t,x,z)=>{c.font='600 21px system-ui';c.textAlign='center';c.lineWidth=5;c.strokeStyle='rgba(255,255,255,.85)';c.strokeText(t,X(x),Z(z));c.fillStyle='#3a2e22';c.fillText(t,X(x),Z(z))};
+const A='#b5532e',B='#2f7f86',G='#4f8a3c',V='#4a5a9a',P='#7a6a58';
+[[1,38,-17,A,'Bảo tháp',38,3],[2,0,-50,A,'Chùa Mây',0,-33.5],[3,-52,-49,B,'Suối Thiền',-52,-53.5],[4,60,-47,B,'Vách Núi',60,-51.5],[5,-27,17,G,'Hồ sen · cầu đỏ',-22,21],[6,-34,-2,G,'Chùa Di Lặc',-34,10],[7,74,-1,G,'Chùa Quan Âm',72,11],[8,-66,-5,G,'Chùa Liên Trì',-66,9],[9,-48,29,G,'Chùa Nam Tông',-48,41],[10,-16,33,G,'Từ Đường',-16,45],[11,40,30,G,'Vườn Tưởng Niệm',40,41],[12,-44,-34,V,'Chùa Địa Tạng',-44,-22],[13,44,-38,V,'Chùa Dược Sư',44,-26]].forEach(([n,x,z,col,t,lx,lz])=>{pin(n,x,z,col);lab(t,lx,lz)});
+[['A',0,4,'Đài sen',0,18],['B',-66,-29,'Chòi nghỉ',-66,-18.5],['C',20,25,'Sân nghỉ',20,35],['D',57,16,'Vườn hoa',57,28]].forEach(([n,x,z,t,lx,lz])=>{pin(n,x,z,P,17);lab(t,lx,lz)});
+lab('Cổng vào',0,63.5);lab('Tam quan',0,-9.5);
+// compass + title + scale
+c.fillStyle='#b5532e';c.beginPath();c.moveTo(110,70);c.lineTo(96,120);c.lineTo(110,108);c.lineTo(124,120);c.fill();c.fillStyle='#3a2e22';c.font='bold 26px system-ui';c.fillText('B',110,146);
+c.textAlign='left';c.font='bold 34px system-ui';c.fillText('Thị trấn Mây — bản phác bố cục mới',60,1168);c.font='22px system-ui';c.fillText('约 170 米 × 118 米（现在是 80 米 × 221 米）',60,1204);
+c.fillStyle='#3a2e22';c.fillRect(1540,1170,20*k,5);c.font='20px system-ui';c.fillText('20 m',1540,1160);
+</script>
