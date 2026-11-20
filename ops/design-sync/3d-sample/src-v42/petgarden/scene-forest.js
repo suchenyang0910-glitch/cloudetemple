@@ -10,7 +10,7 @@ export function buildForestScene(T){
  w.blockers.push({x:-13.819624700677178,z:9.683383037110243,r:.9});
  w.blockers.push({x:-3.819624700677178,z:-17.316616962889757,r:.75});
  const distance=(x,z,a,b)=>{const dx=b[0]-a[0],dz=b[1]-a[1],t=Math.max(0,Math.min(1,((x-a[0])*dx+(z-a[1])*dz)/(dx*dx+dz*dz)));return Math.hypot(x-a[0]-t*dx,z-a[1]-t*dz)};
- for(let i=0;i<700&&w.trees.length<58;i++){const x=Math.sin(i*2.399)*19,z=Math.cos(i*1.733)*19;if(Math.hypot(x+16,z-17)<6||Math.hypot(x+18,z-18)<3||w.memorialSlots.some(s=>Math.hypot(s.x-x,s.z-z)<2.1)||w.trees.some(t=>Math.hypot(t.x-x,t.z-z)<2.4)||trail.slice(1).some((b,j)=>distance(x,z,trail[j],b)<1.3)||Math.hypot(x,z)<3)continue;tree(x,z,.85+(i%7)*.16);if(i%2)fern(x+.7,z+.5,.7)}
+ for(let i=0;i<700&&w.trees.length<58;i++){const x=Math.sin(i*2.399)*19,z=Math.cos(i*1.733)*19;if(Math.hypot(x+16,z-17)<10||Math.hypot(x+18,z-18)<3||w.memorialSlots.some(s=>Math.hypot(s.x-x,s.z-z)<2.1)||w.trees.some(t=>Math.hypot(t.x-x,z-t.z)<2.4)||trail.slice(1).some((b,j)=>distance(x,z,trail[j],b)<1.3)||Math.hypot(x,z)<3)continue;tree(x,z,.85+(i%7)*.16);if(i%2)fern(x+.7,z+.5,.7)}
  for(let i=0;i<90;i++){fern(Math.sin(i*2.1)*19,Math.cos(i*1.8)*19,.3);flower(Math.sin(i*2.3)*18,Math.cos(i*1.7)*18,.08)}
  box(3,.2,.7,m.woodM,0,.55,2);box(3,.5,.15,m.woodM,0,.9,2.3);for(let i=0;i<9;i++)rock(Math.cos(i)*2,Math.sin(i)*2,.25);
  const light=new T.MeshBasicMaterial({color:0xe6e7b2,transparent:true,opacity:.18,depthWrite:false});for(let i=0;i<18;i++){const x=Math.sin(i*4.1)*15,z=Math.cos(i*2.9)*15;w.add(new T.CircleGeometry(.4+(i%3)*.3,12),light,x,w.floorY(x,z)+.018,z,-Math.PI/2)}
