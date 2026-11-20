@@ -40,7 +40,7 @@ export function buildLawnScene(T){
  }
  const wingShape=new T.Shape();wingShape.moveTo(0,.02);wingShape.bezierCurveTo(.12,.38,.48,.24,.24,-.02);wingShape.bezierCurveTo(.4,-.3,.08,-.32,0,-.08);wingShape.closePath();
  const wingGeo=new T.ShapeGeometry(wingShape,6),wingM=new T.MeshBasicMaterial({color:0xf7c06a,side:T.DoubleSide}),bodyM=new T.MeshBasicMaterial({color:0x685038}),butterflies=[];
- for(let i=0;i<4;i++){const b=new T.Group();b.name='lawn-butterfly-'+i;b.userData.keep=true;
+ for(let i=0;i<4;i++){const b=new T.Group();b.name='lawn-butterfly-'+i;b.userData.keep=true;b.scale.setScalar(.5);
    for(const side of [-1,1]){const wing=new T.Mesh(wingGeo,wingM);wing.scale.x=side;wing.rotation.y=side*.5;b.add(wing)}
    b.add(new T.Mesh(new T.BoxGeometry(.035,.3,.035),bodyM));b.position.set(-4.8+i*3.2,1.5,5.8);w.g.add(b);butterflies.push(b);
  }
