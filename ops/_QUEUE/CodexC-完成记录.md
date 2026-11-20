@@ -14,3 +14,4 @@
 2026-11-20 23:24 +07:00 | A-20261119-07 D final3 精确修复 | 进行中（旧 garden 移除、状态持久化、fade、样例开关、竞态与 forest-edge 已完成；真实 selfTest forest 4/sea 5 不可达，commit 6902199 后续回改中） | ops/receipts/A-20261119-07/回执.md
 2026-11-20 23:39 +07:00 | A-20261119-07 SHA-33 当前视图截图 | 进行中（按 33aa3e7 重取 lawn/forest/sea、TOWN、缩略图；真实 selfTest 残余 3/5/7 已写明，待 A 核图） | ops/receipts/A-20261119-07/回执.md
 2026-11-20 23:58 +07:00 | A-20261119-07 补充4/5/6/7 | 进行中（v41 两补丁门槛已核对并接入 v42；遮挡、样例跨 Tab、几何铭牌、forest edge、西亭柱、draw 与 map UI 已改；D 独立 8/4/5、TOWN300 3穿越、七组暖窗仍待处理） | ops/receipts/A-20261119-07/回执.md
+2026-11-20 23:09 +07:00 | A-20261119-07 v42 v41门槛重建 | 进行中（v41 两道补丁门槛复核并重建；模块/构建/Playwright 本地通过，真实 selfTest lawn/forest/sea unreachable=3/5/7，仍待 A/D；未合并未部署） | ops/receipts/A-20261119-07/回执.md
