@@ -1391,7 +1391,7 @@ const wk=moving?1:0,sL=Math.sin(walkPh)*wk,sR=-sL;
   if(camPos.z>-1.2&&hallK>.5)camPos.y=Math.max(camPos.y,pos.y+2.1);
   if(hallK>.5)camPos.x=THREE.MathUtils.clamp(camPos.x,camPos.z>-2.7?-4.4:-7.2,camPos.z>-2.7?4.4:7.2);       // 不让镜头钻到格扇和侧墙后面
   camLook.set(pos.x+(pos.x-camPos.x)*.75,pos.y+THREE.MathUtils.lerp(2.9,1.75,hallK)-wide*.7,pos.z+(pos.z-camPos.z)*.75);   // 视线永远穿过人物
-  if(W===GARDEN){const id=GARDEN._world?.id,sea=id==='sea',forest=id==='forest';camPos.set(pos.x+Math.sin(yaw)*22,pos.y+9,pos.z+Math.cos(yaw)*22);camLook.set(sea?0:forest?-1:0,1.8,sea?3:forest?-1:0)}
+  if(W===GARDEN){const id=GARDEN._world?.id,sea=id==='sea',forest=id==='forest';camPos.set(pos.x+Math.sin(yaw)*22,pos.y+9,pos.z+Math.cos(yaw)*22);camLook.set(sea?0:forest?-1:0,1.8,sea?6:forest?-1:0)}
   for(const c of fadeCols){const dx=camPos.x-c.x,dz=camPos.z-c.z,d=Math.hypot(dx,dz);if(d<1.0){camPos.x=c.x+(dx/(d||1))*1.0;camPos.z=c.z+(dz/(d||1))*1.0}}   // 镜头不贴着柱子
   if(W===TOWN){const cp=Math.cos(tPitch),hy=pos.y+1.2;let d=tDist*(1+wide*.15);const ux=Math.sin(yaw)*cp,uy=Math.sin(tPitch),uz=Math.cos(yaw)*cp;
     for(const c of TALL){const rr=c[2]+.8,ox=pos.x-c[0],oz=pos.z-c[1],A=ux*ux+uz*uz,B=2*(ox*ux+oz*uz),C=ox*ox+oz*oz-rr*rr,D=B*B-4*A*C;if(D<=0||A<1e-6)continue;const q=Math.sqrt(D),t0=(-B-q)/(2*A),t1=(-B+q)/(2*A);if(t1<0||t0>d)continue;if(d>t0&&d<t1&&hy+uy*d<c[3]+.6)d=Math.max(3.2,t0-.3)}   // 镜头不进高建筑：只拉近，不改角度
@@ -1408,10 +1408,10 @@ if(window.__ct&&__ct.testCam){const c=__ct.testCam;camera.position.set(pos.x+c[0
   const w=stage.clientWidth,h=stage.clientHeight;
   const gardenLabels=[];
   for(const k in SPOT){const s=SPOT[k];v3.copy(s.anchor).project(camera);const d=Math.hypot(pos.x-s.x,pos.z-s.z);
-    if((W===TOWN||W===GARDEN)&&v3.z<1){v3.x=THREE.MathUtils.clamp(v3.x,-.72,.72);v3.y=THREE.MathUtils.clamp(v3.y,-.5,.62)}
+    if((W===TOWN||W===GARDEN)&&v3.z<1){v3.x=THREE.MathUtils.clamp(v3.x,-.45,.45);v3.y=THREE.MathUtils.clamp(v3.y,-.5,.62)}
     const vis=state!=='ritual'&&v3.z<1&&Math.abs(v3.x)<.92&&v3.y<.8&&v3.y>-.62&&d<(W===TOWN?20:15)&&W.vis(k);
     s.el.hidden=!vis;if(vis){s.el.style.transform=`translate(-50%,-100%) translate(${(v3.x*.5+.5)*w}px,${(-v3.y*.5+.5)*h}px)`;if(W===GARDEN)gardenLabels.push({el:s.el,d})}}
-  if(W===GARDEN&&gardenLabels.length>2){gardenLabels.sort((a,b)=>a.d-b.d);gardenLabels.slice(2).forEach(q=>q.el.hidden=true)}
+  if(W===GARDEN&&gardenLabels.length>1){gardenLabels.sort((a,b)=>a.d-b.d);gardenLabels.slice(1).forEach(q=>q.el.hidden=true)}
   if(mini.hidden!==(W!==TOWN)){mini.hidden=W!==TOWN;demoBtn.hidden=W!==TOWN;placesBtn.hidden=W!==TOWN;if(W!==TOWN)demoTag.hidden=true;else demoTag.hidden=!demoOn}footRing.visible=W===TOWN;if(W===TOWN){footRing.position.set(pos.x,pos.y+.04,pos.z)}peerG.visible=W===TOWN&&demoOn;if(peerG.visible)stepPeers(dt);
 if(exitBtn.hidden!==(W===TOWN))exitBtn.hidden=W===TOWN;if(W===TOWN&&(miniT+=dt)>.08){miniT=0;drawMini()}
   renderer.render(scene,camera);
