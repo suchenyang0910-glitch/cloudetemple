@@ -1405,10 +1405,12 @@ const wk=moving?1:0,sL=Math.sin(walkPh)*wk,sR=-sL;
 if(window.__ct&&__ct.testCam){const c=__ct.testCam;camera.position.set(pos.x+c[0],pos.y+c[1],pos.z+c[2]);camera.lookAt(pos.x,pos.y+c[3],pos.z)}
   // 热点标签
   const w=stage.clientWidth,h=stage.clientHeight;
+  const gardenLabels=[];
   for(const k in SPOT){const s=SPOT[k];v3.copy(s.anchor).project(camera);const d=Math.hypot(pos.x-s.x,pos.z-s.z);
     if((W===TOWN||W===GARDEN)&&v3.z<1){v3.x=THREE.MathUtils.clamp(v3.x,-.72,.72);v3.y=THREE.MathUtils.clamp(v3.y,-.5,.62)}
     const vis=state!=='ritual'&&v3.z<1&&Math.abs(v3.x)<.92&&v3.y<.8&&v3.y>-.62&&d<(W===TOWN?20:15)&&W.vis(k);
-    s.el.hidden=!vis;if(vis)s.el.style.transform=`translate(-50%,-100%) translate(${(v3.x*.5+.5)*w}px,${(-v3.y*.5+.5)*h}px)`}
+    s.el.hidden=!vis;if(vis){s.el.style.transform=`translate(-50%,-100%) translate(${(v3.x*.5+.5)*w}px,${(-v3.y*.5+.5)*h}px)`;if(W===GARDEN)gardenLabels.push({el:s.el,d})}}
+  if(W===GARDEN&&gardenLabels.length>2){gardenLabels.sort((a,b)=>a.d-b.d);gardenLabels.slice(2).forEach(q=>q.el.hidden=true)}
   if(mini.hidden!==(W!==TOWN)){mini.hidden=W!==TOWN;demoBtn.hidden=W!==TOWN;placesBtn.hidden=W!==TOWN;if(W!==TOWN)demoTag.hidden=true;else demoTag.hidden=!demoOn}footRing.visible=W===TOWN;if(W===TOWN){footRing.position.set(pos.x,pos.y+.04,pos.z)}peerG.visible=W===TOWN&&demoOn;if(peerG.visible)stepPeers(dt);
 if(exitBtn.hidden!==(W===TOWN))exitBtn.hidden=W===TOWN;if(W===TOWN&&(miniT+=dt)>.08){miniT=0;drawMini()}
   renderer.render(scene,camera);
