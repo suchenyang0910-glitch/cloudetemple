@@ -62,6 +62,9 @@ body{margin:0;background:#1d1611;color:var(--ink);font-family:"Noto Serif",Georg
 #stage #mini{position:absolute;left:auto;bottom:auto;right:max(12px,env(safe-area-inset-right,0px));top:66px;width:232px!important;height:84px!important;z-index:3;border-radius:10px;border:1px solid var(--line);box-shadow:0 2px 10px rgba(30,18,8,.25);cursor:pointer;touch-action:none}
 #placesbtn{position:absolute;right:max(12px,env(safe-area-inset-right,0px));top:306px;z-index:3;font:inherit;font-size:13px;font-weight:600;min-height:40px;width:86px;padding:4px 8px;border-radius:12px;border:1px solid var(--line);background:var(--deep);color:var(--paper);cursor:pointer}
 #places{position:absolute;inset:0;z-index:6;background:rgba(246,238,222,.97);overflow:auto;padding:max(18px,env(safe-area-inset-top,0px)) 16px 28px;box-sizing:border-box}
+#places .places-head{position:sticky;top:0;z-index:3;display:flex;align-items:center;gap:8px;margin:-18px -16px 10px;padding:10px 16px;background:#f6eedf;border-bottom:1px solid var(--line)}
+#places .places-head h2{flex:1;margin:0}
+#places .places-scroll{min-height:100%;overflow:visible}
 #places h2{font-size:20px;margin:6px 0 4px;color:var(--ink)}#places p{margin:0 0 14px;font-size:13px;color:var(--ink);opacity:.75}
 #places .row{display:flex;align-items:center;gap:12px;width:100%;min-height:58px;text-align:left;font:inherit;padding:10px 14px;margin:0 0 8px;border-radius:12px;border:1px solid var(--line);background:#fffaf0;color:var(--ink);cursor:pointer}
 #places .row b{display:block;font-size:16px}#places .row span{display:block;font-size:13px;opacity:.75}#places .row i{font-style:normal;font-size:11px;padding:2px 8px;border-radius:999px;background:var(--deep);color:var(--paper);margin-left:auto;white-space:nowrap}
@@ -120,9 +123,10 @@ b,strong,h1,h2,h3,#placesbtn,#places .row em{font-weight:600}
   .chips{position:absolute;left:12px;right:56px;top:58px;justify-content:stretch}
   .chips button{flex:1 1 0;padding:0 4px}
   #snd{top:8px;right:12px}
-  #pet-tabs-v42{top:108px!important;left:12px!important;right:12px!important;transform:none!important;justify-content:center;flex-wrap:wrap;max-width:none}
+  #exitbtn{top:110px!important}
+  #pet-tabs-v42{top:164px!important;left:12px!important;right:12px!important;transform:none!important;justify-content:center;flex-wrap:wrap;max-width:none}
   #pet-tabs-v42 button{flex:1 1 30%;min-width:44px;font-size:12px;padding:8px 6px}
-  body #pet-tabs-v42+div+label{top:188px!important}
+  body #pet-tabs-v42+div+label{top:270px!important}
 }
 </style>
 <div id="stage">
@@ -1305,9 +1309,9 @@ function drawGuide(cv,list){const Wc=cv.width,k=Wc/188,kz=cv.height/152,X=x=>(x+
   if(W===TOWN){const px=X(Math.max(-40,Math.min(40,pos.x))),pz=Z(Math.max(-65,Math.min(160,pos.z)));c.fillStyle='#fff';c.beginPath();c.arc(px,pz,13,0,7);c.fill();c.fillStyle='#d8262c';c.beginPath();c.arc(px,pz,8.5,0,7);c.fill()}}
 function goPlace(o){placesEl.hidden=true;if(W!==TOWN)enter(TOWN);state='free';pending=null;path=[];pos.set(o.x,0,o.z);dest.copy(pos);faceY=wantY=Math.PI;yaw=yawT=0;for(const an of [0,.8,-.8,1.4,-1.4,2.4,-2.4,Math.PI]){const cx=pos.x+Math.sin(an)*11,cz=pos.z+Math.cos(an)*11;if(walkable(cx,cz)&&!TALL.some(c=>Math.hypot(cx-c[0],cz-c[1])<c[2]+1)){yaw=yawT=an;break}}camera.position.set(pos.x+Math.sin(yaw)*12,7,pos.z+Math.cos(yaw)*12);say(o.door?'Đã đến trước '+o.name+'. Chạm nút phía trên cửa để vào.':'Đã đến '+o.name+'.')}
 let guideL=[];
-function openPlaces(){const list=guideL=guideList();placesEl.innerHTML='<button class="x">Đóng</button><h2>Bản đồ Thị trấn Mây</h2><p>Chạm vào một số trên bản đồ, hoặc một dòng bên dưới, để đến nơi đó.</p><canvas class="gmap" width="1196" height="736" aria-label="Bản đồ thị trấn"></canvas><p class="key"><span class="here"></span>Bạn đang ở đây</p>';drawGuide(placesEl.querySelector('.gmap'),list);
-  ZONES.forEach((zn,zi)=>{const h=document.createElement('h3');h.textContent=zn[0];h.style.color=zn[1];placesEl.appendChild(h);for(const o of list){if(o.zn!==zi)continue;const b=document.createElement('button');b.className='row';b.dataset.n=o.n;b.innerHTML='<em></em><div><b></b><span></span></div>'+(o.id==='suoi'||o.id==='cliff'?'<i>Ngồi yên</i>':'');b.querySelector('em').textContent=o.n;b.querySelector('em').style.background=zn[1];b.querySelector('b').textContent=o.name;b.querySelector('span').textContent=o.desc;placesEl.appendChild(b)}});
-  const fb=document.createElement('button');fb.className='row';fb.dataset.fps='1';fb.innerHTML='<div><b>Đo tốc độ khung hình</b><span>Hiện số khung hình mỗi giây ở góc dưới bên trái (để kiểm tra máy)</span></div>';placesEl.appendChild(fb);placesEl.hidden=false;placesEl.scrollTop=0}
+function openPlaces(){const list=guideL=guideList();placesEl.innerHTML='<div class="places-head"><h2>Bản đồ Thị trấn Mây</h2><button class="x">Đóng</button></div><div class="places-scroll"><p>Chạm vào một số trên bản đồ, hoặc một dòng bên dưới, để đến nơi đó.</p><canvas class="gmap" width="1196" height="736" aria-label="Bản đồ thị trấn"></canvas><p class="key"><span class="here"></span>Bạn đang ở đây</p></div>';const scroll=placesEl.querySelector('.places-scroll');drawGuide(scroll.querySelector('.gmap'),list);
+  ZONES.forEach((zn,zi)=>{const h=document.createElement('h3');h.textContent=zn[0];h.style.color=zn[1];scroll.appendChild(h);for(const o of list){if(o.zn!==zi)continue;const b=document.createElement('button');b.className='row';b.dataset.n=o.n;b.innerHTML='<em></em><div><b></b><span></span></div>'+(o.id==='suoi'||o.id==='cliff'?'<i>Ngồi yên</i>':'');b.querySelector('em').textContent=o.n;b.querySelector('em').style.background=zn[1];b.querySelector('b').textContent=o.name;b.querySelector('span').textContent=o.desc;scroll.appendChild(b)}});
+  const fb=document.createElement('button');fb.className='row';fb.dataset.fps='1';fb.innerHTML='<div><b>Đo tốc độ khung hình</b><span>Hiện số khung hình mỗi giây ở góc dưới bên trái (để kiểm tra máy)</span></div>';scroll.appendChild(fb);placesEl.hidden=false;placesEl.scrollTop=0}
 placesBtn.addEventListener('pointerdown',e=>e.stopPropagation());placesBtn.addEventListener('click',e=>{e.stopPropagation();openPlaces()});
 placesEl.addEventListener('pointerdown',e=>e.stopPropagation());placesEl.addEventListener('pointerup',e=>e.stopPropagation());placesEl.addEventListener('click',e=>{e.stopPropagation();const x=e.target.closest('.x'),r=e.target.closest('.row'),cv=e.target.closest('.gmap');if(x){placesEl.hidden=true;return}if(cv){const b=cv.getBoundingClientRect(),f=cv.width/b.width,px=(e.clientX-b.left)*f,py=(e.clientY-b.top)*f;let best=null,bd=46;for(const p of guidePins){const d=Math.hypot(p.x-px,p.y-py);if(d<bd){bd=d;best=p}}if(best)goPlace(best.o);return}if(!r)return;if(r.dataset.fps){fpsBox.hidden=!fpsBox.hidden;placesEl.hidden=true;return}const o=guideL.find(q=>q.n==r.dataset.n);if(o)goPlace(o)});
 const fpsBox=document.createElement('div');fpsBox.id='fpsbox';fpsBox.hidden=location.hash!=='#fps';stage.appendChild(fpsBox);let fpsN=0,fpsT=0,fpsWorst=0,fpsHist=[];
