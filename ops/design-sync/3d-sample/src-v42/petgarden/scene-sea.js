@@ -10,6 +10,6 @@ export function buildSeaScene(T){
  [[-16,-3],[-8,1],[0,3],[8,1],[16,-3]].forEach(([x,z],ci)=>{for(const [dx,dz] of [[-2,-2],[2,-2],[-2,2],[2,2]]){plaque(x+dx,z+dz,Math.PI,'sea-'+ci);fern(x+dx+.7,z+dz+.6,.6);rock(x+dx-.8,z+dz-.5,.18);flower(x+dx+.4,z+dz-.8,.08)}});
  const sand=new T.MeshLambertMaterial({color:0xc6b68f});[[-16,11],[-6,13],[6,13],[16,11]].forEach(([x,z],i)=>{plaque(x,z,Math.PI,'sea-private-'+i,true);for(let j=0;j<7;j++){const a=j/6*Math.PI*1.6+.6,px=x+Math.sin(a)*2.8,pz=z+Math.cos(a)*2.8;const q=w.add(new T.IcosahedronGeometry(1,1),sand,px,w.floorY(px,pz)+.1,pz);q.scale.set(1.1,.45,.8);w.blockers.push({x:px,z:pz,r:1.4});fern(px,pz,.8)}});
  for(const x of [-12,-4,4,12]){const z=5;const q=w.add(new T.IcosahedronGeometry(1,1),sand,x,.45,z);q.scale.set(1.2,.65,2);w.blockers.push({x,z,r:2.3});bush(x+.5,z,.5)}
- box(6,.28,1.6,m.pathM,0,.35,2);box(6,.7,.18,m.woodM,0,1.0,2.75);for(const x of [-2.6,2.6])box(.18,.65,.7,m.woodM,x,.32,2);for(let i=0;i<50;i++)fern(Math.sin(i*3.2)*19,7+Math.cos(i*2.1)*8,.35);
+ path([[-8,5],[-4,4],[0,3],[4,4],[8,5]],1.6);box(6,.28,1.6,m.pathM,0,.35,2);box(6,.7,.18,m.woodM,0,1.0,2.75);for(const x of [-2.6,2.6])box(.18,.65,.7,m.woodM,x,.32,2);for(let i=0;i<50;i++)fern(Math.sin(i*3.2)*19,7+Math.cos(i*2.1)*8,.35);
  box(4.5,.08,1.5,m.pathM,0,.08,-1);w.particles(138);w.finalize();const tick=w.tick;w.tick=dt=>{tick(dt);clock.value+=dt};w.spots={entry:[-18,18,0,0,5],cluster:[0,9,0,0,5],private:[7.2,14.2,0,.95,11],overview:[0,0,0,.9,35],overviewEye:[0,14,0,0,8],top:[0,-2,0,Math.PI/2,37]};return w;
 }
