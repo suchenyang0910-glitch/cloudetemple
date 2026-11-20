@@ -8,6 +8,7 @@ export function buildForestScene(T){
  [[-10,-8],[-12,3],[-6,10],[5,8],[12,-3]].forEach(([x,z],ci)=>{for(const dx of [-4,0,4]){plaque(x+dx,z+(dx===0?.9:0),Math.PI,'forest-'+ci);fern(x+dx+.7,z+.6);flower(x+dx-.7,z-.6,.13)}});
  [[-15,12],[-5,-15],[14,12],[14,-13]].forEach(([x,z],i)=>{plaque(x,z,0,'forest-private-'+i,true);for(let j=0;j<9;j++){const a=Math.PI*.15+j*Math.PI*1.7/8;bush(x+Math.sin(a)*2.6,z-Math.cos(a)*2.6,.6);fern(x+Math.sin(a)*2.2,z-Math.cos(a)*2.2,.75)}});
  w.blockers.push({x:-13.819624700677178,z:9.683383037110243,r:.9});
+ w.blockers.push({x:-3.819624700677178,z:-17.316616962889757,r:.75});
  const distance=(x,z,a,b)=>{const dx=b[0]-a[0],dz=b[1]-a[1],t=Math.max(0,Math.min(1,((x-a[0])*dx+(z-a[1])*dz)/(dx*dx+dz*dz)));return Math.hypot(x-a[0]-t*dx,z-a[1]-t*dz)};
  for(let i=0;i<700&&w.trees.length<58;i++){const x=Math.sin(i*2.399)*19,z=Math.cos(i*1.733)*19;if(Math.hypot(x+18,z-18)<3||w.memorialSlots.some(s=>Math.hypot(s.x-x,s.z-z)<2.1)||w.trees.some(t=>Math.hypot(t.x-x,t.z-z)<2.4)||trail.slice(1).some((b,j)=>distance(x,z,trail[j],b)<1.3)||Math.hypot(x,z)<3)continue;tree(x,z,.85+(i%7)*.16);if(i%2)fern(x+.7,z+.5,.7)}
  for(let i=0;i<90;i++){fern(Math.sin(i*2.1)*19,Math.cos(i*1.8)*19,.3);flower(Math.sin(i*2.3)*18,Math.cos(i*1.7)*18,.08)}
