@@ -114,6 +114,16 @@ body{margin:0;background:#1d1611;color:var(--ink);font-family:"Noto Serif",Georg
 .msg{font-size:16px}
 #places .x{position:sticky;top:0;z-index:2;box-shadow:0 0 0 8px rgba(246,238,222,.97)}
 b,strong,h1,h2,h3,#placesbtn,#places .row em{font-weight:600}
+@media (max-width:600px){
+  .top{padding:8px 12px 0;min-height:96px}
+  .top .place{max-width:52%;padding:6px 10px}
+  .chips{position:absolute;left:12px;right:56px;top:58px;justify-content:stretch}
+  .chips button{flex:1 1 0;padding:0 4px}
+  #snd{top:8px;right:12px}
+  #pet-tabs-v42{top:108px!important;left:12px!important;right:12px!important;transform:none!important;justify-content:center;flex-wrap:wrap;max-width:none}
+  #pet-tabs-v42 button{flex:1 1 30%;min-width:44px;font-size:12px;padding:8px 6px}
+  body #pet-tabs-v42+div+label{top:188px!important}
+}
 </style>
 <div id="stage">
   <div class="top">
@@ -1372,7 +1382,7 @@ const wk=moving?1:0,sL=Math.sin(walkPh)*wk,sR=-sL;
   if(W!==lastW){lastW=W;yaw=yawT=0}
   yaw+=(yawT-yaw)*Math.min(1,dt*(W===TOWN?14:6));tPitch+=(tPitchT-tPitch)*Math.min(1,dt*14);tDist+=(tDistT-tDist)*Math.min(1,dt*10);plaq.forEach(q=>q.visible=hallK<.45);
   wide=camera.aspect>1.2?1:0;cxT=state==='ritual'?1:THREE.MathUtils.lerp(.6,.85,hallK);cx+=(cxT-cx)*Math.min(1,dt*2.5);
-  const tw=W===TOWN?1:0,back=THREE.MathUtils.lerp(8.6,6.3,hallK)*(1+wide*.22)+tw*6.4, up=THREE.MathUtils.lerp(3.9,2.75,hallK)+tw*2.8;
+  const tw=W===TOWN?1:0,gw=W===GARDEN?1:0,back=THREE.MathUtils.lerp(8.6,6.3,hallK)*(1+wide*.22)+tw*6.4+gw*5.2, up=THREE.MathUtils.lerp(3.9,2.75,hallK)+tw*2.8+gw*2.1;
   camPos.set(pos.x*cx+Math.sin(yaw)*back,pos.y+up,pos.z+Math.cos(yaw)*back);
   if(camPos.z>-1.2&&hallK>.5)camPos.y=Math.max(camPos.y,pos.y+2.1);
   if(hallK>.5)camPos.x=THREE.MathUtils.clamp(camPos.x,camPos.z>-2.7?-4.4:-7.2,camPos.z>-2.7?4.4:7.2);       // 不让镜头钻到格扇和侧墙后面
