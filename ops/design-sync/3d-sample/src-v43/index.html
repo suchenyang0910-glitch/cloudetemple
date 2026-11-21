@@ -1222,7 +1222,7 @@ function offer(st,t){if(state!=='ritual')return;const n=t==='f'?st.f++:st.l++;if
 function go(k){if(state==='ritual')return;const s=SPOT[k];if(Math.hypot(pos.x-s.x,pos.z-s.z)<.35){begin(k);return}pending=k;state='going';walkTo(s.x,s.z);say('Đang đi tới…',true);acts([])}
 function begin(k){if(k.startsWith('go_')){lastGate=SPOT[k];pending=null;enter(BYID[k.slice(3)]);return}
   if(k==='near'){const s=TEMPLE.seatTransport.nearest(pos.x,pos.z);if(!s)return;TEMPLE_SEAT_SPOTS.near.x=s.x;TEMPLE_SEAT_SPOTS.near.z=s.z;TEMPLE_SEAT_SPOTS.near.face=s.yaw;return begin('seat-'+s.id)}
-  if(k.startsWith('seat-')){const id=k.slice(5),s=TEMPLE_SEATS.find(q=>q.id===id);if(!s||!TEMPLE.seatTransport.occupy(id,{id:'self',name:SELF_NAME}))return;state='ritual';ritual=k;rt=0;pending=null;wantY=s.yaw;s.ring.material.opacity=0;say(s.kind==='bow'?'Đã ngồi vào bồ đoàn lễ Phật.':'Đã ngồi xuống chỗ của mình.',true);acts([['Đứng dậy',finish,true]]);return}
+  if(k.startsWith('seat-')){const id=k.slice(5),s=TEMPLE_SEATS.find(q=>q.id===id);if(!s||!TEMPLE.seatTransport.occupy(id,{id:'self',name:SELF_NAME}))return;state='ritual';ritual=k;rt=0;pending=null;wantY=s.yaw;selfNameEl.style.display='none';s.ring.material.opacity=0;say(s.kind==='bow'?'Đã ngồi vào bồ đoàn lễ Phật.':'Đã ngồi xuống chỗ của mình.',true);acts([['Đứng dậy',finish,true]]);return}
   state='ritual';ritual=k;rt=0;pending=null;wantY=SPOT[k].face;
   if(/^st\d/.test(k||'')){const st=steles[+k.slice(2)];say((st.sample?'Mẫu · ':'')+'Có thể dâng một bông hoa hoặc thắp một ngọn đèn. Không để lại chữ; chủ bia chỉ thấy số người đã ghé.',true);acts([['Dâng hoa',()=>offer(st,'f'),true],['Thắp đèn',()=>offer(st,'l'),true],['Rời đi',finish]])}
   if(k==='build'){say('Chưa mở tạo bia (Sắp mở). Khi mở, tấm bia đầu tiên miễn phí.',true);acts([['Đã hiểu',finish,true]])}
@@ -1245,7 +1245,7 @@ function begin(k){if(k.startsWith('go_')){lastGate=SPOT[k];pending=null;enter(BY
 const ringEl=$('#ring'),ringNum=$('#ringnum');function setRing(){ringEl.style.setProperty('--p',(beadCount%108)/108*100+'%');ringNum.textContent=beadCount}
 function bead(){if(state!=='ritual'||ritual!=='beads')return;beadCount++;tick();beadRing.rotation.z-=Math.PI*2/27;setRing();if(beadCount%108===0){bell();say('Đã lần hết một tràng. Có thể đặt xuống, cũng có thể lần tiếp.',true)}}
 let moSwing=0;function hitMo(){if(state!=='ritual'||ritual!=='mo')return;moSwing=1;knock();moCount++;say('Cốc · '+moCount,true)}
-function finish(){const k=ritual;state='free';ritual=null;breathEl.classList.remove('on');breathEl.style.transform='';breathEl.style.top='';ringEl.classList.remove('on');
+function finish(){const k=ritual;state='free';ritual=null;selfNameEl.style.display='block';breathEl.classList.remove('on');breathEl.style.transform='';breathEl.style.top='';ringEl.classList.remove('on');
   if(k&&k.startsWith('seat-'))TEMPLE.seatTransport.release(k.slice(5));
   const done={incense:'Hương đã thắp. ',bow:'Lễ xong. ',sit:'Đã đứng dậy. ',mo:'Đã đặt dùi mõ xuống. ',beads:'Tràng hạt đã về giá. ',tet:'Cành hoa đã về bàn. ',nianfo:'Đã dừng. ',lotus:'',wish:'Thiệp đã viết xong. ',walk:'Đã dừng. ',lamp:'',altar:'',sea:'Đã đứng dậy. ',boat:'Đã buông xuống. '}[k]||'';
   if(k==='build'){say('');acts([]);return}
@@ -1437,7 +1437,7 @@ const wk=moving?1:0,sL=Math.sin(walkPh)*wk,sR=-sL;
     for(const c of TALL){const rr=c[2]+.8,ox=pos.x-c[0],oz=pos.z-c[1],A=ux*ux+uz*uz,B=2*(ox*ux+oz*uz),C=ox*ox+oz*oz-rr*rr,D=B*B-4*A*C;if(D<=0||A<1e-6)continue;const q=Math.sqrt(D),t0=(-B-q)/(2*A),t1=(-B+q)/(2*A);if(t1<0||t0>d)continue;if(d>t0&&d<t1&&hy+uy*d<c[3]+.6)d=Math.max(3.2,t0-.3)}   // 镜头不进高建筑：只拉近，不改角度
     camPos.set(pos.x+ux*d,hy+uy*d,pos.z+uz*d);camLook.set(pos.x,hy,pos.z)}
   if(W===CLIFF){camPos.set(pos.x+Math.sin(yaw)*6,pos.y+2.4,pos.z+Math.cos(yaw)*6);camLook.set(pos.x-Math.sin(yaw)*6,pos.y+1.1,pos.z-Math.cos(yaw)*6)}
-  const sc=state==='ritual'&&SPOT[ritual].cam?SPOT[ritual]:null;if(sc){sideCam.set(...sc.cam);sideLook.set(...sc.look)}
+  const sc=state==='ritual'&&SPOT[ritual]?.cam?SPOT[ritual]:null;if(sc){sideCam.set(...sc.cam);sideLook.set(...sc.look)}
   sideK+=((sc?1:0)-sideK)*Math.min(1,dt*2.2);if(sideK>.002){camPos.lerp(sideCam,sideK);camLook.lerp(sideLook,sideK)}
   camera.position.lerp(camPos,Math.min(1,dt*(W===TOWN?9:3.2)));lookNow.lerp(camLook,Math.min(1,dt*(W===TOWN?12:5)));camera.lookAt(lookNow);
   for(const c of fadeCols){let hit=segHit(camera.position.x,camera.position.z,pos.x,pos.z,c.x,c.z,.9);if(!hit&&hallK>.5)hit=segHit(camera.position.x,camera.position.z,0,-9.8,c.x,c.z,.6)||segHit(camera.position.x,camera.position.z,-1.2,-9.8,c.x,c.z,.5)||segHit(camera.position.x,camera.position.z,1.2,-9.8,c.x,c.z,.5);
