@@ -142,10 +142,6 @@ b,strong,h1,h2,h3,#placesbtn,#places .row em{font-weight:600}
     <button id="snd" aria-pressed="false" aria-label="Âm thanh"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5h3.5L12 6v12l-4.5-3.5H4z"/><path class="on" d="M15.5 9.2a4 4 0 0 1 0 5.6M18 6.8a7.5 7.5 0 0 1 0 10.4"/><path class="off" d="M16 9.5l5 5M21 9.5l-5 5"/></svg></button>
   </div>
   <button class="spot" data-s="incense" hidden>Thắp hương</button>
-  <button class="spot" data-s="bow" hidden>Lễ Phật</button>
-  <button class="spot" data-s="sit" hidden>Thiền định</button>
-  <button class="spot" data-s="mo" hidden>Mõ</button>
-  <button class="spot" data-s="beads" hidden>Lần tràng hạt</button>
   <div id="self-name-label" aria-live="polite"></div>
   <div class="breath" id="breath"></div>
   <div class="card" id="card" hidden>
@@ -1448,7 +1444,7 @@ if(window.__ct&&__ct.testCam){const c=__ct.testCam;camera.position.set(pos.x+c[0
   const w=stage.clientWidth,h=stage.clientHeight;
   const gardenLabels=[];
   if(W===TEMPLE&&W.selfPerson){const sp=W.selfPerson.getWorldPosition(tmp);v3.copy(sp).add(new THREE.Vector3(0,.82,0)).project(camera);selfNameEl.style.left='0';selfNameEl.style.top='0';selfNameEl.style.display='block';selfNameEl.style.transform=`translate(-50%,-100%) translate(${(v3.x*.5+.5)*w}px,${(-v3.y*.5+.5)*h}px)`}else if(state!=='ritual')selfNameEl.style.display='block';
-  if(W===TEMPLE){const near=TEMPLE.seatTransport.nearest(pos.x,pos.z),spot=TEMPLE_SEAT_SPOTS.near;if(near){spot.x=near.x;spot.z=near.z;spot.face=near.yaw;spot.anchor.set(near.x,.8,near.z);spot.el.textContent=near.kind==='bow'?'Lễ Phật':near.kind==='mo'?'Gõ mõ':'Ngồi xuống';}else spot.el.hidden=true}
+  if(W===TEMPLE){const near=TEMPLE.seatTransport.nearest(pos.x,pos.z),spot=TEMPLE_SEAT_SPOTS.near;if(near){spot.x=near.x;spot.z=near.z;spot.face=near.yaw;spot.anchor.set(near.x,.8,near.z);spot.el.textContent='就近坐下';}else spot.el.hidden=true}
   for(const k in SPOT){const s=SPOT[k];v3.copy(s.anchor).project(camera);const d=Math.hypot(pos.x-s.x,pos.z-s.z);
     if((W===TOWN||W===GARDEN)&&v3.z<1){v3.x=THREE.MathUtils.clamp(v3.x,-.45,.45);v3.y=THREE.MathUtils.clamp(v3.y,-.5,.62)}
     const vis=state!=='ritual'&&v3.z<1&&Math.abs(v3.x)<.92&&v3.y<.8&&v3.y>-.62&&d<(W===TOWN?20:15)&&W.vis(k);
