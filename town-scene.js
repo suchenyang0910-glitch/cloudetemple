@@ -1,7 +1,9 @@
-// Exterior geometry, navigation and map extracted from approved v41 + UI patches a/b/c.
-// Source SHA256: 47237E9C3F4A6C4252380263035CDA4D1EE5B0969EF3C5E752662A101412079A.
+// Exterior geometry, navigation and map extracted from approved v42 exterior.
+// Source SHA256: F0D7CF9D43AA9CA202D8460D1C997D8FBA9B14BE7F95A99C8E3902694633892B.
 import * as THREE from './town-three.js';
-export function startTown({onEnterHall,onFailure,restore}) {
+import {periodNow} from './period.js';
+import {createFrameMonitor} from './town-performance.js';
+export function startTown({onEnterHall,onFailure,onLowPerformance,restore}) {
 const stage=document.getElementById('stage'), $=s=>document.querySelector(s),msgEl=$('#msg');
 const RAD=.32,PLAT=.6;
 const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
@@ -49,7 +51,7 @@ function lampAt(P,x,y,z,sc=1){cyl(.07*sc,.09*sc,.1*sc,lam({color:0x7a5a3a}),x,y+
   const g=new THREE.Sprite(new THREE.SpriteMaterial({map:softTex,color:0xffa040,opacity:.5,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,fog:false}));g.scale.set(.9*sc,.9*sc,1);g.position.set(x,y+.18*sc,z);g.userData.p=rnd()*6;P.add(g);dGlow.push(g);return [f,g]}
 // Preserve the original procedural random stream after omitting interior scenes.
 seed=1590201975;
-const V39_BUILD='v39-linear-roads-r3';let v39TreeCount=0;const townG=new THREE.Group();townG.visible=false;scene.add(townG);const TW_SOLID=[],TW_RECT=[],TOWN_PL=[],HALLR=[],PATHBAD=[],TALL=[[-27,30,4.4,13],[-34,21.5,6,10.5],[-15,35.5,7,6.5],[-33,5,4.5,9]];
+const V39_BUILD='v39-linear-roads-r3';let v39TreeCount=0;const townG=new THREE.Group();townG.visible=false;scene.add(townG);const TW_SOLID=[],TW_FORCE=[],TW_RECT=[],TOWN_PL=[],HALLR=[],PATHBAD=[],TALL=[[-27,30,4.4,13],[-34,21.5,6,10.5],[-15,35.5,7,6.5],[-33,5,4.5,9]];
 const LAKE=[[-10,8,12],[10,4,12],[0,-4,9],[0,15,8.5]],ISLE=[0,6,9.4],BRIDGE=[[-1.4,1.4,12.5,24.4],[6.5,13.2,4.9,7.1],[10.9,13.2,.9,7.1],[10.9,18.2,.9,3.1],[15.9,18.2,.9,6.1],[15.9,23.2,3.9,6.1]],STREAM=[];
 const tileGray=canvasTex(256,256,(g,w,h)=>{g.fillStyle='#b8b8b8';g.fillRect(0,0,w,h);const r=16;for(let j=0;j<h/r+1;j++)for(let i=0;i<w/(r*2)+1;i++){const x=i*r*2+(j%2?r:0),y=j*r,v=205+rnd()*45|0;g.fillStyle=`rgb(${v},${v},${v})`;g.beginPath();g.arc(x,y,r,0,Math.PI);g.fill();g.strokeStyle='rgba(30,30,30,.45)';g.lineWidth=1.5;g.beginPath();g.arc(x,y,r,0,Math.PI);g.stroke()}},[5,2]);
 const rep1=t=>{t.wrapS=t.wrapT=THREE.RepeatWrapping;return t};
@@ -302,7 +304,7 @@ function inWater(x,z,R){for(const b of BRIDGE)if(x>b[0]+R*.6&&x<b[1]-R*.6&&z>b[2
     const plaza=(x,z,r)=>{const c=new THREE.Mesh(new THREE.CircleGeometry(r,40),pathMat);c.rotation.x=-Math.PI/2;c.position.set(x,.045,z);P.add(c);const rim=new THREE.Mesh(new THREE.RingGeometry(r,r+.28,40),kerb);rim.rotation.x=-Math.PI/2;rim.position.set(x,.05,z);P.add(rim);for(let a=0;a<6.28;a+=.45)for(const q of [r*.4,r*.85])pathPts.push([x+Math.cos(a)*q,z+Math.sin(a)*q]);PATHBAD.push([x,z,r])};
     const bench=(x,z,ry)=>{const g=new THREE.Group();g.position.set(x,0,z);g.rotation.y=ry;P.add(g);box(1.7,.12,.5,mBase,0,.46,0,g);for(const s of [-1,1])box(.2,.4,.42,mBase,s*.6,.2,0,g);TW_SOLID.push([x,z,.6])};
     const bed=(x,z,w,d)=>{box(w+.3,.22,d+.3,kerb,x,.11,z,P);box(w,.26,d,soilM,x,.14,z,P);for(let i=0;i<w*d*2.4;i++){const f=new THREE.Mesh(fg,fcol[i%4]);f.position.set(x-w/2+.25+rnd()*(w-.5),.38,z-d/2+.25+rnd()*(d-.5));P.add(f)}for(let i=0;i<w*d*.8;i++){const f=new THREE.Mesh(fg,lfM);f.scale.setScalar(1.5);f.position.set(x-w/2+.3+rnd()*(w-.6),.3,z-d/2+.3+rnd()*(d-.6));P.add(f)}TW_RECT.push([x-w/2-.15,x+w/2+.15,z-d/2-.15,z+d/2+.15]);TW_SOLID.push([x,z,1.0])};
-    const pavR=(x,z,k)=>{const G=new THREE.Group();G.position.set(x,0,z);P.add(G);box(4.6*k,.1,4.6*k,mBase,0,.05,0,G);for(const sx of [-1,1])for(const sz of [-1,1]){cyl(.13,.15,2.7,mWood,sx*1.75*k,1.4,sz*1.75*k,8,G);TW_SOLID.push([x+sx*1.75*k,z+sz*1.75*k,.3])}hipRoof(G,2.75,2.4*k,2.4*k,.6,1.3,.5,0x7a4030,{style:'bac',tile:'scale',ov:.7});TALL.push([x,z,3.4*k,5])};
+    const pavR=(x,z,k)=>{const G=new THREE.Group();G.position.set(x,0,z);P.add(G);box(4.6*k,.1,4.6*k,mBase,0,.05,0,G);for(const sx of [-1,1])for(const sz of [-1,1]){cyl(.13,.15,2.7,mWood,sx*1.75*k,1.4,sz*1.75*k,8,G);TW_SOLID.push([x+sx*1.75*k,z+sz*1.75*k,.3]);TW_FORCE.push([x+sx*1.75*k,z+sz*1.75*k,.3])}hipRoof(G,2.75,2.4*k,2.4*k,.6,1.3,.5,0x7a4030,{style:'bac',tile:'scale',ov:.7});TALL.push([x,z,3.4*k,5])};
     const pot=(x,z)=>{cyl(.5,.38,.5,lam({color:0x3f5f66}),x,.25,z,12,P);const b=new THREE.Mesh(new THREE.IcosahedronGeometry(.55,1),lfM);b.position.set(x,1.0,z);P.add(b);TW_SOLID.push([x,z,.55])};
 
     plaza(1,-23,5.5);ribbon([[.5,-16.2],[1,-19]],2.6,pathMat,.03);cyl(2.0,2.15,.5,stone,1,.25,-23,24,P);{const w=new THREE.Mesh(new THREE.CircleGeometry(1.82,24),seaMat);w.rotation.x=-Math.PI/2;w.position.set(1,.47,-23);P.add(w);cyl(.34,.46,.9,stone,1,.7,-23,12,P);const pk=lam({color:0xf4a3bd});for(let i=0;i<8;i++){const a=i*.785,pt=new THREE.Mesh(new THREE.SphereGeometry(.3,8,6),pk);pt.scale.set(1,.5,.55);pt.rotation.set(0,-a,.5);pt.position.set(1+Math.cos(a)*.42,1.28,-23+Math.sin(a)*.42);P.add(pt)}const bd=new THREE.Mesh(new THREE.SphereGeometry(.24,10,8),lam({color:0xf6d04a}));bd.scale.y=1.3;bd.position.set(1,1.42,-23);P.add(bd);TW_SOLID.push([1,-23,2.3])}
@@ -376,7 +378,7 @@ function inWater(x,z,R){for(const b of BRIDGE)if(x>b[0]+R*.6&&x<b[1]-R*.6&&z>b[2
   const plaza=(x,z,r)=>{const c=new THREE.Mesh(new THREE.CircleGeometry(r,40),pathMat);c.rotation.x=-Math.PI/2;c.position.set(x,.045,z);P.add(c);const rim=new THREE.Mesh(new THREE.RingGeometry(r,r+.28,40),lam({color:0xb9ae98}));rim.rotation.x=-Math.PI/2;rim.position.set(x,.05,z);P.add(rim);for(let a=0;a<Math.PI*2;a+=.35){const px=x+Math.cos(a)*r*.82,pz=z+Math.sin(a)*r*.82;if(walkTown(px,pz))pathPts.push([px,pz]),PATHBAD.push([px,pz,.25])}};
   const bench=(x,z,ry)=>{const g=new THREE.Group();g.position.set(x,0,z);g.rotation.y=ry;P.add(g);box(1.7,.12,.5,mBase,0,.46,0,g);for(const s of [-1,1])box(.2,.4,.42,mBase,s*.6,.2,0,g);TW_SOLID.push([x,z,.6])};
   const bed=(x,z,w,d)=>{box(w+.3,.22,d+.3,lam({color:0xb9ae98}),x,.11,z,P);box(w,.26,d,lam({color:0x6f5a40}),x,.14,z,P);for(let i=0;i<w*d*1.5;i++){const f=new THREE.Mesh(new THREE.IcosahedronGeometry(.17,0),lam({color:[0xf2a65a,0xf6d04a,0xe8647a,0xfaf4e2][i%4]}));f.position.set(x-w/2+.25+rnd()*(w-.5),.38,z-d/2+.25+rnd()*(d-.5));P.add(f)}TW_RECT.push([x-w/2-.15,x+w/2+.15,z-d/2-.15,z+d/2+.15]);TW_SOLID.push([x,z,1])};
-  const pavR=(x,z,k)=>{const G=new THREE.Group();G.position.set(x,0,z);P.add(G);box(4.6*k,.1,4.6*k,mBase,0,.05,0,G);for(const sx of [-1,1])for(const sz of [-1,1]){cyl(.15,.17,2.7,mWood,sx*1.75*k,1.4,sz*1.75*k,8,G);box(.42,.14,.42,mBase,sx*1.75*k,.17,sz*1.75*k,G)}for(const sx of [-1,1]){box(.12,.16,3.5*k,mWood,sx*1.75*k,2.62,0,G);box(3.5*k,.16,.12,mWood,0,2.62,sx*1.75*k,G)}hipRoof(G,2.75,2.4*k,2.4*k,.6,1.3,.5,0x7a4030,{style:'bac',tile:'scale',ov:.7});TALL.push([x,z,3.4*k,5])};
+  const pavR=(x,z,k)=>{const G=new THREE.Group();G.position.set(x,0,z);P.add(G);box(4.6*k,.1,4.6*k,mBase,0,.05,0,G);for(const sx of [-1,1])for(const sz of [-1,1]){cyl(.15,.17,2.7,mWood,sx*1.75*k,1.4,sz*1.75*k,8,G);box(.42,.14,.42,mBase,sx*1.75*k,.17,sz*1.75*k,G);TW_SOLID.push([x+sx*1.75*k,z+sz*1.75*k,.02]);TW_FORCE.push([x+sx*1.75*k,z+sz*1.75*k,.02])}for(const sx of [-1,1]){box(.12,.16,3.5*k,mWood,sx*1.75*k,2.62,0,G);box(3.5*k,.16,.12,mWood,0,2.62,sx*1.75*k,G)}hipRoof(G,2.75,2.4*k,2.4*k,.6,1.3,.5,0x7a4030,{style:'bac',tile:'scale',ov:.7});TALL.push([x,z,3.4*k,5])};
   plaza(0,8,6);plaza(-34,32,4);plaza(36,2,10);pavR(-46,50,1.15);pavR(20,36,1);for(const a of [0,Math.PI])bench(-46+Math.cos(a)*4.1,50+Math.sin(a)*4.1,Math.PI/2);for(const a of [.5,2.6,3.7,5.8])bench(20+Math.cos(a)*5,36+Math.sin(a)*5,-a+Math.PI/2);for(const [x,z] of [[60,38],[64,38],[60,42],[64,42]])bed(x,z,2.4,2.2);
 
   {const x=0,z=8;cyl(2,2.15,.5,stone,x,.25,z,24,P);const w=new THREE.Mesh(new THREE.CircleGeometry(1.82,24),seaMat);w.rotation.x=-Math.PI/2;w.position.set(x,.47,z);P.add(w);cyl(.34,.46,.9,stone,x,.7,z,12,P);for(let i=0;i<8;i++){const a=i*.785,p=new THREE.Mesh(new THREE.SphereGeometry(.3,8,6),lam({color:0xf4a3bd}));p.scale.set(1,.5,.55);p.position.set(x+Math.cos(a)*.42,1.28,z+Math.sin(a)*.42);P.add(p)}TW_SOLID.push([x,z,2.3])}
@@ -396,7 +398,7 @@ var V40_GATE_CORRIDORS=[[-17,31,-19,31],[-52,48,-46,50],[28,24,30,30],[34,58,32,
 V40_GATE_CORRIDORS[2]=[27,25.6,30,30];
 function v40GateClear(x,z,R){for(const [ax,az,bx,bz] of (V40_GATE_CORRIDORS||[[-17,31,-19,31],[-52,48,-46,50],[28,24,30,30],[34,58,32,52],[72,44,72,34],[-50,-21,-60,-12]])){const dx=bx-ax,dz=bz-az,l2=dx*dx+dz*dz||1,t=Math.max(0,Math.min(1,((x-ax)*dx+(z-az)*dz)/l2));if(Math.hypot(x-(ax+t*dx),z-(az+t*dz))<1.15+R)return true}return false}
 function townBoundary(x,z){const p=[[-91,-4],[-90,-36],[-87,-60],[-78,-72],[-56,-74],[-30,-71],[0,-72],[30,-71],[56,-74],[78,-72],[88,-60],[91,-36],[93,-14],[89,2],[86,20],[85,36],[78,52],[62,64],[38,69],[12,72],[-14,72],[-40,70],[-66,69],[-84,60],[-90,38],[-91,16]];let hit=false;for(let i=0,j=p.length-1;i<p.length;j=i++){const a=p[i],b=p[j];if((a[1]>z)!==(b[1]>z)&&x<(b[0]-a[0])*(z-a[1])/(b[1]-a[1])+a[0])hit=!hit}return hit}
-function walkTown(x,z,pad=0){const R=RAD+pad;if(!townBoundary(x,z))return false;if(inWater(x,z,R))return false;if(v40GateClear(x,z,R))return true;
+function walkTown(x,z,pad=0){const R=RAD+pad;if(!townBoundary(x,z))return false;if(inWater(x,z,R))return false;for(const c of TW_FORCE){const dx=x-c[0],dz=z-c[1],r=c[2]+R;if(dx*dx+dz*dz<r*r)return false}if(v40GateClear(x,z,R))return true;
   for(const q of TW_RECT)if(x>q[0]-R&&x<q[1]+R&&z>q[2]-R&&z<q[3]+R)return false;for(const c of TW_SOLID){const dx=x-c[0],dz=z-c[1],r=c[2]+R;if(dx*dx+dz*dz<r*r)return false}return true}
 
 const hemi=new THREE.HemisphereLight(0xffffff,0x6a5a48,1);scene.add(hemi);
@@ -415,7 +417,7 @@ function setTime(k,quiet){tod=k;const t=T[k];if(scene.background&&scene.backgrou
 scene.fog.color.set(t.fog);scene.fog.near=t.fn;scene.fog.far=t.ff;stars.material.opacity=t.star;
 lanterns.forEach(l=>l.material.emissiveIntensity=t.lan);hills.forEach((h,i)=>h.material.color.set(t.hill[i%3]));mists.forEach(m=>m.material.opacity=t.mist);
 orb.position.set(...t.orb.slice(0,3));orb.scale.set(t.orb[3],t.orb[3],1);orb.material.color.set(t.orb[4]);orb.material.opacity=t.orb[5];seaMat.color.set(t.top);
-document.querySelectorAll('[data-t]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.t===k));if(!quiet)say(t.line);}
+document.body.dataset.period=k;if(!quiet)say(t.line);}
 seed=1801022614;
 
 const me=new THREE.Group();scene.add(me);
@@ -501,33 +503,7 @@ function mergeStatic(root,skip,shallow){root.updateMatrixWorld(true);const B=new
     const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(P,3));g.setAttribute('normal',new THREE.BufferAttribute(N,3));g.setAttribute('uv',new THREE.BufferAttribute(U,2));if(C)g.setAttribute('color',new THREE.BufferAttribute(C,3));const mm=new THREE.Mesh(g,C?new THREE.MeshLambertMaterial({vertexColors:true,side:m0.side,flatShading:m0.flatShading,fog:m0.fog}):m0);mm.renderOrder=list[0].renderOrder;for(const o of list){o.parent.remove(o);gone++}root.add(mm);made++}
   return [gone,made]}
 
-const V40_SITES=[
-  {id:'E',site:[-14,28],gate:[-17,31],join:[-19,31]},
-  {id:'F',site:[-56,48],gate:[-52,48],join:[-46,50]},
-  {id:'G',site:[28,20],gate:[27,25.6],join:[30,30]},
-  {id:'H',site:[34,62],gate:[34,58],join:[32,52]},
-  {id:'I',site:[73,49],gate:[72,44],join:[72,34]},
-  {id:'J',site:[-47,-25],gate:[-50,-21],join:[-60,-12]}
-];
-const CT_LIGHTS=[],CT_KEEP=[],CT_YARDS=[];
-const V40_BASE_RECT=TW_RECT.slice(),V40_BASE_HALLR=HALLR.slice();
-const ctWood=lam({map:woodTex,color:0x8b5a3c}),ctDark=lam({map:woodTex,color:0x4b2b1c}),ctPlaster=plM(0xe2d8c5),ctStone=lam({map:ashlarT,color:0xc8c0ad}),ctFloor=lam({map:woodTex,color:0x8a6045}),ctRail=lam({color:0x5a3522}),ctSoil=lam({color:0x745039}),ctLeaf=lam({color:0x5c8e4b}),ctCloth=lam({color:0xd1a06a}),ctPathMat=townPathMat;
-function ctSteps(G,w){for(let i=0;i<3;i++)box(w+i*.22,.16,.42,ctStone,0,.08+i*.08,-2.75-i*.34,G)}
-function ctHouse(G,kind,roofColor){const l=kind==='L',W=l?7.2:8.4,D=5.1;box(W,.42,D,ctStone,0,.21,.45,G);ctSteps(G,2.6);box(W-.7,2.55,D-.65,ctPlaster,0,1.65,.55,G);for(const x of [-W/2+.45,-W/6,W/6,W/2-.45]){cyl(.15,.19,.18,ctStone,x,.56,-2.25,10,G);cyl(.11,.14,2.8,ctDark,x,1.95,-2.25,10,G)}box(W,.24,.28,ctDark,0,3.33,-2.25,G);box(W-.55,.14,.2,ctWood,0,2.95,-2.25,G);box(1.16,2.0,.12,ctDark,0,1.63,-2.08,G);for(const x of [-W*.29,W*.29]){box(.98,.9,.08,ctDark,x,1.92,-2.12,G);const gl=new THREE.Mesh(new THREE.BoxGeometry(.78,.7,.04),new THREE.MeshLambertMaterial({color:0xffd49b,emissive:0xffa33c,emissiveIntensity:0}));gl.position.set(x,1.92,-2.17);G.add(gl);CT_LIGHTS.push(gl);lanterns.push(gl);box(1.12,.1,.26,ctDark,x,1.43,-2.22,G)}for(const x of [-W*.4,W*.4]){cyl(.08,.1,.84,ctRail,x,1.05,-2.9,8,G);box(W*.34,.08,.08,ctRail,x/2,1.33,-2.9,G)}hipRoof(G,2.98,W/2+.45,D/2+.55,W*.28,2.25,.45,roofColor,{style:'bac',tile:'scale',ov:.72});for(let x=-W/2+.65;x<W/2;x+=.52)tube(G,[[x,2.91,-2.55],[x,3.16,-2.05]],.045,ctDark,4);if(l){const A=new THREE.Group();A.position.set(W/2-1.1,0,2.65);G.add(A);box(3.1,.35,3.2,ctStone,0,.18,0,A);box(2.65,2.1,2.7,ctPlaster,0,1.4,0,A);box(1.0,1.7,.1,ctDark,0,1.38,-1.38,A);hipRoof(A,2.45,1.72,1.75,.55,1.4,.32,0x765a48,{style:'bac',tile:'scale',ov:.55})}return {W,D}}
-function ctPavilion(G,kind,roofColor){const long=kind==='long',W=long?5.9:4.6,D=long?3.8:4.6;box(W,.16,D,ctFloor,0,.08,0,G);for(const sx of [-1,1])for(const sz of [-1,1]){cyl(.24,.29,.16,ctStone,sx*(W/2-.38),.37,sz*(D/2-.38),10,G);cyl(.14,.17,2.6,ctDark,sx*(W/2-.38),1.75,sz*(D/2-.38),10,G);tube(G,[[sx*(W/2-.38),1.9,sz*(D/2-.38)],[sx*(W/2-.38),3.02,sz*(D/2-.38)]],.06,ctDark,6)}for(const sz of [-1,1])box(W,.2,.2,ctDark,0,3.02,sz*(D/2-.38),G);for(const sx of [-1,1])box(.2,.2,D,ctDark,sx*(W/2-.38),3.02,0,G);for(const sx of [-1,1])for(const sz of [-1,1]){const b=tube(G,[[sx*(W/2-.38),1.15,sz*(D/2-.38)],[sx*(W/2-.38),2.92,sz*(D/2-.38)]],.055,ctDark,6);b.rotation.z=sx*sz*.54}for(const sx of [-1,1]){box(.1,.1,D-.76,ctRail,sx*(W/2-.38),.91,0,G);box(.1,.07,D-.76,ctRail,sx*(W/2-.38),.45,0,G)}box(W-.76,.1,.1,ctRail,0,.91,D/2-.38,G);box(W-.76,.07,.1,ctRail,0,.45,D/2-.38,G);hipRoof(G,3.06,W/2+.48,D/2+.48,Math.min(W,D)*.27,1.8,.42,roofColor,{style:'bac',tile:'scale',ov:.6});return G}
-const ctPavilionBase=ctPavilion;ctPavilion=function(P,kind,roofColor){const K=new THREE.Group();P.add(K);ctPavilionBase(K,kind,roofColor);return K};
-function ctTea(G){const T=new THREE.Group();G.add(T);box(2.3,.12,1.05,ctWood,0,1.12,0,T);box(2.38,.04,1.13,ctCloth,0,1.19,0,T);for(const x of [-.92,.92])for(const z of [-.36,.36])cyl(.06,.07,1.05,ctDark,x,.55,z,7,T);for(const z of [-.88,.88]){box(2.25,.14,.42,ctDark,0,.49,z,T);for(const x of [-.92,.92])cyl(.055,.06,.47,ctDark,x,.24,z,7,T)}cyl(.18,.22,.26,lam({color:0xdde2dc}),-.36,1.35,0,12,T);for(const x of [.05,.3,.55])cyl(.1,.12,.07,lam({color:0xede6d3}),x,1.3,.1,10,T);cyl(.34,.34,.055,lam({color:0xd1a45c}),.42,1.27,-.24,16,T);for(let i=0;i<3;i++)cyl(.1,.12,.07,lam({color:i%2?0xd26d46:0xd8b44d}),.35+i*.16,1.36,-.24,8,T);ctLamp(T,0,1.28,-.22,.75);return T}
-function ctLamp(G,x,y,z,s){const f=lampAt(G,x,y,z,s);if(f&&f[0])lanterns.push(f[0]);return f}
-function ctProps(G,v){if(v%2===0){cyl(.76,.6,.85,lam({color:0x6e6153}),-5,.43,3.5,16,G);cyl(.63,.63,.05,lam({color:0x395f64}),-5,.87,3.5,16,G)}else{cyl(.56,.68,1.15,lam({color:0x725b48}),-5,.58,3.4,16,G);cyl(.62,.62,.1,lam({color:0x674934}),-5,1.18,3.4,16,G)}for(let i=0;i<4;i++){const x=3.8+(i%2)*.7,z=3.2+(i/2|0);cyl(.26,.31,.38,lam({color:i%2?0xb8785d:0x8e6d51}),x,.19,z,12,G);const f=new THREE.Mesh(new THREE.IcosahedronGeometry(.26,1),ctLeaf);f.position.set(x,.55,z);G.add(f)}for(let i=0;i<5;i++)cyl(.12,.16,1.25,ctDark,-4.7+i*.2,.62,1.45+i%2*.12,7,G);box(1.6,.16,.85,ctSoil,-3.4,.08,-.2,G);for(let i=0;i<8;i++)cyl(.06,.28,.12,ctLeaf,-4.02+(i%4)*.4,.28,-.42+(i/4|0)*.4,5,G);cyl(.18,.23,.42,ctWood,2.6,.21,3.6,12,G);const h=cyl(.035,.035,.85,ctDark,2.78,.63,3.6,7,G);h.rotation.z=-.8}
-function ctFence(G,gateX,gap=1.2){for(const sx of [-1,1])for(let z=-8;z<=8;z+=1.5)cyl(.065,.08,.8,ctRail,sx*9,.4,z,7,G);for(const z of [-8,8])for(let x=-9;x<=9;x+=1.5){if(z<0&&Math.abs(x-gateX)<gap)continue;cyl(.065,.08,.8,ctRail,x,.4,z,7,G)}for(const sx of [-1,1])box(.08,.08,16,ctRail,sx*9,.66,0,G);for(const z of [-8,8])box(18,.08,.08,ctRail,0,.66,z,G)}
-function ctPath(site){const g=site.gate,j=site.join,m=[(g[0]+j[0])*.5+1,(g[1]+j[1])*.5-1];ribbon(townG,[[g[0],.04,g[1]],[m[0],.04,m[1]],[j[0],.04,j[1]]],.025,.025,1.3,ctPathMat,24)}
-function ctYard(site,ry,kind,roofColor,variant,name){const cx=site.site[0],cz=site.site[1],G=new THREE.Group();G.position.set(cx,0,cz);G.rotation.y=ry;townG.add(G);const h=ctHouse(G,kind,roofColor),pk=kind==='L'?'long':'square',p=ctPavilion(G,pk,roofColor),dx=site.id==='E'?-5.6:(site.id==='H'?-5.6:(kind==='L'?-5.6:5.6)),dz=site.id==='E'?-2.5:(site.id==='H'?-4:-1.4);p.position.set(dx,0,dz);ctTea(p).position.set(0,0,.15);ctProps(G,variant);ctFence(G,kind==='L'?1.9:-1.9,site.id==='G'?1.4:1.2);const wr=kind==='L'?4.8:5.4,px=cx+Math.cos(ry)*dx+Math.sin(ry)*dz,pz=cz-Math.sin(ry)*dx+Math.cos(ry)*dz;TW_SOLID.push([cx,cz,wr],[px,pz,3.1]);TALL.push([cx,cz,5.4,6.8],[px,pz,3.3,5.8]);TW_RECT.push([cx-4.8,cx+4.8,cz-2.4,cz+3.6],[px-3,px+3,pz-3,pz+3]);ctPath(site);TOWN_PL.push({id:'cottage'+site.id,name,dx:site.gate[0],dz:site.gate[1],ay:6.8,ax:site.gate[0],az:site.gate[1]});G.updateMatrixWorld(true);G.traverse(o=>{if(o.isMesh)CT_KEEP.push(o)});CT_YARDS.push({id:site.id,group:G,site:site.site,gate:site.gate});}
-const CT_CONFIG=[['E',0,'ba-gian',0x8b5c48,0,'Trà thất bên vườn'],['F',-Math.PI/2,'L',0x806858,1,'Nhà khách bên hồ'],['G',Math.PI,'ba-gian',0x765a48,2,'Hiên trà phía bắc'],['H',-Math.PI/2,'L',0x8b5c48,3,'Nhà vườn phía đông'],['I',.35,'ba-gian',0x806858,0,'Trà thất bên đường'],['J',-.4,'L',0x765a48,1,'Nhà vườn ven biển']];
-for(const [id,ry,kind,roof,variant,name] of CT_CONFIG){const site=V40_SITES.find(q=>q.id===id);ctYard(site,ry,kind,roof,variant,name)}
-const v40RectGap=(x,z,r,q)=>{const dx=Math.max(q[0]-x,0,x-q[1]),dz=Math.max(q[2]-z,0,z-q[3]);return Math.hypot(dx,dz)-r};
-const v40SegDist=(x,z,a,b)=>{const dx=b[0]-a[0],dz=b[1]-a[1],l2=dx*dx+dz*dz||1,t=Math.max(0,Math.min(1,((x-a[0])*dx+(z-a[1])*dz)/l2));return Math.hypot(x-(a[0]+t*dx),z-(a[1]+t*dz))};
-const v40SiteChecks=()=>V40_SITES.map(q=>{const [x,z]=q.site;const nearestBuilding=Math.min(...V40_BASE_HALLR.map(r=>v40RectGap(x,z,0,r)),...V40_BASE_RECT.map(r=>v40RectGap(x,z,0,r)));const nearestRoad=Math.min(...PATHBAD.map(p=>Math.hypot(x-p[0],z-p[1])-p[2]));const gateRoad=Math.min(...PATHBAD.map(p=>Math.hypot(q.gate[0]-p[0],q.gate[1]-p[1])-p[2]));const y=CT_YARDS.find(a=>a.id===q.id),hits=[];if(y){y.group.updateMatrixWorld(true);y.group.traverse(o=>{if(!o.isMesh)return;const b=new THREE.Box3().setFromObject(o),c=b.getCenter(new THREE.Vector3());if(Math.hypot(c.x-x,c.z-z)<=8&&b.max.y-b.min.y>=2)hits.push(o)});}return {id:q.id,site:q.site,gate:q.gate,nearestBuilding:+nearestBuilding.toFixed(1),nearestRoad:+nearestRoad.toFixed(1),gateRoad:+gateRoad.toFixed(1),actualTallMesh:hits.length,pass:nearestBuilding>=8&&nearestRoad>=0&&gateRoad>=0&&hits.length>0}});
-
+const CT_LIGHTS=[];
 const OUTSKIRTS=(()=>{
   function canvasTexOS(draw){const c=document.createElement('canvas');c.width=c.height=128;const g=c.getContext('2d');draw(g,128);const t=sRGB(new THREE.CanvasTexture(c));t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(3,3);return t}
   const concreteWindowsOS=Array.from({length:35},(_,i)=>({x:6+(i%7)*17,y:7+Math.floor(i/7)*24,w:12*2/3,h:11*2/3}));
@@ -569,15 +545,16 @@ const OUTSKIRTS=(()=>{
   return {groups:result.groups,sourceBatches:batchesOS};
 })();
 mergeMe();
-CT_YARDS.forEach(y=>y.group.updateMatrixWorld(true));const MERGED=mergeStatic(townG,new Set(CT_LIGHTS));townG.traverse(o=>{o.updateMatrix();o.matrixAutoUpdate=false});townG.updateMatrixWorld(true);
+TW_FORCE.push([-48.0125,47.9875,.3]);
+const MERGED=mergeStatic(townG,new Set(CT_LIGHTS));townG.traverse(o=>{o.updateMatrix();o.matrixAutoUpdate=false});townG.updateMatrixWorld(true);
 const TOWN={g:townG,walk:walkTown,floorY:(z,x)=>Math.abs(x+34)<1.7&&z>18.5&&z<30.4?.22+.62*Math.sin((z-18.5)/11.9*Math.PI):z<-20?terraceY(x,z):0,gs:.4,gx:-94,gz:-76,gw:470,gh:370,start:[0,66.5],spots:SPOT_W,title:['Thị trấn Mây',''],hello:'Chạm nền để đi, kéo để xoay. Muốn tìm suối, vách núi hay một ngôi chùa: bấm «Bản đồ» ở bên phải.',vis:k=>Math.hypot(pos.x-SPOT_W[k].x,pos.z-SPOT_W[k].z)<28};
 W=TOWN;SPOT=SPOT_W;townG.visible=true;
 GS=TOWN.gs;GX0=TOWN.gx;GZ0=TOWN.gz;GW=TOWN.gw;GH=TOWN.gh;buildGrid();
 pos.set(...[TOWN.start[0],0,TOWN.start[1]]);dest.copy(pos);
-function go(k){if(!SPOT[k])return;pending=k;state='going';if(!walkTo(SPOT[k].x,SPOT[k].z)){state='free';pending=null;say('Không qua được lối này, thử đi lối khác.');}}
+function go(k){if(!SPOT[k])return;if(Math.hypot(pos.x-SPOT[k].x,pos.z-SPOT[k].z)<.35){begin(k);return;}pending=k;state='going';if(!walkTo(SPOT[k].x,SPOT[k].z)){state='free';pending=null;say('Không qua được lối này, thử đi lối khác.');}}
 function begin(k){if(k!=='go_chuamay')return;pending=null;state='free';path=[];dest.copy(pos);onEnterHall({x:pos.x,z:pos.z,yaw:yawT,pitch:tPitchT,distance:tDistT});}
 Object.entries(SPOT).forEach(([k,s])=>s.el.addEventListener('click',()=>go(k)));
-document.querySelectorAll('[data-t]').forEach(b=>b.addEventListener('click',()=>setTime(b.dataset.t)));
+
 const ray=new THREE.Raycaster(),ndc=new THREE.Vector2(),gp=new THREE.Plane(new THREE.Vector3(0,1,0),0),hit=new THREE.Vector3();
 let down=null,yaw=0,yawT=0,tPitch=.42,tPitchT=.42,tDist=13.5,tDistT=13.5,lastW=null;const ptrs=new Map();let pinch=null;
 const marker=new THREE.Mesh(new THREE.RingGeometry(.22,.3,28),new THREE.MeshBasicMaterial({color:0xfff2cc,transparent:true,opacity:0,depthWrite:false}));marker.rotation.x=-Math.PI/2;scene.add(marker);
@@ -591,7 +568,7 @@ addEventListener('pointerup',e=>{pEnd(e);if(!down)return;const d=down;down=null;
   if(!best)return;state='free';pending=null;if(!walkTo(best.x,best.z)){say('Không qua được lối này, thử đi lối khác.');return}const m=clampWalk(best.clone());marker.position.set(m.x,floorY(m.z,m.x)+.03,m.z);marker.material.opacity=.9; });
 const camPos=new THREE.Vector3(),camLook=new THREE.Vector3(),tmp=new THREE.Vector3(),v3=new THREE.Vector3(),lookNow=new THREE.Vector3();let wide=0;
 function resize(){const w=stage.clientWidth,h=stage.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.fov=w/h<.8?58:w/h<1.3?48:40;camera.updateProjectionMatrix()}
-new ResizeObserver(resize).observe(stage);resize();
+const observer=new ResizeObserver(resize);observer.observe(stage);resize();
 const mini=document.createElement('canvas');mini.id='mini';mini.hidden=true;mini.width=696;mini.height=252;mini.setAttribute('aria-label','Bản đồ thu nhỏ');stage.appendChild(mini);const mctx=mini.getContext('2d'),miniBase=document.createElement('canvas');miniBase.width=696;miniBase.height=252;
 const MK=696/188,mX=x=>(x+94)*MK,mZ=z=>(z+76)*(252/152);
 {const c=miniBase.getContext('2d'),sz=252/152;c.fillStyle='#b9cfa0';c.fillRect(0,0,696,252);c.fillStyle='#8fb6c8';c.fillRect(mX(84),mZ(-76),696-mX(84),mZ(76)-mZ(-76));
@@ -616,9 +593,8 @@ const MK=696/188,mX=x=>(x+94)*MK,mZ=z=>(z+76)*(252/152);
     else if(k==='flower'){for(let i=0;i<5;i++){const a=i/5*6.283;c.beginPath();c.arc(Math.cos(a)*S*.55,Math.sin(a)*S*.55,S*.42,0,7);out()}for(let i=0;i<5;i++){const a=i/5*6.283;c.beginPath();c.arc(Math.cos(a)*S*.55,Math.sin(a)*S*.55,S*.42,0,7);fill('#e9a13a')}c.beginPath();c.arc(0,0,S*.3,0,7);fill('#fff3c4')}
     c.restore()};
   const MKIND={suoi:'water',cliff:'cliff',pet:'paw',chuamay:'main'};
-  for(const t of TOWN_PL)if(t.id.startsWith('cottage'))ic('cot',t.ax,t.az);
   ic('fount',0,8);ic('pav',-46,50);ic('pav',20,36);ic('flower',64,42);ic('lotus',-26,25);ic('tower',36,2);
-  for(const t of TOWN_PL)if(!t.id.startsWith('cottage')&&t.id!=='chuamay')ic(MKIND[t.id]||'temple',t.ax,t.az,MROOF[t.id]||'#7a4030');
+  for(const t of TOWN_PL)if(t.id!=='chuamay')ic(MKIND[t.id]||'temple',t.ax,t.az,MROOF[t.id]||'#7a4030');
   {const t=TOWN_PL.find(q=>q.id==='chuamay');if(t)ic('main',t.ax,t.az,MROOF.chuamay)}}
 let miniT=0;function drawMini(){mctx.drawImage(miniBase,0,0);const x=mX(pos.x),z=mZ(pos.z);mctx.save();mctx.translate(x,z);mctx.rotate(-faceY);mctx.fillStyle='#fff';mctx.beginPath();mctx.moveTo(0,16);mctx.lineTo(-8,-2);mctx.lineTo(8,-2);mctx.fill();mctx.restore();mctx.fillStyle='#d2342a';mctx.strokeStyle='#fff';mctx.lineWidth=4;mctx.beginPath();mctx.arc(x,z,8,0,7);mctx.stroke();mctx.fill()}
 mini.addEventListener('pointerdown',e=>e.stopPropagation());mini.addEventListener('pointerup',e=>{e.stopPropagation();if(W!==TOWN||state==='ritual')return;const r=mini.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*188-94,z=(e.clientY-r.top)/r.height*152-76;let best=null;for(let a=0;a<40&&!best;a++){const rr=a*.6;for(let k=0;k<12;k++){const px=x+Math.cos(k*.524)*rr,pz=z+Math.sin(k*.524)*rr;if(walkable(px,pz)){best=[px,pz];break}}}if(!best)return;state='free';pending=null;if(!walkTo(best[0],best[1])){say('Không qua được lối này, thử đi lối khác.');return}marker.position.set(best[0],floorY(best[1],best[0])+.05,best[1]);marker.material.opacity=.9;});
@@ -650,15 +626,20 @@ function drawGuide(cv,list){const Wc=cv.width,k=Wc/188,kz=cv.height/152,X=x=>(x+
   if(W===TOWN){const px=X(Math.max(-40,Math.min(40,pos.x))),pz=Z(Math.max(-65,Math.min(160,pos.z)));c.fillStyle='#fff';c.beginPath();c.arc(px,pz,13,0,7);c.fill();c.fillStyle='#d8262c';c.beginPath();c.arc(px,pz,8.5,0,7);c.fill()}}
 function goPlace(o){placesEl.hidden=true;state='free';pending=null;path=[];pos.set(o.x,0,o.z);dest.copy(pos);faceY=wantY=Math.PI;yaw=yawT=0;for(const an of [0,.8,-.8,1.4,-1.4,2.4,-2.4,Math.PI]){const cx=pos.x+Math.sin(an)*11,cz=pos.z+Math.cos(an)*11;if(walkable(cx,cz)&&!TALL.some(c=>Math.hypot(cx-c[0],cz-c[1])<c[2]+1)){yaw=yawT=an;break}}camera.position.set(pos.x+Math.sin(yaw)*12,7,pos.z+Math.cos(yaw)*12);say(o.door?'Đã đến trước '+o.name+'. Chạm nút phía trên cửa để vào.':'Đã đến '+o.name+'.')}
 let guideL=[];
-function openPlaces(){const list=guideL=guideList();placesEl.innerHTML='<button class="x">Đóng</button><h2>Bản đồ Thị trấn Mây</h2><p>Chạm vào một số trên bản đồ, hoặc một dòng bên dưới, để đến nơi đó.</p><canvas class="gmap" width="1196" height="736" aria-label="Bản đồ thị trấn"></canvas><p class="key"><span class="here"></span>Bạn đang ở đây</p>';drawGuide(placesEl.querySelector('.gmap'),list);
-  ZONES.forEach((zn,zi)=>{const h=document.createElement('h3');h.textContent=zn[0];h.style.color=zn[1];placesEl.appendChild(h);for(const o of list){if(o.zn!==zi)continue;const b=document.createElement('button');b.className='row';b.dataset.n=o.n;b.innerHTML='<em></em><div><b></b><span></span></div>'+'';b.querySelector('em').textContent=o.n;b.querySelector('em').style.background=zn[1];b.querySelector('b').textContent=o.name;b.querySelector('span').textContent=(o.id&&o.id!=='chuamay'?'Chỉ tham quan bên ngoài.':o.desc);placesEl.appendChild(b)}});
-  const fb=document.createElement('button');fb.className='row';fb.dataset.fps='1';fb.innerHTML='<div><b>Đo tốc độ khung hình</b><span>Hiện số khung hình mỗi giây ở góc dưới bên trái (để kiểm tra máy)</span></div>';placesEl.appendChild(fb);placesEl.hidden=false;placesEl.scrollTop=0}
+function openPlaces(){const list=guideL=guideList();placesEl.innerHTML='<div class="places-head"><h2>Bản đồ Thị trấn Mây</h2><button class="x">Đóng</button></div><div class="places-scroll"><p>Chạm vào một số trên bản đồ, hoặc một dòng bên dưới, để đến nơi đó.</p><canvas class="gmap" width="1196" height="736" aria-label="Bản đồ thị trấn"></canvas><p class="key"><span class="here"></span>Bạn đang ở đây</p></div>';const scroll=placesEl.querySelector('.places-scroll');drawGuide(scroll.querySelector('.gmap'),list);
+  ZONES.forEach((zn,zi)=>{const h=document.createElement('h3');h.textContent=zn[0];h.style.color=zn[1];scroll.appendChild(h);for(const o of list){if(o.zn!==zi)continue;const b=document.createElement('button');b.className='row';b.dataset.n=o.n;b.innerHTML='<em></em><div><b></b><span></span></div>'+'';b.querySelector('em').textContent=o.n;b.querySelector('em').style.background=zn[1];b.querySelector('b').textContent=o.name;b.querySelector('span').textContent=(o.id&&o.id!=='chuamay'?'Chỉ tham quan bên ngoài.':o.desc);scroll.appendChild(b)}});
+  const fb=document.createElement('button');fb.className='row';fb.dataset.fps='1';fb.innerHTML='<div><b>Đo tốc độ khung hình</b><span>Hiện số khung hình mỗi giây ở góc dưới bên trái (để kiểm tra máy)</span></div>';scroll.appendChild(fb);placesEl.hidden=false;placesEl.scrollTop=0}
 placesBtn.addEventListener('pointerdown',e=>e.stopPropagation());placesBtn.addEventListener('click',e=>{e.stopPropagation();openPlaces()});
 placesEl.addEventListener('pointerdown',e=>e.stopPropagation());placesEl.addEventListener('pointerup',e=>e.stopPropagation());placesEl.addEventListener('click',e=>{e.stopPropagation();const x=e.target.closest('.x'),r=e.target.closest('.row'),cv=e.target.closest('.gmap');if(x){placesEl.hidden=true;return}if(cv){const b=cv.getBoundingClientRect(),f=cv.width/b.width,px=(e.clientX-b.left)*f,py=(e.clientY-b.top)*f;let best=null,bd=46;for(const p of guidePins){const d=Math.hypot(p.x-px,p.y-py);if(d<bd){bd=d;best=p}}if(best)goPlace(best.o);return}if(!r)return;if(r.dataset.fps){fpsBox.hidden=!fpsBox.hidden;placesEl.hidden=true;return}const o=guideL.find(q=>q.n==r.dataset.n);if(o)goPlace(o)});
 const fpsBox=document.createElement('div');fpsBox.id='fpsbox';fpsBox.hidden=location.hash!=='#fps';stage.appendChild(fpsBox);let fpsN=0,fpsT=0,fpsWorst=0,fpsHist=[];
+const monitor=createFrameMonitor(onLowPerformance);
 let last=performance.now(),walkPh=0,raf=0;
+function visibility(){monitor.reset();last=performance.now();}
+document.addEventListener('visibilitychange',visibility);
 function frame(now){try{frameInner(now)}catch(e){cancelAnimationFrame(raf);onFailure();return}raf=requestAnimationFrame(frame)}
-function frameInner(now){const dt=Math.min(.1,(now-last)/1000);last=now;
+function frameInner(now){const elapsed=now-last,dt=Math.min(.1,elapsed/1000);last=now;
+if(document.hidden)monitor.reset();else monitor.frame(now);
+const period=periodNow();if(period!==tod)setTime(period,true);
   tmp.copy(dest).sub(pos);tmp.y=0;const dist=tmp.length();let moving=false;
   if(dist>.04&&state!=='ritual'){moving=true;const step=Math.min(dist,(W===TOWN?6.2:3.1)*dt);tmp.normalize();const nx=pos.x+tmp.x*step,nz=pos.z+tmp.z*step;if(walkable(nx,nz,-.06)){pos.x=nx;pos.z=nz;wantY=Math.atan2(tmp.x,tmp.z)}else{const again=plan(pos.x,pos.z,path.length?path[path.length-1].x:dest.x,path.length?path[path.length-1].z:dest.z);if(again.length&&!blockedOnce){blockedOnce=true;path=again.map(q=>new THREE.Vector3(q[0],0,q[1]));dest.copy(path.shift())}else{path=[];dest.copy(pos);moving=false}}}
   else if(path.length&&state!=='ritual'){dest.copy(path.shift())}
@@ -686,17 +667,17 @@ yaw+=(yawT-yaw)*Math.min(1,dt*14);tPitch+=(tPitchT-tPitch)*Math.min(1,dt*14);tDi
 camera.position.lerp(camPos,Math.min(1,dt*9));lookNow.lerp(camLook,Math.min(1,dt*12));camera.lookAt(lookNow);
   const w=stage.clientWidth,h=stage.clientHeight;
   for(const k in SPOT){const s=SPOT[k];v3.copy(s.anchor).project(camera);const d=Math.hypot(pos.x-s.x,pos.z-s.z);
-    if(W===TOWN&&v3.z<1){v3.x=THREE.MathUtils.clamp(v3.x,-.7,.7);v3.y=THREE.MathUtils.clamp(v3.y,-.5,.62)}
+    if(W===TOWN&&v3.z<1){v3.x=THREE.MathUtils.clamp(v3.x,-.45,.45);v3.y=THREE.MathUtils.clamp(v3.y,-.5,.62)}
     const vis=state!=='ritual'&&v3.z<1&&Math.abs(v3.x)<.92&&v3.y<.8&&v3.y>-.62&&d<(W===TOWN?20:15)&&W.vis(k);
     s.el.hidden=!vis;if(vis)s.el.style.transform=`translate(-50%,-100%) translate(${(v3.x*.5+.5)*w}px,${(-v3.y*.5+.5)*h}px)`}
 mini.hidden=false;placesBtn.hidden=false;footRing.visible=true;footRing.position.set(pos.x,pos.y+.04,pos.z);if((miniT+=dt)>.08){miniT=0;drawMini()}
 renderer.render(scene,camera);
-if(!fpsBox.hidden){fpsN++;fpsT+=dt;if(fpsT>=1){fpsBox.textContent='FPS '+Math.round(fpsN/fpsT);fpsN=0;fpsT=0;}}
+if(!fpsBox.hidden){fpsN++;fpsT+=elapsed/1000;if(fpsT>=1){fpsBox.textContent='FPS '+Math.round(fpsN/fpsT);fpsN=0;fpsT=0;}}
 }
-setTime('day',true);
+setTime(periodNow(),true);
 if(restore&&walkable(restore.x,restore.z)){pos.set(restore.x,0,restore.z);dest.copy(pos);yaw=yawT=restore.yaw;tPitch=tPitchT=restore.pitch;tDist=tDistT=restore.distance;}
 pos.y=floorY(pos.z,pos.x);camera.position.set(pos.x+Math.sin(yaw)*tDist,pos.y+7,pos.z+Math.cos(yaw)*tDist);lookNow.set(pos.x,pos.y+1.2,pos.z);camera.lookAt(lookNow);
 say(TOWN.hello);frameInner(performance.now());raf=requestAnimationFrame(frame);
 // Diagnostic seam for deterministic author and independent acceptance tests; no globals or fake users.
-return {position:()=>({x:pos.x,z:pos.z}),walkTo,walkable,plan,gate:{x:SPOT.go_chuamay.x,z:SPOT.go_chuamay.z},project:(x,z)=>{const p=new THREE.Vector3(x,floorY(z,x),z).project(camera);return {x:(p.x+1)*stage.clientWidth/2,y:(1-p.y)*stage.clientHeight/2}},dispose:()=>{cancelAnimationFrame(raf);renderer.dispose();}};
+return {position:()=>({x:pos.x,z:pos.z}),walkTo,walkable,plan,gate:{x:SPOT.go_chuamay.x,z:SPOT.go_chuamay.z},project:(x,z)=>{const p=new THREE.Vector3(x,floorY(z,x),z).project(camera);return {x:(p.x+1)*stage.clientWidth/2,y:(1-p.y)*stage.clientHeight/2}},dispose:()=>{cancelAnimationFrame(raf);observer.disconnect();clearTimeout(sayT);document.removeEventListener('visibilitychange',visibility);renderer.dispose();}};
 }

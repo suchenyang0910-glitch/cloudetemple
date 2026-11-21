@@ -16,9 +16,9 @@ if (Test-Path -LiteralPath $outputRoot) {
   Move-Item -LiteralPath $resolvedOutput -Destination (Join-Path $archiveRoot 'dist')
 }
 New-Item -ItemType Directory -Path $outputRoot -Force | Out-Null
-foreach ($name in @('index.html','lich-2027.html','calendar-2027.css','calendar-2027.js','404.html','preload.js','styles.css','app.js','config.js','i18n.js','telegram.js','audio.js','resources.js','beads.js','bow.js','incense.js','referrals.js','morning.js','festival.js','gioi-thieu.html','quyen-rieng-tu.html','dieu-khoan.html','_headers','_routes.json')) { Copy-Item -LiteralPath (Join-Path $projectRoot $name) -Destination (Join-Path $outputRoot $name) -Force }
+foreach ($name in @('index.html','lich-2027.html','calendar-2027.css','calendar-2027.js','404.html','preload.js','styles.css','app.js','config.js','i18n.js','telegram.js','audio.js','period.js','resources.js','beads.js','bow.js','incense.js','referrals.js','morning.js','festival.js','gioi-thieu.html','quyen-rieng-tu.html','dieu-khoan.html','_headers','_routes.json')) { Copy-Item -LiteralPath (Join-Path $projectRoot $name) -Destination (Join-Path $outputRoot $name) -Force }
 Copy-Item -Path (Join-Path $projectRoot 'static/*') -Destination $outputRoot -Recurse -Force
-foreach ($name in @('town.html','town.css','town-loader.js','town-navigation.js','town-scene.js','town-three.js','town-three-LICENSE.txt')) { Copy-Item -LiteralPath (Join-Path $projectRoot $name) -Destination $outputRoot -Force }
+foreach ($name in @('town.html','town.css','town-loader.js','town-navigation.js','town-scene.js','town-performance.js','town-three.js','town-three-LICENSE.txt')) { Copy-Item -LiteralPath (Join-Path $projectRoot $name) -Destination $outputRoot -Force }
 $townConfig=Join-Path $outputRoot 'town-navigation.js'
 [IO.File]::WriteAllText($townConfig,[IO.File]::ReadAllText($townConfig).Replace('__CT_TOWN_ENABLED__',$(if($EnableTown){'1'}else{'0'})),[Text.UTF8Encoding]::new($false))
 $appFile=Join-Path $outputRoot 'app.js'

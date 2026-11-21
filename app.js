@@ -1,3 +1,4 @@
+import {periodNow as vietnamPeriodNow} from './period.js';
 import {bowFrame} from './bow.js';
 import {mountBeads} from './beads.js';
 import {beadGuruRule,beadMotionConfig} from './config.js';
@@ -66,14 +67,7 @@ let presenceTimer;
 const heartbeat=()=>{if(!presenceId||document.hidden)return;void fetch(apiURL('/presence/heartbeat'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:presenceId}),signal:AbortSignal.timeout(8000)}).catch(()=>{});};
 const startPresence=()=>{if(!presenceId||presenceTimer)return;heartbeat();presenceTimer=setInterval(heartbeat,30000);};
 
-export function periodNow(date=new Date(),periods=state.layout?.periods??{dawn:"05:00-07:59",day:"08:00-16:59",dusk:"17:00-18:59",night:"19:00-04:59"}){
-  const minute=date.getHours()*60+date.getMinutes();
-  for(const [name,range] of Object.entries(periods)){
-    const [start,end]=range.split('-').map(x=>{const [h,m]=x.split(':').map(Number);return h*60+m;});
-    if(start<=end ? minute>=start&&minute<=end : minute>=start||minute<=end)return name;
-  }
-  return 'day';
-}
+export function periodNow(date=new Date(),periods=state.layout?.periods){return vietnamPeriodNow(date,periods);}
 export function placement(layout,id,pose){
   if(pose==='stand')return {x:193,y:1018,w:240,h:360};
   if(pose.startsWith('mo-')||pose.startsWith('beads-side-'))return {x:350,y:838,w:397,h:397};

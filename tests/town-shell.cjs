@@ -21,7 +21,8 @@ const packageApp=enabled=>execFileSync('powershell',['-NoProfile','-ExecutionPol
     await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));const origin='http://h5.chuamay.org:'+server.address().port;
     browser=await chromium.launch({headless:true,args:['--host-resolver-rules=MAP h5.chuamay.org 127.0.0.1','--proxy-server=direct://','--proxy-bypass-list=*']});results.browser=browser.version();
     async function pageFor(viewport={width:1280,height:900}){
-      const context=await browser.newContext({viewport});const page=await context.newPage();
+      const context=await browser.newContext({viewport,timezoneId:'America/Los_Angeles'});const page=await context.newPage();
+      await page.addInitScript(()=>{const NativeDate=Date;window.townTestNow=NativeDate.parse('2026-11-21T10:00:00+07:00');window.Date=class extends NativeDate{constructor(...args){super(...(args.length?args:[window.townTestNow]));}static now(){return window.townTestNow;}};});
       await context.route('https://api.chuamay.org/**',r=>r.fulfill({status:200,contentType:'application/json',headers:{'Access-Control-Allow-Origin':origin,'Access-Control-Allow-Credentials':'true'},body:'{"enabled":false}'}));
       await context.route(/^https?:\/\/(?!h5\.chuamay\.org:|api\.chuamay\.org\/)/,r=>r.abort());
       await page.addInitScript(()=>{localStorage.setItem('ct-muted','true');window.cspErrors=[];addEventListener('securitypolicyviolation',e=>window.cspErrors.push(e.violatedDirective));});
@@ -41,6 +42,7 @@ const packageApp=enabled=>execFileSync('powershell',['-NoProfile','-ExecutionPol
       await home(page);assert.equal(await page.locator('#town-entry').count(),1);await page.locator('#town-entry').click();await page.waitForSelector('body[data-ready="true"]');
       assert.equal(await page.locator('#back-2d').evaluate(el=>getComputedStyle(el).position),'absolute');
       const titleBox=await page.locator('.place').boundingBox(),exitBox=await page.locator('#back-2d').boundingBox();assert(exitBox.y>=titleBox.y+titleBox.height);
+      const soundBox=await page.locator('#town-sound').boundingBox();assert.equal(exitBox.height,44);assert(exitBox.x+exitBox.width<soundBox.x,'single line return and sound do not overlap');
       assert((await page.locator('#mini').boundingBox()).y>viewport.height/2);
       const firstFrame=await page.evaluate(()=>performance.getEntriesByName('town-first-frame')[0].startTime);
       const before=await state(page);await page.waitForTimeout(500);const point=await project(page,0,60);await page.mouse.click(point.x,point.y);
@@ -51,16 +53,33 @@ const packageApp=enabled=>execFileSync('powershell',['-NoProfile','-ExecutionPol
       await page.locator('#placesbtn').click();await page.locator('[data-n="2"]').click();
       await page.waitForSelector('[data-s="go_chuamay"]:visible');await page.locator('[data-s="go_chuamay"]').click();
       await page.waitForURL(origin+'/');await page.waitForSelector('body[data-view="home"]');const saved=await page.evaluate(()=>JSON.parse(sessionStorage.getItem('ct-town-return-v1')));
+      assert.equal(await page.locator('body').getAttribute('data-period'),'day','existing hall also follows UTC+7 on a Los Angeles device');
       assert(saved&&Math.abs(saved.x)<.4&&Math.abs(saved.z+40.4)<.4);
-      for(const activity of ['sit','mo','bow']){await page.locator(`[data-action="${activity}"]`).first().click();await page.waitForSelector(`body[data-view="${activity}"]`);await page.locator('[data-action="home"]').first().click();await page.waitForSelector('body[data-view="home"]');}
+      for(const activity of ['sit','mo','bow','incense','beads']){await page.locator(`[data-action="${activity}"]`).first().click();await page.waitForSelector(`body[data-view="${activity}"]`);await page.locator('[data-action="home"]').first().click();await page.waitForSelector('body[data-view="home"]');}
       await page.locator('#town-entry').click();await page.waitForSelector('body[data-ready="true"]');const restored=await state(page);assert(Math.hypot(restored.x-saved.x,restored.z-saved.z)<.01);
       assert.equal(await page.locator('.spot').count(),1);assert.equal(await page.locator('#demobtn,#demotag').count(),0);
-      for(const period of ['dawn','day','dusk','night']){await page.locator(`[data-t="${period}"]`).click();assert.equal(await page.locator(`[data-t="${period}"]`).getAttribute('aria-pressed'),'true');}
-      await page.locator('[data-t="day"]').click();await page.screenshot({path:path.join(out,`town-${viewport.width}.png`)});
+      assert.equal(await page.locator('[data-t]').count(),0);
+      for(const [hour,period] of [[6,'dawn'],[10,'day'],[18,'dusk'],[22,'night']]){
+        await page.evaluate(value=>window.townTestNow=value,Date.parse(`2026-11-21T${String(hour).padStart(2,'0')}:00:00+07:00`));
+        await page.waitForFunction(p=>document.body.dataset.period===p,period);
+      }
+      await page.evaluate(value=>window.townTestNow=value,Date.parse('2026-11-21T10:00:00+07:00'));await page.waitForFunction(()=>document.body.dataset.period==='day');
+      const posts=await page.evaluate(async u=>{const w=(await import(u)).world;return [[-48.0125,47.9875],[18.25,34.25],[21.75,37.75]].map(([x,z])=>w.walkable(x,z));},moduleURL);assert.deepEqual(posts,[false,false,false]);
+      await page.locator('#placesbtn').click();await page.locator('.places-scroll').evaluate(el=>el.scrollTop=el.scrollHeight);
+      const closeBox=await page.locator('#places .x').boundingBox();assert(closeBox.y>=0&&closeBox.y+closeBox.height<viewport.height);await page.locator('#places .x').click();
+      assert(!requests.some(u=>/\/audio\//.test(u)),'no audio requests before a gesture');
+      await page.locator('#town-sound').click();await page.waitForFunction(async u=>!!(await import(u)).audio.background,moduleURL);
+      assert(requests.some(u=>u.includes('/audio/ambient-courtyard.mp3')),'existing recorded ambient');
+      await page.evaluate(()=>{Object.defineProperty(document,'hidden',{configurable:true,value:true});document.dispatchEvent(new Event('visibilitychange'));});
+      assert.equal(await page.evaluate(async u=>(await import(u)).audio.background===null,moduleURL),true);
+      await page.evaluate(()=>{Object.defineProperty(document,'hidden',{configurable:true,value:false});document.dispatchEvent(new Event('visibilitychange'));});
+      await page.waitForFunction(async u=>!!(await import(u)).audio.background,moduleURL);
+      await page.locator('#town-sound').click();assert.equal(await page.locator('#town-sound').getAttribute('aria-pressed'),'false');
+      await page.screenshot({path:path.join(out,`town-${viewport.width}.png`)});
       assert(!/[\u4e00-\u9fff]|Xem thử/.test(await page.locator('body').innerText()));assert.deepEqual(await page.evaluate(()=>window.cspErrors),[]);assert.deepEqual(errors,[]);assert(!requests.some(u=>!u.startsWith(origin)&&!u.startsWith('https://api.chuamay.org/')));
       await page.locator('#back-2d').click();await page.waitForURL(origin+'/');await page.waitForSelector('body[data-view="home"]');
       const invalidReturn=await page.evaluate(async release=>{const nav=await import('/town-navigation.'+release+'.js');return ['{','null','{"x":999,"z":0,"yaw":0,"pitch":0.4,"distance":12}'].map(value=>{sessionStorage.setItem('ct-town-return-v1',value);return nav.readTownReturn();});},release);assert.deepEqual(invalidReturn,[null,null,null]);
-      results.screens.push({viewport,firstFrameMs:Math.round(firstFrame),walk:{before,after},threeRoutes:nav,door:saved,restored,cspErrors:0,pageErrors:0,externalRequests:0,manualReturn:'PASS',invalidSavedPositions:'rejected'});await page.context().close();
+      results.screens.push({viewport,firstFrameMs:Math.round(firstFrame),walk:{before,after},threeRoutes:nav,door:saved,restored,cspErrors:0,pageErrors:0,externalRequests:0,manualReturn:'PASS',invalidSavedPositions:'rejected',returnHeight:exitBox.height,autoPeriodsUTC7:'PASS (device America/Los_Angeles)',pavilionCollisions:posts,audio:'gesture, recorded ambient, hidden pause/resume, mute PASS',fiveActivities:'opened and returned'});await page.context().close();
     }
     for(const kind of ['scene','three','webgl','context-loss']){
       page=await pageFor();await home(page);
@@ -73,6 +92,18 @@ const packageApp=enabled=>execFileSync('powershell',['-NoProfile','-ExecutionPol
       await page.goto(origin+'/town.html');await page.waitForURL(origin+'/');assert.equal(await page.locator('#town-entry').count(),0);
       results.failures.push({kind,result:'PASS: home fallback, blocked reentry, no auto retry'});await page.context().close();
     }
+    page=await pageFor();await home(page);await page.locator('#town-entry').click();await page.waitForSelector('body[data-ready="true"]');
+    await page.route('**/assets/**/audio/**',r=>r.abort());await page.locator('#town-sound').click();
+    await page.waitForFunction(()=>document.getElementById('msg').textContent.includes('Chưa mở được âm thanh'));
+    assert.equal(await page.locator('body').getAttribute('data-ready'),'true');assert.equal(await page.locator('#town-sound').getAttribute('aria-pressed'),'false');
+    results.audioFailure='PASS: unavailable audio stays in town and resets mute state';await page.context().close();
+    page=await pageFor();await home(page);
+    await page.addInitScript(()=>{const raf=window.requestAnimationFrame.bind(window);window.requestAnimationFrame=fn=>raf(()=>setTimeout(()=>fn(performance.now()),100));});
+    await page.locator('#town-entry').click();await page.waitForSelector('body[data-ready="true"]');
+    await page.waitForSelector('#town-slow:not([hidden])',{timeout:20000});
+    await page.screenshot({path:path.join(out,'town-slow.png')});await page.locator('#town-fallback').click();await page.waitForURL(origin+'/');
+    await page.waitForSelector('body[data-view="home"]');assert.equal(await page.locator('#town-entry').count(),0);
+    results.failures.push({kind:'continuous low FPS (injected 100ms frames)',result:'PASS: prompt, one-click home, session reentry blocked'});await page.context().close();
     results.packageBytes=JSON.parse(fs.readFileSync(path.join(root,'deploy',`package-${release}.json`))).totalBytes;
     fs.writeFileSync(path.join(out,'results.json'),JSON.stringify(results,null,2));console.log(JSON.stringify(results,null,2));
   }finally{await browser?.close();server.close();}
