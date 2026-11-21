@@ -8,6 +8,8 @@ import { createMetricsApi } from "./metrics-api.mjs";
 import { createAccessVerifier } from "./access-auth.mjs";
 import { createPetModerationModule } from "./pet-admin-api.mjs";
 import { hash } from "./security.mjs";
+import { openTownStore } from "./town-store.mjs";
+import { createTownApi, createTownAccountReader } from "./town-api.mjs";
 let settings;
 try {
   settings = config(process.env);
@@ -15,6 +17,9 @@ try {
   console.error(error.message);
   process.exit(1);
 }
+const townRequested = process.env.TOWN_REALTIME_ENABLED === '1';
+const townEnabled = townRequested && settings.environment === 'staging' && settings.db.replaceAll('\\','/').includes('/staging/');
+if ((townRequested && !townEnabled) || !['0','1'].includes(process.env.TOWN_REALTIME_ENABLED || '0')) console.error('{"code":"town_disabled_config"}');
 const store = openStore(settings.db);
 const metrics = openMetricsStore(store.db);
 metrics.cleanup();
@@ -34,6 +39,12 @@ const familyHandler = settings.familyEnabled
   ? createFamilyApi(settings, familyStore, { metric: (name, dimension) => metrics.count(name, dimension) })
   : async () => false;
 const access = settings.adminEnabled ? createAccessVerifier(settings) : { validate: async () => { throw Error("disabled"); } };
+let townHandler = async () => false;
+if (townEnabled) {
+  // A missing staging migration disables only the candidate, never the existing API.
+  try { const town = openTownStore(store.db, settings.environment); town.cleanup(Date.now()); townHandler = createTownApi(settings, town, {family: createTownAccountReader(store.db), access}); }
+  catch { console.error('{"code":"town_migration_required"}'); }
+}
 const verifyBound = (req) => {
   const raw = (req.headers.cookie || "").split(/;\s*/).find((part) => part.startsWith("ct_session="))?.slice(11);
   return raw && familyStore?.sessionUser(hash(settings.hashSecret, raw))?.user_id;
@@ -70,7 +81,7 @@ const applicationHandler = async (req, res, route) => {
   if (settings.environment === "staging" && petRoute !== route && /^Basic /i.test(req.headers.authorization || "")) {
     delete req.headers.authorization;
   }
-  return (await petAdminHandler(req, res, route)) || (await petHandler(req, res, petRoute)) || (await metricsHandler(req, res, route)) || familyHandler(req, res, route);
+  return (await townHandler(req, res, petRoute)) || (await petAdminHandler(req, res, route)) || (await petHandler(req, res, petRoute)) || (await metricsHandler(req, res, route)) || familyHandler(req, res, route);
 };
 const server = createServer(settings, store, undefined, applicationHandler, (status) => { if (status >= 500) metrics.error(); });
 server.requestTimeout = 15000;

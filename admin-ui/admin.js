@@ -1,3 +1,4 @@
+import './town-names.js';
 const $ = (selector) => document.querySelector(selector), text = (value) => value == null ? "样本不足" : typeof value === "number" ? new Intl.NumberFormat("zh-CN").format(value) : String(value);
 const card = (label, value, note = "") => `<article class="card"><span>${label}</span><strong>${text(value)}</strong>${note ? `<small>${note}</small>` : ""}</article>`;
 const safe = (value) => String(value ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);

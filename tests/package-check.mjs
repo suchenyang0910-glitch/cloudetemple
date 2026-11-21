@@ -48,6 +48,7 @@ assert(!/chờ người bản ngữ|待母语|native[- ]speaker review/i.test(fa
 const mobile=JSON.parse(await fs.readFile(new URL(`assets/releases/${release}/processed-v1/mobile/measurements.json`,root)));
 assert.equal(mobile.length,12);assert(mobile.every(x=>x.mobile<=120000&&x.width===720));
 if(process.argv.includes('--production')){
+ assert(!files.some(n=>/^town-name(?:s)?\./.test(n)),'draft town name UI and admin module excluded from production');
  assert(!files.some(n=>/^audio-debug(\.|$)/.test(n)));
  assert(!files.some(n=>/^(calendar-presale|dev-outbox)(\.|$)/.test(n)),'production excludes presale and outbox');
  for(const name of ['family.html',`family.${release}.js`,`family.${release}.css`,`family-analytics.${release}.js`,`family-i18n.${release}.js`,`family-consent.${release}.js`])await fs.access(new URL(name,root));
@@ -70,6 +71,7 @@ if(process.argv.includes('--production')){
  assert((await fs.readFile(new URL(app,root),'utf8')).match(/const presenceEnabled\s*=\s*["']0["']\s*===\s*["']1["']/),'production presence disabled');
 }
 if(process.argv.includes('--staging')){
+ for(const name of ['town-name.html',`town-name.${release}.js`,`town-name.${release}.css`,`town-names.${release}.js`])await fs.access(new URL(name,root));
  const analytics=versioned.find(n=>n.startsWith('analytics.'));
  assert(analytics,'staging analytics module');
  assert((await fs.readFile(new URL(analytics,root),'utf8')).includes('debug_mode:true'),'staging debug_mode');
