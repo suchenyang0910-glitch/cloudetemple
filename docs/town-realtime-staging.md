@@ -39,7 +39,7 @@ Startup reads `TOWN_SEATS_PATH` (default `ops/design-sync/multiplayer/seats.v1.j
 | suoi | 8 | -9.5 … 9.5 | -2 … 15.5 | 3.1 |
 | lientri | 12 | -10.5 … 10.5 | -4 … 15.5 | 3.1 |
 
-Non-town capacity must equal configured sit/bow/mo seats, maximum 20. Town has no exclusive seats. Incense/lamp/stand points are non-exclusive. Spawn is randomly selected from the configured points. Rooms prefer the most occupied non-full line; an optional existing room ID hint allows later companion routing. No invitation feature is included in phase 1.
+Per the 2026-11-21 13:40 contract correction, capacity is the explicit integer cap (1–20), never derived from exclusive seats. Every scene needs at least cap configured positions of all kinds combined, with unique IDs; violations identify the scene and rule. Thus lientri cap=12 with eight sit and four lamp positions is valid, as is chuamay cap=16 with 24 positions. The same rules apply to town, including configured sit/bow/mo positions. Incense/lamp/stand points are non-exclusive. Spawn is randomly selected from the configured points. Rooms prefer the most occupied non-full line; an optional existing room ID hint allows later companion routing. No invitation feature is included in phase 1.
 
 WebSocket URL is `/town-ws`, with no ticket/query string. Browser Origin is checked. First frame within 5 seconds:
 
@@ -81,7 +81,7 @@ Realtime logs are only aggregate connection/room counts and fixed error/rate cod
 
 ## Local evidence and open gates
 
-`node --test server/town.test.mjs` covers schema/identity preservation, migration guards, normalization/filtering, cookie-to-account priority, rate limits, tickets, seat competition/timers, capacity state, sequence/bounds, name moderation and two-socket loopback smoke. Capacity tests allocate in-memory state, not a 200-connection load run. `tests/town-process-smoke.mjs` starts two local child processes, forcibly stops realtime, then checks the existing API remains healthy. `tests/town-names-browser.mjs` verifies mobile/desktop save/reload/filter/choices and admin reset against a local synthetic API.
+`node --test server/town-scenes.test.mjs server/town.test.mjs` covers schema/identity preservation, migration guards, normalization/filtering, cookie-to-account priority, rate limits, tickets, seat competition/timers, capacity state, sequence/bounds, name moderation and two-socket loopback smoke. Capacity tests allocate in-memory state, not a 200-connection load run. `tests/town-process-smoke.mjs` starts two local child processes, forcibly stops realtime, then checks the existing API remains healthy. `tests/town-names-browser.mjs` verifies mobile/desktop save/reload/filter/choices and admin reset against a local synthetic API.
 
 Current author environment reuses existing better-sqlite3 and Playwright's bundled WebSocket implementation through explicit test-only paths. `ws 8.23.0` is pinned with registry integrity; only package metadata/lock were updated, no install was performed. **Exact pinned-ws installation/runtime validation is NOT_RUN**. Source transport options follow the [official ws API](https://github.com/websockets/ws/blob/master/doc/ws.md). The test-only loader is not used by the shipped entry point.
 

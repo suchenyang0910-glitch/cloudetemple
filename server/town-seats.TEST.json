@@ -5,7 +5,148 @@
   "scenes": {
     "town": {
       "speed": 6.2,
-      "seats": [],
+      "seats": [
+        {
+          "id": "town-stand-1",
+          "kind": "stand",
+          "x": 0,
+          "z": 58,
+          "yaw": 0
+        },
+        {
+          "id": "town-stand-2",
+          "kind": "stand",
+          "x": 2,
+          "z": 58,
+          "yaw": 0
+        },
+        {
+          "id": "town-stand-3",
+          "kind": "stand",
+          "x": 4,
+          "z": 58,
+          "yaw": 0
+        },
+        {
+          "id": "town-stand-4",
+          "kind": "stand",
+          "x": 6,
+          "z": 58,
+          "yaw": 0
+        },
+        {
+          "id": "town-stand-5",
+          "kind": "stand",
+          "x": 8,
+          "z": 58,
+          "yaw": 0
+        },
+        {
+          "id": "town-stand-6",
+          "kind": "stand",
+          "x": 0,
+          "z": 60,
+          "yaw": 0
+        },
+        {
+          "id": "town-stand-7",
+          "kind": "stand",
+          "x": 2,
+          "z": 60,
+          "yaw": 0
+        },
+        {
+          "id": "town-stand-8",
+          "kind": "stand",
+          "x": 4,
+          "z": 60,
+          "yaw": 0
+        },
+        {
+          "id": "town-stand-9",
+          "kind": "stand",
+          "x": 6,
+          "z": 60,
+          "yaw": 0
+        },
+        {
+          "id": "town-stand-10",
+          "kind": "stand",
+          "x": 8,
+          "z": 60,
+          "yaw": 0
+        },
+        {
+          "id": "town-stand-11",
+          "kind": "stand",
+          "x": 0,
+          "z": 62,
+          "yaw": 0
+        },
+        {
+          "id": "town-stand-12",
+          "kind": "stand",
+          "x": 2,
+          "z": 62,
+          "yaw": 0
+        },
+        {
+          "id": "town-stand-13",
+          "kind": "stand",
+          "x": 4,
+          "z": 62,
+          "yaw": 0
+        },
+        {
+          "id": "town-stand-14",
+          "kind": "stand",
+          "x": 6,
+          "z": 62,
+          "yaw": 0
+        },
+        {
+          "id": "town-stand-15",
+          "kind": "stand",
+          "x": 8,
+          "z": 62,
+          "yaw": 0
+        },
+        {
+          "id": "town-stand-16",
+          "kind": "stand",
+          "x": 0,
+          "z": 64,
+          "yaw": 0
+        },
+        {
+          "id": "town-stand-17",
+          "kind": "stand",
+          "x": 2,
+          "z": 64,
+          "yaw": 0
+        },
+        {
+          "id": "town-stand-18",
+          "kind": "stand",
+          "x": 4,
+          "z": 64,
+          "yaw": 0
+        },
+        {
+          "id": "town-stand-19",
+          "kind": "stand",
+          "x": 6,
+          "z": 64,
+          "yaw": 0
+        },
+        {
+          "id": "town-stand-20",
+          "kind": "stand",
+          "x": 8,
+          "z": 64,
+          "yaw": 0
+        }
+      ],
       "cap": 20,
       "spawns": [
         {
@@ -288,28 +429,28 @@
         },
         {
           "x": 0,
-          "kind": "sit",
+          "kind": "lamp",
           "z": 4.0,
           "yaw": 3.14,
           "id": "hall-9"
         },
         {
           "x": 2,
-          "kind": "sit",
+          "kind": "lamp",
           "z": 4.0,
           "yaw": 3.14,
           "id": "hall-10"
         },
         {
           "x": 4,
-          "kind": "sit",
+          "kind": "lamp",
           "z": 4.0,
           "yaw": 3.14,
           "id": "hall-11"
         },
         {
           "x": 6,
-          "kind": "sit",
+          "kind": "lamp",
           "z": 4.0,
           "yaw": 3.14,
           "id": "hall-12"
