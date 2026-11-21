@@ -1443,7 +1443,7 @@ if(window.__ct&&__ct.testCam){const c=__ct.testCam;camera.position.set(pos.x+c[0
   // 热点标签
   const w=stage.clientWidth,h=stage.clientHeight;
   const gardenLabels=[];
-  if(W===TEMPLE&&W.selfPerson){const sp=W.selfPerson.children[1].getWorldPosition(tmp);v3.copy(sp).add(new THREE.Vector3(0,.12,0)).project(camera);const px=THREE.MathUtils.clamp((v3.x*.5+.5)*w,34,w-34);selfNameEl.style.left='0';selfNameEl.style.top='0';selfNameEl.style.display='block';selfNameEl.style.transform=`translate(-50%,-100%) translate(${px}px,${(-v3.y*.5+.5)*h}px)`}else selfNameEl.style.display='none';
+  selfNameEl.style.display='none';
   if(W===TEMPLE){const near=TEMPLE.seatTransport.nearest(pos.x,pos.z),spot=TEMPLE_SEAT_SPOTS.near;if(near){spot.x=near.x;spot.z=near.z;spot.face=near.yaw;spot.anchor.set(near.x,.8,near.z);spot.el.textContent='就近坐下';}else spot.el.hidden=true}
   for(const k in SPOT){const s=SPOT[k];v3.copy(s.anchor).project(camera);const d=Math.hypot(pos.x-s.x,pos.z-s.z);
     if((W===TOWN||W===GARDEN)&&v3.z<1){v3.x=THREE.MathUtils.clamp(v3.x,-.45,.45);v3.y=THREE.MathUtils.clamp(v3.y,-.5,.62)}
