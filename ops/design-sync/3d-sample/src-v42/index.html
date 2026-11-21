@@ -172,8 +172,8 @@ b,strong,h1,h2,h3,#placesbtn,#places .row em{font-weight:600}
 <script type="module">
 let THREE;
 const stage=document.getElementById('stage');
-for(const u of ['https://cdn.jsdelivr.net/npm/three@0.187.0/build/three.module.min.js','https://unpkg.com/three@0.187.0/build/three.module.min.js','https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.min.js']){try{THREE=await import(u);break}catch(e){}}
-try{if(!THREE)throw new Error('three not loaded')}catch(e){const d=document.createElement('div');d.className='err';d.textContent='Không tải được phần 3D, xin tải lại trang.';stage.appendChild(d);throw e;}
+window.__threeReady=(async()=>{for(const u of ['https://cdn.jsdelivr.net/npm/three@0.187.0/build/three.module.min.js','https://unpkg.com/three@0.187.0/build/three.module.min.js','https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.min.js']){try{return await import(u)}catch(e){}}throw new Error('three not loaded')})();
+try{THREE=await window.__threeReady;}catch(e){const d=document.createElement('div');d.className='err';d.textContent='Không tải được phần 3D, xin tải lại trang.';stage.appendChild(d);throw e;}
 window.THREE=THREE;
 const $=s=>document.querySelector(s), msgEl=$('#msg'), actsEl=$('#acts'), breathEl=$('#breath');
 const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -1425,7 +1425,7 @@ window.__ct={build:'v41-outskirts-full',outskirts:OUTSKIRTS,v40Sites:()=>V40_SIT
 requestAnimationFrame(frame);
 </script>
 <script type="module">
-const PT=window.THREE;
+const PT=await window.__threeReady;
 import {buildLawnScene} from './petgarden/scene-lawn.js';
 import {buildForestScene} from './petgarden/scene-forest.js';
 import {buildSeaScene} from './petgarden/scene-sea.js';
