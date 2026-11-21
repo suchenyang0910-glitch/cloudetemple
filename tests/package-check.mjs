@@ -5,6 +5,16 @@ const root=new URL('../dist/',import.meta.url),{release}=JSON.parse(await fs.rea
 const home=await fs.readFile(new URL('index.html',root),'utf8');assert(home.includes('property="og:image"')&&home.includes('class="home-content"')&&home.includes('application/ld+json'),'home metadata and prerendered copy');assert(!/<script(?![^>]*(?:src=|type="application\/ld\+json"))[^>]*>/i.test(home),'no executable inline script under strict CSP');
 const about=await fs.readFile(new URL('gioi-thieu.html',root),'utf8');assert(about.includes('Hồ Ngọc Đức công bố')&&about.includes('calrules.html'),'lunar algorithm attribution');
 const files=await fs.readdir(root),pattern=new RegExp(`\\.${release}\\.(js|css)$`),versioned=files.filter(n=>pattern.test(n));
+const town=await fs.readFile(new URL('town.html',root),'utf8');
+assert(!/<script(?![^>]*src=)[^>]*>/i.test(town),'town has no inline executable script');
+for(const name of ['town-loader','town-navigation','town-scene','town-three'])assert(versioned.includes(`${name}.${release}.js`));
+const townConfig=await fs.readFile(new URL(`town-navigation.${release}.js`,root),'utf8');
+assert(townConfig.includes(`townEnabled='${process.argv.includes('--town-enabled')?'1':'0'}'==='1'`),'town feature flag matches explicit package option, default off');
+const townScene=await fs.readFile(new URL(`town-scene.${release}.js`,root),'utf8');
+assert(townScene.includes(`from './town-three.${release}.js'`),'Three is a versioned same-origin module');
+assert(!/https?:\/\/|Xem thử|mkPeer|setDemo|steles|localStorage|fetch\(/.test(townScene),'town contains no CDN, demo peers, memorial records or write API');
+assert.equal(createHash('sha256').update(await fs.readFile(new URL(`town-three.${release}.js`,root))).digest('hex'),createHash('sha256').update(await fs.readFile(new URL('../prototype-3d/vendor/three.bundle.min.js',import.meta.url))).digest('hex'),'bundled Three matches vendored version');
+assert((await fs.readFile(new URL('town-three-LICENSE.txt',root),'utf8')).includes('The MIT License'));
 await fs.access(new URL('404.html',root));
 for(const name of ['morning','festival'])assert(versioned.includes(`${name}.${release}.js`),`${name} module packaged and versioned`);
 const analyticsName=versioned.find(n=>n.startsWith('analytics.')),analyticsText=await fs.readFile(new URL(analyticsName,root),'utf8');assert(analyticsText.includes('campaign_content')&&analyticsText.includes("endsWith('_a_'+name)"),'anonymous activity attribution allowlist');

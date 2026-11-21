@@ -9,6 +9,8 @@ import {createReferrals} from './referrals.js';
 import {createMorning} from './morning.js';
 import {getFestivalPeriod,createNewYearBell,hasForbiddenWord,readFlower,writeFlower} from './festival.js';
 import {incenseConfig,incenseVisual,incensePhaseDone} from './incense.js';
+import {townLink,consumeTownHome} from './town-navigation.js';
+const townHome=consumeTownHome();
 
 let analytics,woodStarted,referrals;
 let festivalPeriod=getFestivalPeriod(),newYearBell;
@@ -246,7 +248,7 @@ function render(){
     }void showChoice();
   }else if(state.view==='home'){
     const actions=['incense','bow','sit','mo','beads'];
-    $('#controls').innerHTML=`<nav class="action-nav">${actions.map(key=>`<button data-action="${key}"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">${actionIcons[key]}</svg>${key==='memorial'?t('familyAltar'):t(key)}</button>`).join('')}</nav><a class="calendar-entry" href="/lich-2027.html">Lịch 2027</a>`;
+    $('#controls').innerHTML=`<nav class="action-nav">${actions.map(key=>`<button data-action="${key}"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">${actionIcons[key]}</svg>${key==='memorial'?t('familyAltar'):t(key)}</button>`).join('')}</nav><a class="calendar-entry" href="/lich-2027.html">Lịch 2027</a>${townLink()}${townHome==='failed'?'<p role="status">Chưa mở được thị trấn. Bạn có thể tiếp tục ở chánh điện.</p>':''}`;
   }else if(state.view==='leave'){
     $('#controls').innerHTML=`<p class="leave-message">${t('goodbye')}</p>${button('reenter','reenter','primary')}`;
   }else if(state.result){
@@ -635,7 +637,7 @@ async function init(){
   window.addEventListener('ct-analytics-choice',()=>void referrals.sync());void referrals.sync();
   try{const response=await fetch(assetURL('processed-v1/layout-v1.json'),{credentials:'omit'});if(!response.ok)throw new Error('layout');state.layout=await response.json();await familyReady;const saved=read('ct-visitor',null);state.visitor=state.layout.v1_scope.visitors.includes(saved)?saved:state.layout.v1_scope.visitors[Math.floor(Math.random()*6)];state.period=periodNow();resolveLayout();
   const ring=(count,newYear=false)=>{if(state.view==='sit'&&state.activity?.running){audio.strike('bell',.22);return;}if(newYear)showNewYearBanner();for(let i=0;i<count;i++)setTimeout(()=>audio.strike('bell',.6),i*1500);};
-  newYearBell=createNewYearBell({onBell:count=>ring(count),onNewYear:count=>{launchLanterns();ring(count,true);}});if(!transitionId)await navigate('entry');if(!read('ct-sound-hint-seen',false)){write('ct-sound-hint-seen',true);showSoundHint('soundFirstHint');}}
+  newYearBell=createNewYearBell({onBell:count=>ring(count),onNewYear:count=>{launchLanterns();ring(count,true);}});if(!transitionId)await navigate(townHome?'home':'entry');if(!read('ct-sound-hint-seen',false)){write('ct-sound-hint-seen',true);showSoundHint('soundFirstHint');}}
   catch{finishBoot();$('#loading').hidden=true;$('#notice').textContent=t('loadError');$('#controls').innerHTML=button('retry','reload');$('#controls').onclick=e=>{if(e.target.dataset.action==='reload')location.reload();};$('#app').setAttribute('aria-busy','false');}
 }
 function finishBoot(){const boot=$('#boot');if(!boot)return;performance.mark('ct-interactive');boot.classList.add('ready');setTimeout(()=>boot.remove(),350);}

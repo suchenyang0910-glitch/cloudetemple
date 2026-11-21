@@ -1,6 +1,7 @@
 param(
   [ValidateSet('production','staging')][string]$Environment='production',
-  [switch]$IncludeFamilyCandidate
+  [switch]$IncludeFamilyCandidate,
+  [switch]$EnableTown
 )
 $ErrorActionPreference = 'Stop'
 if($IncludeFamilyCandidate -and $Environment -ne 'production'){throw 'Family candidate is production-only'}
@@ -17,6 +18,9 @@ if (Test-Path -LiteralPath $outputRoot) {
 New-Item -ItemType Directory -Path $outputRoot -Force | Out-Null
 foreach ($name in @('index.html','lich-2027.html','calendar-2027.css','calendar-2027.js','404.html','preload.js','styles.css','app.js','config.js','i18n.js','telegram.js','audio.js','resources.js','beads.js','bow.js','incense.js','referrals.js','morning.js','festival.js','gioi-thieu.html','quyen-rieng-tu.html','dieu-khoan.html','_headers','_routes.json')) { Copy-Item -LiteralPath (Join-Path $projectRoot $name) -Destination (Join-Path $outputRoot $name) -Force }
 Copy-Item -Path (Join-Path $projectRoot 'static/*') -Destination $outputRoot -Recurse -Force
+foreach ($name in @('town.html','town.css','town-loader.js','town-navigation.js','town-scene.js','town-three.js','town-three-LICENSE.txt')) { Copy-Item -LiteralPath (Join-Path $projectRoot $name) -Destination $outputRoot -Force }
+$townConfig=Join-Path $outputRoot 'town-navigation.js'
+[IO.File]::WriteAllText($townConfig,[IO.File]::ReadAllText($townConfig).Replace('__CT_TOWN_ENABLED__',$(if($EnableTown){'1'}else{'0'})),[Text.UTF8Encoding]::new($false))
 $appFile=Join-Path $outputRoot 'app.js'
 $appSource=[IO.File]::ReadAllText($appFile).Replace('__CT_REFERRALS_ENABLED__',$(if($Environment -eq 'staging'){'1'}else{'0'})).Replace('__CT_PRESENCE_ENABLED__',$(if($Environment -eq 'staging'){'1'}else{'0'}))
 [IO.File]::WriteAllText($appFile,$appSource,[Text.UTF8Encoding]::new($false))
@@ -78,6 +82,7 @@ $configSource=[IO.File]::ReadAllText($config).Replace('__CT_BEAD_GURU_RULE__',$(
 & node (Join-Path $PSScriptRoot 'version-assets.mjs')
 if($LASTEXITCODE){throw 'Versioning failed'}
 $checkArgs=@("--$Environment")
+if($EnableTown){$checkArgs+='--town-enabled'}
 if($IncludeFamilyCandidate){$checkArgs+='--family-candidate'}
 & node (Join-Path $projectRoot 'tests/package-check.mjs') $checkArgs
 if($LASTEXITCODE){throw 'Package assertions failed'}
