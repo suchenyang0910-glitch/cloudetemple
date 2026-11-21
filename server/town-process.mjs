@@ -9,7 +9,7 @@ export async function startTownProcess(env=process.env){
   const file=env.TOWN_DB_PATH||'/var/lib/chuamay/staging/api.sqlite';
   if(!file.replaceAll('\\','/').includes('/staging/'))throw Error('staging_database_required');
   const scenes=loadTownScenes(env.TOWN_SEATS_PATH||'ops/design-sync/multiplayer/seats.v1.json',{allowTest:env.TOWN_ALLOW_TEST_SEATS==='1'});
-  const [{default:Database},{WebSocketServer}]=await Promise.all([import('better-sqlite3'),import('ws')]);
+  const [{default:Database},{WebSocketServer}]=await Promise.all([import('better-sqlite3'),import('./town-realtime/ws.mjs')]);
   const db=new Database(file,{fileMustExist:true,timeout:100});db.pragma('foreign_keys = ON');
   const origins=new Set(['https://staging.chuamay.org']);
   const store=openTownStore(db,'staging');

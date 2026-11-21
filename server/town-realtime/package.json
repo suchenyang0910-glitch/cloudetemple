@@ -1,0 +1,1 @@
+{"name":"chuamay-town-realtime","private":true,"type":"module","engines":{"node":">=22.22.1"},"dependencies":{"ws":"8.23.0"}}

@@ -83,6 +83,18 @@ Realtime logs are only aggregate connection/room counts and fixed error/rate cod
 
 `node --test server/town-scenes.test.mjs server/town.test.mjs` covers schema/identity preservation, migration guards, normalization/filtering, cookie-to-account priority, rate limits, tickets, seat competition/timers, capacity state, sequence/bounds, name moderation and two-socket loopback smoke. Capacity tests allocate in-memory state, not a 200-connection load run. `tests/town-process-smoke.mjs` starts two local child processes, forcibly stops realtime, then checks the existing API remains healthy. `tests/town-names-browser.mjs` verifies mobile/desktop save/reload/filter/choices and admin reset against a local synthetic API.
 
-Current author environment reuses existing better-sqlite3 and Playwright's bundled WebSocket implementation through explicit test-only paths. `ws 8.23.0` is pinned with registry integrity; only package metadata/lock were updated, no install was performed. **Exact pinned-ws installation/runtime validation is NOT_RUN**. Source transport options follow the [official ws API](https://github.com/websockets/ws/blob/master/doc/ws.md). The test-only loader is not used by the shipped entry point.
+The realtime service owns `server/town-realtime/package.json` and its lockfile. Its only dependency is exact `ws 8.23.0`; `ws.mjs` resolves the package from that directory for both the entry point and transport tests. The earlier API ws declaration was removed with explicit user approval; API manifests exactly match the original base. No frontend dependencies changed. Installation was performed only inside the B worktree, with scripts/optional packages disabled; only ws was added. Existing better-sqlite3 remains reused for local synthetic database tests.
+
+The pinned ws runtime is now tested directly, without a bundle substitute or import hook. `TOWN_TEST_WS_BUNDLE` is no longer used. To repeat in this worktree from its root (PowerShell):
+
+```powershell
+$env:TOWN_TEST_SQLITE_MODULE='E:/cloudtemple-worktrees/staging-integration/server/node_modules/better-sqlite3'
+node --test server/town-scenes.test.mjs server/town.test.mjs server/test.mjs server/admin.test.mjs server/family.test.mjs server/pet-api.test.mjs
+node tests/town-process-smoke.mjs
+npm ls --prefix server/town-realtime --all
+```
+
+Resolved WebSocket package: `server/town-realtime/node_modules/ws/index.js`. `server/node_modules` in this author worktree is an existing SQLite dependency junction; it was not installed into or modified. On a separately authorized fresh checkout, the isolated ws lock is reproducible with `npm ci --prefix server/town-realtime --ignore-scripts --omit=optional --no-audit --no-fund --workspaces=false`. That is not authorization to install on a server. Source transport options follow the [official ws API](https://github.com/websockets/ws/blob/master/doc/ws.md).
+
 
 CI, C scene integration, D independent review, Linux resource caps, real network reconnect/device tests, staging load test, Nginx/CSP application, merge, deployment and production are NOT_RUN. Load tests require a separately approved staging time window. Nginx/CSP proposals are only in the receipt directory for Claude review, not in deploy configuration.
