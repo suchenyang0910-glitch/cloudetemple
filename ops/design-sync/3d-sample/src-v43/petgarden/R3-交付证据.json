@@ -1,0 +1,594 @@
+{
+  "task": "A-20261119-07 limited R3",
+  "scope": "Mobile CSS and scene w.spots camera metadata only; common logic, terrain, objects, collisions, slots, interactions unchanged",
+  "hashes": [
+    {
+      "Path": "E:\\cloudtemple\\ops\\design-sync\\3d-sample\\petgarden\\petgarden-demo.html",
+      "Hash": "9415AF9961FAABDC2B6CC7A36B4CECC038482189A97717CC6E8E4CBEBA483E58"
+    },
+    {
+      "Path": "E:\\cloudtemple\\ops\\design-sync\\3d-sample\\petgarden\\common.js",
+      "Hash": "0D0AE99E846D152A479C31ADF611A5E0DCE3A162EB92EB5E00E39A696A6503A8"
+    },
+    {
+      "Path": "E:\\cloudtemple\\ops\\design-sync\\3d-sample\\petgarden\\scene-lawn.js",
+      "Hash": "32789B66562481004076AEE833D7650CD9834F4A50A772102DA62BEB72FE6FCC"
+    },
+    {
+      "Path": "E:\\cloudtemple\\ops\\design-sync\\3d-sample\\petgarden\\scene-forest.js",
+      "Hash": "CD9813358E091053D835329722C4864A17157BE7109D447C3C4840E97C5B6963"
+    },
+    {
+      "Path": "E:\\cloudtemple\\ops\\design-sync\\3d-sample\\petgarden\\scene-sea.js",
+      "Hash": "98D5B06476184226E5BC0C087402C98CC02C02EAD4A7B713B4002CDBA1747F0F"
+    },
+    {
+      "Path": "E:\\cloudtemple\\ops\\design-sync\\3d-sample\\petgarden\\screenshots\\r3-forest-cluster.png",
+      "Hash": "8D9961515CA7D38A4C2679393617D313FFD324108027F59955640067A9629780"
+    },
+    {
+      "Path": "E:\\cloudtemple\\ops\\design-sync\\3d-sample\\petgarden\\screenshots\\r3-forest-entry.png",
+      "Hash": "C1177B5F10D225FA747AA85F2D721DFD32FED8F1C9EE92FD924D8B01934EDC30"
+    },
+    {
+      "Path": "E:\\cloudtemple\\ops\\design-sync\\3d-sample\\petgarden\\screenshots\\r3-forest-overview.png",
+      "Hash": "B444E5486CBABF187A731F7A01D37376242536B66AF7D57674EC8CE2DD24C303"
+    },
+    {
+      "Path": "E:\\cloudtemple\\ops\\design-sync\\3d-sample\\petgarden\\screenshots\\r3-forest-overviewEye.png",
+      "Hash": "6FE583BE0AB01AE85B571C67DB2AB6167DD5A0D7F88C247AFB6C401EBDAB7912"
+    },
+    {
+      "Path": "E:\\cloudtemple\\ops\\design-sync\\3d-sample\\petgarden\\screenshots\\r3-forest-private.png",
+      "Hash": "B59705C5C5614234A0F13E9F0991F25A03330AD7495B17EDDA1D02D53D52EC05"
+    },
+    {
+      "Path": "E:\\cloudtemple\\ops\\design-sync\\3d-sample\\petgarden\\screenshots\\r3-forest-top.png",
+      "Hash": "127965D71986F70D2EEE35A6FBC8C77A0353A750C5A6720922C21F9AF793964A"
+    },
+    {
+      "Path": "E:\\cloudtemple\\ops\\design-sync\\3d-sample\\petgarden\\screenshots\\r3-lawn-cluster.png",
+      "Hash": "2D3A98C511492B60E5C2C7C1378D849384116157B836985A5A79FC62542B742B"
+    },
+    {
+      "Path": "E:\\cloudtemple\\ops\\design-sync\\3d-sample\\petgarden\\screenshots\\r3-lawn-entry.png",
+      "Hash": "C83A9696D8F2B41E3ECEC67AD4ACC0AA420B256179479226A49F5402512F0553"
+    },
+    {
+      "Path": "E:\\cloudtemple\\ops\\design-sync\\3d-sample\\petgarden\\screenshots\\r3-lawn-overview.png",
+      "Hash": "3E3EF3BF7573AD4C8B426BC3DBB41C7868734295A61F22E3045F35D61D0A9E09"
+    },
+    {
+      "Path": "E:\\cloudtemple\\ops\\design-sync\\3d-sample\\petgarden\\screenshots\\r3-lawn-overviewEye.png",
+      "Hash": "28E54F3E2459474A728D756CE9359FC13F5F6BEF2849575E3E2EC97A9C96B8AC"
+    },
+    {
+      "Path": "E:\\cloudtemple\\ops\\design-sync\\3d-sample\\petgarden\\screenshots\\r3-lawn-private.png",
+      "Hash": "0AF4F2BC28109C8531C522C6931031D05EE6BBEAC582868FF5C4F0023345BF03"
+    },
+    {
+      "Path": "E:\\cloudtemple\\ops\\design-sync\\3d-sample\\petgarden\\screenshots\\r3-lawn-top.png",
+      "Hash": "DC3FFF5CEF34C5C384A100FBCBBE329E0B818569AAE318FA4DFD5DDF307F0582"
+    },
+    {
+      "Path": "E:\\cloudtemple\\ops\\design-sync\\3d-sample\\petgarden\\screenshots\\r3-mobile-default.png",
+      "Hash": "826D27FED72CD444AC3FA99AA5B72F8F055DC931BA2565403992A8B1A435F742"
+    },
+    {
+      "Path": "E:\\cloudtemple\\ops\\design-sync\\3d-sample\\petgarden\\screenshots\\r3-mobile-hint.png",
+      "Hash": "677B9AEFB6030EC43636FE6AEFB79A382976980FAC19BF00FA1354751736D26C"
+    },
+    {
+      "Path": "E:\\cloudtemple\\ops\\design-sync\\3d-sample\\petgarden\\screenshots\\r3-mobile-samples.png",
+      "Hash": "F004C1177495CBA68A7BF47084A0A5F3E3EED5C670F68625BC6E75CE3939B121"
+    },
+    {
+      "Path": "E:\\cloudtemple\\ops\\design-sync\\3d-sample\\petgarden\\screenshots\\r3-sea-cluster.png",
+      "Hash": "3A00C2E10928BDBD5D1BEED44AF43FEB981E16F1A9469332C4FFF31FD080E576"
+    },
+    {
+      "Path": "E:\\cloudtemple\\ops\\design-sync\\3d-sample\\petgarden\\screenshots\\r3-sea-entry.png",
+      "Hash": "1671D0B3E39495580C1A7C8AE16324B7DC7932B748080D0ACAF22BB3CAD8EDBF"
+    },
+    {
+      "Path": "E:\\cloudtemple\\ops\\design-sync\\3d-sample\\petgarden\\screenshots\\r3-sea-overview.png",
+      "Hash": "0381C8F112C43C17045F716DCB4313929B9AB751A89E36D257691154B82C3999"
+    },
+    {
+      "Path": "E:\\cloudtemple\\ops\\design-sync\\3d-sample\\petgarden\\screenshots\\r3-sea-overviewEye.png",
+      "Hash": "FED7FFD9234AFC2EA2CA49890BC4C88485CB895C8A47BFDC5AA10C60E603927F"
+    },
+    {
+      "Path": "E:\\cloudtemple\\ops\\design-sync\\3d-sample\\petgarden\\screenshots\\r3-sea-private.png",
+      "Hash": "FAEB3106E19B9927B799D375AB5EFE0601689810EA9C7F589BB142083DF1F3E0"
+    },
+    {
+      "Path": "E:\\cloudtemple\\ops\\design-sync\\3d-sample\\petgarden\\screenshots\\r3-sea-top.png",
+      "Hash": "D27A470006A4A31D766EB72AA4AEAF769757212FF8DD8919DEE262426404F604"
+    }
+  ],
+  "capture": {
+    "shots": [
+      {
+        "scene": "lawn",
+        "view": "entry",
+        "pose": [
+          -18,
+          18,
+          0,
+          0,
+          5
+        ],
+        "fov": 58,
+        "path": "E:/cloudtemple/ops/design-sync/3d-sample/petgarden/screenshots/r3-lawn-entry.png",
+        "camera": [
+          -18,
+          1.368294747524463,
+          23
+        ]
+      },
+      {
+        "scene": "lawn",
+        "view": "cluster",
+        "pose": [
+          -2,
+          13,
+          0,
+          0,
+          10
+        ],
+        "fov": 58,
+        "path": "E:/cloudtemple/ops/design-sync/3d-sample/petgarden/screenshots/r3-lawn-cluster.png",
+        "camera": [
+          -2,
+          1.6510097333234928,
+          23
+        ]
+      },
+      {
+        "scene": "lawn",
+        "view": "private",
+        "pose": [
+          12,
+          -6,
+          0,
+          0,
+          7
+        ],
+        "fov": 58,
+        "path": "E:/cloudtemple/ops/design-sync/3d-sample/petgarden/screenshots/r3-lawn-private.png",
+        "camera": [
+          12,
+          1.706815640989356,
+          1
+        ]
+      },
+      {
+        "scene": "lawn",
+        "view": "overview",
+        "pose": [
+          0,
+          0,
+          0,
+          0.9,
+          35
+        ],
+        "fov": 82,
+        "path": "E:/cloudtemple/ops/design-sync/3d-sample/petgarden/screenshots/r3-lawn-overview.png",
+        "camera": [
+          0,
+          29.066441836961918,
+          21.756348889473255
+        ]
+      },
+      {
+        "scene": "lawn",
+        "view": "overviewEye",
+        "pose": [
+          0,
+          19,
+          0,
+          0,
+          8
+        ],
+        "fov": 58,
+        "path": "E:/cloudtemple/ops/design-sync/3d-sample/petgarden/screenshots/r3-lawn-overviewEye.png",
+        "camera": [
+          0,
+          1.5724562789720333,
+          27
+        ]
+      },
+      {
+        "scene": "lawn",
+        "view": "top",
+        "pose": [
+          0,
+          0,
+          0,
+          1.5707963267948966,
+          37
+        ],
+        "fov": 96,
+        "path": "E:/cloudtemple/ops/design-sync/3d-sample/petgarden/screenshots/r3-lawn-top.png",
+        "camera": [
+          0,
+          38.65,
+          2.2655965784226034e-15
+        ]
+      },
+      {
+        "scene": "forest",
+        "view": "entry",
+        "pose": [
+          -18,
+          18,
+          0,
+          0,
+          5
+        ],
+        "fov": 58,
+        "path": "E:/cloudtemple/ops/design-sync/3d-sample/petgarden/screenshots/r3-forest-entry.png",
+        "camera": [
+          -18,
+          1.4550251353354122,
+          23
+        ]
+      },
+      {
+        "scene": "forest",
+        "view": "cluster",
+        "pose": [
+          -7,
+          14,
+          0,
+          0,
+          5
+        ],
+        "fov": 58,
+        "path": "E:/cloudtemple/ops/design-sync/3d-sample/petgarden/screenshots/r3-forest-cluster.png",
+        "camera": [
+          -7,
+          1.8064477384087279,
+          19
+        ]
+      },
+      {
+        "scene": "forest",
+        "view": "private",
+        "pose": [
+          -4,
+          -16,
+          3.141592653589793,
+          0,
+          8
+        ],
+        "fov": 58,
+        "path": "E:/cloudtemple/ops/design-sync/3d-sample/petgarden/screenshots/r3-forest-private.png",
+        "camera": [
+          -3.999999999999999,
+          1.797141270709899,
+          -24
+        ]
+      },
+      {
+        "scene": "forest",
+        "view": "overview",
+        "pose": [
+          0,
+          0,
+          0,
+          0.9,
+          35
+        ],
+        "fov": 82,
+        "path": "E:/cloudtemple/ops/design-sync/3d-sample/petgarden/screenshots/r3-forest-overview.png",
+        "camera": [
+          0,
+          28.41644183696192,
+          21.756348889473255
+        ]
+      },
+      {
+        "scene": "forest",
+        "view": "overviewEye",
+        "pose": [
+          2,
+          0,
+          3.141592653589793,
+          0,
+          10
+        ],
+        "fov": 58,
+        "path": "E:/cloudtemple/ops/design-sync/3d-sample/petgarden/screenshots/r3-forest-overviewEye.png",
+        "camera": [
+          2.0000000000000013,
+          1.1320344102227144,
+          -10
+        ]
+      },
+      {
+        "scene": "forest",
+        "view": "top",
+        "pose": [
+          0,
+          0,
+          0,
+          1.5707963267948966,
+          37
+        ],
+        "fov": 96,
+        "path": "E:/cloudtemple/ops/design-sync/3d-sample/petgarden/screenshots/r3-forest-top.png",
+        "camera": [
+          0,
+          38,
+          2.2655965784226034e-15
+        ]
+      },
+      {
+        "scene": "sea",
+        "view": "entry",
+        "pose": [
+          -18,
+          18,
+          0,
+          0,
+          5
+        ],
+        "fov": 58,
+        "path": "E:/cloudtemple/ops/design-sync/3d-sample/petgarden/screenshots/r3-sea-entry.png",
+        "camera": [
+          -18,
+          1.7066285390946447,
+          23
+        ]
+      },
+      {
+        "scene": "sea",
+        "view": "cluster",
+        "pose": [
+          0,
+          9,
+          0,
+          0,
+          5
+        ],
+        "fov": 58,
+        "path": "E:/cloudtemple/ops/design-sync/3d-sample/petgarden/screenshots/r3-sea-cluster.png",
+        "camera": [
+          0,
+          1.77,
+          14
+        ]
+      },
+      {
+        "scene": "sea",
+        "view": "private",
+        "pose": [
+          7.3,
+          12.5,
+          0,
+          0,
+          9
+        ],
+        "fov": 58,
+        "path": "E:/cloudtemple/ops/design-sync/3d-sample/petgarden/screenshots/r3-sea-private.png",
+        "camera": [
+          7.3,
+          1.6796763331335784,
+          21.5
+        ]
+      },
+      {
+        "scene": "sea",
+        "view": "overview",
+        "pose": [
+          0,
+          0,
+          0,
+          0.9,
+          35
+        ],
+        "fov": 82,
+        "path": "E:/cloudtemple/ops/design-sync/3d-sample/petgarden/screenshots/r3-sea-overview.png",
+        "camera": [
+          0,
+          29.18644183696192,
+          21.756348889473255
+        ]
+      },
+      {
+        "scene": "sea",
+        "view": "overviewEye",
+        "pose": [
+          0,
+          14,
+          0,
+          0,
+          8
+        ],
+        "fov": 58,
+        "path": "E:/cloudtemple/ops/design-sync/3d-sample/petgarden/screenshots/r3-sea-overviewEye.png",
+        "camera": [
+          0,
+          1.77,
+          22
+        ]
+      },
+      {
+        "scene": "sea",
+        "view": "top",
+        "pose": [
+          0,
+          -2,
+          0,
+          1.5707963267948966,
+          37
+        ],
+        "fov": 96,
+        "path": "E:/cloudtemple/ops/design-sync/3d-sample/petgarden/screenshots/r3-sea-top.png",
+        "camera": [
+          0,
+          38.77,
+          -1.9999999999999978
+        ]
+      }
+    ],
+    "mobile": [
+      {
+        "state": "default",
+        "path": "E:/cloudtemple/ops/design-sync/3d-sample/petgarden/screenshots/r3-mobile-default.png",
+        "rects": {
+          ".top": {
+            "x": 12,
+            "y": 12,
+            "width": 366,
+            "height": 66,
+            "visible": true
+          },
+          ".sample": {
+            "x": 12,
+            "y": 94,
+            "width": 366,
+            "height": 53,
+            "visible": true
+          },
+          ".hint": {
+            "x": 12,
+            "y": 779,
+            "width": 366,
+            "height": 53,
+            "visible": true
+          },
+          "#daytime": {
+            "x": 272.515625,
+            "y": 166,
+            "width": 105.484375,
+            "height": 36,
+            "visible": true
+          },
+          "#card": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0,
+            "visible": false
+          }
+        },
+        "overlap": [],
+        "sampleChecked": false,
+        "sampleSlots": 0
+      },
+      {
+        "state": "samples",
+        "path": "E:/cloudtemple/ops/design-sync/3d-sample/petgarden/screenshots/r3-mobile-samples.png",
+        "rects": {
+          ".top": {
+            "x": 12,
+            "y": 12,
+            "width": 366,
+            "height": 66,
+            "visible": true
+          },
+          ".sample": {
+            "x": 12,
+            "y": 94,
+            "width": 366,
+            "height": 53,
+            "visible": true
+          },
+          ".hint": {
+            "x": 12,
+            "y": 779,
+            "width": 366,
+            "height": 53,
+            "visible": true
+          },
+          "#daytime": {
+            "x": 272.515625,
+            "y": 166,
+            "width": 105.484375,
+            "height": 36,
+            "visible": true
+          },
+          "#card": {
+            "x": 16,
+            "y": 281,
+            "width": 358,
+            "height": 282,
+            "visible": true
+          }
+        },
+        "overlap": [],
+        "sampleChecked": true,
+        "sampleSlots": 3
+      },
+      {
+        "state": "hint",
+        "path": "E:/cloudtemple/ops/design-sync/3d-sample/petgarden/screenshots/r3-mobile-hint.png",
+        "rects": {
+          ".top": {
+            "x": 12,
+            "y": 12,
+            "width": 366,
+            "height": 66,
+            "visible": true
+          },
+          ".sample": {
+            "x": 12,
+            "y": 94,
+            "width": 366,
+            "height": 53,
+            "visible": true
+          },
+          ".hint": {
+            "x": 12,
+            "y": 779,
+            "width": 366,
+            "height": 53,
+            "visible": true
+          },
+          "#daytime": {
+            "x": 272.515625,
+            "y": 166,
+            "width": 105.484375,
+            "height": 36,
+            "visible": true
+          },
+          "#card": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0,
+            "visible": false
+          }
+        },
+        "overlap": [],
+        "sampleChecked": false,
+        "sampleSlots": 0
+      }
+    ]
+  },
+  "captureNotes": {
+    "sceneViewport": [
+      1440,
+      1000
+    ],
+    "mobileViewport": [
+      390,
+      844
+    ],
+    "fov": "entry/cluster/private/overviewEye=58; overview=82; top=96. Wide FOV applied only in screenshot browser; game default remains 58.",
+    "pose": "[actorX,actorZ,yaw,pitch,distance]; setPose from w.spots. Overview and top are elevated evidence; overviewEye preserves eye-height context. No mesh/lighting/fog changes or image editing.",
+    "touch": "NOT_RUN",
+    "fps": "NOT_RERUN. D previous candidate 6x CPU FPS: lawn 46.46, forest 32.84, sea 43.86. Not stable 60 FPS; not real mobile."
+  },
+  "checks": {
+    "overlap": "Zero area for every pair of visible .top/.sample/.hint/#daytime/#card in 3 recorded mobile states",
+    "tabs": "390x844 actual clicks forest/sea/lawn selected corresponding world",
+    "samples": "off=0; on=3; default off",
+    "console": "0 errors / 0 warnings after final reload and tab checks",
+    "scopeProof": "Reverting mobile CSS in memory matches old HTML SHA; reverting only each w.spots expression in memory matches all 3 old scene SHAs; common and Three unchanged",
+    "syntax": "3 scene modules PASS"
+  }
+}
