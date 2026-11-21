@@ -1,6 +1,0 @@
-{
-  "note": "Staging protocol fixtures; coordinates and seat IDs require C/D scene calibration before staging integration. No default occupants.",
-  "main-hall": {"bounds": [-12, 12, -14, 14], "spawn": [0, 10], "seats": {"hall-1": [0, 8], "hall-2": [2, 8], "hall-3": [-2, 8]}},
-  "stream": {"bounds": [-20, 20, -20, 20], "spawn": [0, 10], "seats": {"stream-1": [0, 8], "stream-2": [2, 8]}},
-  "lotus": {"bounds": [-25, 25, -25, 25], "spawn": [0, 10], "seats": {"lotus-1": [0, 8], "lotus-2": [2, 8]}}
-}

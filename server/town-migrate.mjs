@@ -19,6 +19,8 @@ export function migrateTown(db, environment) {
       CREATE TABLE IF NOT EXISTS town_schema(version INTEGER PRIMARY KEY);
       INSERT OR IGNORE INTO town_schema VALUES(1);
     `);
+    if(!db.prepare('PRAGMA table_info(town_names)').all().some(c=>c.name==='fallback_name'))db.exec("ALTER TABLE town_names ADD COLUMN fallback_name TEXT NOT NULL DEFAULT ''");
+    db.exec('INSERT OR IGNORE INTO town_schema VALUES(2)');
   }).immediate();
 }
 
@@ -26,5 +28,5 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   if (process.env.CHUAMAY_ENV !== 'staging' || process.argv[2] !== '--staging-only' || !process.argv[3]?.replaceAll('\\','/').includes('/staging/')) throw Error('explicit_staging_database_required');
   const {default: Database} = await import('better-sqlite3');
   const db = new Database(process.argv[3], {fileMustExist:true});
-  try {db.pragma('foreign_keys = ON'); migrateTown(db, 'staging'); console.log('town_schema_v1');} finally {db.close();}
+  try {db.pragma('foreign_keys = ON'); migrateTown(db, 'staging'); console.log('town_schema_v2');} finally {db.close();}
 }

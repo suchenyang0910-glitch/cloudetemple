@@ -1,0 +1,334 @@
+{
+  "version": 1,
+  "test": true,
+  "note": "TEST synthetic seats only. Bounds, speeds and spawn points follow the 2026-11-21 authoritative multiplayer contract; seat coordinates require C v43 / D calibration.",
+  "scenes": {
+    "town": {
+      "speed": 6.2,
+      "seats": [],
+      "cap": 20,
+      "spawns": [
+        {
+          "x": 0,
+          "z": 66.5,
+          "yaw": 3.14
+        }
+      ],
+      "bounds": {
+        "maxX": 92.5,
+        "minZ": -73.5,
+        "minX": -91,
+        "maxZ": 71.5
+      }
+    },
+    "chuamay": {
+      "speed": 3.1,
+      "seats": [
+        {
+          "x": 0,
+          "kind": "sit",
+          "z": 8.0,
+          "yaw": 3.14,
+          "id": "hall-1"
+        },
+        {
+          "x": 2,
+          "kind": "sit",
+          "z": 8.0,
+          "yaw": 3.14,
+          "id": "hall-2"
+        },
+        {
+          "x": 4,
+          "kind": "sit",
+          "z": 8.0,
+          "yaw": 3.14,
+          "id": "hall-3"
+        },
+        {
+          "x": 6,
+          "kind": "sit",
+          "z": 8.0,
+          "yaw": 3.14,
+          "id": "hall-4"
+        },
+        {
+          "x": 0,
+          "kind": "sit",
+          "z": 6.0,
+          "yaw": 3.14,
+          "id": "hall-5"
+        },
+        {
+          "x": 2,
+          "kind": "sit",
+          "z": 6.0,
+          "yaw": 3.14,
+          "id": "hall-6"
+        },
+        {
+          "x": 4,
+          "kind": "sit",
+          "z": 6.0,
+          "yaw": 3.14,
+          "id": "hall-7"
+        },
+        {
+          "x": 6,
+          "kind": "sit",
+          "z": 6.0,
+          "yaw": 3.14,
+          "id": "hall-8"
+        },
+        {
+          "x": 0,
+          "kind": "sit",
+          "z": 4.0,
+          "yaw": 3.14,
+          "id": "hall-9"
+        },
+        {
+          "x": 2,
+          "kind": "sit",
+          "z": 4.0,
+          "yaw": 3.14,
+          "id": "hall-10"
+        },
+        {
+          "x": 4,
+          "kind": "sit",
+          "z": 4.0,
+          "yaw": 3.14,
+          "id": "hall-11"
+        },
+        {
+          "x": 6,
+          "kind": "sit",
+          "z": 4.0,
+          "yaw": 3.14,
+          "id": "hall-12"
+        },
+        {
+          "x": 0,
+          "kind": "sit",
+          "z": 2.0,
+          "yaw": 3.14,
+          "id": "hall-13"
+        },
+        {
+          "x": 2,
+          "kind": "sit",
+          "z": 2.0,
+          "yaw": 3.14,
+          "id": "hall-14"
+        },
+        {
+          "x": 4,
+          "kind": "sit",
+          "z": 2.0,
+          "yaw": 3.14,
+          "id": "hall-15"
+        },
+        {
+          "x": 6,
+          "kind": "sit",
+          "z": 2.0,
+          "yaw": 3.14,
+          "id": "hall-16"
+        }
+      ],
+      "cap": 16,
+      "spawns": [
+        {
+          "x": 0,
+          "z": 10.5,
+          "yaw": 3.14
+        }
+      ],
+      "bounds": {
+        "maxX": 13,
+        "minZ": -9.5,
+        "minX": -13,
+        "maxZ": 16
+      }
+    },
+    "suoi": {
+      "speed": 3.1,
+      "seats": [
+        {
+          "x": 0,
+          "kind": "sit",
+          "z": 8.0,
+          "yaw": 3.14,
+          "id": "hall-1"
+        },
+        {
+          "x": 2,
+          "kind": "sit",
+          "z": 8.0,
+          "yaw": 3.14,
+          "id": "hall-2"
+        },
+        {
+          "x": 4,
+          "kind": "sit",
+          "z": 8.0,
+          "yaw": 3.14,
+          "id": "hall-3"
+        },
+        {
+          "x": 6,
+          "kind": "sit",
+          "z": 8.0,
+          "yaw": 3.14,
+          "id": "hall-4"
+        },
+        {
+          "x": 0,
+          "kind": "sit",
+          "z": 6.0,
+          "yaw": 3.14,
+          "id": "hall-5"
+        },
+        {
+          "x": 2,
+          "kind": "sit",
+          "z": 6.0,
+          "yaw": 3.14,
+          "id": "hall-6"
+        },
+        {
+          "x": 4,
+          "kind": "sit",
+          "z": 6.0,
+          "yaw": 3.14,
+          "id": "hall-7"
+        },
+        {
+          "x": 6,
+          "kind": "sit",
+          "z": 6.0,
+          "yaw": 3.14,
+          "id": "hall-8"
+        }
+      ],
+      "cap": 8,
+      "spawns": [
+        {
+          "x": -3,
+          "z": 13,
+          "yaw": 3.14
+        }
+      ],
+      "bounds": {
+        "maxX": 9.5,
+        "minZ": -2,
+        "minX": -9.5,
+        "maxZ": 15.5
+      }
+    },
+    "lientri": {
+      "speed": 3.1,
+      "seats": [
+        {
+          "x": 0,
+          "kind": "sit",
+          "z": 8.0,
+          "yaw": 3.14,
+          "id": "hall-1"
+        },
+        {
+          "x": 2,
+          "kind": "sit",
+          "z": 8.0,
+          "yaw": 3.14,
+          "id": "hall-2"
+        },
+        {
+          "x": 4,
+          "kind": "sit",
+          "z": 8.0,
+          "yaw": 3.14,
+          "id": "hall-3"
+        },
+        {
+          "x": 6,
+          "kind": "sit",
+          "z": 8.0,
+          "yaw": 3.14,
+          "id": "hall-4"
+        },
+        {
+          "x": 0,
+          "kind": "sit",
+          "z": 6.0,
+          "yaw": 3.14,
+          "id": "hall-5"
+        },
+        {
+          "x": 2,
+          "kind": "sit",
+          "z": 6.0,
+          "yaw": 3.14,
+          "id": "hall-6"
+        },
+        {
+          "x": 4,
+          "kind": "sit",
+          "z": 6.0,
+          "yaw": 3.14,
+          "id": "hall-7"
+        },
+        {
+          "x": 6,
+          "kind": "sit",
+          "z": 6.0,
+          "yaw": 3.14,
+          "id": "hall-8"
+        },
+        {
+          "x": 0,
+          "kind": "sit",
+          "z": 4.0,
+          "yaw": 3.14,
+          "id": "hall-9"
+        },
+        {
+          "x": 2,
+          "kind": "sit",
+          "z": 4.0,
+          "yaw": 3.14,
+          "id": "hall-10"
+        },
+        {
+          "x": 4,
+          "kind": "sit",
+          "z": 4.0,
+          "yaw": 3.14,
+          "id": "hall-11"
+        },
+        {
+          "x": 6,
+          "kind": "sit",
+          "z": 4.0,
+          "yaw": 3.14,
+          "id": "hall-12"
+        }
+      ],
+      "cap": 12,
+      "spawns": [
+        {
+          "x": 0,
+          "z": 13.5,
+          "yaw": 3.14
+        }
+      ],
+      "bounds": {
+        "maxX": 10.5,
+        "minZ": -4,
+        "minX": -10.5,
+        "maxZ": 15.5
+      }
+    }
+  }
+}

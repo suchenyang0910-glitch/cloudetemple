@@ -1,8 +1,8 @@
 import http from 'node:http';
 import {createTownCore,limits} from './town-realtime.mjs';
-export function createTownSocketServer({WebSocketServer,store,origins,environment,clock=Date.now,log=()=>{},memory=()=>process.memoryUsage().rss}){
+export function createTownSocketServer({WebSocketServer,store,scenes,origins,environment,clock=Date.now,log=()=>{},memory=()=>process.memoryUsage().rss}){
   if(environment!=='staging')throw Error('town_staging_only');
-  const core=createTownCore({store,clock,log});
+  const core=createTownCore({store,scenes,clock,log});
   const server=http.createServer((req,res)=>{res.writeHead(req.url==='/healthz'?200:404,{'Content-Type':'application/json'});res.end(JSON.stringify({ok:req.url==='/healthz'}));});
   server.maxConnections=limits.connections;server.headersTimeout=5000;server.requestTimeout=5000;server.keepAliveTimeout=1000;
   const wss=new WebSocketServer({noServer:true,maxPayload:limits.payload,perMessageDeflate:false,clientTracking:true,maxFragments:32,maxBufferedChunks:32});

@@ -6,7 +6,7 @@ const fold = text => text.normalize('NFD').replace(/\p{M}/gu,'').toLowerCase().r
 export function normalizeName(value) {
   if (typeof value !== 'string' || value.length > 200 || /[\p{Cc}\p{Cf}]/u.test(value)) throw Error('name_characters');
   const name = value.normalize('NFKC').normalize('NFC').trim().replace(/ +/g,' ');
-  if ([...name].length < 2 || [...name].length > 20 || !/^[\p{Script=Latin}\p{Script=Han} ]+$/u.test(name) || !/\p{L}/u.test(name)) throw Error('name_characters');
+  if ([...name].length < 2 || [...name].length > 20 || !/^[\p{Script=Latin} ]+$/u.test(name) || !/\p{L}/u.test(name)) throw Error('name_characters');
   const text = fold(name), compact = text.replaceAll(' ','');
   for (const group of Object.values(rules.groups)) for (const word of group) {
     const term = fold(word);

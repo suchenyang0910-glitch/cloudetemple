@@ -9,7 +9,7 @@ This branch does not include the separately delivered town-shell branch, and doe
 
 API opt-in: `TOWN_REALTIME_ENABLED=1`, existing `CHUAMAY_ENV=staging` and an explicit DB path containing `/staging/`. Bad candidate configuration or absent migration disables the candidate rather than failing the API. The realtime entry point independently refuses production, missing opt-in or a non-staging DB path. Both use existing SQLite; realtime DB busy timeout is 100 ms. Shared database/disk contention remains a staging acceptance item even though process death is isolated.
 
-The migration is explicit, never automatic: `CHUAMAY_ENV=staging node server/town-migrate.mjs --staging-only <existing-staging-db-path>`. It requires the existing users table and adds `users.town_name`, name metadata/history/reports/reviews/audit, short tickets and expiring report-target mappings. Local tests used synthetic SQLite only. Before any later staging application, A must back up the DB and verify the copy. Rollback means disable candidate processes/routes and restore a verified staging backup if schema rollback is required; no destructive down-migration is provided.
+The migration is explicit, never automatic: `CHUAMAY_ENV=staging node server/town-migrate.mjs --staging-only <existing-staging-db-path>`. It requires the existing users table and adds `users.town_name`, name metadata/history/reports/reviews/audit (schema v2 adds a filtered fallback name), short tickets and expiring report-target mappings. Local tests used synthetic SQLite only. Before any later staging application, A must back up the DB and verify the copy. Rollback means disable candidate processes/routes and restore a verified staging backup if schema rollback is required; no destructive down-migration is provided.
 
 **No production schema change is authorized or performed.** Formal production migration, rehearsal on a production copy, deployment, and inclusion of draft data in a production release require separate approval. Draft code/data must stay out of any production release selection. Static packaging explicitly excludes the name page/admin module from production.
 
@@ -26,43 +26,58 @@ All public actions are under `/api/pet-garden/town/` so the existing pet session
 
 POST requires allowed Origin, JSON <=2 KiB and rate limits. Cookie accounts also require CSRF; Telegram signed authorization does not create a new account. Guest storage is a separate signed HttpOnly/Secure/SameSite=Strict `ct_town_name` cookie at this prefix, with a one-year lifetime. It contains a random local ID and name; server metadata protects moderation and rate limits from cookie rollback. On login, an empty account imports the signed cookie's **current server name**; an existing account name wins. Guest cookies are not an assertion of unique human identity: deleting cookies permits a new anonymous identity. No fingerprinting is introduced; this limits anonymous report abuse resistance.
 
-## Version 1 wire contract
+## Version 1 wire contract and scene configuration
+
+Authority: `ops/design-sync/multiplayer/多人同场-契约.md` and dispatch supplements 1–5. No online-document lookup is required. This step implements the server only; step c owns client transport, always-visible equal-sized names and local optional sound playback.
+
+Startup reads `TOWN_SEATS_PATH` (default `ops/design-sync/multiplayer/seats.v1.json`). Its version-1 schema contains four scenes, bounds, speed, spawns and seats. Missing or invalid configuration prevents realtime startup; no coordinates are embedded in the core. C's v43 authoritative seats are still required before integration. Local `server/town-seats.TEST.json` has `test:true` and synthetic seats; using it requires explicit `TOWN_ALLOW_TEST_SEATS=1`. The service candidate does not enable TEST data.
+
+| Scene | Initial cap | x bounds | z bounds | Speed m/s |
+|---|---:|---|---|---:|
+| town | 20 | -91 … 92.5 | -73.5 … 71.5 | 6.2 |
+| chuamay | 16 | -13 … 13 | -9.5 … 16 | 3.1 |
+| suoi | 8 | -9.5 … 9.5 | -2 … 15.5 | 3.1 |
+| lientri | 12 | -10.5 … 10.5 | -4 … 15.5 | 3.1 |
+
+Non-town capacity must equal configured sit/bow/mo seats, maximum 20. Town has no exclusive seats. Incense/lamp/stand points are non-exclusive. Spawn is randomly selected from the configured points. Rooms prefer the most occupied non-full line; an optional existing room ID hint allows later companion routing. No invitation feature is included in phase 1.
 
 WebSocket URL is `/town-ws`, with no ticket/query string. Browser Origin is checked. First frame within 5 seconds:
 
 ```json
-{"v":1,"seq":1,"type":"enter","scene":"main-hall","ticket":"opaque token from API"}
+{"v":1,"seq":1,"type":"enter","scene":"chuamay","ticket":"opaque token from API"}
 ```
 
-Subsequent client sequence must increase by exactly one; version/type/extra fields, binary frames and oversized messages fail closed. Max payload 2 KiB, buffered output 32 KiB, compression disabled. Raw and unauthenticated connections count toward 200; unauthenticated sockets time out. One authenticated subject can hold only one connection, even after leaving a room.
+Client sequence increases by exactly one; invalid version/type/extra fields, binary frames and oversized messages fail closed. Payload limit 2 KiB, buffered output 32 KiB, compression disabled. Raw and unauthenticated connections count toward 200. One account has one connection: a newly authenticated connection evicts the old one, even if the old connection already left its scene.
 
 | Client type | Additional fields | Server behavior |
 |---|---|---|
-| enter | scene (ticket only on first frame) | snapshot then state event; prefer occupied non-full line; max 20 members including reserved disconnected seats |
-| leave | none | remove member and seat immediately |
-| move | target: [x,z] | finite bounds check, maximum 30-unit target segment, 4/s; server derives motion duration at 6.2 units/s; never accepts client speed/position |
-| state | value: standing or sitting; seconds: integer 1–3600 or null when sitting | sitting requires owned unexpired reservation and server-estimated arrival within 0.8 units |
-| seat | seat: server seat ID | 1/s; first reservation wins, 15-second expiry, one seat per subject |
-| release | none | immediate stand/release |
-| heartbeat | background: boolean; optional continueSeat: boolean | respond with server time; client should send every 15 seconds; only explicit continuation after a prompt renews indefinite seating |
+| enter | scene, optional room; ticket on first frame only | full snapshot; broadcast join; rotate ephemeral actor ID |
+| leave | none | immediate release and gone |
+| move | from:[x,z], target:[x,z], at:milliseconds | at most 2/s; finite outer bounds and plausible starting position; consecutive target distance / server elapsed time <= configured speed × 1.5; server determines departure time and duration |
+| state | value:walk/stand/sit/bow/mo/incense/lamp; seconds:1–3600 or null for exclusive seat | sit/bow/mo requires owned matching-kind reservation and arrival within 0.8m; non-exclusive states release any seat |
+| claim | seat | once per 2s; five rejected claims within 1min cause 30s cooldown; busy returns nearest free exclusive seat ID |
+| release | seat (optional, must match if supplied) | immediate stand/release |
+| ping | optional background:boolean, continueSeat:boolean | every 20s; server time/period; explicit continue after the 30min prompt renews indefinite seating |
 
-Every server message has `{v,seq,type}` with sequence local to the receiving connection. Broadcasts also carry `room` and monotonically increasing `roomSeq`. `snapshot` includes self actor ID, current live members and reserved seats. On reconnect, discard the old snapshot and accept a new one. Server message types are snapshot/leave/move/state/seat/release/result/heartbeat. A member contains only ephemeral actor ID, filtered name, current/target position, state and seat. Actor IDs rotate on scene entry/reconnect; account IDs, guest IDs, Telegram details and avatars are never broadcast.
+Every server message has v/seq; room broadcasts also have room/roomSeq. Server types: snapshot, move, state, claim-result, release, ping, join, gone. A rejected non-claim request returns state with a fixed code and current actor/state; malformed envelopes close the connection. Snapshot includes scene, room, self, spawn, serverTime, period, all connected members and all reserved seats. Members contain only ephemeral actor, filtered name, at/target positions, state and seat. No nearest-only roster, identity IDs, Telegram data, avatars, custom client name text or audio frames are transmitted.
 
-Release deadlines: reservation 15s; explicit stand/move/leave immediately; observed disconnect 60s (heartbeat silence is measured from last received message); background 90s; timed sit duration +120s; indefinite sit prompt at 30min, release at 32min unless explicitly continued. A foreground heartbeat does not reset the timed/indefinite deadline. State processing is synchronous so competing seat requests have a deterministic first winner.
+The snapshot and ping use UTC+7: dawn 05–07, day 07–17, dusk 17–19, night 19–05. These are the contract's suggested thresholds, unchanged and pending user clock-hour confirmation.
 
-**Scene calibration is not done:** `server/town-rooms.json` contains explicitly labeled fixture coordinates for main-hall/stream/lotus, not measured authoritative scene bounds, obstacles or cushions. The referenced online planning document could not be retrieved. C/D must supply/verify scene IDs and geometry before integration. Only these three fixture scenes are accepted; the protocol should not be connected to an uncalibrated real scene.
+Release deadlines: reservation 15s; explicit stand/move/leave immediately; disconnect 60s; background 90s; timed session +120s; indefinite prompt at 30min and release at 32min unless explicitly continued. Heartbeat silence is detected after 45s, with the disconnect deadline measured from the last received message. Foreground pings do not extend activity timers. A reconnect receives a new snapshot/actor and retains an unexpired seat. Processing is synchronous, so a seat race has one first winner.
+
+The server checks the outer box and speed only, not client navigation/collisions. Coordinate calibration and real device timing remain C/D acceptance gates.
 
 ## Names and moderation
 
-The original 915-entry draft remains intact in `town-name-pool.json`; runtime filtering currently leaves 912 selectable names. Rules are replaceable JSON and include project bans; Vietnamese/English/Chinese abuse; clerical/sacred titles; both Vietnamese and Han forms of the 17 excluded names; official impersonation; and an incomplete draft sensitive-name list. NFKC/NFC, trimming/space normalization and accent-insensitive matching close simple fullwidth/diacritic evasions. Only Latin/Han letters and spaces, 2–20 Unicode code points, are accepted. This is not a claim that moderation is exhaustive. Vietnamese native/cultural review is outstanding.
+The original 915-entry draft remains intact in `town-name-pool.json`; runtime filtering currently leaves 912 selectable names. Rules are replaceable JSON and include project bans; Vietnamese/English/Chinese abuse; clerical/sacred titles; both Vietnamese and Han forms of the 17 excluded names; official impersonation; and an incomplete draft sensitive-name list. NFKC/NFC, trimming/space normalization and accent-insensitive matching close simple fullwidth/diacritic evasions. Only Latin letters (including Vietnamese accents) and spaces, 2–20 Unicode code points, are accepted. This is not a claim that moderation is exhaustive. Vietnamese native/cultural review is outstanding.
 
-At most three saved changes in a rolling 24 hours. Three distinct same-room subject reports on the same **subject + name revision** trigger a different random name, a 24h free-input lock and a pending review. Equal display names belonging to different people do not share a report counter. Duplicate reports by one subject do not increase it.
+At most one saved change in a rolling seven days (including pool selections). Invalid custom saves are rejected; an invalid stored historical name is never broadcast and gets a stable filtered random pool fallback. Three distinct same-room subject reports on the same **subject + name revision** trigger a different random name, a 24h free-input lock and a pending review. Equal display names belonging to different people do not share a report counter. Duplicate reports by one subject do not increase it.
 
 The existing staging admin dashboard gets a pending-names section. Access uses the existing signed Cloudflare Access validator and one-email allowlist. Writes additionally require admin Origin, same-origin fetch metadata, JSON, explicit confirmation and an idempotency UUID. The page exposes only review ID, text and count, no account details. `allow` resolves the review without restoring the old text; `reset` selects a different random name and locks free input for seven days. Locked users may select a vetted draft candidate. Audit stores opaque actor hash/action/review/result, not email or request contents. Client step c must call the report API for clicked actor IDs; no realtime scene client is implemented here.
 
 The standalone staging `/town-name.html` tests selection/save/refresh/free input. `mountTownNames` also accepts existing authorization headers for a later scene integration. It is not automatically inserted into the unmerged town shell. Admin page action approval here is implementation/test approval only; enabling the write page online still needs user approval.
 
-Realtime logs are only aggregate connection/room counts and fixed error/rate codes; no names, routes, tickets, coordinates or Telegram data. Expiring presence targets exist only to authorize reports and are removed on leave/disconnect; names/reviews are necessary moderation storage, not movement logs. Periodic cleanup clears ticket/rate expiry, >24h change history, >30d reports/resolved reviews, >90d audits and >1y inactive guest metadata. Unresolved reviews stay pending.
+Realtime logs are only aggregate connection/room counts and fixed error/rate codes; no names, routes, tickets, coordinates or Telegram data. Expiring presence targets exist only to authorize reports and are removed on leave/disconnect; names/reviews are necessary moderation storage, not movement logs. Periodic cleanup clears ticket/rate expiry, >7d change history, >30d reports/resolved reviews, >90d audits and >1y inactive guest metadata. Unresolved reviews stay pending.
 
 ## Local evidence and open gates
 

@@ -5,7 +5,7 @@ const digest=value=>createHash('sha256').update(value).digest('hex');
 const reject=code=>{throw Error(code);};
 export function openTownStore(db, environment) {
   if (environment!=='staging') reject('town_staging_only');
-  if (!db.prepare('SELECT 1 FROM town_schema WHERE version=1').get()) reject('town_migration_required');
+  if (!db.prepare('SELECT 1 FROM town_schema WHERE version=2').get()) reject('town_migration_required');
   const one=(sql,...args)=>db.prepare(sql).get(...args),run=(sql,...args)=>db.prepare(sql).run(...args);
   const transact=fn=>(...args)=>db.transaction(fn).immediate(...args);
   const get=ref=>one('SELECT n.* FROM town_names n LEFT JOIN users u ON u.id=n.user_id WHERE n.ref=? AND (n.user_id IS NULL OR (u.id IS NOT NULL AND u.deleted_at IS NULL))',ref);
@@ -15,8 +15,10 @@ export function openTownStore(db, environment) {
     return row;
   }
   function valid(row) {if(!row)reject('identity'); normalizeName(row.name); return row;}
+  function publicProfile(ref){const row=get(ref);if(!row)return null;try{return {...row,name:normalizeName(row.name)};}catch{let fallback;try{fallback=normalizeName(row.fallback_name);}catch{fallback=randomName();run('UPDATE town_names SET fallback_name=? WHERE ref=?',fallback,ref);}return {...row,name:fallback};}}
   return {
     get,
+    public:publicProfile,
     ensure:transact((ref,userId,cookieName,now)=>{
       let row=get(ref);
       if (userId && !one('SELECT 1 FROM users WHERE id=? AND deleted_at IS NULL',userId)) reject('identity');
@@ -32,7 +34,7 @@ export function openTownStore(db, environment) {
       const row=valid(get(ref));name=normalizeName(name);
       if(row.locked_until>now&&!candidate)reject('name_locked');
       if(name===row.name)return row;
-      if(one('SELECT count(*) n FROM town_changes WHERE ref=? AND at>?',ref,now-day).n>=3)reject('name_rate');
+      if(one('SELECT count(*) n FROM town_changes WHERE ref=? AND at>?',ref,now-7*day).n>=1)reject('name_rate');
       run('INSERT INTO town_changes VALUES(?,?)',ref,now);return replace(ref,name,now);
     }),
     limit:transact((key,now,max,window=60000)=>{
@@ -53,7 +55,7 @@ export function openTownStore(db, environment) {
       if(!row||row.origin!==origin||row.expires<=now)return null;
       const name=get(row.ref);if(!name)return null;
       if(name.user_id&&!one('SELECT 1 FROM users WHERE id=? AND deleted_at IS NULL',name.user_id))return null;
-      try{return valid(name);}catch{return null;}
+      return publicProfile(row.ref);
     }),
     presence(actor,ref,room,revision,now){run('INSERT INTO town_presence VALUES(?,?,?,?,?) ON CONFLICT(ref) DO UPDATE SET actor=excluded.actor,room=excluded.room,revision=excluded.revision,expires=excluded.expires',actor,ref,room,revision,now+45000);},
     leave(ref){run('DELETE FROM town_presence WHERE ref=?',ref);},
@@ -77,6 +79,6 @@ export function openTownStore(db, environment) {
       run('UPDATE town_reviews SET status=? WHERE id=?',action,id);
       run('INSERT INTO town_audit VALUES(?,?,?,?,?,?)',requestId,actor,id,action,'ok',now);return 'ok';
     }),
-    cleanup(now){db.transaction(()=>{run('DELETE FROM town_changes WHERE at<?',now-day);run('DELETE FROM town_tickets WHERE expires<=?',now);run('DELETE FROM town_presence WHERE expires<=?',now);run('DELETE FROM town_rates WHERE expires<=?',now);run('DELETE FROM town_reports WHERE at<?',now-30*day);run("DELETE FROM town_reviews WHERE status<>'pending' AND created<?",now-30*day);run('DELETE FROM town_audit WHERE at<?',now-90*day);run('DELETE FROM town_names WHERE user_id IS NULL AND seen<?',now-365*day);}).immediate();}
+    cleanup(now){db.transaction(()=>{run('DELETE FROM town_changes WHERE at<?',now-7*day);run('DELETE FROM town_tickets WHERE expires<=?',now);run('DELETE FROM town_presence WHERE expires<=?',now);run('DELETE FROM town_rates WHERE expires<=?',now);run('DELETE FROM town_reports WHERE at<?',now-30*day);run("DELETE FROM town_reviews WHERE status<>'pending' AND created<?",now-30*day);run('DELETE FROM town_audit WHERE at<?',now-90*day);run('DELETE FROM town_names WHERE user_id IS NULL AND seen<?',now-365*day);}).immediate();}
   };
 }

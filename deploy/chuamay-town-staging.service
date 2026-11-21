@@ -10,6 +10,7 @@ WorkingDirectory=/opt/chuamay/staging/current/server
 Environment=CHUAMAY_ENV=staging
 Environment=TOWN_REALTIME_ENABLED=1
 Environment=TOWN_DB_PATH=/var/lib/chuamay/staging/api.sqlite
+Environment=TOWN_SEATS_PATH=/opt/chuamay/staging/current/ops/design-sync/multiplayer/seats.v1.json
 ExecStart=/opt/chuamay/runtime/bin/node --max-old-space-size=160 town-process.mjs
 Restart=on-failure
 RestartSec=10

@@ -32,7 +32,7 @@ try{
   await page.reload();await page.waitForFunction(()=>document.querySelector('#name-choices').children.length===7);assert.equal(await page.locator('#name-input').inputValue(),'Tâm An');
   await page.locator('#name-input').fill('ＡＤＭＩＮ');await page.locator('form button').click();await page.waitForFunction(()=>document.querySelector('#name-status').textContent.includes('chưa phù hợp'));
   await page.locator('#name-refresh').click();await page.waitForFunction(()=>!document.querySelector('#name-refresh').disabled);assert.equal(await page.locator('#name-choices button').count(),7);
-  await page.locator('#name-choices button').nth(1).click();await page.locator('form button').click();await page.waitForFunction(()=>document.querySelector('#name-status').textContent==='Đã lưu tên.');
+  await page.locator('#name-choices button').nth(1).click();assert((await page.locator('#name-status').innerText()).includes('Lưu tên'));await page.locator('form button').click();await page.waitForFunction(()=>document.querySelector('#name-status').textContent.includes('7 ngày'));
   await page.screenshot({path:path.join(out,`names-${viewport.width}.png`)});assert.deepEqual(errors,[]);evidence.push({viewport,saveReload:true,filteredFullwidthOfficial:true,suggestions:7,errors:0});await context.close();
  }
  const now=Date.now();for(const ref of ['target','a','b','c']){const row=store.ensure('guest:'+ref,null,'Tâm An',now);store.presence(ref,'guest:'+ref,'test-room',row.revision,now);}
