@@ -1,7 +1,7 @@
 /* Input: THREE. Output: lawn world, six tree islands, four southeast courts and blank slots. North is +z. */
 import {createShell} from './common.js';
 export function buildLawnScene(T){
- const w=createShell(T,{id:'lawn',title:'Vườn cỏ nắng',hello:'Chạm đất để đi · Kéo để xoay · WASD',groundColor:0xa6be87,particleColor:0xf7c9d5,particleKind:'petal'}),{box,cyl,tree,bush,flower,rock,plaque,fence,path,materials:m}=w;
+ const w=createShell(T,{id:'lawn',title:'Vườn cỏ nắng',hello:'Chạm đất để đi · Kéo để xoay',groundColor:0xa6be87,particleColor:0xf7c9d5,particleKind:'petal'}),{box,cyl,tree,bush,flower,rock,plaque,fence,path,materials:m}=w;
  w.terrain((x,z)=>.012*x+.09*Math.sin(z*.22));w.start.set(-18,w.floorY(-18,18),18);
  for(const x of [-20,-14])box(.3,3.2,.3,m.woodM,x,1.6,17);box(6.5,.45,.36,m.woodM,-17,3.1,17);
  const paw=new T.MeshLambertMaterial({color:0xf1d8af});w.add(new T.CircleGeometry(.3,12),paw,-17,3.1+w.floorY(-17,17),17.2);for(let i=0;i<4;i++)w.add(new T.CircleGeometry(.12,8),paw,-17.4+i*.27,3.42+w.floorY(-17,17),17.21);

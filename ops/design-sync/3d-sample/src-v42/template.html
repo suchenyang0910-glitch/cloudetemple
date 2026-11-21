@@ -104,7 +104,7 @@ body{margin:0;background:#1d1611;color:var(--ink);font-family:"Noto Serif",Georg
 #snd[aria-pressed="true"]{background:var(--deep);color:var(--paper)}
 #snd[aria-pressed="true"] .off,#snd[aria-pressed="false"] .on{display:none}
 .spot{min-height:44px;border-radius:10px;font-size:14px;padding:8px 14px}
-#exitbtn{min-height:44px;border-radius:10px;top:68px}
+#exitbtn{min-height:44px;border-radius:10px;top:90px}
 #placesbtn,#demobtn{min-height:44px;border-radius:10px;font-size:14px}
 #placesbtn{bottom:calc(64px + env(safe-area-inset-bottom,0px))}
 #demotag,#fpsbox{bottom:calc(120px + env(safe-area-inset-bottom,0px))}
@@ -123,10 +123,10 @@ b,strong,h1,h2,h3,#placesbtn,#places .row em{font-weight:600}
   .chips{position:absolute;left:12px;right:56px;top:82px;justify-content:stretch}
   .chips button{flex:1 1 0;padding:0 4px}
   #snd{top:8px;right:12px}
-  #exitbtn{top:136px!important}
-  #pet-tabs-v42{top:190px!important;left:12px!important;right:12px!important;transform:none!important;justify-content:center;flex-wrap:wrap;max-width:none}
-  #pet-tabs-v42 button{flex:1 1 30%;min-width:44px;font-size:12px;padding:8px 6px}
-  body #pet-tabs-v42+div+label{top:296px!important}
+  #exitbtn{top:8px!important;left:auto!important;right:60px!important}
+  #pet-tabs-v42{top:136px!important;left:12px!important;right:12px!important;transform:none!important;justify-content:stretch;flex-wrap:nowrap;max-width:none}
+  #pet-tabs-v42 button{flex:1 1 0;min-width:0;font-size:11px;padding:0 2px;white-space:nowrap}
+  body #pet-tabs-v42+div+label{top:auto!important;left:auto!important;right:12px!important;bottom:calc(12px + env(safe-area-inset-bottom,0px))!important}
 }
 </style>
 <div id="stage">
@@ -173,6 +173,7 @@ b,strong,h1,h2,h3,#placesbtn,#places .row em{font-weight:600}
 let THREE;
 const stage=document.getElementById('stage');
 try{THREE=await import('__THREE_URL__');}catch(e){const d=document.createElement('div');d.className='err';d.textContent='Không tải được phần 3D, xin tải lại trang.';stage.appendChild(d);throw e;}
+window.THREE=THREE;
 const $=s=>document.querySelector(s), msgEl=$('#msg'), actsEl=$('#acts'), breathEl=$('#breath');
 const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -197,7 +198,7 @@ const woodTex=canvasTex(256,256,(g,w,h)=>{g.fillStyle='#8a4a26';g.fillRect(0,0,w
 const floorTex=canvasTex(256,256,(g,w,h)=>{g.fillStyle='#9a6a44';g.fillRect(0,0,w,h);for(let i=0;i<8;i++){g.fillStyle=`rgba(${rnd()<.5?60:210},${rnd()<.5?30:150},${rnd()<.5?10:90},${.05+rnd()*.1})`;g.fillRect(i*32,0,31,h);g.fillStyle='rgba(40,20,8,.35)';g.fillRect(i*32+31,0,1,h)}},[5,3]);
 const tileTex=canvasTex(256,256,(g,w,h)=>{g.fillStyle='#b4502a';g.fillRect(0,0,w,h);const r=16;for(let j=0;j<h/r+1;j++)for(let i=0;i<w/(r*2)+1;i++){const x=i*r*2+(j%2?r:0),y=j*r;const v=rnd()*30|0;g.fillStyle=`rgb(${176+v},${78+v*.6|0},${40+v*.3|0})`;g.beginPath();g.arc(x,y,r,0,Math.PI);g.fill();g.strokeStyle='rgba(70,22,8,.45)';g.lineWidth=1.5;g.beginPath();g.arc(x,y,r,0,Math.PI);g.stroke()}},[14,5]);
 const latticeTex=canvasTex(256,384,(g,w,h)=>{g.fillStyle='#7a3f20';g.fillRect(0,0,w,h);g.fillStyle='#2a160b';g.fillRect(18,18,w-36,h*.5);g.strokeStyle='#8f4c26';g.lineWidth=7;for(let x=18;x<=w-18;x+=22){g.beginPath();g.moveTo(x,18);g.lineTo(x,18+h*.5);g.stroke()}g.lineWidth=6;g.strokeRect(18,18,w-36,h*.5);g.strokeStyle='#5c2e15';g.lineWidth=5;g.strokeRect(22,h*.58,w-44,h*.36)},null);
-const softTex=canvasTex(128,128,(g,w,h)=>{const r=g.createRadialGradient(w/2,h/2,0,w/2,h/2,w/2);r.addColorStop(0,'rgba(255,255,255,1)');r.addColorStop(.5,'rgba(255,255,255,.35)');r.addColorStop(1,'rgba(255,255,255,0)');g.fillStyle=r;g.fillRect(0,0,w,h)});
+const softTex=(()=>{const n=128,d=new Uint8Array(n*n*4);for(let y=0;y<n;y++)for(let x=0;x<n;x++){const r=Math.hypot(x-63.5,y-63.5)/64,a=r<.5?1-r*1.3:r<1?.35*(2-2*r):0,i=(y*n+x)*4;d[i]=d[i+1]=d[i+2]=255;d[i+3]=Math.round(a*255)}const t=new THREE.DataTexture(d,n,n,THREE.RGBAFormat);t.colorSpace=THREE.SRGBColorSpace;t.magFilter=THREE.LinearFilter;t.minFilter=THREE.LinearFilter;t.needsUpdate=true;return t})();
 const buddhaTex=sRGB(new THREE.TextureLoader().load('__BUDDHA__'));
 
 /* ---------- materials ---------- */
@@ -804,7 +805,7 @@ function inWater(x,z,R){for(const b of BRIDGE)if(x>b[0]+R*.6&&x<b[1]-R*.6&&z>b[2
   const plaza=(x,z,r)=>{const c=new THREE.Mesh(new THREE.CircleGeometry(r,40),pathMat);c.rotation.x=-Math.PI/2;c.position.set(x,.045,z);P.add(c);const rim=new THREE.Mesh(new THREE.RingGeometry(r,r+.28,40),lam({color:0xb9ae98}));rim.rotation.x=-Math.PI/2;rim.position.set(x,.05,z);P.add(rim);for(let a=0;a<Math.PI*2;a+=.35){const px=x+Math.cos(a)*r*.82,pz=z+Math.sin(a)*r*.82;if(walkTown(px,pz))pathPts.push([px,pz]),PATHBAD.push([px,pz,.25])}};
   const bench=(x,z,ry)=>{const g=new THREE.Group();g.position.set(x,0,z);g.rotation.y=ry;P.add(g);box(1.7,.12,.5,mBase,0,.46,0,g);for(const s of [-1,1])box(.2,.4,.42,mBase,s*.6,.2,0,g);TW_SOLID.push([x,z,.6])};
   const bed=(x,z,w,d)=>{box(w+.3,.22,d+.3,lam({color:0xb9ae98}),x,.11,z,P);box(w,.26,d,lam({color:0x6f5a40}),x,.14,z,P);for(let i=0;i<w*d*1.5;i++){const f=new THREE.Mesh(new THREE.IcosahedronGeometry(.17,0),lam({color:[0xf2a65a,0xf6d04a,0xe8647a,0xfaf4e2][i%4]}));f.position.set(x-w/2+.25+rnd()*(w-.5),.38,z-d/2+.25+rnd()*(d-.5));P.add(f)}TW_RECT.push([x-w/2-.15,x+w/2+.15,z-d/2-.15,z+d/2+.15]);TW_SOLID.push([x,z,1])};
-  const pavR=(x,z,k)=>{const G=new THREE.Group();G.position.set(x,0,z);P.add(G);box(4.6*k,.1,4.6*k,mBase,0,.05,0,G);for(const sx of [-1,1])for(const sz of [-1,1]){cyl(.15,.17,2.7,mWood,sx*1.75*k,1.4,sz*1.75*k,8,G);box(.42,.14,.42,mBase,sx*1.75*k,.17,sz*1.75*k,G);TW_SOLID.push([x+sx*1.75*k,z+sz*1.75*k,.3]);TW_FORCE.push([x+sx*1.75*k,z+sz*1.75*k,.3])}for(const sx of [-1,1]){box(.12,.16,3.5*k,mWood,sx*1.75*k,2.62,0,G);box(3.5*k,.16,.12,mWood,0,2.62,sx*1.75*k,G)}hipRoof(G,2.75,2.4*k,2.4*k,.6,1.3,.5,0x7a4030,{style:'bac',tile:'scale',ov:.7});TALL.push([x,z,3.4*k,5])};
+  const pavR=(x,z,k)=>{const G=new THREE.Group();G.position.set(x,0,z);P.add(G);box(4.6*k,.1,4.6*k,mBase,0,.05,0,G);for(const sx of [-1,1])for(const sz of [-1,1]){cyl(.15,.17,2.7,mWood,sx*1.75*k,1.4,sz*1.75*k,8,G);box(.42,.14,.42,mBase,sx*1.75*k,.17,sz*1.75*k,G);TW_SOLID.push([x+sx*1.75*k,z+sz*1.75*k,.02]);TW_FORCE.push([x+sx*1.75*k,z+sz*1.75*k,.02])}for(const sx of [-1,1]){box(.12,.16,3.5*k,mWood,sx*1.75*k,2.62,0,G);box(3.5*k,.16,.12,mWood,0,2.62,sx*1.75*k,G)}hipRoof(G,2.75,2.4*k,2.4*k,.6,1.3,.5,0x7a4030,{style:'bac',tile:'scale',ov:.7});TALL.push([x,z,3.4*k,5])};
   plaza(0,8,6);plaza(-34,32,4);plaza(36,2,10);pavR(-46,50,1.15);pavR(20,36,1);for(const a of [0,Math.PI])bench(-46+Math.cos(a)*4.1,50+Math.sin(a)*4.1,Math.PI/2);for(const a of [.5,2.6,3.7,5.8])bench(20+Math.cos(a)*5,36+Math.sin(a)*5,-a+Math.PI/2);for(const [x,z] of [[60,38],[64,38],[60,42],[64,42]])bed(x,z,2.4,2.2);
   // 莲花喷泉主体。
   {const x=0,z=8;cyl(2,2.15,.5,stone,x,.25,z,24,P);const w=new THREE.Mesh(new THREE.CircleGeometry(1.82,24),seaMat);w.rotation.x=-Math.PI/2;w.position.set(x,.47,z);P.add(w);cyl(.34,.46,.9,stone,x,.7,z,12,P);for(let i=0;i<8;i++){const a=i*.785,p=new THREE.Mesh(new THREE.SphereGeometry(.3,8,6),lam({color:0xf4a3bd}));p.scale.set(1,.5,.55);p.position.set(x+Math.cos(a)*.42,1.28,z+Math.sin(a)*.42);P.add(p)}TW_SOLID.push([x,z,2.3])}
@@ -1423,7 +1424,7 @@ window.__ct={build:'v41-outskirts-full',outskirts:OUTSKIRTS,v40Sites:()=>V40_SIT
 requestAnimationFrame(frame);
 </script>
 <script type="module">
-import * as PT from './petgarden/three.bundle.min.js';
+const PT=window.THREE;
 import {buildLawnScene} from './petgarden/scene-lawn.js';
 import {buildForestScene} from './petgarden/scene-forest.js';
 import {buildSeaScene} from './petgarden/scene-sea.js';
@@ -1432,12 +1433,12 @@ const startV42=()=>{const api=window.__ct;if(!api){setTimeout(startV42,50);retur
  const layer=document.createElement('div');layer.id='pet-tabs-v42';layer.style='position:fixed;top:10px;left:50%;transform:translateX(-50%);display:none;gap:6px;z-index:20;background:rgba(23,31,25,.9);padding:6px;border:1px solid #87917d;border-radius:999px';
  const fade=document.createElement('div');fade.style='position:fixed;inset:0;display:none;place-items:center;z-index:19;background:rgba(18,28,22,.72);opacity:0;transition:opacity .24s ease;pointer-events:none';const dot=document.createElement('i');dot.style='width:14px;height:14px;border-radius:50%;background:#ffe0a0;box-shadow:0 0 22px #ffe0a0;animation:v42pulse .7s ease-in-out infinite';fade.append(dot);const fx=document.createElement('style');fx.textContent='@keyframes v42pulse{0%,100%{transform:scale(.65);opacity:.45}50%{transform:scale(1.15);opacity:1}}';document.head.append(fx);document.body.append(layer,fade);
  const labels={lawn:'Vườn cỏ nắng',forest:'Vườn rừng sương',sea:'Vườn biển sao'};let active='lawn',wasGarden=false;
- const sampleWrap=document.createElement('label');sampleWrap.style='position:fixed;top:120px;left:12px;z-index:20;min-height:44px;display:inline-flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid #87917d;border-radius:9px;background:rgba(23,31,25,.9);font:inherit;color:#f5efdf';const sampleInput=document.createElement('input');sampleInput.type='checkbox';sampleInput.checked=false;sampleWrap.append(sampleInput,' Xem thử dữ liệu mẫu');document.body.append(sampleWrap);
+ const sampleWrap=document.createElement('label');sampleWrap.style='position:fixed;top:auto;right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));left:auto;z-index:20;min-height:44px;display:inline-flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid #87917d;border-radius:9px;background:rgba(23,31,25,.9);font:inherit;color:#f5efdf';const sampleInput=document.createElement('input');sampleInput.type='checkbox';sampleInput.checked=false;sampleWrap.append(sampleInput,' Xem thử dữ liệu mẫu');document.body.append(sampleWrap);
  function make(id){return worlds[id]||(worlds[id]=builders[id](PT))}
  function slotKey(id,s){return id+':'+s.x.toFixed(5)+','+s.z.toFixed(5)}
  function saveSlots(){const w=api.GARDEN._world;if(!w)return;api.steles.forEach((st,i)=>{const s=w.memorialSlots[i];if(s)slotStates[slotKey(active,s)]={f:st.f,l:st.l}})}
  function refreshSlots(w){const spots=api.GARDEN.spots;api.steles.length=0;for(const k of Object.keys(spots))if(/^st\d+$/.test(k)){spots[k].el.remove();delete spots[k]}w.memorialSlots.forEach((s,i)=>{const anchor=new PT.Group();anchor.position.set(s.x,0,s.z);w.g.add(anchor);const k='st'+i,el=api.mkSpot(k,'Dâng hoa · Thắp đèn'),saved=slotStates[slotKey(active,s)]||{f:0,l:0};el.addEventListener('click',e=>{e.stopPropagation();api.go(k)});api.steles.push({x:s.x,z:s.z,f:saved.f,l:saved.l,g:anchor,sample:!!s.sample});spots[k]={x:s.x,z:s.z-.78255,face:Math.PI,el,anchor:new PT.Vector3(s.x,.45,s.z),cam:[s.x+2.6,2.5,s.z+4.2],look:[s.x-.3,.45,s.z+.2]};})}
- function apply(id){saveSlots();const w=make(id);if(api.legacyGardenG){api.legacyGardenG.visible=false;api.legacyGardenG.removeFromParent()}for(const q of Object.values(worlds))if(q!==w){q.dispose();q.g.visible=false;q.g.removeFromParent()}active=id;const g=api.GARDEN,entry={lawn:[-16,17,-.7],forest:[-16,17,-.8],sea:[-14,17,.2]}[id];g._world=w;g.g=w.g;g.walk=(x,z,pad=0)=>w.free(x,z,pad);g._segment=(ax,az,bx,bz)=>w.segment({x:ax,z:az},{x:bx,z:bz});g.floorY=(z,x)=>w.floorY(x,z);g.start=entry?entry.slice(0,2):[w.start.x,w.start.z];g.gs=.25;g.gx=-20;g.gz=-20;g.gw=161;g.gh=161;g.title=[labels[id],'Thú cưng'];g.hello=w.hello;g.night=id==='sea';g.tod=id==='sea'?'night':null;g._tick=dt=>w.tick(dt);api.plan=(sx,sz,tx,tz)=>w.route({x:sx,z:sz},{x:tx,z:tz}).map(p=>[p.x,p.z]);refreshSlots(w);w.setSamples(sampleInput.checked);api.steles.forEach((st,i)=>{st.sample=!!w.memorialSlots[i].sample});document.querySelector('.chips').hidden=id==='sea';document.querySelectorAll('.chips button[data-t]').forEach(b=>b.hidden=id==='sea');api.enter(g);if(entry)api.setYaw(entry[2]);wasGarden=true;layer.style.display='flex';for(const b of layer.children)b.setAttribute('aria-selected',String(b.dataset.scene===id))}
+ function apply(id){saveSlots();const w=make(id);if(api.legacyGardenG){api.legacyGardenG.visible=false;api.legacyGardenG.removeFromParent()}for(const q of Object.values(worlds))if(q!==w){q.dispose();q.g.visible=false;q.g.removeFromParent()}active=id;const g=api.GARDEN,entry={lawn:[-16,17,-.7],forest:[-16,17,-.8],sea:[-14,17,.2]}[id];g._world=w;g.g=w.g;g.walk=(x,z,pad=0)=>w.free(x,z,pad);g._segment=(ax,az,bx,bz)=>w.segment({x:ax,z:az},{x:bx,z:bz});g.floorY=(z,x)=>w.floorY(x,z);g.start=entry?entry.slice(0,2):[w.start.x,w.start.z];g.gs=.25;g.gx=-20;g.gz=-20;g.gw=161;g.gh=161;g.title=[labels[id],'Thú cưng'];g.hello=(w.hello||'').replace(/ · WASD$/,'')+(matchMedia('(pointer:fine)').matches?' · WASD':'');g.night=id==='sea';g.tod=id==='sea'?'night':null;g._tick=dt=>w.tick(dt);api.plan=(sx,sz,tx,tz)=>w.route({x:sx,z:sz},{x:tx,z:tz}).map(p=>[p.x,p.z]);refreshSlots(w);w.setSamples(sampleInput.checked);api.steles.forEach((st,i)=>{st.sample=!!w.memorialSlots[i].sample});document.querySelector('.chips').hidden=id==='sea';document.querySelectorAll('.chips button[data-t]').forEach(b=>b.hidden=id==='sea');api.enter(g);if(entry)api.setYaw(entry[2]);wasGarden=true;layer.style.display='flex';for(const b of layer.children)b.setAttribute('aria-selected',String(b.dataset.scene===id))}
  sampleInput.onchange=()=>{const w=worlds[active];if(w){w.setSamples(sampleInput.checked);api.steles.forEach((st,i)=>{st.sample=!!w.memorialSlots[i].sample})}};
  for(const id of Object.keys(labels)){const b=document.createElement('button');b.dataset.scene=id;b.textContent=labels[id];b.style='font:inherit;cursor:pointer;color:#f5efdf;background:#334338;border:1px solid #75816e;border-radius:10px;min-height:44px;min-width:44px;padding:10px 12px';b.onclick=async()=>{if(active===id)return;fade.style.display='grid';requestAnimationFrame(()=>fade.style.opacity='1');await new Promise(r=>setTimeout(r,260));apply(id);fade.style.opacity='0';setTimeout(()=>fade.style.display='none',260)};layer.append(b)}
  const sync=()=>{const inGarden=api.world()===api.GARDEN;layer.style.display=inGarden?'flex':'none';if(inGarden&&!wasGarden)apply('lawn');else if(inGarden&&api.GARDEN.g.name!==active)apply('lawn');if(!inGarden){wasGarden=false;api.plan=townPlan;document.querySelector('.chips').hidden=false;document.querySelectorAll('.chips button[data-t]').forEach(b=>b.hidden=false);sampleWrap.hidden=true;for(const q of Object.values(worlds)){q.g.visible=false;q.g.removeFromParent()}}else sampleWrap.hidden=false;setTimeout(sync,120)};sync();
