@@ -1455,7 +1455,7 @@ const wk=moving?1:0,sL=Math.sin(walkPh)*wk,sR=-sL;
   camPos.set(pos.x*cx+Math.sin(yaw)*back,pos.y+up,pos.z+Math.cos(yaw)*back);if(state==='ritual'&&ritual?.startsWith('seat-'))camPos.set(pos.x+Math.sin(yaw)*4,pos.y+2.2,pos.z+Math.cos(yaw)*4);
   if(camPos.z>-1.2&&hallK>.5)camPos.y=Math.max(camPos.y,pos.y+2.1);
   if(hallK>.5)camPos.x=THREE.MathUtils.clamp(camPos.x,camPos.z>-2.7?-4.4:-7.2,camPos.z>-2.7?4.4:7.2);       // 不让镜头钻到格扇和侧墙后面
-  camLook.set(pos.x+(pos.x-camPos.x)*.75,pos.y+THREE.MathUtils.lerp(2.9,1.75,hallK)-wide*.7,pos.z+(pos.z-camPos.z)*.75);if(state==='ritual'&&ritual?.startsWith('seat-'))camLook.set(2.5,2,-9.6);   // 视线永远穿过人物
+  camLook.set(pos.x+(pos.x-camPos.x)*.75,pos.y+THREE.MathUtils.lerp(2.9,1.75,hallK)-wide*.7,pos.z+(pos.z-camPos.z)*.75);if(state==='ritual'&&ritual?.startsWith('seat-'))camLook.set(Math.max(-2.5,Math.min(2.5,pos.x*.6)),2,-9.6);   // 视线永远穿过人物
   if(W===GARDEN){camPos.set(pos.x+Math.sin(yaw)*22,pos.y+9,pos.z+Math.cos(yaw)*22);camLook.set(0,1.8,0)}
   for(const c of fadeCols){const dx=camPos.x-c.x,dz=camPos.z-c.z,d=Math.hypot(dx,dz);if(d<1.0){camPos.x=c.x+(dx/(d||1))*1.0;camPos.z=c.z+(dz/(d||1))*1.0}}   // 镜头不贴着柱子
   if(W===TOWN){const cp=Math.cos(tPitch),hy=pos.y+1.2;let d=tDist*(1+wide*.15);const ux=Math.sin(yaw)*cp,uy=Math.sin(tPitch),uz=Math.cos(yaw)*cp;
