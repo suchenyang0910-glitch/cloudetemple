@@ -16,6 +16,6 @@ export function createTownSocketServer({WebSocketServer,store,scenes,origins,env
       ws.on('message',(data,binary)=>{try{if(binary)throw Error('binary');core.receive(c,JSON.parse(data.toString()));}catch{log({code:'message'});core.disconnect(c,true);}});
     });
   });
-  const timer=setInterval(()=>{try{if(memory()>=limits.memory){log({code:'memory_limit'});core.stop();server.close();clearInterval(timer);return;}core.tick();}catch{log({code:'store'});core.stop();server.close();clearInterval(timer);}},1000);timer.unref();
+  const timer=setInterval(()=>{try{if(memory()>=limits.memory){log({code:'memory_limit'});core.stop();server.close();clearInterval(timer);return;}core.tick();}catch(error){if(error?.code==='SQLITE_BUSY'){log({code:'store_busy'});return;}log({code:'store'});core.stop();server.close();clearInterval(timer);}},1000);timer.unref();
   return {server,core,close:async()=>{clearInterval(timer);core.stop();for(const ws of wss.clients)ws.terminate();await new Promise(resolve=>server.close(resolve));wss.close();}};
 }
