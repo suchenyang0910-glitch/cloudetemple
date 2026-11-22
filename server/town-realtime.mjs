@@ -1,5 +1,5 @@
 import {randomUUID,randomInt} from 'node:crypto';
-export const limits=Object.freeze({connections:200,payload:2048,buffer:32768,memory:300000000});
+export const limits=Object.freeze({connections:40,payload:2048,buffer:32768,memory:300000000});
 export function vietnamPeriod(now){const hour=new Date(now+7*3600000).getUTCHours();return hour>=5&&hour<7?'dawn':hour>=7&&hour<17?'day':hour>=17&&hour<19?'dusk':'night';}
 const distance=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1]);
 const fields={enter:['scene','ticket','room'],leave:[],move:['from','target','at'],state:['value','seconds'],claim:['seat'],release:['seat'],ping:['background','continueSeat']};

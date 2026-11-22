@@ -47,7 +47,7 @@ WebSocket URL is `/town-ws`, with no ticket/query string. Browser Origin is chec
 {"v":1,"seq":1,"type":"enter","scene":"chuamay","ticket":"opaque token from API"}
 ```
 
-Client sequence increases by exactly one; invalid version/type/extra fields, binary frames and oversized messages fail closed. Payload limit 2 KiB, buffered output 32 KiB, compression disabled. Raw and unauthenticated connections count toward 200. One account has one connection: a newly authenticated connection evicts the old one, even if the old connection already left its scene.
+Client sequence increases by exactly one; invalid version/type/extra fields, binary frames and oversized messages fail closed. Payload limit 2 KiB, buffered output 32 KiB, compression disabled. Raw and unauthenticated connections count toward the staging hard cap of 40. One account has one connection: a newly authenticated connection evicts the old one, even if the old connection already left its scene.
 
 | Client type | Additional fields | Server behavior |
 |---|---|---|
@@ -81,7 +81,7 @@ Realtime logs are only aggregate connection/room counts and fixed error/rate cod
 
 ## Local evidence and open gates
 
-`node --test server/town-scenes.test.mjs server/town.test.mjs` covers schema/identity preservation, migration guards, normalization/filtering, cookie-to-account priority, rate limits, tickets, seat competition/timers, capacity state, sequence/bounds, name moderation and two-socket loopback smoke. Capacity tests allocate in-memory state, not a 200-connection load run. `tests/town-process-smoke.mjs` starts two local child processes, forcibly stops realtime, then checks the existing API remains healthy. `tests/town-names-browser.mjs` verifies mobile/desktop save/reload/filter/choices and admin reset against a local synthetic API.
+`node --test server/town-scenes.test.mjs server/town.test.mjs` covers schema/identity preservation, migration guards, normalization/filtering, cookie-to-account priority, rate limits, tickets, seat competition/timers, capacity state, sequence/bounds, name moderation and two-socket loopback smoke. Capacity tests verify 40 accepted, 41 rejected and released-slot reuse in memory; no network load test is run. `tests/town-process-smoke.mjs` starts two local child processes, forcibly stops realtime, then checks the existing API remains healthy. `tests/town-names-browser.mjs` verifies mobile/desktop save/reload/filter/choices and admin reset against a local synthetic API.
 
 The realtime service owns `server/town-realtime/package.json` and its lockfile. Its only dependency is exact `ws 8.23.0`; `ws.mjs` resolves the package from that directory for both the entry point and transport tests. The earlier API ws declaration was removed with explicit user approval; API manifests exactly match the original base. No frontend dependencies changed. Installation was performed only inside the B worktree, with scripts/optional packages disabled; only ws was added. Existing better-sqlite3 remains reused for local synthetic database tests.
 
