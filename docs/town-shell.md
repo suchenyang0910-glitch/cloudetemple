@@ -25,7 +25,7 @@ Scene/module loading failure, a 20-second loading timeout, WebGL initialization 
 
 Town sound uses `createTempleAudio` from unchanged `audio.js`, the existing `ct-volume` preference and recorded `ambient-courtyard` asset. Each visit starts silent; the sound button supplies the browser-required enable gesture. Hide stops ambient playback, show resumes an enabled session, mute/page exit stop it, and audio failure leaves the scene usable. No new audio engine, recordings or autoplay bypass.
 
-`town-performance.js` measures real RAF intervals in consecutive approximately one-second windows. Below 20 FPS for at least five consecutive seconds reveals a Vietnamese status prompt; one healthy window or hiding the page resets the accumulated duration. One prompt per visit. The user can keep exploring or press its return button, which uses the existing failure fallback and blocks town re-entry for the tab session. The displayed diagnostic FPS also uses unclamped elapsed time. This is a software detector, not a device-performance certification.
+`town-performance.js` measures real RAF intervals in consecutive approximately one-second windows. Below 20 FPS for at least five consecutive seconds reveals a Vietnamese status prompt; one healthy window or hiding the page resets the accumulated duration. One prompt per visit. The user can press `Ở lại` to hide the prompt for this page visit (no storage or navigation change; a new visit can prompt again), or press its return button, which uses the existing failure fallback and blocks town re-entry for the tab session. The displayed diagnostic FPS also uses unclamped elapsed time. This is a software detector, not a device-performance certification.
 
 ## Author checks and independent acceptance
 

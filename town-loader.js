@@ -19,6 +19,10 @@ document.addEventListener('visibilitychange',async()=>{
   else if(audio.enabled){await audio.wake();void audio.ambient('forest',.32,1.5);}
 });
 document.getElementById('town-fallback').addEventListener('click',fail);
+document.getElementById('town-stay').addEventListener('click',()=>{
+  document.getElementById('town-slow').hidden=true;
+  document.getElementById('back-2d').focus();
+});
 if(!canEnterTown()){
   clearTimeout(timer);location.replace('/?town=home');
 }else{
