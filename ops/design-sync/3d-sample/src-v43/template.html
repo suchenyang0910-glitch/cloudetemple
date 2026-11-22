@@ -1453,7 +1453,7 @@ const wk=moving?1:0,sL=Math.sin(walkPh)*wk,sR=-sL;
   yaw+=(yawT-yaw)*Math.min(1,dt*(W===TOWN?14:6));tPitch+=(tPitchT-tPitch)*Math.min(1,dt*14);tDist+=(tDistT-tDist)*Math.min(1,dt*10);plaq.forEach(q=>q.visible=hallK<.45);
   wide=camera.aspect>1.2?1:0;cxT=state==='ritual'?1:THREE.MathUtils.lerp(.6,.85,hallK);cx+=(cxT-cx)*Math.min(1,dt*2.5);
   const tw=W===TOWN?1:0,gw=W===GARDEN?1:0,back=THREE.MathUtils.lerp(8.6,6.3,hallK)*(1+wide*.22)+tw*6.4+gw*5.2, up=THREE.MathUtils.lerp(3.9,2.75,hallK)+tw*2.8+gw*2.1;
-  camPos.set(pos.x*cx+Math.sin(yaw)*back,pos.y+up,pos.z+Math.cos(yaw)*back);
+  camPos.set(pos.x*cx+Math.sin(yaw)*back,pos.y+up,pos.z+Math.cos(yaw)*back);if(state==='ritual'&&ritual?.startsWith('seat-')){camPos.y+=3.2;camPos.x+=Math.sin(yaw)*5;camPos.z+=Math.cos(yaw)*5;}
   if(camPos.z>-1.2&&hallK>.5)camPos.y=Math.max(camPos.y,pos.y+2.1);
   if(hallK>.5)camPos.x=THREE.MathUtils.clamp(camPos.x,camPos.z>-2.7?-4.4:-7.2,camPos.z>-2.7?4.4:7.2);       // 不让镜头钻到格扇和侧墙后面
   camLook.set(pos.x+(pos.x-camPos.x)*.75,pos.y+THREE.MathUtils.lerp(2.9,1.75,hallK)-wide*.7,pos.z+(pos.z-camPos.z)*.75);   // 视线永远穿过人物

@@ -1,0 +1,10 @@
+// v43 自检用的页面内测量（Claude 2026-11-22）。只读场景里的真实物体，不读任何"汇报用"的钩子。
+// 约定（实现方必须照做，否则测不到就算 FAIL）：
+//   坐着的人：最外层那个物体（Group 或 Mesh）的 userData.seatedPerson === true（参考实现 patches/seated-avatar-v2.js 已带）
+//   称呼牌：  Sprite.userData.nameTag === true，userData.text = 显示的称呼；自己的那块另加 userData.self = true
+window.__measure={
+  people(world){const out=[];world.g.traverse(o=>{if(!o.userData.seatedPerson)return;let v=true;for(let q=o;q;q=q.parent)if(!q.visible)v=false;const p=o.getWorldPosition(new o.position.constructor());let tris=0,meshes=0;o.traverse(m=>{if(m.isMesh){const g=m.geometry;tris+=(g.index?g.index.count:g.attributes.position.count)/3;meshes++}});out.push({x:+p.x.toFixed(2),y:+p.y.toFixed(2),z:+p.z.toFixed(2),floor:+world.floorY(p.z,p.x).toFixed(2),yaw:+o.rotation.y.toFixed(2),tris:Math.round(tris),meshes,visible:v})});return out},
+  tags(){const cam=__ct.camera,r=__ct.renderer.domElement.getBoundingClientRect(),H=r.height,k=2*Math.tan(cam.fov*Math.PI/360),out=[];__ct.scene.traverse(o=>{if(!(o.isSprite&&o.userData.nameTag))return;let v=true;for(let q=o;q;q=q.parent)if(!q.visible)v=false;if(!v)return;const V=o.position.constructor,wp=o.getWorldPosition(new V()),ws=o.getWorldScale(new V()),vp=wp.clone().applyMatrix4(cam.matrixWorldInverse),d=-vp.z,n=wp.clone().project(cam);const px=o.material.sizeAttenuation===false?ws.y*H/k:ws.y*H/(k*d);out.push({text:o.userData.text||'',self:!!o.userData.self,px:+px.toFixed(1),cx:+((n.x+1)/2*r.width+r.left).toFixed(0),cy:+((1-n.y)/2*r.height+r.top).toFixed(0),inFront:d>0,wx:+wp.x.toFixed(2),wy:+wp.y.toFixed(2),wz:+wp.z.toFixed(2)})});return out},
+  avatar(){const p=__ct.pos;let best=null;for(const o of __ct.scene.children){if(!o.isGroup||Math.hypot(o.position.x-p.x,o.position.z-p.z)>.05)continue;let n=0;o.traverse(q=>{if(q.isMesh)n++});if(n>20&&(!best||n>best.n))best={n,visible:o.visible,y:+o.position.y.toFixed(2)}}return best},
+  cushions(world,seats){return seats.filter(s=>s.model).map(s=>({id:s.id,kind:s.kind,x:s.x,z:s.z,modelY:+s.model.getWorldPosition(new s.model.position.constructor()).y.toFixed(2),floor:+world.floorY(s.z,s.x).toFixed(2)}))}
+};
