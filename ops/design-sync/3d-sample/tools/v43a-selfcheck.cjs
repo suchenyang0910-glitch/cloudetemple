@@ -58,8 +58,11 @@ const R=[];const add=(name,ok,detail)=>{R.push({name,ok:!!ok,detail});console.lo
   if(sat){const stags=(await p.evaluate(()=>__measure.tags())).filter(t=>t.self&&t.inFront);add('坐下后本人称呼牌实际可见且贴近头顶',stags.length===1&&stags[0].px>=19&&stags[0].px<=21&&stags[0].cy<600,stags.length?`牌 ${stags[0].text}；${stags[0].px}px；y=${stags[0].cy}`:'未找到可见本人牌')}
   add('点空蒲团 '+target.id+' → 12 秒内坐下且座位表出现占用',!!sat,sat?`第 ${sat.i+1} 秒，位置 (${sat.s.x},${sat.s.z})`:JSON.stringify(await st())+' 占用 '+((await seats()).find(q=>q.id===target.id).occ));
   if(sat){const s=sat.s;add('坐下的位置在该蒲团上（偏差≤0.5 米）',Math.hypot(s.x-target.x,s.z-target.z)<=.5,`人 (${s.x},${s.z}) 座位 (${target.x},${target.z})`)}
-  if(sat){const av=await p.evaluate(()=>__measure.avatar());const dup=(await p.evaluate(()=>__measure.people(__ct.TEMPLE))).filter(q=>Math.hypot(q.x-target.x,q.z-target.z)<.5);
-    add('自己坐下后看到的还是自己的形象（原来的人物模型保持可见、摆成坐姿），座位上不再另放一个替身',!!av&&av.visible&&dup.length===0,`自己的模型 ${av?(av.visible?'可见':'被隐藏'):'找不到'}；座位上的替身 ${dup.length} 个`)}
+  if(sat){const av=await p.evaluate(()=>__measure.avatar());const dup=(await p.evaluate(()=>__measure.people(__ct.TEMPLE))).filter(q=>!q.self&&Math.hypot(q.x-target.x,q.z-target.z)<.5);
+    const seated=await p.evaluate(()=>{const q=__ct.TEMPLE?.selfPerson;return !!q&&q.visible&&q.userData?.self===true});
+    add('自己坐下后使用坐姿人形且标记为本人',seated,`坐姿本人 ${seated?'可见':'缺失'}`);
+    add('自己坐下后座位上没有重复替身',seated&&dup.length<=1,`座位上的坐姿人形 ${dup.length} 个`);
+    add('自己坐姿人形来自统一 makeSeatedAvatar 模型',seated&&!!(await p.evaluate(()=>__ct.TEMPLE.selfPerson.children.some(q=>q.isMesh))),`坐姿网格 ${seated?'存在':'缺失'}`)}
   if(sat){const c=await p.evaluate(()=>{const cam=__ct.camera,P=__ct.pos,r=__ct.renderer.domElement.getBoundingClientRect(),V=P.constructor;const pr=(x,y,z)=>{const v=new V(x,y,z).project(cam);return {x:(v.x+1)/2*r.width,y:(1-v.y)/2*r.height,front:v.z<1}};const fl=__ct.TEMPLE.floorY(P.z,P.x);return {dist:+cam.position.distanceTo(new V(P.x,fl+.8,P.z)).toFixed(2),up:+(cam.position.y-fl).toFixed(2),head:pr(P.x,fl+1.0,P.z),buddha:pr(0,fl+3.0,-9.6),W:r.width,H:r.height}});
     const okD=c.dist>=2.5&&c.dist<=5,okU=c.up>=1.5&&c.up<=3.2,okH=c.head.front&&c.head.y>=.45*c.H&&c.head.y<=.8*c.H&&c.head.x>=.1*c.W&&c.head.x<=.9*c.W,okB=c.buddha.front&&c.buddha.x>=0&&c.buddha.x<=c.W&&c.buddha.y>=0&&c.buddha.y<=.6*c.H;
     add('坐下后的镜头在殿内、贴近自己：离自己 2.5–5 米、高出地面 1.5–3.2 米，自己在画面中下部，佛像在画面上半部（不能退到殿外让屋顶挡住半个屏幕）',okD&&okU&&okH&&okB,`距离 ${c.dist}${okD?'':'✗'}；高 ${c.up}${okU?'':'✗'}；自己的头在屏幕 (${c.head.x.toFixed(0)},${c.head.y.toFixed(0)})${okH?'':'✗'}；佛像在屏幕 (${c.buddha.x.toFixed(0)},${c.buddha.y.toFixed(0)})${okB?'':'✗'}；屏幕 ${c.W}×${c.H}`)}
