@@ -55,6 +55,7 @@ const R=[];const add=(name,ok,detail)=>{R.push({name,ok:!!ok,detail});console.lo
   const xy=await proj(target.x,await p.evaluate(()=>__ct.pos.y)+.15,target.z);await p.touchscreen.tap(xy[0],xy[1]);
   let sat=null;for(let i=0;i<12&&!sat;i++){await p.waitForTimeout(1000);const s=await st();const l=await seats();if(s.state!=='free'&&l.find(q=>q.id===target.id).occ)sat={s,i}}
   await shot('3-seated');
+  if(sat){const stags=(await p.evaluate(()=>__measure.tags())).filter(t=>t.self&&t.inFront);add('坐下后本人称呼牌实际可见且贴近头顶',stags.length===1&&stags[0].px>=19&&stags[0].px<=21&&stags[0].cy<600,stags.length?`牌 ${stags[0].text}；${stags[0].px}px；y=${stags[0].cy}`:'未找到可见本人牌')}
   add('点空蒲团 '+target.id+' → 12 秒内坐下且座位表出现占用',!!sat,sat?`第 ${sat.i+1} 秒，位置 (${sat.s.x},${sat.s.z})`:JSON.stringify(await st())+' 占用 '+((await seats()).find(q=>q.id===target.id).occ));
   if(sat){const s=sat.s;add('坐下的位置在该蒲团上（偏差≤0.5 米）',Math.hypot(s.x-target.x,s.z-target.z)<=.5,`人 (${s.x},${s.z}) 座位 (${target.x},${target.z})`)}
   if(sat){const av=await p.evaluate(()=>__measure.avatar());const dup=(await p.evaluate(()=>__measure.people(__ct.TEMPLE))).filter(q=>Math.hypot(q.x-target.x,q.z-target.z)<.5);
