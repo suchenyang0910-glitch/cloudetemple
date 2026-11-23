@@ -105,7 +105,7 @@ export function createTownCore({store,scenes,clock=Date.now,log=()=>{},maxConnec
     }
   }
   let refreshed=0;
-  function tick(){const now=clock();for(const c of [...connections])if((!c.ref&&now-c.opened>=5000)||now-c.seen>=45000)disconnect(c,true,c.seen);
+  function tick(){const now=clock();for(const c of [...connections])if((!c.ref&&now-c.opened>=5000)||now-c.seen>=45000)disconnect(c,true,now);
     for(const m of [...members.values()]){
       if(m.motion&&now>=m.motion.start+m.motion.duration){m.at=[...m.motion.target];m.motion=null;m.state='stand';broadcast(m.room,'state',view(m));}
       expire(m,now);

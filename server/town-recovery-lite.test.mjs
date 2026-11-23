@@ -77,3 +77,13 @@ test('offset remains in bounds; no safe space refuses entry instead of overlappi
   f.scenes.chuamay={...f.scenes.chuamay,bounds:[0,.1,0,.1],spawns:[{x:0,z:0,yaw:0}]};
   f.person('guest:c','chuamay');const d=f.person('guest:d','chuamay');assert.equal(d.snapshot,undefined);assert.equal(d.messages.at(-1).code,'spawn_busy');
 });
+
+for(const delay of [59999,60000])test(`stale connection retains position for 60s after detection (${delay}ms)`,t=>{
+  const f=fixture(t),a=f.person();f.walk(a,[1,2]);const lastSeen=a.c.seen;
+  f.advance(44999);f.core.tick();assert.equal(a.c.closed,false);
+  f.advance(1);f.core.tick();assert.equal(a.c.closed,true);
+  assert.equal(a.c.member.disconnected,lastSeen+45000);
+  f.advance(delay);f.core.tick();const b=f.person();
+  if(delay<60000){assert.deepEqual(b.c.member.at,[1,2]);assert.equal(b.snapshot.room,a.snapshot.room);}
+  else{assert.notDeepEqual(b.c.member.at,[1,2]);assert.notEqual(b.snapshot.room,a.snapshot.room);}
+});
