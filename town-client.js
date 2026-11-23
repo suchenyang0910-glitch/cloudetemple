@@ -4,7 +4,7 @@
 // ticketUrl ends in /ticket (optional query); the existing /csrf sibling is read first.
 // Callbacks receive server messages unchanged: onSnapshot/onJoin/onGone/onMove,
 // onState/onRelease/onClaimResult. onState also carries seat continuation prompts.
-// onDisconnect({retrying,retry?}) reports connection loss; onOffline('已离线') fires
+// onDisconnect({retrying,retry?}) reports connection loss; onOffline('offline') fires
 // once after exhaustion. setState confirms seat arrival; continueSeat answers prompts.
 // close is terminal. Only an explicit new enter() restarts an exhausted client.
 export function createTownClient(options = {}) {
@@ -34,7 +34,7 @@ export function createTownClient(options = {}) {
     if (retries === backoff.length) {
       exhausted = true;
       notify('onDisconnect', { retrying: false });
-      notify('onOffline', '已离线');
+      notify('onOffline', 'offline');
       return;
     }
     const delay = backoff[retries++];

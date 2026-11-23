@@ -258,7 +258,7 @@ test('server absent: five real-time retries at 1/2/5/10/10 seconds, one offline 
   assert.equal(f.connections.length, 6, 'one initial connection plus five retries');
   const expected = [1000, 2000, 5000, 10000, 10000];
   for (let i = 0; i < expected.length; i++) assert(f.connections[i + 1] - f.connections[i] >= expected[i] - 50);
-  assert.deepEqual(a.all('Offline'), ['已离线']);
+  assert.deepEqual(a.all('Offline'), ['offline']);
   const requests = f.requests();
   a.instance.setVisible(false); a.instance.setVisible(true); await delay(1100);
   assert.equal(f.requests(), requests); assert.equal(f.connections.length, 6);
