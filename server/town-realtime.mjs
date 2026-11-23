@@ -21,19 +21,39 @@ export function createTownCore({store,scenes,clock=Date.now,log=()=>{},maxConnec
     const used=[...rooms.values()].filter(r=>r.scene===scene&&r.members.size<scenes[scene].cap).sort((a,b)=>b.members.size-a.members.size);
     if(used.length)return used[0];const room={id:randomUUID(),scene,seq:0,members:new Map(),seats:new Map()};rooms.set(room.id,room);return room;
   }
+  function expire(m,now){
+    if(m.seat&&((m.disconnected!==null&&now-m.disconnected>=60000)||(m.background!==null&&now-m.background>=90000)||now>=m.seat.until))release(m,'expired');
+    if(!m.connection&&m.disconnected!==null&&now-m.disconnected>=60000)remove(m);
+  }
+  // shortcut: bounds only; page walkability must be checked before accepting scene spawn offsets.
+  function spawnFor(room){
+    const cfg=scenes[room.scene],people=[...room.members.values()].map(m=>position(m));
+    const clearance=p=>Math.min(Infinity,...people.map(at=>distance(at,[p.x,p.z])));
+    const free=cfg.spawns.filter(p=>clearance(p)>=1);
+    if(free.length)return free[randomInt(free.length)];
+    const start=randomInt(cfg.spawns.length),angle=randomInt(32);
+    for(let s=0;s<cfg.spawns.length;s++){
+      const origin=cfg.spawns[(start+s)%cfg.spawns.length];
+      for(const radius of [.85,1,1.2,1.5])for(let i=0;i<32;i++){
+        const a=(angle+i)*Math.PI/16,p={x:origin.x+Math.cos(a)*radius,z:origin.z+Math.sin(a)*radius,yaw:origin.yaw},b=cfg.bounds;
+        if(p.x>=b[0]&&p.x<=b[1]&&p.z>=b[2]&&p.z<=b[3]&&clearance(p)>=.8)return p;
+      }
+    }
+    return null;
+  }
   function join(c,scene,hint){
     if(!Object.hasOwn(scenes,scene)||!scenes[scene]?.bounds)return result(c,'scene');
-    let old=members.get(c.ref);if(old&&old.room.scene!==scene){remove(old);old=null;}
+    let old=members.get(c.ref);if(old){expire(old,clock());old=members.get(c.ref);}if(old&&old.room.scene!==scene){remove(old);old=null;}
     const profile=store.public(c.ref);if(!profile){disconnect(c,true);return;}
     let m=old;
     if(m){broadcast(m.room,'gone',{actor:m.actor});m.actor=randomUUID();m.connection=c;m.disconnected=null;m.background=null;}
-    else{const room=roomFor(scene,hint),spawn=scenes[scene].spawns[randomInt(scenes[scene].spawns.length)];m={ref:c.ref,actor:randomUUID(),room,connection:c,at:[spawn.x,spawn.z],yaw:spawn.yaw,motion:null,state:'stand',seat:null,background:null,disconnected:null,lastTarget:[spawn.x,spawn.z],lastTargetAt:clock()};members.set(c.ref,m);room.members.set(c.ref,m);}
+    else{const room=roomFor(scene,hint),spawn=spawnFor(room);if(!spawn){if(!room.members.size)rooms.delete(room.id);return result(c,'spawn_busy');}m={ref:c.ref,actor:randomUUID(),room,connection:c,at:[spawn.x,spawn.z],yaw:spawn.yaw,motion:null,state:'stand',seat:null,background:null,disconnected:null,lastTarget:[spawn.x,spawn.z],lastTargetAt:clock()};members.set(c.ref,m);room.members.set(c.ref,m);}
     m.name=profile.name;m.revision=profile.revision;c.member=m;presence(m);
     const p=position(m);send(c,'snapshot',{room:m.room.id,scene,roomSeq:m.room.seq,self:m.actor,spawn:{x:p[0],z:p[1],yaw:m.yaw},period:vietnamPeriod(clock()),serverTime:clock(),members:[...m.room.members.values()].filter(p=>p.connection).map(view),seats:[...m.room.seats.values()].map(s=>({seat:s.id,actor:s.owner.actor,phase:s.phase,until:s.until}))});
     broadcast(m.room,'join',view(m));
   }
   function disconnect(c,terminate=false,at=clock()){if(c.closed)return;c.closed=true;connections.delete(c);const m=c.member;
-    if(m&&m.connection===c){m.at=position(m);m.motion=null;m.connection=null;m.disconnected=at;store.leave(m.ref);broadcast(m.room,'gone',{actor:m.actor});if(!m.seat)remove(m);}
+    if(m&&m.connection===c){m.at=position(m);if(m.motion)m.state='stand';m.motion=null;m.connection=null;m.disconnected=at;store.leave(m.ref);broadcast(m.room,'gone',{actor:m.actor});}
     if(terminate)c.close();
   }
   function connect({send:write,close,origin}){if(connections.size>=maxConnections)return null;const c={send:write,close,origin,in:0,out:0,ref:null,member:null,closed:false,opened:clock(),seen:clock(),bucket:clock(),count:0,lastMove:-Infinity,lastSeat:-Infinity,rejected:[],cooldown:0};connections.add(c);return c;}
@@ -88,10 +108,9 @@ export function createTownCore({store,scenes,clock=Date.now,log=()=>{},maxConnec
   function tick(){const now=clock();for(const c of [...connections])if((!c.ref&&now-c.opened>=5000)||now-c.seen>=45000)disconnect(c,true,c.seen);
     for(const m of [...members.values()]){
       if(m.motion&&now>=m.motion.start+m.motion.duration){m.at=[...m.motion.target];m.motion=null;m.state='stand';broadcast(m.room,'state',view(m));}
-      const seat=m.seat;
-      if(seat&&((m.disconnected!==null&&now-m.disconnected>=60000)||(m.background!==null&&now-m.background>=90000)||now>=seat.until))release(m,'expired');
+      expire(m,now);
+      if(!members.has(m.ref))continue;
       if(m.seat?.phase==='occupied'&&m.seat.indefinite&&!m.seat.prompted&&now-m.seat.started>=30*60000){m.seat.prompted=true;if(m.connection)send(m.connection,'state',{actor:m.actor,state:m.state,code:'continue_seat',until:m.seat.until});}
-      if(!m.connection&&!m.seat)remove(m);
     }
     if(now-refreshed>=1000){refreshed=now;for(const m of [...members.values()]){const profile=store.public(m.ref);if(!profile){if(m.connection)disconnect(m.connection,true);remove(m);continue;}if(profile.revision!==m.revision||profile.name!==m.name){m.name=profile.name;m.revision=profile.revision;if(m.connection){presence(m);broadcast(m.room,'state',view(m));}}}}
   }
