@@ -19,7 +19,7 @@ const scenes=loadTownScenes(seats,{allowTest:true}),origin='https://staging.chua
 
 for(const code of ['SQLITE_BUSY','SQLITE_LOCKED','SQLITE_IOERR',undefined])test(`timer handles only SQLITE_BUSY as retryable: ${code}`,async t=>{
   t.mock.timers.enable({apis:['setInterval']});
-  const logs=[],app=createTownSocketServer({WebSocketServer,store:{},scenes,origins:new Set([origin]),environment:'staging',log:e=>logs.push(e.code),memory:()=>0});
+  const logs=[],app=createTownSocketServer({WebSocketServer,store:{recovery:()=>[]},scenes,origins:new Set([origin]),environment:'staging',log:e=>logs.push(e.code),memory:()=>0});
   app.server.listen(0,'127.0.0.1');await once(app.server,'listening');
   let calls=0;const tick=t.mock.method(app.core,'tick',()=>{if(++calls===1)throw Object.assign(Error('store failure'),{code});});
   const stop=t.mock.method(app.core,'stop',()=>{});

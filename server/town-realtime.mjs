@@ -15,30 +15,73 @@ export function createTownCore({store,scenes,clock=Date.now,log=()=>{},maxConnec
   const view=m=>({actor:m.actor,name:m.name,at:position(m),target:m.motion?.target||position(m),state:m.state,seat:m.seat?.id||null});
   function presence(m){store.presence(m.actor,m.ref,m.room.id,m.revision,clock());}
   function release(m,reason){if(!m.seat)return;const id=m.seat.id;m.room.seats.delete(id);m.seat=null;m.state='stand';broadcast(m.room,'release',{actor:m.actor,seat:id,reason});}
-  function remove(m){release(m,'leave');m.room.members.delete(m.ref);members.delete(m.ref);store.leave(m.ref);broadcast(m.room,'gone',{actor:m.actor});if(!m.room.members.size)rooms.delete(m.room.id);if(m.connection)m.connection.member=null;}
+  function remove(m){store.forgetRecovery(m.ref);release(m,'leave');m.room.members.delete(m.ref);members.delete(m.ref);store.leave(m.ref);broadcast(m.room,'gone',{actor:m.actor});if(!m.room.members.size)rooms.delete(m.room.id);if(m.connection)m.connection.member=null;}
   function roomFor(scene,hint){
     const wanted=rooms.get(hint);if(wanted?.scene===scene&&wanted.members.size<scenes[scene].cap)return wanted;
     const used=[...rooms.values()].filter(r=>r.scene===scene&&r.members.size<scenes[scene].cap).sort((a,b)=>b.members.size-a.members.size);
     if(used.length)return used[0];const room={id:randomUUID(),scene,seq:0,members:new Map(),seats:new Map()};rooms.set(room.id,room);return room;
   }
+  function record(m){
+    const now=clock(),seat=m.seat?{id:m.seat.id,phase:m.seat.phase,until:m.seat.until,started:m.seat.started,indefinite:m.seat.indefinite,prompted:m.seat.prompted}:null;
+    return {ref:m.ref,data:{scene:m.room.scene,room:m.room.id,at:position(m,now),yaw:m.yaw,state:m.motion?'stand':m.state,seat,background:m.background,disconnected:m.disconnected??now},
+      expires:Math.min((m.disconnected??now)+60000,m.background===null?Infinity:m.background+90000)};
+  }
+  function checkpoint(list){if(list.length)store.saveRecovery(list.map(record));}
+  function expire(m,now){
+    if(m.seat&&((m.disconnected!==null&&now-m.disconnected>=60000)||(m.background!==null&&now-m.background>=90000)||now>=m.seat.until))release(m,'expired');
+    if(!m.connection&&m.disconnected!==null&&now-m.disconnected>=60000)remove(m);
+  }
+  function restore(){
+    const now=clock();
+    for(const saved of store.recovery(now)){
+      const cfg=scenes[saved.scene],profile=store.public(saved.ref),p=saved.at,b=cfg?.bounds;
+      if(!profile||!b||!Array.isArray(p)||p.length!==2||!p.every(Number.isFinite)||p[0]<b[0]||p[0]>b[1]||p[1]<b[2]||p[1]>b[3]){
+        store.forgetRecovery(saved.ref);continue;
+      }
+      let room=rooms.get(saved.room);
+      if(!room){room={id:saved.room,scene:saved.scene,seq:0,members:new Map(),seats:new Map()};rooms.set(room.id,room);}
+      if(room.scene!==saved.scene||room.members.size>=cfg.cap){store.forgetRecovery(saved.ref);continue;}
+      const m={ref:saved.ref,actor:randomUUID(),room,connection:null,at:[...p],yaw:saved.yaw,motion:null,state:saved.state,seat:null,background:saved.background,disconnected:saved.disconnected,lastTarget:[...p],lastTargetAt:now,name:profile.name,revision:profile.revision};
+      const seat=saved.seat;
+      if(seat&&seat.until>now&&cfg.seats[seat.id]&&!room.seats.has(seat.id)){
+        m.seat={...seat,owner:m};room.seats.set(seat.id,m.seat);
+      }else if(['sit','bow','mo'].includes(m.state))m.state='stand';
+      members.set(m.ref,m);room.members.set(m.ref,m);expire(m,now);
+    }
+  }
+  function spawnFor(room){
+    const cfg=scenes[room.scene],people=[...room.members.values()].map(m=>position(m));
+    const clearance=p=>Math.min(Infinity,...people.map(at=>distance(at,[p.x,p.z])));
+    const free=cfg.spawns.filter(p=>clearance(p)>=1);
+    if(free.length)return free[randomInt(free.length)];
+    const start=randomInt(cfg.spawns.length),angle=randomInt(32);
+    for(let s=0;s<cfg.spawns.length;s++){
+      const origin=cfg.spawns[(start+s)%cfg.spawns.length];
+      for(const radius of [.85,1,1.2,1.5])for(let i=0;i<32;i++){
+        const a=(angle+i)*Math.PI/16,p={x:origin.x+Math.cos(a)*radius,z:origin.z+Math.sin(a)*radius,yaw:origin.yaw},b=cfg.bounds;
+        if(p.x>=b[0]&&p.x<=b[1]&&p.z>=b[2]&&p.z<=b[3]&&clearance(p)>=.8)return p;
+      }
+    }
+    return null;
+  }
   function join(c,scene,hint){
     if(!Object.hasOwn(scenes,scene)||!scenes[scene]?.bounds)return result(c,'scene');
-    let old=members.get(c.ref);if(old&&old.room.scene!==scene){remove(old);old=null;}
+    let old=members.get(c.ref);if(old){expire(old,clock());old=members.get(c.ref);}if(old&&old.room.scene!==scene){remove(old);old=null;}
     const profile=store.public(c.ref);if(!profile){disconnect(c,true);return;}
     let m=old;
     if(m){broadcast(m.room,'gone',{actor:m.actor});m.actor=randomUUID();m.connection=c;m.disconnected=null;m.background=null;}
-    else{const room=roomFor(scene,hint),spawn=scenes[scene].spawns[randomInt(scenes[scene].spawns.length)];m={ref:c.ref,actor:randomUUID(),room,connection:c,at:[spawn.x,spawn.z],yaw:spawn.yaw,motion:null,state:'stand',seat:null,background:null,disconnected:null,lastTarget:[spawn.x,spawn.z],lastTargetAt:clock()};members.set(c.ref,m);room.members.set(c.ref,m);}
+    else{const room=roomFor(scene,hint),spawn=spawnFor(room);if(!spawn){if(!room.members.size)rooms.delete(room.id);return result(c,'spawn_busy');}m={ref:c.ref,actor:randomUUID(),room,connection:c,at:[spawn.x,spawn.z],yaw:spawn.yaw,motion:null,state:'stand',seat:null,background:null,disconnected:null,lastTarget:[spawn.x,spawn.z],lastTargetAt:clock()};members.set(c.ref,m);room.members.set(c.ref,m);}
     m.name=profile.name;m.revision=profile.revision;c.member=m;presence(m);
     const p=position(m);send(c,'snapshot',{room:m.room.id,scene,roomSeq:m.room.seq,self:m.actor,spawn:{x:p[0],z:p[1],yaw:m.yaw},period:vietnamPeriod(clock()),serverTime:clock(),members:[...m.room.members.values()].filter(p=>p.connection).map(view),seats:[...m.room.seats.values()].map(s=>({seat:s.id,actor:s.owner.actor,phase:s.phase,until:s.until}))});
     broadcast(m.room,'join',view(m));
   }
   function disconnect(c,terminate=false,at=clock()){if(c.closed)return;c.closed=true;connections.delete(c);const m=c.member;
-    if(m&&m.connection===c){m.at=position(m);m.motion=null;m.connection=null;m.disconnected=at;store.leave(m.ref);broadcast(m.room,'gone',{actor:m.actor});if(!m.seat)remove(m);}
+    if(m&&m.connection===c){m.at=position(m);if(m.motion)m.state='stand';m.motion=null;m.connection=null;m.disconnected=at;store.leave(m.ref);broadcast(m.room,'gone',{actor:m.actor});checkpoint([m]);}
     if(terminate)c.close();
   }
   function connect({send:write,close,origin}){if(connections.size>=maxConnections)return null;const c={send:write,close,origin,in:0,out:0,ref:null,member:null,closed:false,opened:clock(),seen:clock(),bucket:clock(),count:0,lastMove:-Infinity,lastSeat:-Infinity,rejected:[],cooldown:0};connections.add(c);return c;}
   function claimResult(c,ok,code,seat=null,nearest=null){if(!ok){const now=clock();c.rejected=c.rejected.filter(at=>at>now-60000);c.rejected.push(now);if(c.rejected.length>=5)c.cooldown=now+30000;}send(c,'claim-result',{ok,code,seat,nearest,cooldownUntil:c.cooldown});}
-  function receive(c,msg){
+  function receiveMessage(c,msg){
     if(c.closed)return;
     const now=clock();if(now-c.bucket>=1000){c.bucket=now;c.count=0;}if(++c.count>15){log({code:'rate'});disconnect(c,true);return;}
     if(!msg||Array.isArray(msg)||msg.v!==1||!Number.isSafeInteger(msg.seq)||msg.seq!==c.in+1||!Object.hasOwn(fields,msg.type)||Object.keys(msg).some(k=>!['v','seq','type',...fields[msg.type]].includes(k))){result(c,'protocol');disconnect(c,true);return;}
@@ -84,16 +127,21 @@ export function createTownCore({store,scenes,clock=Date.now,log=()=>{},maxConnec
       Object.assign(m.seat,{phase:'occupied',started:now,indefinite:msg.seconds===null,prompted:false,until:now+(msg.seconds===null?32*60:msg.seconds+120)*1000});m.state=msg.value;m.at=[seat.x,seat.z];m.motion=null;broadcast(m.room,'state',view(m));
     }
   }
+  function receive(c,msg){
+    try{return receiveMessage(c,msg);}
+    finally{if(c.member&&members.get(c.ref)===c.member)checkpoint([c.member]);}
+  }
   let refreshed=0;
   function tick(){const now=clock();for(const c of [...connections])if((!c.ref&&now-c.opened>=5000)||now-c.seen>=45000)disconnect(c,true,c.seen);
     for(const m of [...members.values()]){
       if(m.motion&&now>=m.motion.start+m.motion.duration){m.at=[...m.motion.target];m.motion=null;m.state='stand';broadcast(m.room,'state',view(m));}
-      const seat=m.seat;
-      if(seat&&((m.disconnected!==null&&now-m.disconnected>=60000)||(m.background!==null&&now-m.background>=90000)||now>=seat.until))release(m,'expired');
+      expire(m,now);
+      if(!members.has(m.ref))continue;
       if(m.seat?.phase==='occupied'&&m.seat.indefinite&&!m.seat.prompted&&now-m.seat.started>=30*60000){m.seat.prompted=true;if(m.connection)send(m.connection,'state',{actor:m.actor,state:m.state,code:'continue_seat',until:m.seat.until});}
-      if(!m.connection&&!m.seat)remove(m);
+
     }
-    if(now-refreshed>=1000){refreshed=now;for(const m of [...members.values()]){const profile=store.public(m.ref);if(!profile){if(m.connection)disconnect(m.connection,true);remove(m);continue;}if(profile.revision!==m.revision||profile.name!==m.name){m.name=profile.name;m.revision=profile.revision;if(m.connection){presence(m);broadcast(m.room,'state',view(m));}}}}
+    if(now-refreshed>=1000){refreshed=now;for(const m of [...members.values()]){const profile=store.public(m.ref);if(!profile){if(m.connection)disconnect(m.connection,true);remove(m);continue;}if(profile.revision!==m.revision||profile.name!==m.name){m.name=profile.name;m.revision=profile.revision;if(m.connection){presence(m);broadcast(m.room,'state',view(m));}}}checkpoint([...members.values()]);}
   }
-  return {connect,receive,disconnect,tick,counts:()=>({connections:connections.size,rooms:[...rooms.values()].map(r=>r.members.size)}),stop(){for(const c of [...connections])disconnect(c,true);for(const m of [...members.values()])remove(m);}};
+  restore();
+  return {connect,receive,disconnect,tick,counts:()=>({connections:connections.size,rooms:[...rooms.values()].map(r=>r.members.size)}),stop(){for(const c of [...connections])disconnect(c,true);members.clear();rooms.clear();}};
 }

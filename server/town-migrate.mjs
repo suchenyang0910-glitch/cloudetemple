@@ -23,6 +23,7 @@ export function migrateTown(db, environment, {isolated=false}={}) {
     `);
     if(!db.prepare('PRAGMA table_info(town_names)').all().some(c=>c.name==='fallback_name'))db.exec("ALTER TABLE town_names ADD COLUMN fallback_name TEXT NOT NULL DEFAULT ''");
     db.exec('INSERT OR IGNORE INTO town_schema VALUES(2)');
+    db.exec('CREATE TABLE IF NOT EXISTS town_recovery(ref TEXT PRIMARY KEY REFERENCES town_names(ref) ON DELETE CASCADE,data TEXT NOT NULL,expires INTEGER NOT NULL); CREATE INDEX IF NOT EXISTS town_recovery_expiry ON town_recovery(expires); INSERT OR IGNORE INTO town_schema VALUES(4)');
     if(isolated){
       if(!db.prepare('PRAGMA table_info(town_names)').all().some(c=>c.name==='account_valid_until'))db.exec('ALTER TABLE town_names ADD COLUMN account_valid_until INTEGER NOT NULL DEFAULT 0');
       db.exec('INSERT OR IGNORE INTO town_schema VALUES(3)');

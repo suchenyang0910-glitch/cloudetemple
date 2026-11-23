@@ -20,6 +20,9 @@ export function openTownStore(db, environment, {isolated=false,names,clock=Date.
   function publicProfile(ref){const row=get(ref);if(!row)return null;try{return {...row,name:normalize(row.name)};}catch{let fallback;try{fallback=normalize(row.fallback_name);}catch{fallback=random();run('UPDATE town_names SET fallback_name=? WHERE ref=?',fallback,ref);}return {...row,name:fallback};}}
   return {
     isolated,
+    saveRecovery:transact(rows=>{for(const {ref,data,expires} of rows)run('INSERT INTO town_recovery SELECT ?,?,? WHERE EXISTS(SELECT 1 FROM town_names WHERE ref=?) ON CONFLICT(ref) DO UPDATE SET data=excluded.data,expires=excluded.expires',ref,JSON.stringify(data),expires,ref);}),
+    recovery:transact(now=>{run('DELETE FROM town_recovery WHERE expires<=?',now);return db.prepare('SELECT ref,data FROM town_recovery').all().map(row=>({ref:row.ref,...JSON.parse(row.data)}));}),
+    forgetRecovery:ref=>run('DELETE FROM town_recovery WHERE ref=?',ref),
     get,
     public:publicProfile,
     ensure:transact((ref,userId,cookieName,now)=>{
@@ -83,6 +86,6 @@ export function openTownStore(db, environment, {isolated=false,names,clock=Date.
       run('UPDATE town_reviews SET status=? WHERE id=?',action,id);
       run('INSERT INTO town_audit VALUES(?,?,?,?,?,?)',requestId,actor,id,action,'ok',now);return 'ok';
     }),
-    cleanup(now){db.transaction(()=>{run('DELETE FROM town_changes WHERE at<?',now-7*day);run('DELETE FROM town_tickets WHERE expires<=?',now);run('DELETE FROM town_presence WHERE expires<=?',now);run('DELETE FROM town_rates WHERE expires<=?',now);run('DELETE FROM town_reports WHERE at<?',now-30*day);run("DELETE FROM town_reviews WHERE status<>'pending' AND created<?",now-30*day);run('DELETE FROM town_audit WHERE at<?',now-90*day);run('DELETE FROM town_names WHERE user_id IS NULL AND seen<?',now-365*day);}).immediate();}
+    cleanup(now){db.transaction(()=>{run('DELETE FROM town_changes WHERE at<?',now-7*day);run('DELETE FROM town_tickets WHERE expires<=?',now);run('DELETE FROM town_presence WHERE expires<=?',now);run('DELETE FROM town_rates WHERE expires<=?',now);run('DELETE FROM town_recovery WHERE expires<=?',now);run('DELETE FROM town_reports WHERE at<?',now-30*day);run("DELETE FROM town_reviews WHERE status<>'pending' AND created<?",now-30*day);run('DELETE FROM town_audit WHERE at<?',now-90*day);run('DELETE FROM town_names WHERE user_id IS NULL AND seen<?',now-365*day);}).immediate();}
   };
 }

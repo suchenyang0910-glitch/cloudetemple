@@ -20,6 +20,8 @@ export function openIsolatedTown(environment,file,names,{timeout=2000}={}){
   try{
     db.pragma('foreign_keys = ON');
     if(db.pragma('journal_mode',{simple:true})!=='wal')throw Error('town_wal_required');
+    if(!db.prepare('SELECT 1 FROM town_schema WHERE version=3').get())throw Error('town_separate_database_required');
+    migrateTown(db,environment,{isolated:true});
     const store=openTownStore(db,environment,{isolated:true,names});
     return {db,store};
   }catch(error){db.close();throw error;}

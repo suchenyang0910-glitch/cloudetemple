@@ -144,6 +144,7 @@ test('API town connection has short busy timeout rather than blocking existing r
 
 test('production has two scenes, per-room 20/16, opens more rooms; hard cap 120 not 36',t=>{
   const f=fixture(t),raw=JSON.parse(fs.readFileSync(new URL('./town-seats.TEST.json',import.meta.url)));raw.test=false;
+  for(const cfg of Object.values(raw.scenes)){const p=cfg.spawns[0];cfg.spawns=[[-2,0],[2,0],[0,-2],[0,2]].map(([x,z])=>({...p,x:p.x+x,z:p.z+z}));}
   const scenePath=path.join(f.root,'synthetic-seats.json');fs.writeFileSync(scenePath,JSON.stringify(raw));
   const scenes=loadTownScenes(scenePath,{production:true});assert.deepEqual(Object.keys(scenes).sort(),['chuamay','town']);
   assert.equal(connectionLimit('staging'),40);assert.equal(connectionLimit('production'),120);
