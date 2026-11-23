@@ -1131,11 +1131,11 @@ function decorateLampModels(world,defs){const g=new THREE.Group();g.name='lamp-s
 const _seatedGeo={},_seatedTop=new Map();let _seatedRest=null;
 function bakeAvatarPose(pose){
   if(_seatedGeo[pose])return _seatedGeo[pose];
-  const kneel=pose==='kneel'?1:0,sit=kneel?0:1,pray=kneel?1:0,moA=pose==='mo'?1:0;
+  const bench=pose==='bench'?1:0,kneel=pose==='kneel'?1:0,sit=(kneel||bench)?0:1,pray=kneel?1:0,moA=pose==='mo'?1:0;
   const J=[me,hip,LL.th,LR.th,LL.kn,LR.kn,torso,headG,AL.up,AR.up,AL.el,AR.el],keep=J.map(o=>[o.position.clone(),o.rotation.clone()]);
   me.position.set(0,0,0);me.rotation.set(0,0,0);
-  hip.position.y=HIP-kneel*.27-sit*.38;
-  LL.th.rotation.set(-sit*1.5,0,-sit*.5);LR.th.rotation.set(-sit*1.5,0,sit*.5);LL.kn.rotation.x=LR.kn.rotation.x=kneel*1.55+sit*2.0;
+  hip.position.y=HIP-kneel*.27-sit*.38-bench*.22;
+  LL.th.rotation.set(-sit*1.5-bench*.35,0,-sit*.5);LR.th.rotation.set(-sit*1.5-bench*.35,0,sit*.5);LL.kn.rotation.x=LR.kn.rotation.x=kneel*1.55+sit*2.0+bench*.35;
   torso.rotation.x=0;headG.rotation.x=sit*.12+pray*.1;
   const uX=-sit*.5-pray*.95,fX=-.12-sit*.75-pray*1.3,uZ=pray*.42+sit*.28;
   AL.up.rotation.x=uX;AR.up.rotation.x=uX*(1-moA)-moA*.8;AL.el.rotation.x=fX;AR.el.rotation.x=fX*(1-moA)-moA*.75;AL.up.rotation.z=uZ;AR.up.rotation.z=-uZ*(1-moA);
