@@ -22,7 +22,7 @@ for(const [host,port,env,mini,api] of [['h5',8800,'production',false,false],['mi
   # Only behind the verified Cloudflare-only Caddy ingress; never trust a public raw header.
   location = /town-ws {
     if ($http_cf_connecting_ip = "") { return 403; }
-    limit_conn town_clients 4;
+    limit_conn town_clients 20;
     limit_conn_status 429;
     limit_conn_log_level info;
     proxy_pass http://127.0.0.1:8794;

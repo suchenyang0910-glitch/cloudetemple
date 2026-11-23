@@ -38,7 +38,7 @@ try{
     const bytes=await fs.readFile(path.join(preview,host+'.conf')),text=bytes.toString('utf8');
     if(['api','staging'].includes(host)){assert.deepEqual(bytes,baseline[host],host+' opt-in unchanged');continue;}
     assert.equal((text.match(/location = \/town-ws/g)||[]).length,1);
-    for(const directive of ['limit_conn town_clients 4;','limit_conn_status 429;','proxy_pass http://127.0.0.1:8794;','access_log off;','error_log /dev/null crit;'])assert(text.includes(directive),host+directive);
+    for(const directive of ['limit_conn town_clients 20;','limit_conn_status 429;','proxy_pass http://127.0.0.1:8794;','access_log off;','error_log /dev/null crit;'])assert(text.includes(directive),host+directive);
     for(const [,policy] of text.matchAll(/add_header Content-Security-Policy "([^"]+)" always;/g))assert(policy.includes('wss://'+host+'.chuamay.org;'));
     assert(!text.includes('wss://'+(host==='h5'?'miniapp':'h5')+'.chuamay.org'));
     assert.equal((text.match(/limit_conn_zone /g)||[]).length,host==='h5'?1:0,'zone defined once across http includes');

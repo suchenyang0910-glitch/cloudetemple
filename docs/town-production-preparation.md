@@ -51,7 +51,7 @@ WAL文件不能在写入中只cp主文件来备份。候选停写后用SQLite备
 
 默认`node deploy/render-nginx.mjs <输出目录>`四文件逐字节与基线相同，包检查固定记录基线SHA并验证。仅显式`--production-town`时h5/miniapp增加各自WSS CSP和精确`/town-ws`路由，api/staging输出不变；不改默认generated-nginx或活动配置。
 
-候选路由回环8794，按`CF-Connecting-IP`全站共享计数，每来源最多4条并发，超限429；h5.conf在http include层定义唯一1MB zone，miniapp复用，两份必须成组审核/应用。空来源头拒绝。**前提**：外层Caddy仅允许Cloudflare来源且不会把未经验证的客户端头当来源；本机8800/8801只回环。不能用Cloudflare节点地址给所有人计同一个桶，也不能在公网可直达上游时信任这个头。执行日无法证明链路就停，不以此模板声称已防伪。共享公网IP/NAT家庭可能触发4条限制，首发需观察，不在这里私自提高限制。
+候选路由回环8794，按`CF-Connecting-IP`全站共享计数，每来源最多20条并发，超限429；h5.conf在http include层定义唯一1MB zone，miniapp复用，两份必须成组审核/应用。空来源头拒绝。**前提**：外层Caddy仅允许Cloudflare来源且不会把未经验证的客户端头当来源；本机8800/8801只回环。不能用Cloudflare节点地址给所有人计同一个桶，也不能在公网可直达上游时信任这个头。执行日无法证明链路就停，不以此模板声称已防伪。按Claude本卡11:15复核，将每来源限制由4提高到20，以减少移动网络共用公网出口造成的拒绝；共享公网IP仍可能触发20条限制，首发需观察。全服120不变。
 
 仅提供`deploy/town-worker-connections.PROPOSED.patch`：256→1024，未改deploy/nginx.conf。120条代理WS约占240个Nginx连接；加staging最多80个约320，1024留下约704个给普通访问，但TCP文件描述符、瞬时普通请求和进程CPU仍有限，不是704个用户承诺。执行日还须核对Nginx进程实际RLIMIT_NOFILE≥1024、nginx -t与正式健康码；不足就停止，不能暗改系统限制。
 
