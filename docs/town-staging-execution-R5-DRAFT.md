@@ -42,7 +42,7 @@
 18. 【前置复核】4/4a/4b集成检查与可信主机通过；12a–12c标准部署，12d–12f空库WAL/schema3，12h/12i新专属配置和API启用健康/config通过；12j座位SHA正确且实时文件完整，13一级真实依赖，14独立ws安装成功；草稿仍未审。缺证据停止37，不跳步骤，不伪造票据，不在主库补表。
 19. 【进程管理候选】检查本次unit `/etc/systemd/system/chuamay-town-staging.service`、旧可能路径`/etc/systemd/system/chuamay-town-staging.service.d/50-paths.conf`及实时实例；已有任一文件/链接/实例均停37，不覆盖/停别人。以附录U为唯一unit源，User/Group=chuamay、300000000字节/Swap0/堆160MiB/CPU50%/Tasks64/NOFILE1024及沙箱项与正式候选一致；只有环境/端口/数据库/不可变目录改staging。无Requires/PartOf API，不安装系统软件。unit是文档候选，尚未在服务器验证。
 20. 【unit独占上传及安装】A将附录U原始UTF-8/LF字节与回执B-s17-inputs/chuamay-town-staging.service.txt对齐，填UNIT_SHA；按11b唯一上传协议传至新BK/chuamay-town-staging.service.candidate，父路径真实、xb、前后SHA正确。远端最终unit路径原子noclobber创建，仅写已核准候选，root:root/644，创建即UNIT_CREATED=1；写失败仍记本轮部分文件。复核SHA后daemon-reload；失败仅UNIT_CREATED=1时移出本轮unit到BK独占目标、daemon-reload并走36/37，不动已有文件。本版不另建50-paths覆盖，API已在12i重启不重复重启；不enable --now、不restart共用Nginx。
-21. 【启动实时】仅在上述前置全通过后先将本轮启动尝试标记`RT_STARTED=1`，再执行`systemctl start chuamay-town-staging.service`并检查退出码（失败也进入第36步确保本轮进程停止），再以`systemctl is-active chuamay-town-staging.service`和只选择非敏感属性的`systemctl show chuamay-town-staging.service -p MemoryMax -p MemorySwapMax -p CPUQuotaPerSecUSec -p MainPID`核对进程与限制，任何限制缺失或值不符即停服务，不仅凭HTTP200宣称内存限制有效。
+21. 【启动及最终开关验证】前置全通过后先记RT_STARTED=1，再执行`systemctl start chuamay-town-staging.service`；该次启动必先运行附录U的ExecStartPre，由systemd子进程直接检查实际TOWN_REALTIME_ENABLED，不自行读取/解析原env。start失败立即36/37，不继续Nginx；start成功后`systemctl is-active chuamay-town-staging.service`须active，再只取`systemctl show chuamay-town-staging.service -p InvocationID -p ExecStartPre -p MemoryMax -p MemorySwapMax -p CPUQuotaPerSecUSec -p MainPID`。记录本次非空InvocationID，确认ExecStartPre记录是附录中的唯一校验命令、本次启动已执行且退出status=0，并核资源限制；ExecStartPre属性仅显示本次固定命令/执行状态，不含环境集合。若属性缺失/无法解析/不是本次执行/退出非0或限制不符，即36/37停止本轮服务，不改用systemctl cat、Environment属性、/proc环境或整段journal来查。不只凭HTTP200、源文件里的1或历史PASS证明最终值；本轮文档修订尚未在systemd运行，实际证据待A获批执行时取得。
 22. 【监听容量】本提交connectionLimit(staging)=40，正式120只在production分支；核对环境来自附录C/staging unit记录，不输出进程env。仅过滤8793确认回环127.0.0.1；0.0.0.0/端口冲突即36/37。8793/healthz需200；本次不跑40或200并发压测，不改worker_connections=256，不把正式来源20模板应用staging。
 22a. 【读写频率】实时每1000ms检查超时/座位并读取成员称呼；票据消费/presence/离场/约20秒心跳可能写独立库，每60000ms清理、启动清presence；API每10000ms先读主库账号再刷新独立库30秒租期。两个文件写锁分离，但仍共享同机CPU/磁盘，账号扫描有增长成本；观察失败走36/37，不扩大权限。
 22b. 【锁忙与WAL边界】town独立库WAL；API连接busy_timeout=50ms，实时2000ms，同步等待仍可能阻塞各自事件循环。实时1秒tick仅SQLITE_BUSY记store_busy跳过本轮；其他错误保持停止路径；60秒清理异常只记cleanup。主库原journal_mode/timeout不由本任务修改。异常/无法验证不现场改参数，按36/37回退，保留新库/sidecar。
@@ -82,11 +82,11 @@ TOWN_NAME_POOL_SHA256=
 TOWN_ALLOW_TEST_SEATS=0
 ```
 
-API和实时共享这一个非敏感新文件。入口0并不禁止已授权的票据回环验证；实时1才会打开独立库。空池路径明确使用内置未审草稿，不能把原915候选note改为已审。现场核对只读本轮配置的既知字段/固定结果，不导出进程或原env。
+API和实时共享这一个非敏感新文件。入口0并不禁止已授权的票据回环验证；实时1才会打开独立库。空池路径明确使用内置未审草稿，不能把原915候选note改为已审。TOWN_REALTIME_ENABLED只有本EnvironmentFile中的1作为配置来源，unit不再重复声明0。文件字节核对只证明输入，最终生效值必须经第21步ExecStartPre检查；不读取其他env文件，不导出完整进程环境。
 
 ## 附录U：仅文本的staging unit候选（20用）
 
-不修改仓库旧unit、不直接部署。`B-s17-inputs/chuamay-town-staging.service.txt`与下段UTF-8/LF内容逐字节一致；SHA记录在文档校验回执。EnvironmentFile缺失应启动失败；其中实时1是本R5明确启用，不依赖原API env。40来自审核代码的staging分支，NOFILE1024是本进程文件句柄额度，不是改共用Nginx连接数。
+不修改仓库旧unit、不直接部署。`B-s17-inputs/chuamay-town-staging.service.txt`与下段UTF-8/LF内容逐字节一致；SHA记录在文档校验回执。EnvironmentFile缺失应启动失败；其中实时1是本R5明确启用，unit不再重复声明实时开关。ExecStartPre由systemd按本次服务环境启动，只读取TOWN_REALTIME_ENABLED一个非敏感键、要求严格为字符串1；不符或缺失则退出1、禁止进入ExecStart。只输出TOWN_RUNTIME_FLAG_PASS/FAIL，不打印变量值或其他环境。不依赖对配置优先级的推测，也不把本地脚本测试当作systemd实测。40来自审核代码的staging分支，NOFILE1024是本进程文件句柄额度，不是改共用Nginx连接数。
 
 ```ini
 [Unit]
@@ -99,10 +99,10 @@ User=chuamay
 Group=chuamay
 WorkingDirectory=/opt/chuamay/staging/town-realtime/releases/63d0f3c411b5/server
 Environment=CHUAMAY_ENV=staging
-Environment=TOWN_REALTIME_ENABLED=0
 Environment=TOWN_DB_PATH=/var/lib/chuamay/staging/town/town.sqlite
 Environment=TOWN_PORT=8793
 EnvironmentFile=/etc/chuamay/staging-town-realtime.conf
+ExecStartPre=/opt/chuamay/runtime/bin/node -e "const ok=process.env.TOWN_REALTIME_ENABLED==='1';console.log(ok?'TOWN_RUNTIME_FLAG_PASS':'TOWN_RUNTIME_FLAG_FAIL');process.exit(ok?0:1)"
 ExecStart=/opt/chuamay/runtime/bin/node --max-old-space-size=160 /opt/chuamay/staging/town-realtime/releases/63d0f3c411b5/server/town-process.mjs
 Restart=on-failure
 RestartSec=10
