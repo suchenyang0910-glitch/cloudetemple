@@ -1,10 +1,13 @@
 import fs from 'node:fs/promises';
+const productionTown=process.argv.includes('--production-town');
+if(process.argv.slice(3).some(arg=>arg!=='--production-town'))throw Error('Unknown generator option');
 const destination=process.argv[2];if(!destination)throw Error('Output directory required');await fs.mkdir(destination,{recursive:true});
 const csp="default-src 'self'; script-src 'self' https://static.cloudflareinsights.com SCRIPT; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src 'self' https://cloudflareinsights.com https://api.chuamay.org; media-src 'self' blob:; object-src 'none'; base-uri 'self'; frame-ancestors FRAME; form-action 'self'";
 for(const [host,port,env,mini,api] of [['h5',8800,'production',false,false],['miniapp',8801,'production',true,false],['api',8802,'production',false,true],['staging',8803,'staging',true,false]]){
   const analytics=!api&&['h5','miniapp','staging'].includes(host);
   let policy=analytics?csp.replace(' SCRIPT',' https://www.googletagmanager.com SCRIPT').replace("img-src 'self'","img-src https://*.google-analytics.com https://www.googletagmanager.com 'self'").replace("connect-src 'self'","connect-src https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com 'self'"):csp;
   if(host==='staging')policy=policy.replace('https://api.chuamay.org;', 'https://api.chuamay.org wss://staging.chuamay.org;');
+  if(productionTown&&['h5','miniapp'].includes(host))policy=policy.replace('https://api.chuamay.org;',`https://api.chuamay.org wss://${host}.chuamay.org;`);
   const headers=`add_header X-Content-Type-Options nosniff always;
   add_header Referrer-Policy strict-origin-when-cross-origin always;
   add_header Permissions-Policy "camera=(), microphone=(), geolocation=()" always;
@@ -15,11 +18,31 @@ for(const [host,port,env,mini,api] of [['h5',8800,'production',false,false],['mi
       proxy_set_header X-Chuamay-Peer $http_x_chuamay_peer;
       proxy_set_header CF-Connecting-IP $http_cf_connecting_ip;`;
   const locationHeaders=headers+(host==='staging'?'\n  add_header X-Robots-Tag noindex always;':'');
-  await fs.writeFile(`${destination}/${host}.conf`,`server {
+  const townRoute=productionTown&&['h5','miniapp'].includes(host)?`
+  # Only behind the verified Cloudflare-only Caddy ingress; never trust a public raw header.
+  location = /town-ws {
+    if ($http_cf_connecting_ip = "") { return 403; }
+    limit_conn town_clients 4;
+    limit_conn_status 429;
+    limit_conn_log_level info;
+    proxy_pass http://127.0.0.1:8794;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection "upgrade";
+    proxy_set_header Origin $http_origin;
+    proxy_set_header Host $host;
+    proxy_read_timeout 45s;
+    proxy_send_timeout 10s;
+    proxy_buffering off;
+    access_log off;
+    error_log /dev/null crit;
+  }`:'';
+  const townZone=productionTown&&host==='h5'?'# Shared by both production sites, at http include scope.\nlimit_conn_zone $http_cf_connecting_ip zone=town_clients:1m;\n':'';
+  await fs.writeFile(`${destination}/${host}.conf`,`${townZone}server {
   listen 127.0.0.1:${port};
   server_name ${host}.chuamay.org;
   root /opt/chuamay/${env}/current/dist;${api?'':'\n  error_page 404 /404.html;'}
-  ${headers}
+  ${headers}${townRoute}
   ${host==='staging'?`auth_basic "Chua May staging"; auth_basic_user_file /etc/chuamay/staging.htpasswd;
   add_header X-Robots-Tag noindex always;
   # Candidate only: Claude review and separate application required.

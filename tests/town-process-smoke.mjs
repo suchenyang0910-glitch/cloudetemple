@@ -8,7 +8,7 @@ import path from 'node:path';
 import assert from 'node:assert/strict';
 import {migrateTown} from '../server/town-migrate.mjs';
 const root=fileURLToPath(new URL('../',import.meta.url)),out=path.join(root,'_archive','town-realtime-evidence'),stage=path.join(out,'staging');mkdirSync(stage,{recursive:true});
-const require=createRequire(import.meta.url),Database=require(process.env.TOWN_TEST_SQLITE_MODULE||'better-sqlite3'),dbFile=path.join(stage,'smoke.sqlite'),db=new Database(dbFile);db.exec('CREATE TABLE IF NOT EXISTS users(id TEXT PRIMARY KEY,deleted_at TEXT)');migrateTown(db,'staging');db.close();
+const require=createRequire(import.meta.url),Database=require(process.env.TOWN_TEST_SQLITE_MODULE||'better-sqlite3'),dbFile=path.join(stage,'town.sqlite'),db=new Database(dbFile);db.pragma('journal_mode = WAL');migrateTown(db,'staging',{isolated:true});db.close();
 async function port(){const s=createServer();s.listen(0,'127.0.0.1');await once(s,'listening');const p=s.address().port;await new Promise(r=>s.close(r));return p;}
 const realtimePort=await port(),apiPort=await port();
 const apiCode=`import {createServer} from ${JSON.stringify(pathToFileURL(path.join(root,'server/app.mjs')).href)};createServer({telegramEnabled:false,origins:new Set()},{}).listen(${apiPort},'127.0.0.1');`;

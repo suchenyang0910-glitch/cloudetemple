@@ -1,0 +1,34 @@
+[Unit]
+Description=Chua May production town realtime (disabled candidate)
+After=network-online.target
+
+[Service]
+Type=simple
+User=chuamay
+Group=chuamay
+WorkingDirectory=/opt/chuamay/production/town-realtime/current/server
+Environment=CHUAMAY_ENV=production
+Environment=TOWN_REALTIME_ENABLED=0
+Environment=TOWN_DB_PATH=/var/lib/chuamay/production/town/town.sqlite
+Environment=TOWN_PORT=8794
+# This new non-secret file must specify approved pool/seats paths and the explicit switch.
+EnvironmentFile=-/etc/chuamay/production-town.conf
+ExecStart=/opt/chuamay/runtime/bin/node --max-old-space-size=160 town-process.mjs
+Restart=on-failure
+RestartSec=10
+MemoryMax=300000000
+MemorySwapMax=0
+CPUQuota=50%
+TasksMax=64
+LimitNOFILE=1024
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+InaccessiblePaths=-/var/lib/chuamay/api.sqlite -/var/lib/chuamay/production/api.sqlite -/etc/chuamay/production.env
+ReadWritePaths=/var/lib/chuamay/production/town
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+
+[Install]
+WantedBy=multi-user.target

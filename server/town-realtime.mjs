@@ -1,10 +1,12 @@
 import {randomUUID,randomInt} from 'node:crypto';
 export const limits=Object.freeze({connections:40,payload:2048,buffer:32768,memory:300000000});
+export const connectionLimit=environment=>environment==='production'?120:40;
 export function vietnamPeriod(now){const hour=new Date(now+7*3600000).getUTCHours();return hour>=5&&hour<7?'dawn':hour>=7&&hour<17?'day':hour>=17&&hour<19?'dusk':'night';}
 const distance=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1]);
 const fields={enter:['scene','ticket','room'],leave:[],move:['from','target','at'],state:['value','seconds'],claim:['seat'],release:['seat'],ping:['background','continueSeat']};
-export function createTownCore({store,scenes,clock=Date.now,log=()=>{}}){
-  if(!scenes?.town||!scenes?.chuamay||!scenes?.suoi||!scenes?.lientri)throw Error('seats_required');
+export function createTownCore({store,scenes,clock=Date.now,log=()=>{},maxConnections=40}){
+  if(!scenes?.town||!scenes?.chuamay)throw Error('seats_required');
+  if(![40,120].includes(maxConnections))throw Error('connections_config');
   const connections=new Set(),members=new Map(),rooms=new Map();
   function send(c,type,data={}){if(!c.closed)c.send({v:1,seq:++c.out,type,...data});}
   const result=(c,code)=>send(c,'state',{actor:c.member?.actor||null,state:c.member?.state||'stand',code});
@@ -34,7 +36,7 @@ export function createTownCore({store,scenes,clock=Date.now,log=()=>{}}){
     if(m&&m.connection===c){m.at=position(m);m.motion=null;m.connection=null;m.disconnected=at;store.leave(m.ref);broadcast(m.room,'gone',{actor:m.actor});if(!m.seat)remove(m);}
     if(terminate)c.close();
   }
-  function connect({send:write,close,origin}){if(connections.size>=limits.connections)return null;const c={send:write,close,origin,in:0,out:0,ref:null,member:null,closed:false,opened:clock(),seen:clock(),bucket:clock(),count:0,lastMove:-Infinity,lastSeat:-Infinity,rejected:[],cooldown:0};connections.add(c);return c;}
+  function connect({send:write,close,origin}){if(connections.size>=maxConnections)return null;const c={send:write,close,origin,in:0,out:0,ref:null,member:null,closed:false,opened:clock(),seen:clock(),bucket:clock(),count:0,lastMove:-Infinity,lastSeat:-Infinity,rejected:[],cooldown:0};connections.add(c);return c;}
   function claimResult(c,ok,code,seat=null,nearest=null){if(!ok){const now=clock();c.rejected=c.rejected.filter(at=>at>now-60000);c.rejected.push(now);if(c.rejected.length>=5)c.cooldown=now+30000;}send(c,'claim-result',{ok,code,seat,nearest,cooldownUntil:c.cooldown});}
   function receive(c,msg){
     if(c.closed)return;

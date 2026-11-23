@@ -1,12 +1,14 @@
 import {pathToFileURL} from 'node:url';
 
-export function migrateTown(db, environment) {
-  if (environment !== 'staging') throw Error('town_staging_only');
-  if (!db.prepare("SELECT 1 FROM sqlite_master WHERE name='users'").get()) throw Error('existing_accounts_required');
+export function migrateTown(db, environment, {isolated=false}={}) {
+  if (environment !== 'staging' && !(environment==='production' && isolated)) throw Error('town_staging_only');
+  const hasAccounts=!!db.prepare("SELECT 1 FROM sqlite_master WHERE name='users'").get();
+  if (isolated && hasAccounts) throw Error('town_separate_database_required');
+  if (!isolated && !hasAccounts) throw Error('existing_accounts_required');
   db.transaction(() => {
-    if (!db.prepare('PRAGMA table_info(users)').all().some(c => c.name === 'town_name')) db.exec('ALTER TABLE users ADD COLUMN town_name TEXT');
+    if (!isolated && !db.prepare('PRAGMA table_info(users)').all().some(c => c.name === 'town_name')) db.exec('ALTER TABLE users ADD COLUMN town_name TEXT');
     db.exec(`
-      CREATE TABLE IF NOT EXISTS town_names(ref TEXT PRIMARY KEY,user_id TEXT UNIQUE REFERENCES users(id) ON DELETE CASCADE,name TEXT NOT NULL,revision INTEGER NOT NULL DEFAULT 1,locked_until INTEGER NOT NULL DEFAULT 0,seen INTEGER NOT NULL);
+      CREATE TABLE IF NOT EXISTS town_names(ref TEXT PRIMARY KEY,user_id TEXT UNIQUE ${isolated?'':'REFERENCES users(id) ON DELETE CASCADE'},name TEXT NOT NULL,revision INTEGER NOT NULL DEFAULT 1,locked_until INTEGER NOT NULL DEFAULT 0,seen INTEGER NOT NULL);
       CREATE TABLE IF NOT EXISTS town_changes(ref TEXT NOT NULL REFERENCES town_names(ref) ON DELETE CASCADE,at INTEGER NOT NULL);
       CREATE INDEX IF NOT EXISTS town_changes_ref ON town_changes(ref,at);
       CREATE TABLE IF NOT EXISTS town_reports(target TEXT NOT NULL REFERENCES town_names(ref) ON DELETE CASCADE,revision INTEGER NOT NULL,reporter TEXT NOT NULL,at INTEGER NOT NULL,PRIMARY KEY(target,revision,reporter));
@@ -21,6 +23,10 @@ export function migrateTown(db, environment) {
     `);
     if(!db.prepare('PRAGMA table_info(town_names)').all().some(c=>c.name==='fallback_name'))db.exec("ALTER TABLE town_names ADD COLUMN fallback_name TEXT NOT NULL DEFAULT ''");
     db.exec('INSERT OR IGNORE INTO town_schema VALUES(2)');
+    if(isolated){
+      if(!db.prepare('PRAGMA table_info(town_names)').all().some(c=>c.name==='account_valid_until'))db.exec('ALTER TABLE town_names ADD COLUMN account_valid_until INTEGER NOT NULL DEFAULT 0');
+      db.exec('INSERT OR IGNORE INTO town_schema VALUES(3)');
+    }
   }).immediate();
 }
 

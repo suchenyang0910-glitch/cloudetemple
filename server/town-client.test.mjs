@@ -36,7 +36,7 @@ async function fixture(t, { loggedIn = false } = {}) {
   const api = createTownApi(settings, store, { family: {
     sessionUser(token) { return token === hash(settings.hashSecret, 'synthetic-session') ? { user_id: 'synthetic-user', csrf_hash: 'synthetic-csrf' } : undefined; },
   } });
-  let requests = 0, mode = 'normal', connections = [], postedCsrf = [];
+  let requests = 0, mode = 'normal', connections = [], postedCsrf = [], credentialModes = [];
   const http = createServer(async (req, res) => {
     requests++;
     try {
@@ -54,6 +54,7 @@ async function fixture(t, { loggedIn = false } = {}) {
   const nativeFetch = globalThis.fetch, cookies = new Map(), sockets = [], clients = [];
   // Node has no browser cookie jar or automatic Origin. Only the test adapter supplies them.
   t.mock.method(globalThis, 'fetch', async (url, options = {}) => {
+    credentialModes.push({url:String(url),mode:options.credentials});
     const key = new URL(url).searchParams.get('client');
     const headers = new Headers(options.headers);
     headers.set('Origin', origin);
@@ -85,7 +86,7 @@ async function fixture(t, { loggedIn = false } = {}) {
     clients.push(instance);
     return { instance, events, all: type => events.filter(event => event.type === type).map(event => event.value), last: type => events.findLast(event => event.type === type)?.value };
   }
-  return { client, sockets, connections, stopServer, service, store, db, postedCsrf, requests: () => requests, setMode: value => mode = value };
+  return { client, sockets, connections, stopServer, service, store, db, postedCsrf, credentialModes, requests: () => requests, setMode: value => mode = value };
 }
 
 test('two clients share snapshots, server names, joins, destination moves and explicit leave', async t => {
@@ -186,6 +187,8 @@ test('logged-in ticket request uses existing CSRF route without exposing account
   const f = await fixture(t, { loggedIn: true }), a = f.client('account');
   a.instance.enter(); await until(() => a.last('Snapshot'));
   assert.equal(typeof f.postedCsrf[0], 'string');
+  assert.deepEqual(f.credentialModes.slice(0,2).map(request=>request.mode),['include','include'],'CSRF and ticket carry browser credentials across approved production origins');
+  assert(f.credentialModes[0].url.includes('/csrf')&&f.credentialModes[1].url.includes('/ticket'));
   assert.equal(f.db.prepare('SELECT count(*) n FROM town_names WHERE user_id=?').get('synthetic-user').n, 1);
   assert(!JSON.stringify(a.last('Snapshot')).includes('synthetic-user'));
 });

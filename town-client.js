@@ -114,7 +114,7 @@ export function createTownClient(options = {}) {
       // Existing logged-in sessions require the read-only CSRF endpoint before POST.
       const csrfUrl = String(config.ticketUrl).replace(/\/ticket(?=\?|$)/, '/csrf');
       if (csrfUrl === config.ticketUrl) throw Error();
-      const csrfResponse = await fetch(csrfUrl, { credentials: 'same-origin', signal });
+      const csrfResponse = await fetch(csrfUrl, { credentials: 'include', signal });
       if (token !== generation) return;
       if (!csrfResponse.ok) throw Error();
       const csrf = await csrfResponse.json();
@@ -122,7 +122,7 @@ export function createTownClient(options = {}) {
       const headers = { 'Content-Type': 'application/json' };
       if (typeof csrf.csrf === 'string') headers['X-CSRF-Token'] = csrf.csrf;
       const response = await fetch(config.ticketUrl, {
-        method: 'POST', credentials: 'same-origin', headers, body: '{}', signal,
+        method: 'POST', credentials: 'include', headers, body: '{}', signal,
       });
       if (token !== generation) return;
       if (!response.ok) throw Error();

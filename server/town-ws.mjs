@@ -1,13 +1,14 @@
 import http from 'node:http';
-import {createTownCore,limits} from './town-realtime.mjs';
+import {createTownCore,limits,connectionLimit} from './town-realtime.mjs';
 export function createTownSocketServer({WebSocketServer,store,scenes,origins,environment,clock=Date.now,log=()=>{},memory=()=>process.memoryUsage().rss}){
-  if(environment!=='staging')throw Error('town_staging_only');
-  const core=createTownCore({store,scenes,clock,log});
+  if(environment!=='staging'&&!(environment==='production'&&store.isolated))throw Error('town_staging_only');
+  const maxConnections=connectionLimit(environment);
+  const core=createTownCore({store,scenes,clock,log,maxConnections});
   const server=http.createServer((req,res)=>{res.writeHead(req.url==='/healthz'?200:404,{'Content-Type':'application/json'});res.end(JSON.stringify({ok:req.url==='/healthz'}));});
-  server.maxConnections=limits.connections;server.headersTimeout=5000;server.requestTimeout=5000;server.keepAliveTimeout=1000;
+  server.maxConnections=maxConnections;server.headersTimeout=5000;server.requestTimeout=5000;server.keepAliveTimeout=1000;
   const wss=new WebSocketServer({noServer:true,maxPayload:limits.payload,perMessageDeflate:false,clientTracking:true,maxFragments:32,maxBufferedChunks:32});
   server.on('upgrade',(req,socket,head)=>{
-    if(req.url!=='/town-ws'||!origins.has(req.headers.origin)||core.counts().connections>=limits.connections||memory()>=limits.memory){socket.end('HTTP/1.1 403 Forbidden\r\nConnection: close\r\n\r\n');return;}
+    if(req.url!=='/town-ws'||!origins.has(req.headers.origin)||core.counts().connections>=maxConnections||memory()>=limits.memory){socket.end('HTTP/1.1 403 Forbidden\r\nConnection: close\r\n\r\n');return;}
     wss.handleUpgrade(req,socket,head,ws=>{
       const c=core.connect({origin:req.headers.origin,send:msg=>{if(ws.readyState!==1)return;if(ws.bufferedAmount>limits.buffer){ws.terminate();return;}ws.send(JSON.stringify(msg));},close:()=>ws.terminate()});
       if(!c){ws.terminate();return;}

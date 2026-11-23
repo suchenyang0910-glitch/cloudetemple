@@ -1,11 +1,13 @@
 import {readFileSync} from 'node:fs';
-export function loadTownScenes(file,{allowTest=false}={}){
+export function loadTownScenes(file,{allowTest=false,production=false}={}){
   const data=JSON.parse(readFileSync(file,'utf8'));
   if(data.version!==1||typeof data.test!=='boolean'||(data.test&&!allowTest))throw Error('seats_config');
   if(data.test&&!String(file).includes('TEST'))throw Error('test_seats_filename');
   const scenes={};
-  if(Object.keys(data.scenes||{}).sort().join()!==['town','chuamay','suoi','lientri'].sort().join())throw Error('scene_ids');
+  if(production){if(!data.scenes?.town||!data.scenes?.chuamay||data.scenes.town.cap!==20||data.scenes.chuamay.cap!==16)throw Error('production_scene_caps');}
+  else if(Object.keys(data.scenes||{}).sort().join()!==['town','chuamay','suoi','lientri'].sort().join())throw Error('scene_ids');
   for(const [id,cfg] of Object.entries(data.scenes)){
+    if(production&&!['town','chuamay'].includes(id))continue;
     const {minX,maxX,minZ,maxZ}=cfg.bounds||{},bounds=[minX,maxX,minZ,maxZ];
     const inside=p=>p&&Number.isFinite(p.x)&&Number.isFinite(p.z)&&p.x>=minX&&p.x<=maxX&&p.z>=minZ&&p.z<=maxZ;
     if(!Number.isInteger(cfg.cap)||cfg.cap<1||cfg.cap>20)throw Error(`scene_cap:${id}`);

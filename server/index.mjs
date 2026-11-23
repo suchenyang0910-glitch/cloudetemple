@@ -8,8 +8,7 @@ import { createMetricsApi } from "./metrics-api.mjs";
 import { createAccessVerifier } from "./access-auth.mjs";
 import { createPetModerationModule } from "./pet-admin-api.mjs";
 import { hash } from "./security.mjs";
-import { openTownStore } from "./town-store.mjs";
-import { createTownApi, createTownAccountReader } from "./town-api.mjs";
+import { createTownFeature } from "./town-isolated.mjs";
 let settings;
 try {
   settings = config(process.env);
@@ -17,9 +16,6 @@ try {
   console.error(error.message);
   process.exit(1);
 }
-const townRequested = process.env.TOWN_REALTIME_ENABLED === '1';
-const townEnabled = townRequested && settings.environment === 'staging' && settings.db.replaceAll('\\','/').includes('/staging/');
-if ((townRequested && !townEnabled) || !['0','1'].includes(process.env.TOWN_REALTIME_ENABLED || '0')) console.error('{"code":"town_disabled_config"}');
 const store = openStore(settings.db);
 const metrics = openMetricsStore(store.db);
 metrics.cleanup();
@@ -39,12 +35,8 @@ const familyHandler = settings.familyEnabled
   ? createFamilyApi(settings, familyStore, { metric: (name, dimension) => metrics.count(name, dimension) })
   : async () => false;
 const access = settings.adminEnabled ? createAccessVerifier(settings) : { validate: async () => { throw Error("disabled"); } };
-let townHandler = async () => false;
-if (townEnabled) {
-  // A missing staging migration disables only the candidate, never the existing API.
-  try { const town = openTownStore(store.db, settings.environment); town.cleanup(Date.now()); townHandler = createTownApi(settings, town, {family: createTownAccountReader(store.db), access}); }
-  catch { console.error('{"code":"town_migration_required"}'); }
-}
+const townFeature=createTownFeature(process.env,settings,store.db,access,entry=>console.error(JSON.stringify(entry)));
+const townHandler=townFeature.handle;
 const verifyBound = (req) => {
   const raw = (req.headers.cookie || "").split(/;\s*/).find((part) => part.startsWith("ct_session="))?.slice(11);
   return raw && familyStore?.sessionUser(hash(settings.hashSecret, raw))?.user_id;
@@ -94,6 +86,7 @@ process.on("SIGTERM", () =>
     if (familyCleanup) clearInterval(familyCleanup);
     if (presenceSample) clearInterval(presenceSample);
     if (petMaintenance) clearTimeout(petMaintenance);
+    townFeature.close();
     store.close();
     process.exit(0);
   }),

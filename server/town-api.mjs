@@ -1,6 +1,6 @@
 import {randomBytes} from 'node:crypto';
 import {hash,equal,clientIP,validateInitData} from './security.mjs';
-import {nameChoices,candidateName} from './town-names.mjs';
+import {draftTownNames} from './town-name-policy.mjs';
 
 export const townPrefix='/api/pet-garden/town';
 const guestCookie='ct_town_name',uuid=/^[a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12}$/i;
@@ -15,8 +15,8 @@ export function createTownAccountReader(db,clock=Date.now){return {
   sessionUser(token,scope){return db.prepare('SELECT s.user_id,s.csrf_hash FROM sessions s JOIN users u ON u.id=s.user_id WHERE s.token_hash=? AND s.scope=? AND s.expires_at>? AND u.deleted_at IS NULL').get(token,scope,clock());},
   identityUser(provider,subject){return db.prepare('SELECT u.id FROM users u JOIN identities i ON i.user_id=u.id WHERE i.provider=? AND i.subject=? AND u.deleted_at IS NULL').get(provider,subject);}
 };}
-export function createTownApi(settings,store,{family,access,clock=Date.now,adminOrigin='https://adminchy-staging.chuamay.org'}={}){
-  if(settings.environment!=='staging')throw Error('town_staging_only');
+export function createTownApi(settings,store,{family,access,clock=Date.now,adminOrigin='https://adminchy-staging.chuamay.org',names=draftTownNames}={}){
+  if(settings.environment!=='staging'&&!(settings.environment==='production'&&store.isolated&&names.reviewed))throw Error('town_staging_only');
   const sign=value=>hash(settings.hashSecret,'town-cookie:'+value);
   function guest(req){try{const raw=cookies(req)[guestCookie];if(!raw||raw.length>600)return null;const [encoded,signature,extra]=raw.split('.');if(extra||!equal(sign(encoded),signature))return null;const data=JSON.parse(Buffer.from(encoded,'base64url'));return /^[a-f0-9]{32}$/.test(data.id)&&typeof data.name==='string'&&data.exp>clock()?data:null;}catch{return null;}}
   function setGuest(res,id,name){const data=Buffer.from(JSON.stringify({id,name,exp:clock()+365*86400000})).toString('base64url');res.setHeader('Set-Cookie',`${guestCookie}=${data}.${sign(data)}; Path=${townPrefix}; HttpOnly; Secure; SameSite=Strict; Max-Age=31536000`);}
@@ -63,10 +63,11 @@ export function createTownApi(settings,store,{family,access,clock=Date.now,admin
       let profile=store.ensure(who.ref,who.userId,who.saved?.name||cookieName,now);
       if(who.id)setGuest(res,who.id,profile.name);
       const action=route.slice(townPrefix.length+1);
-      if(action==='profile')return json(res,200,{name:profile.name,lockedUntil:profile.locked_until,...nameChoices(profile.name)});
-      if(action==='choices')return json(res,200,nameChoices());
+      if(action==='profile')return json(res,200,{name:profile.name,lockedUntil:profile.locked_until,...names.choices(profile.name)});
+      if(action==='choices')return json(res,200,names.choices());
       if(action==='name'){
-        const candidate=Number.isInteger(input.candidateId);profile=store.save(who.ref,candidate?candidateName(input.candidateId):input.name,now,{candidate});
+        if(Object.hasOwn(input,'name')||!Number.isSafeInteger(input.candidateId))reject('name_candidate');
+        profile=store.save(who.ref,names.candidate(input.candidateId),now,{candidate:true});
         if(who.id)setGuest(res,who.id,profile.name);return json(res,200,{name:profile.name,lockedUntil:profile.locked_until});
       }
       if(action==='ticket')return json(res,200,{ticket:store.issue(who.ref,origin,now),expiresIn:30,protocol:1});
