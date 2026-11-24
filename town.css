@@ -1,7 +1,7 @@
 :root{--ink:#2b1d12;--paper:#f4ead8;--paper-2:rgba(244,234,216,.92);--line:rgba(43,29,18,.22);--gold:#b9812a;--deep:#3a2415;color-scheme:light}
 html,body{height:100%}
 [hidden]{display:none!important}
-body{margin:0;background:#1d1611;color:var(--ink);font-family:"Noto Serif",Georgia,"Times New Roman",serif;overflow:hidden}
+body{margin:0;background:#1d1611;color:var(--ink);font-family:"Noto Serif",Cambria,Georgia,"Times New Roman",serif;overflow:hidden}
 #stage{position:relative;width:100%;height:100dvh;min-height:520px;overflow:hidden;background:#1d1611;touch-action:none;user-select:none;-webkit-user-select:none}
 #stage canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .top{position:absolute;left:0;right:0;top:0;display:flex;justify-content:space-between;align-items:flex-start;gap:8px;padding:12px max(16px,env(safe-area-inset-right,0px)) 0 max(16px,env(safe-area-inset-left,0px));pointer-events:none}
